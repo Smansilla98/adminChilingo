@@ -1,5 +1,6 @@
 # Dockerfile - Laravel La Chilinga (MySQL)
-FROM php:8.2-cli
+# PHP 8.3 requerido por composer.lock (spatie/laravel-permission, maennchen/zipstream-php, etc.)
+FROM php:8.3-cli
 
 # Variables de entorno
 ENV DEBIAN_FRONTEND=noninteractive
