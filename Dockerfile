@@ -33,8 +33,8 @@ RUN docker-php-ext-install -j$(nproc) \
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instalar Node.js 18.x desde NodeSource
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+# Instalar Node.js 20.x (Vite 7 requiere Node 20.19+ o 22.12+)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -52,8 +52,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN composer dump-autoload --optimize --no-interaction || true
 
 # Instalar dependencias Node y compilar assets
-RUN if [ -f "package.json" ]; then npm install; fi
-RUN if [ -f "package.json" ]; then npm run build; fi
+RUN if [ -f "package.json" ]; then npm install && npm run build; fi
 
 # Permisos
 RUN chown -R www-data:www-data /var/www/html \
