@@ -43,11 +43,23 @@ echo "=== Limpiando cachés ==="
 php artisan optimize:clear || true
 php artisan route:clear || true
 
-# Migraciones
+# Migraciones (reintentar si fallan; volver a correr por si quedaron pendientes)
 echo "=== Ejecutando migraciones ==="
-php artisan migrate --force --no-interaction || {
-    echo "⚠️  ADVERTENCIA: Las migraciones fallaron. Revisá los logs."
-}
+MIGRATE_ATTEMPTS=5
+for i in $(seq 1 $MIGRATE_ATTEMPTS); do
+    if php artisan migrate --force --no-interaction; then
+        echo "✓ Migraciones aplicadas (intento $i)"
+        break
+    fi
+    if [ "$i" -eq "$MIGRATE_ATTEMPTS" ]; then
+        echo "⚠️  ADVERTENCIA: Las migraciones fallaron tras $MIGRATE_ATTEMPTS intentos. Revisá los logs."
+    else
+        echo "Intento $i/$MIGRATE_ATTEMPTS falló, reintentando en 5s..."
+        sleep 5
+    fi
+done
+# Segunda pasada por si quedó alguna migración pendiente
+php artisan migrate --force --no-interaction 2>/dev/null && echo "✓ Revisión de migraciones OK" || true
 
 # Autoload
 composer dump-autoload --no-interaction --optimize || true
