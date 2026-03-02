@@ -38,7 +38,10 @@
             padding-top: 1rem;
             transition: transform 0.2s ease, width 0.2s ease;
             box-shadow: 4px 0 10px rgba(0,0,0,.08);
+            display: flex;
+            flex-direction: column;
         }
+        .sidebar .sidebar-nav { flex: 1; overflow-y: auto; }
         .sidebar .sidebar-brand {
             padding: 0 1.5rem 1.5rem;
             font-size: 1.25rem;
@@ -73,6 +76,24 @@
             background: var(--primary);
         }
         .sidebar .nav-link i { font-size: 1.1rem; opacity: .9; }
+        .sidebar .nav-section {
+            padding: .5rem 1rem .25rem;
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: rgba(255,255,255,.5);
+        }
+        .sidebar .nav-divider {
+            height: 1px;
+            margin: .5rem .75rem;
+            background: rgba(255,255,255,.15);
+        }
+        .sidebar .sidebar-footer {
+            padding: 1rem .75rem;
+            margin-top: auto;
+            border-top: 1px solid rgba(255,255,255,.1);
+        }
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 0;
@@ -135,8 +156,17 @@
         }
         .alert { border: none; border-radius: .35rem; }
         .navbar-brand { font-weight: 700; }
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.3);
+            z-index: 99;
+        }
         @media (max-width: 991.98px) {
             .sidebar { transform: translateX(-100%); }
+            .sidebar.sidebar-open { transform: translateX(0); }
+            .sidebar-backdrop.sidebar-open { display: block; }
             .main-content { margin-left: 0; }
         }
     </style>
@@ -144,111 +174,130 @@
 </head>
 <body>
     @auth
+    <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
     <nav class="sidebar">
         <a class="sidebar-brand" href="{{ route('dashboard') }}">
             <i class="bi bi-music-note-beamed"></i> La Chilinga
         </a>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('programa.*') ? 'active' : '' }}" href="{{ route('programa.index') }}">
-                    <i class="bi bi-music-note-list"></i> Programa
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}">
-                    <i class="bi bi-calendar3"></i> Calendario
-                </a>
-            </li>
+        <div class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <span class="nav-section">General</span>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('programa.*') ? 'active' : '' }}" href="{{ route('programa.index') }}">
+                        <i class="bi bi-music-note-list"></i> Programa
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}">
+                        <i class="bi bi-calendar3"></i> Calendario
+                    </a>
+                </li>
             @if(auth()->user()->isAdmin())
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}" href="{{ route('reportes.index') }}">
-                    <i class="bi bi-bar-chart"></i> Reportes
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('alumnos.*') ? 'active' : '' }}" href="{{ route('alumnos.index') }}">
-                    <i class="bi bi-people"></i> Alumnos
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('profesores.*') ? 'active' : '' }}" href="{{ route('profesores.index') }}">
-                    <i class="bi bi-person-badge"></i> Profesores
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('bloques.*') ? 'active' : '' }}" href="{{ route('bloques.index') }}">
-                    <i class="bi bi-collection"></i> Bloques
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('sedes.*') ? 'active' : '' }}" href="{{ route('sedes.index') }}">
-                    <i class="bi bi-building"></i> Sedes
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('eventos.*') ? 'active' : '' }}" href="{{ route('eventos.index') }}">
-                    <i class="bi bi-calendar-event"></i> Eventos
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shows.*') ? 'active' : '' }}" href="{{ route('shows.index') }}">
-                    <i class="bi bi-mic"></i> Shows
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('inventarios.*') ? 'active' : '' }}" href="{{ route('inventarios.index') }}">
-                    <i class="bi bi-box-seam"></i> Inventarios
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('plan-compras.*') ? 'active' : '' }}" href="{{ route('plan-compras.index') }}">
-                    <i class="bi bi-clipboard-data"></i> Plan de compras
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('ordenes-compra.*') ? 'active' : '' }}" href="{{ route('ordenes-compra.index') }}">
-                    <i class="bi bi-file-earmark-text"></i> Órdenes de compra
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('asistencias.*') ? 'active' : '' }}" href="{{ route('asistencias.index') }}">
-                    <i class="bi bi-check-circle"></i> Asistencias
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('cuotas.*') ? 'active' : '' }}" href="{{ route('cuotas.index') }}">
-                    <i class="bi bi-cash-coin"></i> Cuotas
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('pagos.*') ? 'active' : '' }}" href="{{ route('pagos.index') }}">
-                    <i class="bi bi-receipt"></i> Pagos
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('facturacion-mensual.*') ? 'active' : '' }}" href="{{ route('facturacion-mensual.index') }}">
-                    <i class="bi bi-graph-up"></i> Facturación
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('gastos.*') ? 'active' : '' }}" href="{{ route('gastos.index') }}">
-                    <i class="bi bi-wallet2"></i> Gastos
-                </a>
-            </li>
+                <div class="nav-divider"></div>
+                <span class="nav-section">Reportes</span>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}" href="{{ route('reportes.index') }}">
+                        <i class="bi bi-bar-chart"></i> Reportes
+                    </a>
+                </li>
+                <div class="nav-divider"></div>
+                <span class="nav-section">Personas y estructura</span>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('alumnos.*') ? 'active' : '' }}" href="{{ route('alumnos.index') }}">
+                        <i class="bi bi-people"></i> Alumnos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('profesores.*') ? 'active' : '' }}" href="{{ route('profesores.index') }}">
+                        <i class="bi bi-person-badge"></i> Profesores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('bloques.*') ? 'active' : '' }}" href="{{ route('bloques.index') }}">
+                        <i class="bi bi-collection"></i> Bloques
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('sedes.*') ? 'active' : '' }}" href="{{ route('sedes.index') }}">
+                        <i class="bi bi-building"></i> Sedes
+                    </a>
+                </li>
+                <div class="nav-divider"></div>
+                <span class="nav-section">Eventos</span>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('eventos.*') ? 'active' : '' }}" href="{{ route('eventos.index') }}">
+                        <i class="bi bi-calendar-event"></i> Eventos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('shows.*') ? 'active' : '' }}" href="{{ route('shows.index') }}">
+                        <i class="bi bi-mic"></i> Shows
+                    </a>
+                </li>
+                <div class="nav-divider"></div>
+                <span class="nav-section">Inventario y compras</span>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('inventarios.*') ? 'active' : '' }}" href="{{ route('inventarios.index') }}">
+                        <i class="bi bi-box-seam"></i> Inventarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('plan-compras.*') ? 'active' : '' }}" href="{{ route('plan-compras.index') }}">
+                        <i class="bi bi-clipboard-data"></i> Plan de compras
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('ordenes-compra.*') ? 'active' : '' }}" href="{{ route('ordenes-compra.index') }}">
+                        <i class="bi bi-file-earmark-text"></i> Órdenes de compra
+                    </a>
+                </li>
+                <div class="nav-divider"></div>
+                <span class="nav-section">Finanzas</span>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('asistencias.*') ? 'active' : '' }}" href="{{ route('asistencias.index') }}">
+                        <i class="bi bi-check-circle"></i> Asistencias
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('cuotas.*') ? 'active' : '' }}" href="{{ route('cuotas.index') }}">
+                        <i class="bi bi-cash-coin"></i> Cuotas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('pagos.*') ? 'active' : '' }}" href="{{ route('pagos.index') }}">
+                        <i class="bi bi-receipt"></i> Pagos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('facturacion-mensual.*') ? 'active' : '' }}" href="{{ route('facturacion-mensual.index') }}">
+                        <i class="bi bi-graph-up"></i> Facturación
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('gastos.*') ? 'active' : '' }}" href="{{ route('gastos.index') }}">
+                        <i class="bi bi-wallet2"></i> Gastos
+                    </a>
+                </li>
             @endif
-        </ul>
+            </ul>
+        </div>
     </nav>
     @endauth
 
     <div class="main-content">
         @auth
         <header class="topbar">
-            <span class="page-title">@yield('page-title', 'Dashboard')</span>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-link text-dark d-lg-none p-0 me-2" id="sidebarToggle" aria-label="Abrir menú">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+                <span class="page-title">@yield('page-title', 'Dashboard')</span>
+            </div>
             <div class="d-flex align-items-center gap-2">
                 <span class="text-muted small">{{ auth()->user()->name ?: auth()->user()->username }}</span>
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">
@@ -286,6 +335,28 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    @auth
+    <script>
+        (function() {
+            var sidebar = document.querySelector('.sidebar');
+            var backdrop = document.getElementById('sidebarBackdrop');
+            var btn = document.getElementById('sidebarToggle');
+            function toggle() {
+                sidebar?.classList.toggle('sidebar-open');
+                backdrop?.classList.toggle('sidebar-open', sidebar?.classList.contains('sidebar-open'));
+            }
+            function close() {
+                sidebar?.classList.remove('sidebar-open');
+                backdrop?.classList.remove('sidebar-open');
+            }
+            btn?.addEventListener('click', toggle);
+            backdrop?.addEventListener('click', close);
+            sidebar?.querySelectorAll('.nav-link').forEach(function(link) {
+                link.addEventListener('click', function() { if (window.innerWidth < 992) close(); });
+            });
+        })();
+    </script>
+    @endauth
     @stack('scripts')
 </body>
 </html>
