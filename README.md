@@ -15,6 +15,29 @@ Sistema de gestión administrativa para la escuela de percusión La Chilinga, fu
 - **Dashboard con métricas**: Gráficos con Chart.js
 - **Exportación a Excel**: Para alumnos
 
+## 📦 CRUDs disponibles (carga de datos)
+
+El sistema incluye todos los CRUD necesarios para la carga y gestión de datos:
+
+| Módulo | Descripción | Rutas |
+|--------|-------------|--------|
+| **Alumnos** | Alta, edición, baja y listado con filtros; vista detalle | `/alumnos` |
+| **Profesores** | CRUD completo (nombre, teléfono, correo, activo) | `/profesores` |
+| **Sedes** | CRUD completo (nombre, dirección, tipo propiedad, alquiler) | `/sedes` |
+| **Bloques** | CRUD por año, profesor, sede, horarios | `/bloques` |
+| **Eventos** | CRUD de eventos (shows, talleres, muestras, etc.) | `/eventos` |
+| **Shows** | Próximos shows (bloques o convocatoria abierta) | `/shows` |
+| **Inventarios** | **Tambores e instrumentos**, herramientas, accesorios, repuestos, parches, telas, masas por sede; atributos (marca, medida, propietario escuela/alumno, estado) | `/inventarios` |
+| **Plan de compras** | Consulta de sugerencias por sede (no CRUD) | `/plan-compras` |
+| **Órdenes de compra** | CRUD de órdenes e ítems | `/ordenes-compra` |
+| **Cuotas** | CRUD de cuotas | `/cuotas` |
+| **Pagos** | Alta y listado con trazabilidad y PDF | `/pagos` |
+| **Facturación mensual** | Alta y edición por mes | `/facturacion-mensual` |
+| **Gastos** | CRUD (sueldos, alquiler, servicios, reparaciones) | `/gastos` |
+| **Asistencias** | CRUD de asistencias por bloque | `/asistencias` |
+
+**Tambores:** no hay un CRUD aparte llamado "Tambores". Los instrumentos (repiques, surdos, timbales, etc.) se cargan en **Inventarios** con tipo *Instrumentos*, por sede, con características (marca, diámetro, torres, propietario escuela/alumno, estado, origen).
+
 ## 📋 Requisitos
 
 - PHP 8.1 o superior
@@ -70,11 +93,11 @@ php artisan serve
 ## 👤 Usuarios por Defecto
 
 **Administrador:**
-- Email: `admin@chilinga.com`
+- Usuario: `admin`
 - Contraseña: `admin123`
 
 **Profesor:**
-- Email: `profesor@chilinga.com`
+- Usuario: `profesor`
 - Contraseña: `profesor123`
 
 ## 📁 Estructura del Proyecto

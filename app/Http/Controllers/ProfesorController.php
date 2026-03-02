@@ -9,7 +9,7 @@ class ProfesorController extends Controller
 {
     public function index()
     {
-        $profesores = Profesor::orderBy('nombre')->paginate(20);
+        $profesores = Profesor::with('bloques')->orderBy('nombre')->paginate(20);
         return view('profesores.index', compact('profesores'));
     }
 
