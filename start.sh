@@ -45,6 +45,7 @@ php artisan route:clear || true
 
 # Migraciones (reintentar si fallan; volver a correr por si quedaron pendientes)
 echo "=== Ejecutando migraciones ==="
+php artisan migrate --force || true
 MIGRATE_ATTEMPTS=5
 for i in $(seq 1 $MIGRATE_ATTEMPTS); do
     if php artisan migrate --force --no-interaction; then

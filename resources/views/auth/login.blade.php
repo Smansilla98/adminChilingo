@@ -40,9 +40,11 @@
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
                     <div class="mb-3">
-                        <label for="username" class="form-label">Usuario</label>
-                        <input type="text" class="form-control @error('username') is-invalid @enderror" 
-                               id="username" name="username" value="{{ old('username') }}" required autofocus autocomplete="username">
+                        <label for="username" class="form-label">{{ isset($loginUsesEmail) && $loginUsesEmail ? 'Correo' : 'Usuario' }}</label>
+                        <input type="{{ isset($loginUsesEmail) && $loginUsesEmail ? 'email' : 'text' }}" class="form-control @error('username') is-invalid @enderror"
+                               id="username" name="username" value="{{ old('username') }}" required autofocus
+                               placeholder="{{ isset($loginUsesEmail) && $loginUsesEmail ? 'ej: admin@ejemplo.com' : '' }}"
+                               autocomplete="{{ isset($loginUsesEmail) && $loginUsesEmail ? 'email' : 'username' }}">
                         @error('username')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

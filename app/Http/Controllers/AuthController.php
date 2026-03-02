@@ -4,11 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 
 class AuthController extends Controller
 {
+    /**
+     * Indica si la tabla users tiene columna username (sino se usa email para login).
+     */
+    private function loginUsesUsername(): bool
+    {
+        try {
+            return Schema::hasColumn('users', 'username');
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     /**
      * Mostrar formulario de login
      */
@@ -17,26 +28,44 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
-        return view('auth.login');
+        return view('auth.login', [
+            'loginUsesEmail' => !$this->loginUsesUsername(),
+        ]);
     }
 
     /**
-     * Procesar login
+     * Procesar login (por username o por email si la columna username no existe aún)
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required',
-        ], [
-            'username.required' => 'El usuario es obligatorio.',
-            'password.required' => 'La contraseña es obligatoria.',
-        ]);
+        $useUsername = $this->loginUsesUsername();
 
-        if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $request->filled('remember'))) {
+        if ($useUsername) {
+            $credentials = $request->validate([
+                'username' => 'required|string',
+                'password' => 'required',
+            ], [
+                'username.required' => 'El usuario es obligatorio.',
+                'password.required' => 'La contraseña es obligatoria.',
+            ]);
+            $credentialKey = 'username';
+            $credentialValue = $credentials['username'];
+        } else {
+            $credentials = $request->validate([
+                'username' => 'required|email',
+                'password' => 'required',
+            ], [
+                'username.required' => 'El correo es obligatorio.',
+                'username.email' => 'Debe ser un correo válido.',
+                'password.required' => 'La contraseña es obligatoria.',
+            ]);
+            $credentialKey = 'email';
+            $credentialValue = $credentials['username'];
+        }
+
+        if (Auth::attempt([$credentialKey => $credentialValue, 'password' => $credentials['password']], $request->filled('remember'))) {
             $request->session()->regenerate();
-            
-            // Asignar rol si no tiene
+
             $user = Auth::user();
             if (!$user->hasRole('admin') && !$user->hasRole('profesor')) {
                 if ($user->role === 'admin') {
