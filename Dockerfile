@@ -60,7 +60,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Script de inicio
+# Script de inicio: al arrancar el contenedor ejecuta migraciones con --force y luego el servidor
 RUN chmod +x /var/www/html/start.sh || true
 
 # Limpieza de cachés en build
@@ -70,4 +70,5 @@ RUN composer dump-autoload --optimize --no-interaction || true
 
 EXPOSE ${PORT:-8000}
 
+# Al iniciar, start.sh espera la DB, ejecuta php artisan migrate --force (y reintentos) y arranca el servidor
 CMD ["/var/www/html/start.sh"]
