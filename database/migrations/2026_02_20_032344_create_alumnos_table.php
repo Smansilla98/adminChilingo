@@ -23,8 +23,8 @@ return new class extends Migration
             $table->string('instrumento_principal');
             $table->string('instrumento_secundario')->nullable();
             $table->enum('tipo_tambor', ['Sede', 'Propio'])->default('Sede');
-            $table->foreignId('bloque_id')->nullable()->constrained('bloques')->onDelete('set null');
-            $table->foreignId('sede_id')->constrained('sedes')->onDelete('cascade');
+            $table->foreignId('bloque_id')->nullable()->constrained('bloques')->nullOnDelete();
+            $table->foreignId('sede_id')->constrained('sedes')->cascadeOnDelete();
             $table->boolean('activo')->default(true);
             $table->timestamps();
         });

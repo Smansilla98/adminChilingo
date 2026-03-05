@@ -17,7 +17,7 @@ return new class extends Migration
         }
         Schema::create('coordinador_area', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('profesor_id')->constrained('profesores')->onDelete('cascade');
+            $table->foreignId('profesor_id')->constrained('profesores')->cascadeOnDelete();
             $table->string('area', 50)->comment('género, costa, tambores');
             $table->timestamps();
 

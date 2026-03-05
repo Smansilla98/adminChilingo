@@ -16,7 +16,7 @@ return new class extends Migration
         }
         Schema::create('bloque_horarios', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('bloque_id')->constrained('bloques')->onDelete('cascade');
+            $table->foreignId('bloque_id')->constrained('bloques')->cascadeOnDelete();
             $table->unsignedTinyInteger('dia_semana'); // 1=lunes ... 7=domingo
             $table->time('hora_inicio');
             $table->time('hora_fin');

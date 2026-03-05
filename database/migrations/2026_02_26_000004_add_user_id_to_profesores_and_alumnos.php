@@ -18,7 +18,7 @@ return new class extends Migration
             }
             try {
                 Schema::table($tableName, function (Blueprint $table) {
-                    $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->onDelete('set null');
+                    $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->nullOnDelete();
                 });
             } catch (\Throwable $e) {
                 if (!Schema::hasColumn($tableName, 'user_id')) {

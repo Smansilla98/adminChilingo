@@ -13,8 +13,8 @@ return new class extends Migration
         }
         Schema::create('ordenes_compra', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sede_id')->constrained('sedes')->onDelete('cascade');
-            $table->unsignedBigInteger('created_by')->nullable();
+            $table->foreignId('sede_id')->constrained('sedes')->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
 
             $table->string('motivo', 30)->default('reposicion'); // reposicion, nuevos_talleres, nuevos_alumnos, mixto, otro
             $table->string('estado', 20)->default('borrador'); // borrador, enviada, aprobada, recibida, cancelada
@@ -32,7 +32,7 @@ return new class extends Migration
         if (!Schema::hasTable('orden_compra_items')) {
         Schema::create('orden_compra_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('orden_compra_id')->constrained('ordenes_compra')->onDelete('cascade');
+            $table->foreignId('orden_compra_id')->constrained('ordenes_compra')->cascadeOnDelete();
 
             $table->string('tipo', 30)->nullable(); // instrumento, parche, repuesto, otro
             $table->string('familia', 50)->nullable(); // repique, surdo medio, etc.

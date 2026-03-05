@@ -21,14 +21,13 @@ return new class extends Migration
             $table->date('fecha');
             $table->time('hora_inicio')->nullable();
             $table->time('hora_fin')->nullable();
-            $table->foreignId('sede_id')->nullable()->constrained('sedes')->onDelete('set null');
+            $table->foreignId('sede_id')->nullable()->constrained('sedes')->nullOnDelete();
             $table->enum('tipo_evento', ['show', 'taller', 'muestra', 'gira'])->default('taller');
-            $table->foreignId('profesor_id')->nullable()->constrained('profesores')->onDelete('set null');
-            $table->foreignId('bloque_id')->nullable()->constrained('bloques')->onDelete('set null');
-            $table->unsignedBigInteger('created_by')->nullable();
+            $table->foreignId('profesor_id')->nullable()->constrained('profesores')->nullOnDelete();
+            $table->foreignId('bloque_id')->nullable()->constrained('bloques')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
-        // Sin FK created_by->users: evita "Failed to open the referenced table" en Railway/MySQL.
     }
 
     /**

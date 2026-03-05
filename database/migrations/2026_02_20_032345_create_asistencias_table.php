@@ -16,13 +16,12 @@ return new class extends Migration
         }
         Schema::create('asistencias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('alumno_id')->constrained('alumnos')->onDelete('cascade');
-            $table->foreignId('bloque_id')->constrained('bloques')->onDelete('cascade');
+            $table->foreignId('alumno_id')->constrained('alumnos')->cascadeOnDelete();
+            $table->foreignId('bloque_id')->constrained('bloques')->cascadeOnDelete();
             $table->date('fecha');
             $table->boolean('presente')->default(true);
             $table->timestamps();
-            
-            // Evitar duplicados
+
             $table->unique(['alumno_id', 'bloque_id', 'fecha']);
         });
     }

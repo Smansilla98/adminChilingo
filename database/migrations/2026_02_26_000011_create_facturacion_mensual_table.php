@@ -16,7 +16,7 @@ return new class extends Migration
         }
         Schema::create('facturacion_mensual', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sede_id')->nullable()->constrained('sedes')->onDelete('cascade');
+            $table->foreignId('sede_id')->nullable()->constrained('sedes')->cascadeOnDelete();
             $table->unsignedSmallInteger('año');
             $table->unsignedTinyInteger('mes'); // 1-12
             $table->unsignedInteger('cantidad_alumnos')->default(0);

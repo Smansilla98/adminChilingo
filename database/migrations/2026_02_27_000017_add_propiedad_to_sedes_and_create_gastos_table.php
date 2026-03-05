@@ -20,9 +20,9 @@ return new class extends Migration
         }
         Schema::create('gastos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sede_id')->nullable()->constrained('sedes')->onDelete('set null');
-            $table->foreignId('bloque_id')->nullable()->constrained('bloques')->onDelete('set null');
-            $table->unsignedBigInteger('created_by')->nullable();
+            $table->foreignId('sede_id')->nullable()->constrained('sedes')->nullOnDelete();
+            $table->foreignId('bloque_id')->nullable()->constrained('bloques')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
 
             $table->date('fecha');
             $table->string('tipo', 30); // sueldo, alquiler, servicio, reparacion, insumo, servicio_externo, otro
@@ -39,7 +39,6 @@ return new class extends Migration
             $table->index(['sede_id', 'tipo', 'subtipo']);
             $table->index(['fecha']);
         });
-        // Sin FK created_by->users: evita "Failed to open the referenced table" en Railway/MySQL.
     }
 
     public function down(): void

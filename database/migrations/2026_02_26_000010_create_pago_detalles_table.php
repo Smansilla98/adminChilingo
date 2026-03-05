@@ -16,9 +16,9 @@ return new class extends Migration
         }
         Schema::create('pago_detalles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pago_id')->constrained('pagos')->onDelete('cascade');
-            $table->foreignId('alumno_id')->constrained('alumnos')->onDelete('cascade');
-            $table->foreignId('cuota_id')->constrained('cuotas')->onDelete('cascade');
+            $table->foreignId('pago_id')->constrained('pagos')->cascadeOnDelete();
+            $table->foreignId('alumno_id')->constrained('alumnos')->cascadeOnDelete();
+            $table->foreignId('cuota_id')->constrained('cuotas')->cascadeOnDelete();
             $table->decimal('monto', 10, 2);
             $table->timestamps();
 

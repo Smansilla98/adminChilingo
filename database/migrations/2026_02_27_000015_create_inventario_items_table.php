@@ -20,7 +20,7 @@ return new class extends Migration
         Schema::create('inventario_items', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('sede_id')->constrained('sedes')->onDelete('cascade');
+            $table->foreignId('sede_id')->constrained('sedes')->cascadeOnDelete();
 
             // Tipo / categoría general del inventario
             $table->string('tipo', 30); // instrumento, herramienta, accesorio, repuesto, parche, tela, masa, etc.
@@ -36,7 +36,7 @@ return new class extends Migration
 
             // Propiedad / trazabilidad de dueño
             $table->string('propietario_tipo', 20)->default('escuela'); // escuela | alumno
-            $table->foreignId('alumno_id')->nullable()->constrained('alumnos')->onDelete('set null');
+            $table->foreignId('alumno_id')->nullable()->constrained('alumnos')->nullOnDelete();
 
             // Características (estilo ficha MercadoLibre)
             $table->string('marca')->nullable();

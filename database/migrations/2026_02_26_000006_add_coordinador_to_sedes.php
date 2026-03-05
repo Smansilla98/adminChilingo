@@ -16,7 +16,7 @@ return new class extends Migration
         }
         try {
             Schema::table('sedes', function (Blueprint $table) {
-                $table->foreignId('coordinador_id')->nullable()->after('direccion')->constrained('profesores')->onDelete('set null');
+                $table->foreignId('coordinador_id')->nullable()->after('direccion')->constrained('profesores')->nullOnDelete();
             });
         } catch (\Throwable $e) {
             Schema::table('sedes', function (Blueprint $table) {

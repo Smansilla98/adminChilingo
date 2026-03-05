@@ -18,8 +18,8 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->integer('año'); // 1 a 6
-            $table->foreignId('profesor_id')->nullable()->constrained('profesores')->onDelete('set null');
-            $table->foreignId('sede_id')->constrained('sedes')->onDelete('cascade');
+            $table->foreignId('profesor_id')->nullable()->constrained('profesores')->nullOnDelete();
+            $table->foreignId('sede_id')->constrained('sedes')->cascadeOnDelete();
             $table->integer('cantidad_max_alumnos')->default(20);
             $table->boolean('activo')->default(true);
             $table->timestamps();

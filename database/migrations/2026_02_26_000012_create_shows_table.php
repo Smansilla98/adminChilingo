@@ -26,8 +26,8 @@ return new class extends Migration
         if (!Schema::hasTable('show_bloque')) {
             Schema::create('show_bloque', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('show_id')->constrained('shows')->onDelete('cascade');
-                $table->foreignId('bloque_id')->constrained('bloques')->onDelete('cascade');
+                $table->foreignId('show_id')->constrained('shows')->cascadeOnDelete();
+                $table->foreignId('bloque_id')->constrained('bloques')->cascadeOnDelete();
                 $table->timestamps();
                 $table->unique(['show_id', 'bloque_id']);
             });

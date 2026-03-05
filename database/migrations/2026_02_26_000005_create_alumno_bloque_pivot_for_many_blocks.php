@@ -17,8 +17,8 @@ return new class extends Migration
         }
         Schema::create('alumno_bloque', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('alumno_id')->constrained('alumnos')->onDelete('cascade');
-            $table->foreignId('bloque_id')->constrained('bloques')->onDelete('cascade');
+            $table->foreignId('alumno_id')->constrained('alumnos')->cascadeOnDelete();
+            $table->foreignId('bloque_id')->constrained('bloques')->cascadeOnDelete();
             $table->boolean('es_principal')->default(false)->comment('Si es el bloque principal del alumno');
             $table->timestamps();
 
