@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('cuotas')) {
+            return;
+        }
         Schema::create('cuotas', function (Blueprint $table) {
             $table->id();
             $table->string('nombre'); // ej. "Cuota Marzo 2025"

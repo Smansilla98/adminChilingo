@@ -8,11 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('sedes', function (Blueprint $table) {
-            $table->string('tipo_propiedad', 20)->default('alquilada')->after('direccion'); // propia, alquilada, compartida, otro
-            $table->decimal('costo_alquiler_mensual', 12, 2)->nullable()->after('tipo_propiedad');
-        });
+        if (Schema::hasTable('sedes') && !Schema::hasColumn('sedes', 'tipo_propiedad')) {
+            Schema::table('sedes', function (Blueprint $table) {
+                $table->string('tipo_propiedad', 20)->default('alquilada')->after('direccion'); // propia, alquilada, compartida, otro
+                $table->decimal('costo_alquiler_mensual', 12, 2)->nullable()->after('tipo_propiedad');
+            });
+        }
 
+        if (Schema::hasTable('gastos')) {
+            return;
+        }
         Schema::create('gastos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sede_id')->nullable()->constrained('sedes')->onDelete('set null');

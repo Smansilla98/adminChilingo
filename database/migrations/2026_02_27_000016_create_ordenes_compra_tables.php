@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('ordenes_compra')) {
+            return;
+        }
         Schema::create('ordenes_compra', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sede_id')->constrained('sedes')->onDelete('cascade');
@@ -25,6 +28,7 @@ return new class extends Migration
             $table->index(['sede_id', 'estado']);
         });
 
+        if (!Schema::hasTable('orden_compra_items')) {
         Schema::create('orden_compra_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('orden_compra_id')->constrained('ordenes_compra')->onDelete('cascade');
@@ -45,6 +49,7 @@ return new class extends Migration
 
             $table->timestamps();
         });
+        }
     }
 
     public function down(): void

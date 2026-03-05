@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('programa_ritmos')) {
+            return;
+        }
         Schema::create('programa_ritmos', function (Blueprint $table) {
             $table->id();
             $table->unsignedTinyInteger('año'); // 1 a 6

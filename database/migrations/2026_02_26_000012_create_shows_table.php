@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('shows')) {
+            return;
+        }
         Schema::create('shows', function (Blueprint $table) {
             $table->id();
             $table->string('titulo');
@@ -20,13 +23,15 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('show_bloque', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('show_id')->constrained('shows')->onDelete('cascade');
-            $table->foreignId('bloque_id')->constrained('bloques')->onDelete('cascade');
-            $table->timestamps();
-            $table->unique(['show_id', 'bloque_id']);
-        });
+        if (!Schema::hasTable('show_bloque')) {
+            Schema::create('show_bloque', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('show_id')->constrained('shows')->onDelete('cascade');
+                $table->foreignId('bloque_id')->constrained('bloques')->onDelete('cascade');
+                $table->timestamps();
+                $table->unique(['show_id', 'bloque_id']);
+            });
+        }
     }
 
     public function down(): void
