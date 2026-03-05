@@ -20,9 +20,11 @@ return new class extends Migration
             $table->decimal('monto_total', 10, 2);
             $table->string('comprobante_path')->nullable(); // PDF
             $table->text('notas')->nullable();
-            $table->foreignId('registrado_por')->nullable()->constrained('users')->onDelete('set null');
+            $table->unsignedBigInteger('registrado_por')->nullable();
             $table->timestamps();
         });
+        // Sin FK a users aquí: en algunos entornos (ej. Railway/MySQL) falla "Failed to open the referenced table".
+        // La columna registrado_por existe; las relaciones se usan a nivel aplicación (Eloquent).
     }
 
     public function down(): void

@@ -25,9 +25,10 @@ return new class extends Migration
             $table->enum('tipo_evento', ['show', 'taller', 'muestra', 'gira'])->default('taller');
             $table->foreignId('profesor_id')->nullable()->constrained('profesores')->onDelete('set null');
             $table->foreignId('bloque_id')->nullable()->constrained('bloques')->onDelete('set null');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });
+        // Sin FK created_by->users: evita "Failed to open the referenced table" en Railway/MySQL.
     }
 
     /**

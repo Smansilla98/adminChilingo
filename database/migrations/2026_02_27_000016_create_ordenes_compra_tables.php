@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('ordenes_compra', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sede_id')->constrained('sedes')->onDelete('cascade');
-            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->unsignedBigInteger('created_by')->nullable();
 
             $table->string('motivo', 30)->default('reposicion'); // reposicion, nuevos_talleres, nuevos_alumnos, mixto, otro
             $table->string('estado', 20)->default('borrador'); // borrador, enviada, aprobada, recibida, cancelada
@@ -27,6 +27,7 @@ return new class extends Migration
 
             $table->index(['sede_id', 'estado']);
         });
+        // Sin FK created_by->users: evita "Failed to open the referenced table" en Railway/MySQL.
 
         if (!Schema::hasTable('orden_compra_items')) {
         Schema::create('orden_compra_items', function (Blueprint $table) {
