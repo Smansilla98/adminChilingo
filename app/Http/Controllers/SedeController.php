@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Sede;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class SedeController extends Controller
 {
@@ -31,6 +32,7 @@ class SedeController extends Controller
         if (empty($validated['tipo_propiedad'])) {
             $validated['tipo_propiedad'] = 'alquilada';
         }
+        $validated = $this->filterSedeColumns($validated);
 
         Sede::create($validated);
 
@@ -62,6 +64,7 @@ class SedeController extends Controller
         if (empty($validated['tipo_propiedad'])) {
             $validated['tipo_propiedad'] = 'alquilada';
         }
+        $validated = $this->filterSedeColumns($validated);
 
         $sede->update($validated);
 
@@ -75,5 +78,23 @@ class SedeController extends Controller
 
         return redirect()->route('sedes.index')
             ->with('success', 'Sede eliminada exitosamente.');
+    }
+
+    /**
+     * Solo incluir en el array los campos que existen en la tabla sedes
+     * (tipo_propiedad y costo_alquiler_mensual se agregan en una migración posterior).
+     */
+    private function filterSedeColumns(array $validated): array
+    {
+        $allowed = ['nombre', 'direccion', 'activo'];
+        if (Schema::hasTable('sedes')) {
+            if (Schema::hasColumn('sedes', 'tipo_propiedad')) {
+                $allowed[] = 'tipo_propiedad';
+            }
+            if (Schema::hasColumn('sedes', 'costo_alquiler_mensual')) {
+                $allowed[] = 'costo_alquiler_mensual';
+            }
+        }
+        return array_intersect_key($validated, array_flip($allowed));
     }
 }

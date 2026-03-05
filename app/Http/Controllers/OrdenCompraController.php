@@ -7,23 +7,42 @@ use App\Models\OrdenCompraItem;
 use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class OrdenCompraController extends Controller
 {
     public function index(Request $request)
     {
-        $query = OrdenCompra::with(['sede', 'creador'])->orderByDesc('created_at');
+        $ordenes = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
+        $sedes = collect();
 
-        if ($request->filled('sede_id')) {
-            $query->where('sede_id', $request->sede_id);
+        if (Schema::hasTable('ordenes_compra')) {
+            try {
+                $query = OrdenCompra::with(['sede', 'creador'])->orderByDesc('created_at');
+
+                if ($request->filled('sede_id')) {
+                    $query->where('sede_id', $request->sede_id);
+                }
+
+                if ($request->filled('estado')) {
+                    $query->where('estado', $request->estado);
+                }
+
+                $ordenes = $query->paginate(20);
+                $sedes = Sede::orderBy('nombre')->get();
+            } catch (QueryException $e) {
+                // mantener valores por defecto vacíos
+            }
+        } else {
+            if (Schema::hasTable('sedes')) {
+                try {
+                    $sedes = Sede::orderBy('nombre')->get();
+                } catch (QueryException $e) {
+                    // mantener collect()
+                }
+            }
         }
-
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->estado);
-        }
-
-        $ordenes = $query->paginate(20);
-        $sedes = Sede::orderBy('nombre')->get();
 
         return view('ordenes-compra.index', [
             'ordenes' => $ordenes,
@@ -34,7 +53,14 @@ class OrdenCompraController extends Controller
 
     public function create(Request $request)
     {
-        $sedes = Sede::orderBy('nombre')->get();
+        $sedes = collect();
+        if (Schema::hasTable('sedes')) {
+            try {
+                $sedes = Sede::orderBy('nombre')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
         return view('ordenes-compra.create', [
             'sedes' => $sedes,
             'motivos' => OrdenCompra::MOTIVOS,
@@ -78,8 +104,15 @@ class OrdenCompraController extends Controller
 
     public function edit(OrdenCompra $ordenes_compra)
     {
-        $ordenes_compra->load('items');
-        $sedes = Sede::orderBy('nombre')->get();
+        $sedes = collect();
+        if (Schema::hasTable('ordenes_compra') && Schema::hasTable('sedes')) {
+            try {
+                $ordenes_compra->load('items');
+                $sedes = Sede::orderBy('nombre')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
         return view('ordenes-compra.edit', [
             'orden' => $ordenes_compra,
             'sedes' => $sedes,

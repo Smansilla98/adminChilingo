@@ -8,34 +8,74 @@ use App\Models\Cuota;
 use App\Models\Alumno;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class PagoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pago::with(['detalles.alumno', 'detalles.cuota', 'registradoPor']);
-        if ($request->filled('alumno_id')) {
-            $query->whereHas('detalles', fn($q) => $q->where('alumno_id', $request->alumno_id));
+        $pagos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
+        $alumnos = collect();
+        $cuotas = collect();
+
+        if (Schema::hasTable('pagos')) {
+            try {
+                $query = Pago::with(['detalles.alumno', 'detalles.cuota', 'registradoPor']);
+                if ($request->filled('alumno_id')) {
+                    $query->whereHas('detalles', fn($q) => $q->where('alumno_id', $request->alumno_id));
+                }
+                if ($request->filled('cuota_id')) {
+                    $query->whereHas('detalles', fn($q) => $q->where('cuota_id', $request->cuota_id));
+                }
+                if ($request->filled('desde')) {
+                    $query->where('fecha_pago', '>=', $request->desde);
+                }
+                if ($request->filled('hasta')) {
+                    $query->where('fecha_pago', '<=', $request->hasta);
+                }
+                $pagos = $query->orderBy('fecha_pago', 'desc')->paginate(20);
+            } catch (QueryException $e) {
+                // mantener paginador vacío
+            }
         }
-        if ($request->filled('cuota_id')) {
-            $query->whereHas('detalles', fn($q) => $q->where('cuota_id', $request->cuota_id));
+
+        if (Schema::hasTable('alumnos')) {
+            try {
+                $alumnos = Alumno::where('activo', true)->orderBy('nombre_apellido')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
         }
-        if ($request->filled('desde')) {
-            $query->where('fecha_pago', '>=', $request->desde);
+        if (Schema::hasTable('cuotas')) {
+            try {
+                $cuotas = Cuota::where('activo', true)->orderBy('año', 'desc')->orderBy('mes')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
         }
-        if ($request->filled('hasta')) {
-            $query->where('fecha_pago', '<=', $request->hasta);
-        }
-        $pagos = $query->orderBy('fecha_pago', 'desc')->paginate(20);
-        $alumnos = Alumno::where('activo', true)->orderBy('nombre_apellido')->get();
-        $cuotas = Cuota::where('activo', true)->orderBy('año', 'desc')->orderBy('mes')->get();
+
         return view('pagos.index', compact('pagos', 'alumnos', 'cuotas'));
     }
 
     public function create()
     {
-        $alumnos = Alumno::where('activo', true)->with('sede')->orderBy('nombre_apellido')->get();
-        $cuotas = Cuota::where('activo', true)->orderBy('año', 'desc')->orderBy('mes')->get();
+        $alumnos = collect();
+        $cuotas = collect();
+        if (Schema::hasTable('alumnos')) {
+            try {
+                $alumnos = Alumno::where('activo', true)->with('sede')->orderBy('nombre_apellido')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
+        if (Schema::hasTable('cuotas')) {
+            try {
+                $cuotas = Cuota::where('activo', true)->orderBy('año', 'desc')->orderBy('mes')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
         return view('pagos.create', compact('alumnos', 'cuotas'));
     }
 

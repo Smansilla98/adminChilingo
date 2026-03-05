@@ -5,24 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\Show;
 use App\Models\Bloque;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class ShowController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Show::with('bloques.sede');
-        if ($request->filled('proximos')) {
-            $query->proximos();
-        } else {
-            $query->orderBy('fecha', 'desc');
+        try {
+            $query = Show::with('bloques.sede');
+            if ($request->filled('proximos')) {
+                $query->proximos();
+            } else {
+                $query->orderBy('fecha', 'desc');
+            }
+            $shows = $query->paginate(15);
+        } catch (QueryException $e) {
+            $shows = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
         }
-        $shows = $query->paginate(15);
         return view('shows.index', compact('shows'));
     }
 
     public function create()
     {
-        $bloques = Bloque::where('activo', true)->with('sede', 'profesor')->orderBy('sede_id')->orderBy('nombre')->get();
+        try {
+            $bloques = Bloque::where('activo', true)->with('sede', 'profesor')->orderBy('sede_id')->orderBy('nombre')->get();
+        } catch (QueryException $e) {
+            $bloques = collect();
+        }
         return view('shows.create', compact('bloques'));
     }
 
@@ -63,8 +72,12 @@ class ShowController extends Controller
 
     public function edit(Show $show)
     {
-        $show->load('bloques');
-        $bloques = Bloque::where('activo', true)->with('sede', 'profesor')->orderBy('sede_id')->orderBy('nombre')->get();
+        try {
+            $show->load('bloques');
+            $bloques = Bloque::where('activo', true)->with('sede', 'profesor')->orderBy('sede_id')->orderBy('nombre')->get();
+        } catch (QueryException $e) {
+            $bloques = collect();
+        }
         return view('shows.edit', compact('show', 'bloques'));
     }
 

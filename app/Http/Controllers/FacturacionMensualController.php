@@ -5,26 +5,51 @@ namespace App\Http\Controllers;
 use App\Models\FacturacionMensual;
 use App\Models\Sede;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class FacturacionMensualController extends Controller
 {
     public function index(Request $request)
     {
-        $query = FacturacionMensual::with('sede');
-        if ($request->filled('sede_id')) {
-            $query->where('sede_id', $request->sede_id);
+        $facturacion = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 24);
+        $sedes = collect();
+
+        if (Schema::hasTable('facturacion_mensual')) {
+            try {
+                $query = FacturacionMensual::with('sede');
+                if ($request->filled('sede_id')) {
+                    $query->where('sede_id', $request->sede_id);
+                }
+                if ($request->filled('año')) {
+                    $query->where('año', $request->año);
+                }
+                $facturacion = $query->orderBy('año', 'desc')->orderBy('mes', 'desc')->paginate(24);
+            } catch (QueryException $e) {
+                // mantener paginador vacío
+            }
         }
-        if ($request->filled('año')) {
-            $query->where('año', $request->año);
+        if (Schema::hasTable('sedes')) {
+            try {
+                $sedes = Sede::where('activo', true)->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
         }
-        $facturacion = $query->orderBy('año', 'desc')->orderBy('mes', 'desc')->paginate(24);
-        $sedes = Sede::where('activo', true)->get();
+
         return view('facturacion-mensual.index', compact('facturacion', 'sedes'));
     }
 
     public function create()
     {
-        $sedes = Sede::where('activo', true)->get();
+        $sedes = collect();
+        if (Schema::hasTable('sedes')) {
+            try {
+                $sedes = Sede::where('activo', true)->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
         $meses = FacturacionMensual::nombresMeses();
         return view('facturacion-mensual.create', compact('sedes', 'meses'));
     }
@@ -55,8 +80,15 @@ class FacturacionMensualController extends Controller
 
     public function edit(FacturacionMensual $facturacionMensual)
     {
-        $facturacionMensual->load('sede');
-        $sedes = Sede::where('activo', true)->get();
+        $sedes = collect();
+        if (Schema::hasTable('facturacion_mensual') && Schema::hasTable('sedes')) {
+            try {
+                $facturacionMensual->load('sede');
+                $sedes = Sede::where('activo', true)->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
         $meses = FacturacionMensual::nombresMeses();
         return view('facturacion-mensual.edit', compact('facturacionMensual', 'sedes', 'meses'));
     }

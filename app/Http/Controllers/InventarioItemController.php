@@ -6,54 +6,65 @@ use App\Models\InventarioItem;
 use App\Models\Sede;
 use App\Models\Alumno;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class InventarioItemController extends Controller
 {
     public function index(Request $request)
     {
-        $query = InventarioItem::with(['sede', 'alumno']);
-
-        if ($request->filled('sede_id')) {
-            $query->where('sede_id', $request->sede_id);
-        }
-        if ($request->filled('tipo')) {
-            $query->where('tipo', $request->tipo);
-        }
-        if ($request->filled('propietario_tipo')) {
-            $query->where('propietario_tipo', $request->propietario_tipo);
-        }
-        if ($request->filled('q')) {
-            $q = trim((string) $request->q);
-            $query->where(function ($sub) use ($q) {
-                $sub->where('nombre', 'like', '%' . $q . '%')
-                    ->orWhere('codigo', 'like', '%' . $q . '%')
-                    ->orWhere('marca', 'like', '%' . $q . '%')
-                    ->orWhere('modelo', 'like', '%' . $q . '%');
-            });
-        }
-
-        $items = $query->orderBy('tipo')->orderBy('nombre')->paginate(25);
-
-        $sedes = Sede::orderBy('nombre')->get();
         $tipos = InventarioItem::TIPOS;
         $propietarios = InventarioItem::PROPIETARIOS;
+
+        try {
+            $query = InventarioItem::with(['sede', 'alumno']);
+
+            if ($request->filled('sede_id')) {
+                $query->where('sede_id', $request->sede_id);
+            }
+            if ($request->filled('tipo')) {
+                $query->where('tipo', $request->tipo);
+            }
+            if ($request->filled('propietario_tipo')) {
+                $query->where('propietario_tipo', $request->propietario_tipo);
+            }
+            if ($request->filled('q')) {
+                $q = trim((string) $request->q);
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('nombre', 'like', '%' . $q . '%')
+                        ->orWhere('codigo', 'like', '%' . $q . '%')
+                        ->orWhere('marca', 'like', '%' . $q . '%')
+                        ->orWhere('modelo', 'like', '%' . $q . '%');
+                });
+            }
+
+            $items = $query->orderBy('tipo')->orderBy('nombre')->paginate(25);
+            $sedes = Sede::orderBy('nombre')->get();
+        } catch (QueryException $e) {
+            $items = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25);
+            $sedes = collect();
+        }
 
         return view('inventarios.index', compact('items', 'sedes', 'tipos', 'propietarios'));
     }
 
     public function create(Request $request)
     {
-        $sedes = Sede::orderBy('nombre')->get();
-        $alumnos = Alumno::where('activo', true)->orderBy('nombre_apellido')->get();
         $tipos = InventarioItem::TIPOS;
         $propietarios = InventarioItem::PROPIETARIOS;
         $estados = InventarioItem::ESTADOS;
         $origenes = InventarioItem::ORIGENES;
-
         $defaults = [
             'sede_id' => $request->get('sede_id'),
             'tipo' => $request->get('tipo', 'instrumento'),
         ];
+
+        try {
+            $sedes = Sede::orderBy('nombre')->get();
+            $alumnos = Alumno::where('activo', true)->orderBy('nombre_apellido')->get();
+        } catch (QueryException $e) {
+            $sedes = collect();
+            $alumnos = collect();
+        }
 
         return view('inventarios.create', compact('sedes', 'alumnos', 'tipos', 'propietarios', 'estados', 'origenes', 'defaults'));
     }
@@ -73,13 +84,20 @@ class InventarioItemController extends Controller
 
     public function edit(InventarioItem $inventario)
     {
-        $inventario->load(['sede', 'alumno']);
-        $sedes = Sede::orderBy('nombre')->get();
-        $alumnos = Alumno::where('activo', true)->orderBy('nombre_apellido')->get();
         $tipos = InventarioItem::TIPOS;
         $propietarios = InventarioItem::PROPIETARIOS;
         $estados = InventarioItem::ESTADOS;
         $origenes = InventarioItem::ORIGENES;
+
+        try {
+            $inventario->load(['sede', 'alumno']);
+            $sedes = Sede::orderBy('nombre')->get();
+            $alumnos = Alumno::where('activo', true)->orderBy('nombre_apellido')->get();
+        } catch (QueryException $e) {
+            $sedes = collect();
+            $alumnos = collect();
+        }
+
         return view('inventarios.edit', compact('inventario', 'sedes', 'alumnos', 'tipos', 'propietarios', 'estados', 'origenes'));
     }
 

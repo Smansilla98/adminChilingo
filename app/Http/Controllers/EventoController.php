@@ -7,39 +7,54 @@ use App\Models\Profesor;
 use App\Models\Bloque;
 use App\Models\Sede;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class EventoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Evento::with(['sede', 'profesor', 'bloque', 'creador']);
-
-        if ($request->filled('sede_id')) {
-            $query->where('sede_id', $request->sede_id);
-        }
-
-        if ($request->filled('profesor_id')) {
-            $query->where('profesor_id', $request->profesor_id);
-        }
-
-        if ($request->filled('tipo_evento')) {
-            $query->where('tipo_evento', $request->tipo_evento);
-        }
-
-        $eventos = $query->orderBy('fecha', 'desc')->paginate(20);
-        $sedes = Sede::where('activo', true)->get();
-        $profesores = Profesor::where('activo', true)->get();
         $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
+
+        try {
+            $query = Evento::with(['sede', 'profesor', 'bloque', 'creador']);
+
+            if ($request->filled('sede_id')) {
+                $query->where('sede_id', $request->sede_id);
+            }
+
+            if ($request->filled('profesor_id')) {
+                $query->where('profesor_id', $request->profesor_id);
+            }
+
+            if ($request->filled('tipo_evento')) {
+                $query->where('tipo_evento', $request->tipo_evento);
+            }
+
+            $eventos = $query->orderBy('fecha', 'desc')->paginate(20);
+            $sedes = Sede::where('activo', true)->get();
+            $profesores = Profesor::where('activo', true)->get();
+        } catch (QueryException $e) {
+            $eventos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
+            $sedes = collect();
+            $profesores = collect();
+        }
 
         return view('eventos.index', compact('eventos', 'sedes', 'profesores', 'tiposEvento'));
     }
 
     public function create()
     {
-        $sedes = Sede::where('activo', true)->get();
-        $profesores = Profesor::where('activo', true)->get();
-        $bloques = Bloque::where('activo', true)->with('sede')->get();
         $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
+
+        try {
+            $sedes = Sede::where('activo', true)->get();
+            $profesores = Profesor::where('activo', true)->get();
+            $bloques = Bloque::where('activo', true)->with('sede')->get();
+        } catch (QueryException $e) {
+            $sedes = collect();
+            $profesores = collect();
+            $bloques = collect();
+        }
 
         return view('eventos.create', compact('sedes', 'profesores', 'bloques', 'tiposEvento'));
     }
@@ -75,10 +90,17 @@ class EventoController extends Controller
 
     public function edit(Evento $evento)
     {
-        $sedes = Sede::where('activo', true)->get();
-        $profesores = Profesor::where('activo', true)->get();
-        $bloques = Bloque::where('activo', true)->with('sede')->get();
         $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
+
+        try {
+            $sedes = Sede::where('activo', true)->get();
+            $profesores = Profesor::where('activo', true)->get();
+            $bloques = Bloque::where('activo', true)->with('sede')->get();
+        } catch (QueryException $e) {
+            $sedes = collect();
+            $profesores = collect();
+            $bloques = collect();
+        }
 
         return view('eventos.edit', compact('evento', 'sedes', 'profesores', 'bloques', 'tiposEvento'));
     }

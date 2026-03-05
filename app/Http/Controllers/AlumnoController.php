@@ -6,6 +6,7 @@ use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Sede;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AlumnosExport;
 
@@ -16,34 +17,39 @@ class AlumnoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Alumno::with(['bloque', 'bloques', 'sede']);
+        try {
+            $query = Alumno::with(['bloque', 'bloques', 'sede']);
 
-        // Filtros
-        if ($request->filled('sede_id')) {
-            $query->where('sede_id', $request->sede_id);
+            if ($request->filled('sede_id')) {
+                $query->where('sede_id', $request->sede_id);
+            }
+
+            if ($request->filled('bloque_id')) {
+                $query->whereHas('bloques', function ($q) use ($request) {
+                    $q->where('bloques.id', $request->bloque_id);
+                });
+            }
+
+            if ($request->filled('activo')) {
+                $query->where('activo', $request->activo === '1');
+            }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nombre_apellido', 'like', "%{$search}%")
+                      ->orWhere('dni', 'like', "%{$search}%");
+                });
+            }
+
+            $alumnos = $query->orderBy('nombre_apellido')->paginate(20);
+            $sedes = Sede::where('activo', true)->get();
+            $bloques = Bloque::where('activo', true)->with('sede')->get();
+        } catch (QueryException $e) {
+            $alumnos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
+            $sedes = collect();
+            $bloques = collect();
         }
-
-        if ($request->filled('bloque_id')) {
-            $query->whereHas('bloques', function ($q) use ($request) {
-                $q->where('bloques.id', $request->bloque_id);
-            });
-        }
-
-        if ($request->filled('activo')) {
-            $query->where('activo', $request->activo === '1');
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nombre_apellido', 'like', "%{$search}%")
-                  ->orWhere('dni', 'like', "%{$search}%");
-            });
-        }
-
-        $alumnos = $query->orderBy('nombre_apellido')->paginate(20);
-        $sedes = Sede::where('activo', true)->get();
-        $bloques = Bloque::where('activo', true)->with('sede')->get();
 
         return view('alumnos.index', compact('alumnos', 'sedes', 'bloques'));
     }
@@ -53,8 +59,13 @@ class AlumnoController extends Controller
      */
     public function create()
     {
-        $sedes = Sede::where('activo', true)->get();
-        $bloques = Bloque::where('activo', true)->with('sede')->get();
+        try {
+            $sedes = Sede::where('activo', true)->get();
+            $bloques = Bloque::where('activo', true)->with('sede')->get();
+        } catch (QueryException $e) {
+            $sedes = collect();
+            $bloques = collect();
+        }
         $instrumentos = \App\Models\Bloque::TAMBORES_DISPONIBLES;
 
         return view('alumnos.create', compact('sedes', 'bloques', 'instrumentos'));
@@ -104,8 +115,13 @@ class AlumnoController extends Controller
      */
     public function edit(Alumno $alumno)
     {
-        $sedes = Sede::where('activo', true)->get();
-        $bloques = Bloque::where('activo', true)->with('sede')->get();
+        try {
+            $sedes = Sede::where('activo', true)->get();
+            $bloques = Bloque::where('activo', true)->with('sede')->get();
+        } catch (QueryException $e) {
+            $sedes = collect();
+            $bloques = collect();
+        }
         $instrumentos = \App\Models\Bloque::TAMBORES_DISPONIBLES;
 
         return view('alumnos.edit', compact('alumno', 'sedes', 'bloques', 'instrumentos'));

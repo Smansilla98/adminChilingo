@@ -10,7 +10,7 @@
         <p class="text-muted small mb-0 mt-1">La Chilinga — Escuela Popular del tambor. Ritmos prácticos y teóricos.</p>
     </div>
     <div class="card-body">
-        @forelse([1,2,3,4,5,6] as $año)
+        @foreach([1, 2, 3, 4, 5, 6] as $año)
             @php $ritmos = $porAño->get($año, collect()); @endphp
             @if($ritmos->isNotEmpty())
             <div class="mb-4">
@@ -20,13 +20,13 @@
                     <li class="list-group-item d-flex justify-content-between align-items-start">
                         <div>
                             <strong>{{ $r->nombre }}</strong>
-                            @if($r->opcional)
+                            @if($r->opcional ?? false)
                                 <span class="badge bg-secondary ms-1">Opcional</span>
                             @endif
-                            @if($r->autor)
+                            @if(!empty($r->autor))
                                 <div class="text-muted small">{{ $r->autor }}</div>
                             @endif
-                            @if($r->notas)
+                            @if(!empty($r->notas))
                                 <div class="text-muted small">{{ $r->notas }}</div>
                             @endif
                         </div>
@@ -35,7 +35,7 @@
                 </ol>
             </div>
             @endif
-        @endforelse
+        @endforeach
 
         @if($porAño->isEmpty())
         <p class="text-muted">No hay ritmos cargados. Ejecutá: <code>php artisan db:seed --class=ProgramaRitmosSeeder</code></p>

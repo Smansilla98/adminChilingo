@@ -9,6 +9,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Profesor extends Model
 {
+    /** Tabla real: 'profesores'. Laravel infiere 'profesors' por defecto. */
+    protected $table = 'profesores';
+
+    public function getTable(): string
+    {
+        return 'profesores';
+    }
+
     protected $fillable = [
         'user_id',
         'nombre',

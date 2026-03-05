@@ -6,36 +6,67 @@ use App\Models\Gasto;
 use App\Models\Sede;
 use App\Models\Bloque;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 
 class GastoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Gasto::with(['sede', 'bloque', 'creador'])->orderByDesc('fecha')->orderByDesc('id');
+        $gastos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25);
+        $sedes = collect();
 
-        if ($request->filled('sede_id')) {
-            $query->where('sede_id', $request->sede_id);
-        }
-        if ($request->filled('tipo')) {
-            $query->where('tipo', $request->tipo);
-        }
-        if ($request->filled('desde')) {
-            $query->where('fecha', '>=', $request->desde);
-        }
-        if ($request->filled('hasta')) {
-            $query->where('fecha', '<=', $request->hasta);
-        }
+        if (Schema::hasTable('gastos')) {
+            try {
+                $query = Gasto::with(['sede', 'bloque', 'creador'])->orderByDesc('fecha')->orderByDesc('id');
 
-        $gastos = $query->paginate(25);
-        $sedes = Sede::orderBy('nombre')->get();
+                if ($request->filled('sede_id')) {
+                    $query->where('sede_id', $request->sede_id);
+                }
+                if ($request->filled('tipo')) {
+                    $query->where('tipo', $request->tipo);
+                }
+                if ($request->filled('desde')) {
+                    $query->where('fecha', '>=', $request->desde);
+                }
+                if ($request->filled('hasta')) {
+                    $query->where('fecha', '<=', $request->hasta);
+                }
+
+                $gastos = $query->paginate(25);
+            } catch (QueryException $e) {
+                // mantener paginador vacío
+            }
+        }
+        if (Schema::hasTable('sedes')) {
+            try {
+                $sedes = Sede::orderBy('nombre')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
 
         return view('gastos.index', compact('gastos', 'sedes'));
     }
 
     public function create(Request $request)
     {
-        $sedes = Sede::orderBy('nombre')->get();
-        $bloques = Bloque::where('activo', true)->orderBy('sede_id')->orderBy('nombre')->get();
+        $sedes = collect();
+        $bloques = collect();
+        if (Schema::hasTable('sedes')) {
+            try {
+                $sedes = Sede::orderBy('nombre')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
+        if (Schema::hasTable('bloques')) {
+            try {
+                $bloques = Bloque::where('activo', true)->orderBy('sede_id')->orderBy('nombre')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
         return view('gastos.create', compact('sedes', 'bloques'));
     }
 
@@ -65,8 +96,22 @@ class GastoController extends Controller
 
     public function edit(Gasto $gasto)
     {
-        $sedes = Sede::orderBy('nombre')->get();
-        $bloques = Bloque::where('activo', true)->orderBy('sede_id')->orderBy('nombre')->get();
+        $sedes = collect();
+        $bloques = collect();
+        if (Schema::hasTable('sedes')) {
+            try {
+                $sedes = Sede::orderBy('nombre')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
+        if (Schema::hasTable('bloques')) {
+            try {
+                $bloques = Bloque::where('activo', true)->orderBy('sede_id')->orderBy('nombre')->get();
+            } catch (QueryException $e) {
+                // mantener collect()
+            }
+        }
         return view('gastos.edit', compact('gasto', 'sedes', 'bloques'));
     }
 

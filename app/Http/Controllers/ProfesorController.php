@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Profesor;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class ProfesorController extends Controller
 {
     public function index()
     {
-        $profesores = Profesor::with('bloques')->orderBy('nombre')->paginate(20);
+        try {
+            $profesores = Profesor::with('bloques')->orderBy('nombre')->paginate(20);
+        } catch (QueryException $e) {
+            $profesores = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
+        }
         return view('profesores.index', compact('profesores'));
     }
 
