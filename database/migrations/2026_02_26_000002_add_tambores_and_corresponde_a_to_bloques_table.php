@@ -11,11 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bloques', function (Blueprint $table) {
-            // Tambores del bloque (ej: Repique, Medio, Redoblante, Fondo Agudo, Fondo Grave)
-            $table->json('tambores')->nullable()->after('cantidad_max_alumnos');
-            // A quién corresponde el bloque (responsable / destinatario)
-            $table->string('corresponde_a')->nullable()->after('profesor_id');
+        if (!Schema::hasTable('bloques')) {
+            return;
+        }
+        $add = [];
+        if (!Schema::hasColumn('bloques', 'tambores')) {
+            $add[] = 'tambores';
+        }
+        if (!Schema::hasColumn('bloques', 'corresponde_a')) {
+            $add[] = 'corresponde_a';
+        }
+        if (empty($add)) {
+            return;
+        }
+        Schema::table('bloques', function (Blueprint $table) use ($add) {
+            if (in_array('tambores', $add)) {
+                $table->json('tambores')->nullable()->after('cantidad_max_alumnos');
+            }
+            if (in_array('corresponde_a', $add)) {
+                $table->string('corresponde_a')->nullable()->after('profesor_id');
+            }
         });
     }
 
@@ -24,8 +39,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bloques', function (Blueprint $table) {
-            $table->dropColumn(['tambores', 'corresponde_a']);
-        });
+        if (!Schema::hasTable('bloques')) {
+            return;
+        }
+        $drop = array_filter(['tambores', 'corresponde_a'], fn ($c) => Schema::hasColumn('bloques', $c));
+        if (!empty($drop)) {
+            Schema::table('bloques', function (Blueprint $table) use ($drop) {
+                $table->dropColumn($drop);
+            });
+        }
     }
 };

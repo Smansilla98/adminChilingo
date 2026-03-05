@@ -12,11 +12,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $driver = Schema::getConnection()->getDriverName();
-        if ($driver === 'mysql') {
-            DB::statement("ALTER TABLE eventos MODIFY tipo_evento VARCHAR(50) NOT NULL DEFAULT 'taller'");
+        if (!Schema::hasTable('eventos')) {
+            return;
         }
-        // SQLite y otros: la columna puede seguir siendo string; no se modifica
+        try {
+            $driver = Schema::getConnection()->getDriverName();
+            if ($driver === 'mysql') {
+                DB::statement("ALTER TABLE eventos MODIFY tipo_evento VARCHAR(50) NOT NULL DEFAULT 'taller'");
+            }
+        } catch (\Throwable $e) {
+            // Ya modificado o no aplicable
+        }
     }
 
     public function down(): void

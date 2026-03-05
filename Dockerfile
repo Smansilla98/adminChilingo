@@ -62,13 +62,11 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Script de inicio: al arrancar ejecuta migraciones (--force --no-interaction) y luego php artisan serve
+# Script de inicio: al arrancar ejecuta migraciones (--force) y luego php artisan serve
 RUN chmod +x /var/www/html/start.sh || true
 
-# Limpieza de cachés en build
-RUN php artisan optimize:clear || true
-RUN php artisan config:clear || true
-RUN composer dump-autoload --optimize --no-interaction || true
+# No ejecutar artisan en build: no hay base de datos y Laravel intenta conectar (Connection refused).
+# La limpieza de caché (optimize:clear, config:clear) se hace en start.sh al iniciar el contenedor.
 
 EXPOSE ${PORT:-8000}
 

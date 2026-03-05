@@ -1,0 +1,9 @@
+# Railway: usar Dockerfile y arrancar con start.sh (espera DB, migra, sirve)
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "/var/www/html/start.sh"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

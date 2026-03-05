@@ -11,15 +11,32 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('sedes', function (Blueprint $table) {
-            $table->foreignId('coordinador_id')->nullable()->after('direccion')->constrained('profesores')->onDelete('set null');
-        });
+        if (!Schema::hasTable('sedes') || Schema::hasColumn('sedes', 'coordinador_id')) {
+            return;
+        }
+        try {
+            Schema::table('sedes', function (Blueprint $table) {
+                $table->foreignId('coordinador_id')->nullable()->after('direccion')->constrained('profesores')->onDelete('set null');
+            });
+        } catch (\Throwable $e) {
+            Schema::table('sedes', function (Blueprint $table) {
+                $table->unsignedBigInteger('coordinador_id')->nullable()->after('direccion');
+            });
+        }
     }
 
     public function down(): void
     {
+        if (!Schema::hasTable('sedes') || !Schema::hasColumn('sedes', 'coordinador_id')) {
+            return;
+        }
         Schema::table('sedes', function (Blueprint $table) {
-            $table->dropForeign(['coordinador_id']);
+            try {
+                $table->dropForeign(['coordinador_id']);
+            } catch (\Throwable $e) {
+                // No había FK
+            }
+            $table->dropColumn('coordinador_id');
         });
     }
 };

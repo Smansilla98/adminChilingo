@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('asistencias') || Schema::hasColumn('asistencias', 'tipo_asistencia')) {
+            return;
+        }
         Schema::table('asistencias', function (Blueprint $table) {
             $table->string('tipo_asistencia', 50)->default('presente')->after('fecha');
         });
 
-        // Migrar datos existentes: presente=true -> 'presente', presente=false -> 'ausente'
-        \DB::table('asistencias')->where('presente', true)->update(['tipo_asistencia' => 'presente']);
-        \DB::table('asistencias')->where('presente', false)->update(['tipo_asistencia' => 'ausente']);
+        if (Schema::hasColumn('asistencias', 'presente')) {
+            \DB::table('asistencias')->where('presente', true)->update(['tipo_asistencia' => 'presente']);
+            \DB::table('asistencias')->where('presente', false)->update(['tipo_asistencia' => 'ausente']);
+        }
     }
 
     /**
@@ -25,6 +29,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('asistencias') || !Schema::hasColumn('asistencias', 'tipo_asistencia')) {
+            return;
+        }
         Schema::table('asistencias', function (Blueprint $table) {
             $table->dropColumn('tipo_asistencia');
         });

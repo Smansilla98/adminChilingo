@@ -13,6 +13,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('users', 'username')) {
+            return;
+        }
         Schema::table('users', function (Blueprint $table) {
             $table->string('username', 80)->nullable()->after('id');
         });
@@ -30,8 +33,15 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasColumn('users', 'username')) {
+            return;
+        }
         Schema::table('users', function (Blueprint $table) {
-            $table->dropUnique(['username']);
+            try {
+                $table->dropUnique(['username']);
+            } catch (\Throwable $e) {
+                // No existía el índice
+            }
             $table->dropColumn('username');
         });
     }

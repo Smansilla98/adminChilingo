@@ -1,5 +1,7 @@
 # Despliegue (Railway y general)
 
+**Guía completa de ejecución (local, Docker, Railway):** ver **[EJECUCION.md](EJECUCION.md)**.
+
 ## Configuración general ya aplicada
 
 - **TrustProxies**: la app confía en proxies (Railway/HTTPS).

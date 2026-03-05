@@ -45,6 +45,10 @@ El sistema incluye todos los CRUD necesarios para la carga y gestión de datos:
 - MySQL 5.7 o superior
 - Node.js y NPM
 
+## 🚀 Ejecución rápida
+
+Para tener **todo listo para ejecutar** (local, Docker o Railway), seguí la guía **[EJECUCION.md](EJECUCION.md)**. Incluye variables obligatorias, primer arranque, Docker, Railway y checklist de producción.
+
 ## 🔧 Instalación
 
 1. Clonar o navegar al proyecto:

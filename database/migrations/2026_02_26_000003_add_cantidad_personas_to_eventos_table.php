@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('eventos') || Schema::hasColumn('eventos', 'cantidad_personas')) {
+            return;
+        }
         Schema::table('eventos', function (Blueprint $table) {
             $table->unsignedInteger('cantidad_personas')->nullable()->after('bloque_id');
         });
@@ -21,6 +24,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('eventos') || !Schema::hasColumn('eventos', 'cantidad_personas')) {
+            return;
+        }
         Schema::table('eventos', function (Blueprint $table) {
             $table->dropColumn('cantidad_personas');
         });
