@@ -5,6 +5,8 @@ FROM php:8.3-cli
 # Variables de entorno
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PORT=8000
+# Migraciones se ejecutan siempre con --force en start.sh (sin confirmación ni TTY)
+ENV MIGRATE_FORCE=1
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -60,7 +62,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Script de inicio: al arrancar el contenedor ejecuta migraciones con --force y luego el servidor
+# Script de inicio: al arrancar ejecuta migraciones (--force --no-interaction) y luego php artisan serve
 RUN chmod +x /var/www/html/start.sh || true
 
 # Limpieza de cachés en build

@@ -38,29 +38,47 @@ for i in $(seq 1 30); do
     sleep 2
 done
 
-# Limpiar cachés
+# Limpiar cachés (evita que config antigua afecte migrate)
 echo "=== Limpiando cachés ==="
 php artisan optimize:clear || true
+php artisan config:clear || true
 php artisan route:clear || true
 
-# Migraciones forzadas (--force para producción/Docker, sin preguntas interactivas)
+# --- Migraciones forzadas (obligatorio en Docker/producción) ---
+# Siempre se usa --force --no-interaction para no requerir confirmación ni TTY.
 echo "=== Ejecutando migraciones (--force) ==="
-php artisan migrate --force --no-interaction || true
+MIGRATE_CMD="php artisan migrate --force --no-interaction"
 MIGRATE_ATTEMPTS=5
-for i in $(seq 1 $MIGRATE_ATTEMPTS); do
-    if php artisan migrate --force --no-interaction; then
-        echo "✓ Migraciones aplicadas (intento $i)"
-        break
-    fi
-    if [ "$i" -eq "$MIGRATE_ATTEMPTS" ]; then
-        echo "⚠️  ADVERTENCIA: Las migraciones fallaron tras $MIGRATE_ATTEMPTS intentos. Revisá los logs."
-    else
-        echo "Intento $i/$MIGRATE_ATTEMPTS falló, reintentando en 5s..."
-        sleep 5
-    fi
-done
+MIGRATE_OK=0
+
+# Primera ejecución inmediata
+if $MIGRATE_CMD; then
+    echo "✓ Migraciones aplicadas (primera pasada)"
+    MIGRATE_OK=1
+fi
+
+# Reintentos si falló (p. ej. DB aún no lista)
+if [ "$MIGRATE_OK" -eq 0 ]; then
+    for i in $(seq 1 $MIGRATE_ATTEMPTS); do
+        echo "Intento $i/$MIGRATE_ATTEMPTS..."
+        if $MIGRATE_CMD; then
+            echo "✓ Migraciones aplicadas (intento $i)"
+            MIGRATE_OK=1
+            break
+        fi
+        if [ "$i" -lt "$MIGRATE_ATTEMPTS" ]; then
+            echo "Reintentando en 5s..."
+            sleep 5
+        fi
+    done
+fi
+
+if [ "$MIGRATE_OK" -eq 0 ]; then
+    echo "⚠️  ADVERTENCIA: Las migraciones fallaron tras varios intentos. Revisá los logs."
+fi
+
 # Segunda pasada por si quedó alguna migración pendiente
-php artisan migrate --force --no-interaction 2>/dev/null && echo "✓ Revisión de migraciones OK" || true
+$MIGRATE_CMD && echo "✓ Revisión final de migraciones OK" || true
 
 # Autoload
 composer dump-autoload --no-interaction --optimize || true
