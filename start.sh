@@ -5,6 +5,7 @@ echo "=========================================="
 echo "=== Iniciando La Chilinga - Gestión   ==="
 echo "=========================================="
 
+# Mostrar variables básicas (sin secretos)
 echo "=== Variables de entorno ==="
 echo "APP_ENV: ${APP_ENV:-no configurado}"
 echo "DB_CONNECTION: ${DB_CONNECTION:-no configurado}"
@@ -13,7 +14,7 @@ echo "DB_DATABASE: ${DB_DATABASE:-no configurado}"
 echo "DB_USERNAME: ${DB_USERNAME:-no configurado}"
 echo ""
 
-# Esperar a que MySQL esté disponible
+# Esperar a que MySQL esté disponible (solo verificación, no migraciones)
 echo "=== Esperando base de datos ==="
 for i in $(seq 1 30); do
     if php -r "
@@ -38,49 +39,20 @@ for i in $(seq 1 30); do
     sleep 2
 done
 
-# Limpiar cachés (evita que config antigua afecte migrate)
+# Limpiar cachés antes de migrar
 echo "=== Limpiando cachés ==="
 php artisan optimize:clear || true
 php artisan config:clear || true
 php artisan route:clear || true
 
-# --- Migraciones forzadas (obligatorio en Docker/producción) ---
-# Siempre se usa --force --no-interaction para no requerir confirmación ni TTY.
-echo "=== Ejecutando migraciones (--force) ==="
-MIGRATE_CMD="php artisan migrate --force --no-interaction"
-MIGRATE_ATTEMPTS=5
-MIGRATE_OK=0
+# Ejecutar migraciones una vez (--force para producción/Docker, sin TTY)
+echo "=== Ejecutando migraciones ==="
+php artisan migrate --force --no-interaction || {
+    echo "⚠️  ADVERTENCIA: Las migraciones fallaron. Revisá los logs."
+    echo "   El servidor arranca igual; la app puede tener funcionalidad limitada."
+}
 
-# Primera ejecución inmediata
-if $MIGRATE_CMD; then
-    echo "✓ Migraciones aplicadas (primera pasada)"
-    MIGRATE_OK=1
-fi
-
-# Reintentos si falló (p. ej. DB aún no lista)
-if [ "$MIGRATE_OK" -eq 0 ]; then
-    for i in $(seq 1 $MIGRATE_ATTEMPTS); do
-        echo "Intento $i/$MIGRATE_ATTEMPTS..."
-        if $MIGRATE_CMD; then
-            echo "✓ Migraciones aplicadas (intento $i)"
-            MIGRATE_OK=1
-            break
-        fi
-        if [ "$i" -lt "$MIGRATE_ATTEMPTS" ]; then
-            echo "Reintentando en 5s..."
-            sleep 5
-        fi
-    done
-fi
-
-if [ "$MIGRATE_OK" -eq 0 ]; then
-    echo "⚠️  ADVERTENCIA: Las migraciones fallaron tras varios intentos. Revisá los logs."
-fi
-
-# Segunda pasada por si quedó alguna migración pendiente
-$MIGRATE_CMD && echo "✓ Revisión final de migraciones OK" || true
-
-# Autoload
+# Regenerar autoloader
 composer dump-autoload --no-interaction --optimize || true
 
 # Storage link (comprobantes PDF, etc.)

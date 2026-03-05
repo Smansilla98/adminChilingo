@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('profesores', function (Blueprint $table) {
-            $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->onDelete('set null');
-        });
+        if (Schema::hasTable('profesores') && !Schema::hasColumn('profesores', 'user_id')) {
+            Schema::table('profesores', function (Blueprint $table) {
+                $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->onDelete('set null');
+            });
+        }
 
-        Schema::table('alumnos', function (Blueprint $table) {
-            $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->onDelete('set null');
-        });
+        if (Schema::hasTable('alumnos') && !Schema::hasColumn('alumnos', 'user_id')) {
+            Schema::table('alumnos', function (Blueprint $table) {
+                $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->onDelete('set null');
+            });
+        }
     }
 
     public function down(): void
