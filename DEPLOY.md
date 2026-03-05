@@ -50,6 +50,18 @@ El `start.sh` espera a que MySQL esté disponible, ejecuta migraciones y `storag
 
 Incluido para entornos que usan buildpack Heroku PHP. Si Railway usa Nixpacks, puede ignorar el Procfile y detectar Laravel solo.
 
+## Error "Table 'railway.sessions' doesn't exist"
+
+Si la app devuelve 500 y en los logs aparece que la tabla `sessions` no existe, es porque **las migraciones no se ejecutaron** en la base de Railway (la tabla `sessions` se crea en la primera migración).
+
+**Solución 1 (recomendada):** Ejecutar las migraciones en Railway:
+```bash
+railway run php artisan migrate --force
+```
+Con eso se crean `users`, `sessions`, y el resto de tablas.
+
+**Solución 2 (mientras tanto):** La app usa por defecto el driver de sesión **file** (no base de datos). Así la app puede arrancar aunque la tabla `sessions` no exista. Si en tu `.env` tenés `SESSION_DRIVER=database`, quitá esa variable o cambiá a `SESSION_DRIVER=file` hasta haber ejecutado las migraciones. Con sesiones en archivo el login y el resto funcionan; las sesiones se guardan en `storage/framework/sessions` (en Railway ese disco puede ser efímero).
+
 ## Checklist antes de producción
 
 - [ ] `APP_DEBUG=false`
