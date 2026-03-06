@@ -29,7 +29,8 @@
         }
         .sidebar {
             width: var(--sidebar-width);
-            min-height: 100vh;
+            height: 100vh;
+            max-height: 100vh;
             background: var(--sidebar-bg);
             position: fixed;
             top: 0;
@@ -40,8 +41,15 @@
             box-shadow: 4px 0 10px rgba(0,0,0,.08);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
-        .sidebar .sidebar-nav { flex: 1; overflow-y: auto; }
+        .sidebar .sidebar-nav {
+            flex: 1 1 0;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
         .sidebar .sidebar-brand {
             padding: 0 1.5rem 1.5rem;
             font-size: 1.25rem;
