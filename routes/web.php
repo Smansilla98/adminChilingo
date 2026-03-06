@@ -64,8 +64,9 @@ Route::middleware(['auth'])->group(function () {
         // Eventos
         Route::resource('eventos', EventoController::class);
 
-        // Asistencias
-        Route::resource('asistencias', AsistenciaController::class);
+        // Asistencias (ruta store con nombre explícito por uso en create.blade.php)
+        Route::post('asistencias', [AsistenciaController::class, 'store'])->name('asistencias.store');
+        Route::resource('asistencias', AsistenciaController::class)->except(['store']);
 
         // Cuotas
         Route::resource('cuotas', CuotaController::class);
