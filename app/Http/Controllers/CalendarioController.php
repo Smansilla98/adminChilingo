@@ -9,102 +9,183 @@ use App\Models\Sede;
 use App\Models\Profesor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 
 class CalendarioController extends Controller
 {
-    public function index()
+    /**
+     * Calendario de eventos por mes (tabla tipo restaurante-laravel).
+     */
+    public function index(Request $request)
     {
-        $sedes = Sede::where('activo', true)->get();
-        $profesores = Profesor::where('activo', true)->get();
-        $shows = Show::proximos()->with('bloques')->take(15)->get();
-        $eventos = Evento::proximos()->with('sede')->take(20)->get();
-        $bloques = Bloque::where('activo', true)->with(['horarios', 'sede', 'profesor'])->orderBy('sede_id')->orderBy('nombre')->get();
-        return view('calendario.index', compact('sedes', 'profesores', 'shows', 'eventos', 'bloques'));
+        $year = (int) $request->get('year', now()->year);
+        $month = (int) $request->get('month', now()->month);
+        $month = max(1, min(12, $month));
+
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+
+        $eventsByDay = [];
+        $eventos = collect();
+        $shows = collect();
+        $sedes = collect();
+        $profesores = collect();
+        $bloques = collect();
+
+        try {
+            $sedes = Sede::where('activo', true)->orderBy('nombre')->get();
+            $profesores = Profesor::where('activo', true)->orderBy('nombre')->get();
+        } catch (QueryException $e) {
+            // tablas no disponibles
+        }
+
+        try {
+            $eventos = Evento::with(['sede', 'profesor'])
+                ->whereBetween('fecha', [$startDate->toDateString(), $endDate->toDateString()])
+                ->orderBy('fecha')
+                ->orderBy('hora_inicio')
+                ->get();
+
+            foreach ($eventos as $evento) {
+                $day = $evento->fecha->format('Y-m-d');
+                if (!isset($eventsByDay[$day])) {
+                    $eventsByDay[$day] = [];
+                }
+                $eventsByDay[$day][] = ['type' => 'evento', 'data' => $evento];
+            }
+        } catch (QueryException $e) {
+            // tabla eventos no disponible
+        }
+
+        try {
+            $shows = Show::with('bloques.sede')
+                ->whereBetween('fecha', [$startDate->toDateString(), $endDate->toDateString()])
+                ->orderBy('fecha')
+                ->orderBy('hora_inicio')
+                ->get();
+
+            foreach ($shows as $show) {
+                $day = $show->fecha->format('Y-m-d');
+                if (!isset($eventsByDay[$day])) {
+                    $eventsByDay[$day] = [];
+                }
+                $eventsByDay[$day][] = ['type' => 'show', 'data' => $show];
+            }
+        } catch (QueryException $e) {
+            // tabla shows no disponible
+        }
+
+        try {
+            $bloques = Bloque::where('activo', true)->with(['horarios', 'sede', 'profesor'])->orderBy('sede_id')->orderBy('nombre')->get();
+        } catch (QueryException $e) {
+            // tabla bloques no disponible
+        }
+
+        $firstDayOfWeek = $startDate->dayOfWeek; // 0 = domingo
+        $daysInMonth = $startDate->daysInMonth;
+        $prevMonth = $startDate->copy()->subMonth();
+        $nextMonth = $startDate->copy()->addMonth();
+
+        $listItems = collect();
+        foreach ($eventos as $e) {
+            $listItems->push((object)[
+                'titulo' => $e->titulo,
+                'fecha' => $e->fecha,
+                'hora_inicio' => $e->hora_inicio,
+                'tipo' => 'evento',
+                'tipo_badge' => $e->tipo_evento ?? 'evento',
+                'url' => route('eventos.show', $e),
+                'model' => $e,
+            ]);
+        }
+        foreach ($shows as $s) {
+            $listItems->push((object)[
+                'titulo' => $s->titulo,
+                'fecha' => $s->fecha,
+                'hora_inicio' => $s->hora_inicio,
+                'tipo' => 'show',
+                'tipo_badge' => 'show',
+                'url' => route('shows.show', $s),
+                'model' => $s,
+            ]);
+        }
+        $listItems = $listItems->sortBy(function ($item) {
+            $d = $item->fecha->format('Y-m-d');
+            $h = $item->hora_inicio ? $item->hora_inicio->format('His') : '000000';
+            return $d . $h;
+        })->values();
+
+        return view('calendario.index', compact(
+            'eventsByDay',
+            'listItems',
+            'eventos',
+            'shows',
+            'bloques',
+            'year',
+            'month',
+            'startDate',
+            'endDate',
+            'firstDayOfWeek',
+            'daysInMonth',
+            'prevMonth',
+            'nextMonth',
+            'sedes',
+            'profesores',
+            'bloques'
+        ));
     }
 
+    /**
+     * API de eventos para FullCalendar (mantener por si se usa en otro lado).
+     */
     public function eventos(Request $request)
     {
         $start = $request->filled('start') ? Carbon::parse($request->start) : now()->startOfMonth();
         $end = $request->filled('end') ? Carbon::parse($request->end) : now()->endOfMonth()->addMonths(2);
-
         $out = [];
 
-        // Eventos (aniversarios, fiestas, rifas, shows, talleres, etc.)
-        $queryEventos = Evento::with(['sede', 'profesor', 'bloque'])
-            ->whereBetween('fecha', [$start->toDateString(), $end->toDateString()]);
-        if ($request->filled('sede_id')) {
-            $queryEventos->where('sede_id', $request->sede_id);
-        }
-        if ($request->filled('profesor_id')) {
-            $queryEventos->where('profesor_id', $request->profesor_id);
-        }
-        foreach ($queryEventos->get() as $evento) {
-            $out[] = [
-                'id' => 'e-' . $evento->id,
-                'title' => $evento->titulo,
-                'start' => $evento->fecha->format('Y-m-d') . ($evento->hora_inicio ? 'T' . $evento->hora_inicio->format('H:i:s') : ''),
-                'end' => $evento->fecha->format('Y-m-d') . ($evento->hora_fin ? 'T' . $evento->hora_fin->format('H:i:s') : ''),
-                'url' => route('eventos.show', $evento->id),
-                'extendedProps' => ['tipo' => $evento->tipo_evento, 'sede' => $evento->sede?->nombre],
-                'className' => 'fc-event-tipo-' . str_replace(' ', '-', $evento->tipo_evento),
-            ];
+        try {
+            $queryEventos = Evento::with(['sede', 'profesor', 'bloque'])
+                ->whereBetween('fecha', [$start->toDateString(), $end->toDateString()]);
+            if ($request->filled('sede_id')) {
+                $queryEventos->where('sede_id', $request->sede_id);
+            }
+            if ($request->filled('profesor_id')) {
+                $queryEventos->where('profesor_id', $request->profesor_id);
+            }
+            foreach ($queryEventos->get() as $evento) {
+                $out[] = [
+                    'id' => 'e-' . $evento->id,
+                    'title' => $evento->titulo,
+                    'start' => $evento->fecha->format('Y-m-d') . ($evento->hora_inicio ? 'T' . $evento->hora_inicio->format('H:i:s') : ''),
+                    'end' => $evento->fecha->format('Y-m-d') . ($evento->hora_fin ? 'T' . $evento->hora_fin->format('H:i:s') : ''),
+                    'url' => route('eventos.show', $evento->id),
+                    'extendedProps' => ['tipo' => $evento->tipo_evento, 'sede' => $evento->sede?->nombre],
+                ];
+            }
+        } catch (QueryException $e) {
+            // omitir
         }
 
-        // Shows
-        $queryShows = Show::whereBetween('fecha', [$start->toDateString(), $end->toDateString()]);
-        foreach ($queryShows->with('bloques.sede')->get() as $show) {
-            $title = $show->titulo;
-            if ($show->convocatoria_abierta) {
-                $title .= ' (convocatoria abierta)';
-            } elseif ($show->bloques->isNotEmpty()) {
-                $title .= ' — ' . $show->bloques->pluck('nombre')->take(2)->join(', ');
-            }
-            $out[] = [
-                'id' => 's-' . $show->id,
-                'title' => $title,
-                'start' => $show->fecha->format('Y-m-d') . ($show->hora_inicio ? 'T' . $show->hora_inicio->format('H:i:s') : 'T09:00:00'),
-                'end' => $show->fecha->format('Y-m-d') . ($show->hora_fin ? 'T' . $show->hora_fin->format('H:i:s') : 'T22:00:00'),
-                'url' => route('shows.show', $show),
-                'extendedProps' => ['tipo' => 'show'],
-                'className' => 'fc-event-show',
-            ];
-        }
-
-        // Horarios de bloques (recurring): generar eventos para cada semana en el rango
-        $bloques = Bloque::where('activo', true)->with(['horarios', 'sede', 'profesor'])->get();
-        $colores = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69'];
-        $idx = 0;
-        foreach ($bloques as $bloque) {
-            $color = $colores[$idx % count($colores)];
-            $idx++;
-            foreach ($bloque->horarios as $horario) {
-                $diaSemana = (int) $horario->dia_semana; // 1=Lunes ... 7=Domingo (ISO)
-                $horaInicio = Carbon::parse($horario->hora_inicio)->format('H:i:s');
-                $horaFin = Carbon::parse($horario->hora_fin)->format('H:i:s');
-                $fecha = $start->copy();
-                while ($fecha->dayOfWeekIso !== $diaSemana) {
-                    $fecha->addDay();
-                    if ($fecha->gt($end)) break;
+        try {
+            $queryShows = Show::whereBetween('fecha', [$start->toDateString(), $end->toDateString()]);
+            foreach ($queryShows->with('bloques.sede')->get() as $show) {
+                $title = $show->titulo;
+                if ($show->convocatoria_abierta) {
+                    $title .= ' (abierta)';
+                } elseif ($show->bloques->isNotEmpty()) {
+                    $title .= ' — ' . $show->bloques->pluck('nombre')->take(2)->join(', ');
                 }
-                while ($fecha->lte($end)) {
-                    $out[] = [
-                        'id' => 'h-' . $bloque->id . '-' . $horario->id . '-' . $fecha->format('Y-m-d'),
-                        'title' => $bloque->nombre . ' (' . ($bloque->sede?->nombre ?? '') . ')',
-                        'start' => $fecha->format('Y-m-d') . 'T' . $horaInicio,
-                        'end' => $fecha->format('Y-m-d') . 'T' . $horaFin,
-                        'extendedProps' => [
-                            'tipo' => 'horario',
-                            'bloque_id' => $bloque->id,
-                            'sede' => $bloque->sede?->nombre,
-                            'profesor' => $bloque->profesor?->nombre,
-                        ],
-                        'backgroundColor' => $color,
-                        'borderColor' => $color,
-                        'className' => 'fc-event-horario',
-                    ];
-                    $fecha->addWeek();
-                }
+                $out[] = [
+                    'id' => 's-' . $show->id,
+                    'title' => $title,
+                    'start' => $show->fecha->format('Y-m-d') . ($show->hora_inicio ? 'T' . $show->hora_inicio->format('H:i:s') : 'T09:00:00'),
+                    'end' => $show->fecha->format('Y-m-d') . ($show->hora_fin ? 'T' . $show->hora_fin->format('H:i:s') : 'T22:00:00'),
+                    'url' => route('shows.show', $show),
+                ];
             }
+        } catch (QueryException $e) {
+            // omitir
         }
 
         return response()->json($out);
