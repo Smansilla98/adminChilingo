@@ -11,6 +11,16 @@
         </button>
     </li>
     <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rep-ingresos-profesor" type="button" role="tab">
+            Ingresos por profesor
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rep-actividad-profesor" type="button" role="tab">
+            Actividad por profesor
+        </button>
+    </li>
+    <li class="nav-item">
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rep-ingresos" type="button" role="tab">
             Ingresos / Egresos por sede
         </button>
@@ -88,6 +98,144 @@
                 </div>
                 <p class="small text-muted mt-2">
                     Nota: los ingresos por bloque se estiman a partir de los pagos de los alumnos cuyo bloque principal es ese bloque.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="rep-ingresos-profesor" role="tabpanel">
+        <div class="card">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <span>Ingresos por profesor</span>
+                <form method="GET" class="d-flex gap-2 align-items-center">
+                    <select name="mes" class="form-select form-select-sm">
+                        @php
+                            $meses = [
+                                1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio',
+                                7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+                            ];
+                        @endphp
+                        @foreach($meses as $num => $label)
+                            <option value="{{ $num }}" {{ (int)($mes ?? now()->month) === $num ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <select name="año" class="form-select form-select-sm">
+                        @foreach(($añosDisponibles ?? collect([now()->year])) as $yy)
+                            <option value="{{ $yy }}" {{ (int)($año ?? now()->year) === (int)$yy ? 'selected' : '' }}>{{ $yy }}</option>
+                        @endforeach
+                    </select>
+                    <button class="btn btn-primary btn-sm" type="submit">Aplicar</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Profesor</th>
+                                <th>Cantidad de alumnxs</th>
+                                <th>Total cuotas emitidas</th>
+                                <th>Total cobrado</th>
+                                <th>% cobrado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse(($ingresosPorProfesor ?? []) as $row)
+                            @php
+                                $emitido = (float)($row['emitido'] ?? 0);
+                                $cobrado = (float)($row['cobrado'] ?? 0);
+                                $pct = (float)($row['porcentaje_cobrado'] ?? 0);
+                            @endphp
+                            <tr>
+                                <td>{{ $row['profesor']->nombre }}</td>
+                                <td>{{ $row['alumnos_count'] }}</td>
+                                <td>{{ $emitido ? '$ ' . number_format($emitido, 2, ',', '.') : '—' }}</td>
+                                <td>{{ $cobrado ? '$ ' . number_format($cobrado, 2, ',', '.') : '—' }}</td>
+                                <td>
+                                    @if($emitido > 0)
+                                        <span class="badge {{ $pct >= 85 ? 'bg-success' : ($pct >= 50 ? 'bg-warning text-dark' : 'bg-danger') }}">
+                                            {{ number_format($pct, 2, ',', '.') }}%
+                                        </span>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="5" class="text-center text-muted">No hay datos para el período seleccionado.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <p class="small text-muted mt-2 mb-0">
+                    Nota: “Cuotas emitidas” se calcula como <strong>monto de cuota × cantidad de alumnxs</strong> a los que aplica la cuota en el bloque del profesor (si la cuota no tiene alumnos asignados, se toma el total de alumnxs activos del bloque).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="rep-actividad-profesor" role="tabpanel">
+        <div class="card">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <span>Actividad por profesor</span>
+                <form method="GET" class="d-flex gap-2 align-items-center">
+                    <select name="mes" class="form-select form-select-sm">
+                        @php
+                            $meses = [
+                                1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio',
+                                7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+                            ];
+                        @endphp
+                        @foreach($meses as $num => $label)
+                            <option value="{{ $num }}" {{ (int)($mes ?? now()->month) === $num ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <select name="año" class="form-select form-select-sm">
+                        @foreach(($añosDisponibles ?? collect([now()->year])) as $yy)
+                            <option value="{{ $yy }}" {{ (int)($año ?? now()->year) === (int)$yy ? 'selected' : '' }}>{{ $yy }}</option>
+                        @endforeach
+                    </select>
+                    <button class="btn btn-primary btn-sm" type="submit">Aplicar</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Profesor</th>
+                                <th>Cantidad de clases dictadas</th>
+                                <th>Alumnos promedio presentes</th>
+                                <th>Último bloque registrado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse(($actividadPorProfesor ?? []) as $row)
+                            <tr>
+                                <td>{{ $row['profesor_nombre'] }}</td>
+                                <td>{{ $row['clases_dictadas'] }}</td>
+                                <td>
+                                    {{ $row['alumnos_promedio_presentes'] ? number_format($row['alumnos_promedio_presentes'], 2, ',', '.') : '—' }}
+                                </td>
+                                <td>
+                                    @if($row['ultimo_bloque'])
+                                        {{ $row['ultimo_bloque']->nombre }}
+                                        @if($row['ultima_fecha'])
+                                            <span class="text-muted small">({{ \Carbon\Carbon::parse($row['ultima_fecha'])->format('d/m/Y') }})</span>
+                                        @endif
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="4" class="text-center text-muted">No hay asistencias para el período seleccionado.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <p class="small text-muted mt-2 mb-0">
+                    Nota: “clases dictadas” se calcula como la cantidad de fechas distintas con asistencias registradas en los bloques del profesor para el período.
                 </p>
             </div>
         </div>

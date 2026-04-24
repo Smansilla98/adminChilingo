@@ -39,6 +39,22 @@
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <select name="tipo_tambor" class="form-select">
+                        <option value="">Todos los tipos de tambor</option>
+                        @foreach($tiposTambor as $tipo)
+                        <option value="{{ $tipo }}" {{ request('tipo_tambor') == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="tambor_procedencia" class="form-select">
+                        <option value="">Todas las procedencias</option>
+                        @foreach($procedenciasTambor as $procedencia)
+                        <option value="{{ $procedencia }}" {{ request('tambor_procedencia') == $procedencia ? 'selected' : '' }}>{{ $procedencia }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <button type="submit" class="btn btn-primary w-100">Filtrar</button>
                 </div>
             </div>
@@ -52,6 +68,8 @@
                         <th>DNI</th>
                         <th>Edad</th>
                         <th>Instrumento</th>
+                        <th>Tipo tambor</th>
+                        <th>Procedencia</th>
                         <th>Bloque</th>
                         <th>Sede</th>
                         <th>Acciones</th>
@@ -64,6 +82,8 @@
                         <td>{{ $alumno->dni }}</td>
                         <td>{{ $alumno->edad }} años</td>
                         <td>{{ $alumno->instrumento_principal }}</td>
+                        <td>{{ $alumno->tipo_tambor ?? '—' }}</td>
+                        <td>{{ $alumno->tambor_procedencia ?? '—' }}</td>
                         <td>{{ $alumno->bloques->isNotEmpty() ? $alumno->bloques->pluck('nombre')->join(', ') : ($alumno->bloque ? $alumno->bloque->nombre : '-') }}</td>
                         <td>{{ $alumno->sede->nombre }}</td>
                         <td>
@@ -84,7 +104,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center">No hay alumnos registrados</td>
+                        <td colspan="9" class="text-center">No hay alumnos registrados</td>
                     </tr>
                     @endforelse
                 </tbody>

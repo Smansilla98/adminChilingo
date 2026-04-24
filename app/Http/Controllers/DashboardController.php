@@ -42,10 +42,10 @@ class DashboardController extends Controller
                 ->get();
 
             $totalConTamborPropio = Alumno::where('activo', true)
-                ->where('tipo_tambor', 'Propio')
+                ->where('tambor_procedencia', 'Propio')
                 ->count();
             $totalConTamborSede = Alumno::where('activo', true)
-                ->where('tipo_tambor', 'Sede')
+                ->where('tambor_procedencia', 'Sede')
                 ->count();
             $totalTambores = $totalAlumnos > 0 ? $totalAlumnos : 1;
             $porcentajePropio = ($totalConTamborPropio / $totalTambores) * 100;

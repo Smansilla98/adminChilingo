@@ -94,6 +94,23 @@ npm run build
 php artisan serve
 ```
 
+## 📥 Importar datos desde Excel (Chilinga 2025)
+
+Para cargar muchos datos de prueba desde el Excel **"Chilinga 2025 _ 30 años (Respuestas).xlsx"** (hojas Formulario, Cuotas, RemerasBloque, Hoja 4):
+
+```bash
+# Ver qué se importaría sin tocar la base (dry-run)
+php artisan chilinga:import-excel ruta/al/archivo.xlsx --dry-run
+
+# Importar (crea/actualiza sedes, profesor, bloque, alumnos, cuotas)
+php artisan chilinga:import-excel ruta/al/archivo.xlsx
+
+# Vaciar sedes, bloques, profesores, alumnos, cuotas y volver a importar
+php artisan chilinga:import-excel ruta/al/archivo.xlsx --fresh
+```
+
+Se importan: **Sedes** (desde columna Sede del Formulario), **un profesor** (desde RemerasBloque), **un bloque** "Trinchera Sur", **alumnos** (Nombre, DNI, Fecha nac., teléfono, tambor, sede) y **cuotas** por mes (Marzo–diciembre 2025) desde la hoja Cuotas.
+
 ## 👤 Usuarios por Defecto
 
 **Administrador:**

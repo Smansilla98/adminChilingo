@@ -20,9 +20,15 @@
                     @enderror
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="dni" class="form-label">DNI *</label>
+                    <label for="dni" class="form-label">
+                        DNI
+                        @php($dniActual = old('dni', $alumno->dni))
+                        @if(!$dniActual)
+                            <span class="badge bg-warning text-dark ms-1">Incompleto</span>
+                        @endif
+                    </label>
                     <input type="text" class="form-control @error('dni') is-invalid @enderror" 
-                           id="dni" name="dni" value="{{ old('dni', $alumno->dni) }}" required>
+                           id="dni" name="dni" value="{{ old('dni', $alumno->dni) }}">
                     @error('dni')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -81,16 +87,37 @@
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="tipo_tambor" class="form-label">Tipo de Tambor *</label>
+                    <label for="tipo_tambor" class="form-label">Tipo de instrumento (tambor)</label>
                     <select class="form-select @error('tipo_tambor') is-invalid @enderror" 
-                            id="tipo_tambor" name="tipo_tambor" required>
-                        <option value="Sede" {{ old('tipo_tambor', $alumno->tipo_tambor) == 'Sede' ? 'selected' : '' }}>Sede</option>
-                        <option value="Propio" {{ old('tipo_tambor', $alumno->tipo_tambor) == 'Propio' ? 'selected' : '' }}>Propio</option>
+                            id="tipo_tambor" name="tipo_tambor">
+                        <option value="">Seleccionar...</option>
+                        @foreach($tiposTambor as $tipo)
+                        <option value="{{ $tipo }}" {{ old('tipo_tambor', $alumno->tipo_tambor) == $tipo ? 'selected' : '' }}>
+                            {{ $tipo }}
+                        </option>
+                        @endforeach
                     </select>
                     @error('tipo_tambor')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
+                <div class="col-md-6 mb-3">
+                    <label for="tambor_procedencia" class="form-label">Procedencia del instrumento</label>
+                    <select class="form-select @error('tambor_procedencia') is-invalid @enderror"
+                            id="tambor_procedencia" name="tambor_procedencia">
+                        <option value="">Seleccionar...</option>
+                        @foreach($procedenciasTambor as $procedencia)
+                        <option value="{{ $procedencia }}" {{ old('tambor_procedencia', $alumno->tambor_procedencia) == $procedencia ? 'selected' : '' }}>
+                            {{ $procedencia }}
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('tambor_procedencia')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="sede_id" class="form-label">Sede *</label>
                     <select class="form-select @error('sede_id') is-invalid @enderror" 

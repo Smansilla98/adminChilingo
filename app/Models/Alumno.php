@@ -19,6 +19,7 @@ class Alumno extends Model
         'instrumento_principal',
         'instrumento_secundario',
         'tipo_tambor',
+        'tambor_procedencia',
         'bloque_id',
         'sede_id',
         'activo',

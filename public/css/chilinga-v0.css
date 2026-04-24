@@ -1,0 +1,93 @@
+/* Tema global inspirado en v0-calendario-chilingo (cards suaves, fondo neutro, bordes redondeados) */
+
+:root {
+  --ch-surface: #ffffff;
+  --ch-bg: #f6f7fb;
+  --ch-border: rgba(15, 23, 42, 0.08);
+  --ch-text: #0f172a;
+  --ch-muted: rgba(15, 23, 42, 0.65);
+  --ch-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --ch-radius: 16px;
+}
+
+body {
+  background: radial-gradient(1200px 600px at 20% -20%, rgba(78, 115, 223, 0.10), transparent 60%),
+    radial-gradient(1000px 600px at 90% 0%, rgba(54, 185, 204, 0.10), transparent 55%),
+    var(--ch-bg) !important;
+  color: #334155;
+}
+
+/* Cards */
+.card {
+  border-radius: var(--ch-radius) !important;
+  box-shadow: var(--ch-shadow) !important;
+}
+.card-header {
+  border-bottom: 1px solid var(--ch-border) !important;
+}
+
+/* Inputs y selects más “soft” */
+.form-control,
+.form-select {
+  border-radius: 12px;
+  border-color: var(--ch-border);
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: rgba(78, 115, 223, 0.45);
+  box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.12);
+}
+
+/* Botones */
+.btn {
+  border-radius: 12px;
+}
+.btn-sm {
+  border-radius: 10px;
+}
+.btn-primary {
+  box-shadow: 0 8px 18px rgba(78, 115, 223, 0.22);
+}
+.btn-outline-danger {
+  border-color: rgba(231, 74, 59, 0.35);
+}
+
+/* Tabs */
+.nav-tabs .nav-link {
+  border: 0;
+  border-radius: 12px 12px 0 0;
+  color: var(--ch-muted);
+  font-weight: 700;
+}
+.nav-tabs .nav-link.active {
+  color: var(--ch-text);
+  background: var(--ch-surface);
+  box-shadow: 0 -8px 18px rgba(15, 23, 42, 0.06);
+}
+
+/* Tablas */
+.table {
+  --bs-table-bg: transparent;
+}
+.table thead th {
+  color: rgba(15, 23, 42, 0.70) !important;
+  letter-spacing: .06em;
+}
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: rgba(15, 23, 42, 0.02);
+}
+
+/* Badges */
+.badge {
+  border-radius: 999px;
+  font-weight: 700;
+  padding: .4em .65em;
+}
+
+/* Sidebar/Topbar ajustes suaves sin romper estructura actual */
+.topbar {
+  border-bottom: 1px solid var(--ch-border);
+}
+.sidebar {
+  box-shadow: 6px 0 24px rgba(15, 23, 42, 0.10) !important;
+}

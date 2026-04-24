@@ -6,9 +6,10 @@
     <title>Registro - La Chilinga</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/chilinga-v0.css') }}">
     <style>
         body {
-            background: linear-gradient(135deg, #d32f2f 0%, #f57c00 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -17,15 +18,16 @@
         .register-card {
             max-width: 420px;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
         }
         .register-header {
-            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
-            color: white;
+            background: rgba(255,255,255,.85);
+            color: #0f172a;
             padding: 30px;
-            border-radius: 10px 10px 0 0;
+            border-radius: 16px 16px 0 0;
             text-align: center;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
         }
     </style>
 </head>
@@ -34,7 +36,7 @@
         <div class="register-card">
             <div class="register-header">
                 <h2><i class="bi bi-person-plus"></i> Registrarse</h2>
-                <p class="mb-0">Sistema de Gestión Administrativa</p>
+                <p class="mb-0 text-muted">Sistema de Gestión Administrativa</p>
             </div>
             <div class="card-body p-4">
                 <form method="POST" action="{{ route('register') }}">

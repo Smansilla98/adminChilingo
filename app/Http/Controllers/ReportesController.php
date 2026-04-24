@@ -4,16 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumno;
 use App\Models\Bloque;
+use App\Models\Cuota;
+use App\Models\Asistencia;
 use App\Models\Gasto;
 use App\Models\PagoDetalle;
 use App\Models\Profesor;
 use App\Models\Sede;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $mes = $request->filled('mes') ? (int) $request->mes : (int) now()->month;
+        $año = $request->filled('año') ? (int) $request->año : (int) now()->year;
+
         // 1) Alumnos por profesor
         $profesores = Profesor::with(['bloques.alumnos' => fn ($q) => $q->where('alumnos.activo', true)])
             ->where('activo', true)
@@ -33,6 +40,139 @@ class ReportesController extends Controller
                 'alumnos_count' => $alumnosIds->count(),
             ];
         });
+
+        // 1.b) Ingresos por profesor (cuotas emitidas vs cobrado) — filtrable por mes/año
+        $cuotasPeriodo = Cuota::query()
+            ->with([
+                'bloque.profesor',
+                'alumnos',
+                'bloque.alumnos' => fn ($q) => $q->where('alumnos.activo', true),
+            ])
+            ->where('año', $año)
+            ->where('mes', $mes)
+            ->get();
+
+        $totalCobradoPorProfesor = PagoDetalle::query()
+            ->join('cuotas', 'pago_detalles.cuota_id', '=', 'cuotas.id')
+            ->join('bloques', 'cuotas.bloque_id', '=', 'bloques.id')
+            ->selectRaw('bloques.profesor_id as profesor_id, SUM(pago_detalles.monto) as total')
+            ->where('cuotas.año', $año)
+            ->where('cuotas.mes', $mes)
+            ->groupBy('bloques.profesor_id')
+            ->pluck('total', 'profesor_id');
+
+        $totalEmitidoPorProfesor = [];
+        foreach ($cuotasPeriodo as $cuota) {
+            $profesorId = $cuota->bloque?->profesor_id;
+            if (!$profesorId) {
+                continue;
+            }
+
+            $alumnosObjetivo = $cuota->alumnos->isNotEmpty()
+                ? $cuota->alumnos->unique('id')->count()
+                : ($cuota->bloque?->alumnos?->unique('id')->count() ?? 0);
+
+            $totalEmitidoPorProfesor[$profesorId] = ($totalEmitidoPorProfesor[$profesorId] ?? 0)
+                + ((float) $cuota->monto * (int) $alumnosObjetivo);
+        }
+
+        $ingresosPorProfesor = $alumnosPorProfesor->map(function (array $row) use ($totalEmitidoPorProfesor, $totalCobradoPorProfesor) {
+            $profesor = $row['profesor'];
+            $profesorId = $profesor->id;
+
+            $emitido = (float) ($totalEmitidoPorProfesor[$profesorId] ?? 0.0);
+            $cobrado = (float) ($totalCobradoPorProfesor[$profesorId] ?? 0.0);
+            $porcentaje = $emitido > 0 ? round(($cobrado / $emitido) * 100, 2) : 0.0;
+
+            return [
+                'profesor' => $profesor,
+                'alumnos_count' => (int) $row['alumnos_count'],
+                'emitido' => $emitido,
+                'cobrado' => $cobrado,
+                'porcentaje_cobrado' => $porcentaje,
+            ];
+        })->sortByDesc('emitido')->values();
+
+        $añosDisponibles = Cuota::query()
+            ->select('año')
+            ->distinct()
+            ->orderByDesc('año')
+            ->pluck('año')
+            ->values();
+
+        if ($añosDisponibles->isEmpty()) {
+            $añosDisponibles = collect([$año]);
+        } elseif (!$añosDisponibles->contains($año)) {
+            $añosDisponibles->prepend($año);
+        }
+
+        // 1.c) Actividad por profesor (asistencias) — filtrable por mes/año
+        $actividadAsistencias = Asistencia::query()
+            ->join('bloques', 'asistencias.bloque_id', '=', 'bloques.id')
+            ->join('profesores', 'bloques.profesor_id', '=', 'profesores.id')
+            ->whereYear('asistencias.fecha', $año)
+            ->whereMonth('asistencias.fecha', $mes)
+            ->selectRaw('
+                profesores.id as profesor_id,
+                profesores.nombre as profesor_nombre,
+                asistencias.bloque_id as bloque_id,
+                MAX(asistencias.fecha) as last_fecha,
+                COUNT(DISTINCT asistencias.fecha) as clases_dictadas,
+                AVG(CASE WHEN asistencias.presente = 1 THEN 1 ELSE 0 END) as tasa_presencia
+            ')
+            ->groupBy('profesores.id', 'profesores.nombre', 'asistencias.bloque_id')
+            ->get();
+
+        // Promedio de presentes por clase (por bloque): presentes/clases_distintas
+        $presentesPorBloque = Asistencia::query()
+            ->whereYear('fecha', $año)
+            ->whereMonth('fecha', $mes)
+            ->selectRaw('bloque_id, COUNT(DISTINCT fecha) as clases, SUM(CASE WHEN presente = 1 THEN 1 ELSE 0 END) as presentes')
+            ->groupBy('bloque_id')
+            ->get()
+            ->keyBy('bloque_id');
+
+        $bloquesMeta = Bloque::query()
+            ->with(['profesor'])
+            ->where('activo', true)
+            ->get()
+            ->keyBy('id');
+
+        $actividadPorProfesor = $actividadAsistencias
+            ->groupBy('profesor_id')
+            ->map(function ($rows, $profesorId) use ($presentesPorBloque, $bloquesMeta) {
+                $profesorNombre = $rows->first()->profesor_nombre ?? '—';
+
+                $clasesDictadas = (int) $rows->sum('clases_dictadas');
+
+                $promedios = $rows->map(function ($r) use ($presentesPorBloque) {
+                    $meta = $presentesPorBloque->get($r->bloque_id);
+                    if (!$meta || (int) $meta->clases === 0) {
+                        return null;
+                    }
+                    return (float) $meta->presentes / (int) $meta->clases;
+                })->filter();
+
+                $alumnosPromedio = $promedios->isNotEmpty()
+                    ? round($promedios->avg(), 2)
+                    : 0.0;
+
+                $ultimoBloqueRow = $rows->sortByDesc('last_fecha')->first();
+                $ultimoBloque = $ultimoBloqueRow
+                    ? ($bloquesMeta->get($ultimoBloqueRow->bloque_id) ?? null)
+                    : null;
+
+                return [
+                    'profesor_id' => (int) $profesorId,
+                    'profesor_nombre' => $profesorNombre,
+                    'clases_dictadas' => $clasesDictadas,
+                    'alumnos_promedio_presentes' => $alumnosPromedio,
+                    'ultimo_bloque' => $ultimoBloque,
+                    'ultima_fecha' => $ultimoBloqueRow?->last_fecha,
+                ];
+            })
+            ->sortByDesc('clases_dictadas')
+            ->values();
 
         // 2) Alumnos por bloque
         $bloques = Bloque::with(['sede', 'profesor', 'alumnos' => fn ($q) => $q->where('alumnos.activo', true)])
@@ -180,6 +320,11 @@ class ReportesController extends Controller
         $resultadoGlobal = $ingresosTotales - $gastosTotales;
 
         return view('reportes.index', [
+            'mes' => $mes,
+            'año' => $año,
+            'añosDisponibles' => $añosDisponibles,
+            'ingresosPorProfesor' => $ingresosPorProfesor,
+            'actividadPorProfesor' => $actividadPorProfesor,
             'alumnosPorProfesor' => $alumnosPorProfesor,
             'alumnosPorBloque' => $alumnosPorBloque,
             'ingresosPorBloque' => $ingresosPorBloque,

@@ -4,14 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumno;
 use App\Models\Bloque;
+use App\Models\Cuota;
+use App\Models\PagoDetalle;
 use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AlumnosExport;
+use Carbon\Carbon;
 
 class AlumnoController extends Controller
 {
+    private const TIPOS_TAMBOR = [
+        'Redoblante',
+        'Repique',
+        'Medio',
+        'Fondo Agudo',
+        'Fondo Grave',
+        'Timbal',
+        'Platillo',
+        'Otro',
+    ];
+
+    private const TAMBOR_PROCEDENCIAS = [
+        'Propio',
+        'Sede',
+    ];
+
     /**
      * Display a listing of the resource.
      */
@@ -42,16 +61,28 @@ class AlumnoController extends Controller
                 });
             }
 
+            if ($request->filled('tipo_tambor')) {
+                $query->where('tipo_tambor', $request->tipo_tambor);
+            }
+
+            if ($request->filled('tambor_procedencia')) {
+                $query->where('tambor_procedencia', $request->tambor_procedencia);
+            }
+
             $alumnos = $query->orderBy('nombre_apellido')->paginate(20);
             $sedes = Sede::where('activo', true)->get();
             $bloques = Bloque::where('activo', true)->with('sede')->get();
+            $tiposTambor = self::TIPOS_TAMBOR;
+            $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
         } catch (QueryException $e) {
             $alumnos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
             $sedes = collect();
             $bloques = collect();
+            $tiposTambor = self::TIPOS_TAMBOR;
+            $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
         }
 
-        return view('alumnos.index', compact('alumnos', 'sedes', 'bloques'));
+        return view('alumnos.index', compact('alumnos', 'sedes', 'bloques', 'tiposTambor', 'procedenciasTambor'));
     }
 
     /**
@@ -67,8 +98,10 @@ class AlumnoController extends Controller
             $bloques = collect();
         }
         $instrumentos = \App\Models\Bloque::TAMBORES_DISPONIBLES;
+        $tiposTambor = self::TIPOS_TAMBOR;
+        $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
 
-        return view('alumnos.create', compact('sedes', 'bloques', 'instrumentos'));
+        return view('alumnos.create', compact('sedes', 'bloques', 'instrumentos', 'tiposTambor', 'procedenciasTambor'));
     }
 
     /**
@@ -78,12 +111,13 @@ class AlumnoController extends Controller
     {
         $validated = $request->validate([
             'nombre_apellido' => 'required|string|max:255',
-            'dni' => 'required|string|unique:alumnos,dni|max:20',
+            'dni' => 'nullable|string|unique:alumnos,dni|max:20',
             'fecha_nacimiento' => 'required|date',
             'telefono' => 'nullable|string|max:20',
             'instrumento_principal' => 'required|string',
             'instrumento_secundario' => 'nullable|string',
-            'tipo_tambor' => 'required|in:Sede,Propio',
+            'tipo_tambor' => 'nullable|string|in:' . implode(',', self::TIPOS_TAMBOR),
+            'tambor_procedencia' => 'nullable|string|in:' . implode(',', self::TAMBOR_PROCEDENCIAS),
             'bloque_id' => 'nullable|exists:bloques,id',
             'sede_id' => 'required|exists:sedes,id',
             'activo' => 'boolean',
@@ -106,8 +140,68 @@ class AlumnoController extends Controller
      */
     public function show(Alumno $alumno)
     {
-        $alumno->load(['bloque.profesor', 'sede', 'asistencias']);
-        return view('alumnos.show', compact('alumno'));
+        $alumno->load(['bloque.profesor', 'bloques.profesor', 'sede', 'asistencias']);
+
+        $bloquesIds = $alumno->bloques->pluck('id')->filter()->values();
+        if ($bloquesIds->isEmpty() && $alumno->bloque_id) {
+            $bloquesIds = collect([$alumno->bloque_id]);
+        }
+
+        $cuotas = $bloquesIds->isNotEmpty()
+            ? Cuota::query()
+                ->with(['alumnos:id'])
+                ->whereIn('bloque_id', $bloquesIds->all())
+                ->where('activo', true)
+                ->orderByDesc('año')
+                ->orderByDesc('mes')
+                ->get()
+            : collect();
+
+        $cuotasAplicables = $cuotas->filter(function (Cuota $cuota) use ($alumno) {
+            if ($cuota->alumnos->isEmpty()) {
+                return true;
+            }
+            return $cuota->alumnos->contains('id', $alumno->id);
+        })->values();
+
+        $pagosPorCuota = $cuotasAplicables->isNotEmpty()
+            ? PagoDetalle::query()
+                ->with(['pago:id,fecha_pago'])
+                ->where('alumno_id', $alumno->id)
+                ->whereIn('cuota_id', $cuotasAplicables->pluck('id')->all())
+                ->get()
+                ->keyBy('cuota_id')
+            : collect();
+
+        $hoy = Carbon::today();
+        $estadoCuenta = $cuotasAplicables->map(function (Cuota $cuota) use ($pagosPorCuota, $hoy) {
+            $pagoDetalle = $pagosPorCuota->get($cuota->id);
+
+            $fechaPago = $pagoDetalle?->pago?->fecha_pago;
+            $fechaVencimiento = $cuota->fecha_vencimiento;
+
+            if ($fechaPago) {
+                $estado = 'Pagada';
+                $estadoColor = 'success';
+            } elseif ($fechaVencimiento && $fechaVencimiento->lt($hoy)) {
+                $estado = 'Vencida';
+                $estadoColor = 'danger';
+            } else {
+                $estado = 'Pendiente';
+                $estadoColor = 'warning';
+            }
+
+            return [
+                'cuota' => $cuota,
+                'periodo' => ($cuota->mes ? str_pad((string) $cuota->mes, 2, '0', STR_PAD_LEFT) : '—') . '/' . ($cuota->año ?? '—'),
+                'monto' => (float) $cuota->monto,
+                'fecha_pago' => $fechaPago,
+                'estado' => $estado,
+                'estado_color' => $estadoColor,
+            ];
+        });
+
+        return view('alumnos.show', compact('alumno', 'estadoCuenta'));
     }
 
     /**
@@ -123,8 +217,10 @@ class AlumnoController extends Controller
             $bloques = collect();
         }
         $instrumentos = \App\Models\Bloque::TAMBORES_DISPONIBLES;
+        $tiposTambor = self::TIPOS_TAMBOR;
+        $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
 
-        return view('alumnos.edit', compact('alumno', 'sedes', 'bloques', 'instrumentos'));
+        return view('alumnos.edit', compact('alumno', 'sedes', 'bloques', 'instrumentos', 'tiposTambor', 'procedenciasTambor'));
     }
 
     /**
@@ -134,12 +230,13 @@ class AlumnoController extends Controller
     {
         $validated = $request->validate([
             'nombre_apellido' => 'required|string|max:255',
-            'dni' => 'required|string|unique:alumnos,dni,' . $alumno->id . '|max:20',
+            'dni' => 'nullable|string|unique:alumnos,dni,' . $alumno->id . '|max:20',
             'fecha_nacimiento' => 'required|date',
             'telefono' => 'nullable|string|max:20',
             'instrumento_principal' => 'required|string',
             'instrumento_secundario' => 'nullable|string',
-            'tipo_tambor' => 'required|in:Sede,Propio',
+            'tipo_tambor' => 'nullable|string|in:' . implode(',', self::TIPOS_TAMBOR),
+            'tambor_procedencia' => 'nullable|string|in:' . implode(',', self::TAMBOR_PROCEDENCIAS),
             'bloque_id' => 'nullable|exists:bloques,id',
             'sede_id' => 'required|exists:sedes,id',
             'activo' => 'boolean',

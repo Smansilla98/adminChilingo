@@ -11,9 +11,19 @@
     </div>
     <div class="card-body">
         <form method="GET" class="mb-3">
-            <div class="row g-2">
-                <div class="col-md-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label small">Año</label>
                     <input type="number" name="año" class="form-control" placeholder="Año" value="{{ request('año') }}" min="2020" max="2030">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Bloque</label>
+                    <select name="bloque_id" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach($bloques ?? [] as $b)
+                        <option value="{{ $b->id }}" {{ request('bloque_id') == $b->id ? 'selected' : '' }}>{{ $b->nombre }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-md-2"><button type="submit" class="btn btn-primary">Filtrar</button></div>
             </div>
@@ -23,6 +33,7 @@
                 <thead>
                     <tr>
                         <th>Nombre</th>
+                        <th>Bloque</th>
                         <th>Año</th>
                         <th>Mes</th>
                         <th>Monto</th>
@@ -34,6 +45,7 @@
                     @forelse($cuotas as $c)
                     <tr>
                         <td>{{ $c->nombre }}</td>
+                        <td>{{ $c->bloque ? $c->bloque->nombre : '-' }}</td>
                         <td>{{ $c->año }}</td>
                         <td>{{ $c->nombre_mes ?? '-' }}</td>
                         <td>$ {{ number_format($c->monto, 2, ',', '.') }}</td>
@@ -49,7 +61,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="6" class="text-center">No hay cuotas. <a href="{{ route('cuotas.create') }}">Crear una</a></td></tr>
+                    <tr><td colspan="7" class="text-center">No hay cuotas. <a href="{{ route('cuotas.create') }}">Crear una</a></td></tr>
                     @endforelse
                 </tbody>
             </table>
