@@ -4,368 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'La Chilinga - Sistema de Gestión')</title>
+    <title>@yield('title', 'La Chilinga')</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-v0.css') }}">
-    <style>
-        :root {
-            --sidebar-width: 14rem;
-            --sidebar-bg: #2c3e50;
-            --sidebar-hover: #3d566e;
-            --primary: #4e73df;
-            --primary-dark: #2e59d9;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
-        }
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #f8f9fc;
-            min-height: 100vh;
-            color: #5a5c69;
-        }
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            max-height: 100vh;
-            background: var(--sidebar-bg);
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 100;
-            padding-top: 1rem;
-            transition: transform 0.2s ease, width 0.2s ease;
-            box-shadow: 4px 0 10px rgba(0,0,0,.08);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .sidebar .sidebar-nav {
-            flex: 1 1 0;
-            min-height: 0;
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-        }
-        .sidebar .sidebar-brand {
-            padding: 0 1.5rem 1.5rem;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #fff !important;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .sidebar .sidebar-brand:hover { color: #fff !important; opacity: .9; }
-        .sidebar .nav {
-            padding: 0 .75rem;
-        }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,.8);
-            padding: .75rem 1rem;
-            border-radius: .35rem;
-            margin-bottom: .125rem;
-            font-weight: 600;
-            font-size: .85rem;
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-        }
-        .sidebar .nav-link:hover {
-            color: #fff;
-            background: var(--sidebar-hover);
-        }
-        .sidebar .nav-link.active {
-            color: #fff;
-            background: var(--primary);
-        }
-        .sidebar .nav-link i { font-size: 1.1rem; opacity: .9; }
-        .sidebar .nav-section {
-            padding: .5rem 1rem .25rem;
-            font-size: .65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            color: rgba(255,255,255,.5);
-        }
-        .sidebar .nav-divider {
-            height: 1px;
-            margin: .5rem .75rem;
-            background: rgba(255,255,255,.15);
-        }
-        .sidebar .sidebar-footer {
-            padding: 1rem .75rem;
-            margin-top: auto;
-            border-top: 1px solid rgba(255,255,255,.1);
-        }
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .topbar {
-            background: #fff;
-            box-shadow: 0 .15rem 1.75rem 0 rgba(58,59,69,.15);
-            height: 4.375rem;
-            padding: 0 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .topbar .page-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #5a5c69;
-        }
-        .content-wrapper {
-            flex: 1;
-            padding: 1.5rem;
-        }
-        .card {
-            border: none;
-            border-radius: .35rem;
-            box-shadow: 0 .15rem 1.75rem 0 rgba(58,59,69,.15);
-            margin-bottom: 1.5rem;
-        }
-        .card-header {
-            background: #fff;
-            border-bottom: 1px solid #e3e6f0;
-            padding: .75rem 1.25rem;
-            font-weight: 700;
-            color: #5a5c69;
-            font-size: 1rem;
-            border-radius: .35rem .35rem 0 0;
-        }
-        .card-header.py-3 { padding: 1rem 1.25rem; }
-        .card-body { padding: 1.25rem; }
-        .btn-primary {
-            background: var(--primary);
-            border-color: var(--primary);
-            font-weight: 600;
-        }
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            border-color: var(--primary-dark);
-        }
-        .btn-sm { font-size: .8rem; }
-        .table { color: #5a5c69; }
-        .table thead th {
-            font-weight: 700;
-            font-size: .75rem;
-            text-transform: uppercase;
-            color: #5a5c69;
-            border-bottom-width: 1px;
-        }
-        .alert { border: none; border-radius: .35rem; }
-        .navbar-brand { font-weight: 700; }
-        .sidebar-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.3);
-            z-index: 99;
-        }
-        @media (max-width: 991.98px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.sidebar-open { transform: translateX(0); }
-            .sidebar-backdrop.sidebar-open { display: block; }
-            .main-content { margin-left: 0; }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}">
+
     @stack('styles')
 </head>
 <body>
-    @auth
-    <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
-    <nav class="sidebar">
-        <a class="sidebar-brand" href="{{ route('dashboard') }}">
-            <i class="bi bi-music-note-beamed"></i> La Chilinga
+@auth
+<div class="shell">
+    <aside class="sidebar">
+        <a class="side-logo" href="{{ route('dashboard') }}" aria-label="Dashboard">
+            <span class="lc-badge">LC</span>
         </a>
-        <div class="sidebar-nav">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </li>
-                <span class="nav-section">General</span>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('programa.*') ? 'active' : '' }}" href="{{ route('programa.index') }}">
-                        <i class="bi bi-music-note-list"></i> Programa
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}">
-                        <i class="bi bi-calendar3"></i> Calendario
-                    </a>
-                </li>
+
+        <nav class="side-nav" aria-label="Navegación">
+            <a class="side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}" title="Dashboard" aria-label="Dashboard">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" fill="currentColor"/>
+                </svg>
+            </a>
+
+            <a class="side-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}" title="Calendario" aria-label="Calendario">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" fill="currentColor"/>
+                </svg>
+            </a>
+
             @if(auth()->user()->isAdmin())
-                <div class="nav-divider"></div>
-                <span class="nav-section">Reportes</span>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}" href="{{ route('reportes.index') }}">
-                        <i class="bi bi-bar-chart"></i> Reportes
-                    </a>
-                </li>
-                <div class="nav-divider"></div>
-                <span class="nav-section">Personas y estructura</span>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('alumnos.*') ? 'active' : '' }}" href="{{ route('alumnos.index') }}">
-                        <i class="bi bi-people"></i> Alumnos
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('profesores.*') ? 'active' : '' }}" href="{{ route('profesores.index') }}">
-                        <i class="bi bi-person-badge"></i> Profesores
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('bloques.*') ? 'active' : '' }}" href="{{ route('bloques.index') }}">
-                        <i class="bi bi-collection"></i> Bloques
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('sedes.*') ? 'active' : '' }}" href="{{ route('sedes.index') }}">
-                        <i class="bi bi-building"></i> Sedes
-                    </a>
-                </li>
-                <div class="nav-divider"></div>
-                <span class="nav-section">Eventos</span>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('eventos.*') ? 'active' : '' }}" href="{{ route('eventos.index') }}">
-                        <i class="bi bi-calendar-event"></i> Eventos
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('shows.*') ? 'active' : '' }}" href="{{ route('shows.index') }}">
-                        <i class="bi bi-mic"></i> Shows
-                    </a>
-                </li>
-                <div class="nav-divider"></div>
-                <span class="nav-section">Inventario y compras</span>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('inventarios.*') ? 'active' : '' }}" href="{{ route('inventarios.index') }}">
-                        <i class="bi bi-box-seam"></i> Inventarios
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('plan-compras.*') ? 'active' : '' }}" href="{{ route('plan-compras.index') }}">
-                        <i class="bi bi-clipboard-data"></i> Plan de compras
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('ordenes-compra.*') ? 'active' : '' }}" href="{{ route('ordenes-compra.index') }}">
-                        <i class="bi bi-file-earmark-text"></i> Órdenes de compra
-                    </a>
-                </li>
-                <div class="nav-divider"></div>
-                <span class="nav-section">Finanzas</span>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('asistencias.*') ? 'active' : '' }}" href="{{ route('asistencias.index') }}">
-                        <i class="bi bi-check-circle"></i> Asistencias
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('cuotas.*') ? 'active' : '' }}" href="{{ route('cuotas.index') }}">
-                        <i class="bi bi-cash-coin"></i> Cuotas
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('pagos.*') ? 'active' : '' }}" href="{{ route('pagos.index') }}">
-                        <i class="bi bi-receipt"></i> Pagos
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('facturacion-mensual.*') ? 'active' : '' }}" href="{{ route('facturacion-mensual.index') }}">
-                        <i class="bi bi-graph-up"></i> Facturación
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('gastos.*') ? 'active' : '' }}" href="{{ route('gastos.index') }}">
-                        <i class="bi bi-wallet2"></i> Gastos
-                    </a>
-                </li>
+                <a class="side-link {{ request()->routeIs('alumnos.*') ? 'active' : '' }}" href="{{ route('alumnos.index') }}" title="Alumnos" aria-label="Alumnos">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h7v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <a class="side-link {{ request()->routeIs('cuotas.*') ? 'active' : '' }}" href="{{ route('cuotas.index') }}" title="Cuotas" aria-label="Cuotas">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm1 17.93c-2.83.48-5.62-.9-6.78-3.45l1.74-.99A4.99 4.99 0 0 0 13 16.9V13h-2v-2h2V8.82c-1.16.41-2 1.51-2 2.82H9c0-2.76 2.24-5 5-5v2c-1.66 0-3 1.34-3 3v2h4v2h-2v3.93z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <a class="side-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}" href="{{ route('reportes.index') }}" title="Reportes" aria-label="Reportes">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 17h3v-7H3v7zm5 0h3V7H8v10zm5 0h3v-4h-3v4zm5 0h3V3h-3v14z" fill="currentColor"/>
+                    </svg>
+                </a>
+            @else
+                <a class="side-link {{ request()->routeIs('profesor.asistencias.*') ? 'active' : '' }}" href="{{ route('profesor.asistencias.create') }}" title="Asistencia" aria-label="Asistencia">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14-4-4 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7z" fill="currentColor"/>
+                    </svg>
+                </a>
             @endif
-            </ul>
+        </nav>
+
+        <div class="side-user" title="{{ auth()->user()->name ?: auth()->user()->username }}">
+            @php
+                $n = auth()->user()->name ?: auth()->user()->username ?: 'Usuario';
+                $initials = collect(preg_split('/\s+/', trim($n)))->filter()->take(2)->map(fn($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('');
+            @endphp
+            <div class="side-avatar">{{ $initials ?: 'U' }}</div>
         </div>
-    </nav>
-    @endauth
+    </aside>
 
-    <div class="main-content">
-        @auth
+    <main class="main">
         <header class="topbar">
-            <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-link text-dark d-lg-none p-0 me-2" id="sidebarToggle" aria-label="Abrir menú">
-                    <i class="bi bi-list fs-4"></i>
-                </button>
-                <span class="page-title">@yield('page-title', 'Dashboard')</span>
+            <div class="topbar-left">
+                <div class="top-kicker">BIENVENIDO</div>
+                <div class="top-title">@yield('page-title', 'Panel')</div>
+                <div class="top-sub">
+                    <span class="muted">La Chilinga</span>
+                    <span class="dot">•</span>
+                    <span class="muted">{{ now()->locale('es')->translatedFormat('F Y') }}</span>
+                </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="text-muted small">{{ auth()->user()->name ?: auth()->user()->username }}</span>
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-box-arrow-right"></i> Salir
-                    </button>
-                </form>
-            </div>
-        </header>
-        @endauth
 
-        <div class="content-wrapper">
-            @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+            @if(auth()->user()->isAdmin())
+                <div class="topbar-actions">
+                    <a href="{{ route('alumnos.create') }}" class="btn btn-pill">+ Alumno</a>
+                    <a href="{{ route('bloques.create') }}" class="btn btn-pill">+<br>Bloque</a>
+                    <a href="{{ route('pagos.create') }}" class="btn btn-pill btn-pill-wide">Registrar pago</a>
+                </div>
             @endif
+        </header>
 
+        <section class="content">
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
             @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
 
             @yield('content')
-        </div>
-    </div>
+        </section>
+    </main>
+</div>
+@endauth
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    @auth
-    <script>
-        (function() {
-            var sidebar = document.querySelector('.sidebar');
-            var backdrop = document.getElementById('sidebarBackdrop');
-            var btn = document.getElementById('sidebarToggle');
-            function toggle() {
-                sidebar?.classList.toggle('sidebar-open');
-                backdrop?.classList.toggle('sidebar-open', sidebar?.classList.contains('sidebar-open'));
-            }
-            function close() {
-                sidebar?.classList.remove('sidebar-open');
-                backdrop?.classList.remove('sidebar-open');
-            }
-            btn?.addEventListener('click', toggle);
-            backdrop?.addEventListener('click', close);
-            sidebar?.querySelectorAll('.nav-link').forEach(function(link) {
-                link.addEventListener('click', function() { if (window.innerWidth < 992) close(); });
-            });
-        })();
-    </script>
-    @endauth
-    @stack('scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@stack('scripts')
 </body>
 </html>
