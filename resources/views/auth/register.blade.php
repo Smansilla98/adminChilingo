@@ -6,39 +6,19 @@
     <title>Registro - La Chilinga</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-v0.css') }}">
-    <style>
-        body {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .register-card {
-            max-width: 420px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-        }
-        .register-header {
-            background: rgba(255,255,255,.85);
-            color: #0f172a;
-            padding: 30px;
-            border-radius: 16px 16px 0 0;
-            text-align: center;
-            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="register-card">
-            <div class="register-header">
-                <h2><i class="bi bi-person-plus"></i> Registrarse</h2>
-                <p class="mb-0 text-muted">Sistema de Gestión Administrativa</p>
+    <div class="auth-shell">
+        <div class="auth-card">
+            <div class="auth-head">
+                <div class="auth-brand">LC</div>
+                <div>
+                    <div class="auth-title">Registrarse</div>
+                    <div class="auth-sub">Sistema de Gestión Administrativa</div>
+                </div>
             </div>
-            <div class="card-body p-4">
+            <div class="auth-body">
                 <form method="POST" action="{{ route('register') }}">
                     @csrf
                     <div class="mb-3">
@@ -88,10 +68,9 @@
                         <i class="bi bi-person-check"></i> Crear cuenta
                     </button>
                 </form>
-                <hr class="my-3">
-                <p class="text-center text-muted mb-0 small">
-                    ¿Ya tenés cuenta? <a href="{{ route('login') }}">Iniciar sesión</a>
-                </p>
+            </div>
+            <div class="auth-footer text-center">
+                ¿Ya tenés cuenta? <a href="{{ route('login') }}">Iniciar sesión</a>
             </div>
         </div>
     </div>
