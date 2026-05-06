@@ -21,6 +21,7 @@ use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ProgramaController;
+use App\Models\Bloque;
 
 // Rutas públicas
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -99,6 +100,14 @@ Route::middleware(['auth'])->group(function () {
 
         // Reportes (solo admin: ingresos, egresos, alumnos x profesor/bloque, etc.)
         Route::get('/reportes', [ReportesController::class, 'index'])->name('reportes.index');
+
+        // Dashboard: "ver todo" profesores (pantalla dedicada)
+        Route::get('/reportes/profesores', [ReportesController::class, 'profesores'])->name('reportes.profesores');
+
+        // Dashboard: acceso rápido a asistencia por bloque (usa el create existente con query string)
+        Route::get('/asistencias/bloque/{bloque}', function (Bloque $bloque) {
+            return redirect()->route('asistencias.create', ['bloque_id' => $bloque->id]);
+        })->name('asistencias.bloque');
     });
 
     // Rutas de Profesor

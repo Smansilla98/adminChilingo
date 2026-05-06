@@ -334,5 +334,29 @@ class ReportesController extends Controller
             'resultadoGlobal' => $resultadoGlobal,
         ]);
     }
+
+    public function profesores()
+    {
+        $profesores = Profesor::with(['bloques.alumnos' => fn ($q) => $q->where('alumnos.activo', true), 'bloques.sede'])
+            ->where('activo', true)
+            ->get();
+
+        $alumnosPorProfesor = $profesores->map(function (Profesor $profesor) {
+            $bloques = $profesor->bloques;
+            $alumnosIds = $bloques
+                ->flatMap(fn (Bloque $b) => $b->alumnos->pluck('id'))
+                ->unique()
+                ->values();
+
+            return [
+                'profesor' => $profesor,
+                'sedes' => $bloques->pluck('sede.nombre')->unique()->filter()->values(),
+                'bloques_count' => $bloques->count(),
+                'alumnos_count' => $alumnosIds->count(),
+            ];
+        })->sortByDesc('alumnos_count')->values();
+
+        return view('reportes.profesores', compact('alumnosPorProfesor'));
+    }
 }
 
