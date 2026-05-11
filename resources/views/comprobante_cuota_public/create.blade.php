@@ -26,7 +26,7 @@
     </div>
     <div class="mb-3">
         <label class="form-label">Bloque(s) *</label>
-        <p class="text-muted small mb-1">Podés elegir varios bloques (Ctrl+clic) si en todos cursa el mismo alumno y querés declarar el pago de varias cuotas juntas.</p>
+        <p class="text-muted small mb-1">Podés elegir varios bloques (Ctrl+clic) si en todos cursa el mismo alumno y querés declarar el pago de varias cuotas juntas. No se listan alumnos que <strong>ya tienen pago registrado</strong> en el sistema para esa cuota.</p>
         <select name="bloque_ids[]" id="bloque_ids" class="form-select" multiple size="8" required disabled></select>
     </div>
     <div class="mb-3" id="wrap-alumno">

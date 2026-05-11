@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Throwable;
 
 class PagoController extends Controller
 {
@@ -104,49 +105,62 @@ class PagoController extends Controller
         }
 
         try {
-            $cuota = Cuota::query()->with('bloque')->findOrFail($request->integer('cuota_id'));
-        } catch (QueryException $e) {
-            return response()->json(['alumnos' => []]);
-        }
+            $cuota = Cuota::query()->with('bloque')->find($request->integer('cuota_id'));
+            if (! $cuota) {
+                return response()->json(['alumnos' => []]);
+            }
 
-        if (! $cuota->bloque_id) {
-            return response()->json(['alumnos' => []]);
-        }
+            if (! $cuota->bloque_id) {
+                return response()->json(['alumnos' => []]);
+            }
 
-        $query = Alumno::query()->where('activo', true)->orderBy('nombre_apellido')->with('sede');
+            $query = Alumno::query()->where('activo', true)->orderBy('nombre_apellido')->with('sede');
 
-        if ($cuota->bloque_id) {
             $bid = (int) $cuota->bloque_id;
-            $query->where(function ($q) use ($bid) {
-                $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))
-                    ->orWhere('bloque_id', $bid);
-            });
+            if (Schema::hasTable('alumno_bloque')) {
+                $query->where(function ($q) use ($bid) {
+                    $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))
+                        ->orWhere('bloque_id', $bid);
+                });
+            } else {
+                $query->where('bloque_id', $bid);
+            }
+
+            if (Schema::hasTable('cuota_alumno')) {
+                $idsSoloCuota = $cuota->alumnos()->pluck('alumnos.id');
+                if ($idsSoloCuota->isNotEmpty()) {
+                    $query->whereIn('alumnos.id', $idsSoloCuota->all());
+                }
+            }
+
+            $yaPagaron = PagoDetalle::query()
+                ->where('cuota_id', $cuota->id)
+                ->pluck('alumno_id')
+                ->unique()
+                ->filter()
+                ->values();
+            if ($yaPagaron->isNotEmpty()) {
+                $query->whereNotIn('alumnos.id', $yaPagaron->all());
+            }
+
+            $nombreBloque = $cuota->bloque?->nombre;
+            $alumnos = $query->get(['alumnos.id', 'alumnos.nombre_apellido', 'alumnos.sede_id'])->map(fn (Alumno $a) => [
+                'id' => $a->id,
+                'nombre_apellido' => $a->nombre_apellido,
+                'sede_nombre' => $a->sede?->nombre,
+                'bloque_nombre' => $nombreBloque,
+            ]);
+
+            return response()->json(['alumnos' => $alumnos]);
+        } catch (QueryException $e) {
+            report($e);
+
+            return response()->json(['alumnos' => []]);
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json(['alumnos' => []]);
         }
-
-        $idsSoloCuota = $cuota->alumnos()->pluck('id');
-        if ($idsSoloCuota->isNotEmpty()) {
-            $query->whereIn('alumnos.id', $idsSoloCuota->all());
-        }
-
-        $yaPagaron = PagoDetalle::query()
-            ->where('cuota_id', $cuota->id)
-            ->pluck('alumno_id')
-            ->unique()
-            ->filter()
-            ->values();
-        if ($yaPagaron->isNotEmpty()) {
-            $query->whereNotIn('alumnos.id', $yaPagaron->all());
-        }
-
-        $nombreBloque = $cuota->bloque?->nombre;
-        $alumnos = $query->get(['alumnos.id', 'alumnos.nombre_apellido', 'alumnos.sede_id'])->map(fn (Alumno $a) => [
-            'id' => $a->id,
-            'nombre_apellido' => $a->nombre_apellido,
-            'sede_nombre' => $a->sede?->nombre,
-            'bloque_nombre' => $nombreBloque,
-        ]);
-
-        return response()->json(['alumnos' => $alumnos]);
     }
 
     public function store(Request $request)

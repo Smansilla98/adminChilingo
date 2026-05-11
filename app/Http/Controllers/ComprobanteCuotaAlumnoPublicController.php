@@ -7,6 +7,7 @@ use App\Models\Bloque;
 use App\Models\ComprobanteCuotaAlumno;
 use App\Models\ComprobanteCuotaAlumnoItem;
 use App\Models\Cuota;
+use App\Models\PagoDetalle;
 use App\Models\Sede;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -173,6 +174,9 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
                 if ($cuota && ! $cuota->aplicaAAlumno($a)) {
                     return false;
                 }
+                if ($cuota && $this->alumnoYaPagoCuota((int) $a->id, (int) $cuota->id)) {
+                    return false;
+                }
             }
 
             return true;
@@ -226,6 +230,9 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             }
             $bloque = $cuota->bloque;
             if (! $bloque || (int) $bloque->sede_id !== $sedeId) {
+                continue;
+            }
+            if ($this->alumnoYaPagoCuota((int) $alumno->id, (int) $cuota->id)) {
                 continue;
             }
             $extra[] = [
@@ -284,6 +291,11 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             if (! $enBloque) {
                 throw ValidationException::withMessages(['alumno_id' => 'El alumno no está inscripto en todos los bloques seleccionados.']);
             }
+            if ($this->alumnoYaPagoCuota((int) $alumno->id, (int) $cuota->id)) {
+                throw ValidationException::withMessages([
+                    'alumno_id' => 'Ya consta el pago de esta cuota para este alumno. No hace falta enviar otro comprobante.',
+                ]);
+            }
             $monto = (float) $cuota->monto;
             $montoTotal += $monto;
             $itemsData[] = [
@@ -337,4 +349,17 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             ->orderByDesc('id')
             ->first();
     }
+
+    private function alumnoYaPagoCuota(int $alumnoId, int $cuotaId): bool
+    {
+        if (! Schema::hasTable('pago_detalles')) {
+            return false;
+        }
+
+        return PagoDetalle::query()
+            ->where('alumno_id', $alumnoId)
+            ->where('cuota_id', $cuotaId)
+            ->exists();
+    }
 }
+

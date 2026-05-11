@@ -82,7 +82,8 @@
     const alumnoSel = document.getElementById('alumno_ids_pago');
     const buscarAlumnos = document.getElementById('buscar_alumnos_pago');
     const ayuda = document.getElementById('alumnos_pago_ayuda');
-    const urlApi = @json(route('pagos.api.alumnos-cuota'));
+    {{-- Ruta relativa: evita fetch al host de APP_URL si difiere del dominio real (p. ej. Railway). --}}
+    const urlApi = @json(route('pagos.api.alumnos-cuota', [], false));
     const oldAlumnoIds = @json(array_values(array_map('intval', old('alumno_ids', []))));
     const oldCuotaId = @json((int) old('cuota_id', 0));
 
