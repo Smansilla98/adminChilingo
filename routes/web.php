@@ -118,7 +118,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/mis-bloques', [BloqueController::class, 'index'])->name('profesor.bloques');
         Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->name('profesor.alumnos');
         Route::get('/mis-eventos', [EventoController::class, 'index'])->name('profesor.eventos');
-        Route::get('/asistencias/crear', [AsistenciaController::class, 'create'])->name('profesor.asistencias.create');
-        Route::post('/asistencias', [AsistenciaController::class, 'store'])->name('profesor.asistencias.store');
+        Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->name('profesor.asistencias.create');
+        Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->name('profesor.asistencias.store');
     });
 });
