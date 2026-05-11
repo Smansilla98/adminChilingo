@@ -9,6 +9,7 @@ use App\Models\Alumno;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
 
 class PagoController extends Controller
@@ -102,7 +103,7 @@ class PagoController extends Controller
             'alumno_ids' => 'required|array|min:1',
             'alumno_ids.*' => 'exists:alumnos,id',
             'monto_total' => 'required|numeric|min:0',
-            'comprobante' => 'nullable|file|mimes:pdf|max:10240',
+            'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'notas' => 'nullable|string|max:1000',
         ]);
 
@@ -113,7 +114,15 @@ class PagoController extends Controller
 
         $path = null;
         if ($request->hasFile('comprobante')) {
-            $path = $request->file('comprobante')->store('pagos', 'comprobantes');
+            $upload = $request->file('comprobante');
+            $ext = strtolower((string) $upload->getClientOriginalExtension());
+            if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
+                $ext = strtolower((string) ($upload->guessExtension() ?: 'pdf'));
+            }
+            if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
+                $ext = 'pdf';
+            }
+            $path = $upload->storeAs('pagos', (string) Str::uuid() . '.' . $ext, 'comprobantes');
         }
 
         $pago = Pago::create([
@@ -150,6 +159,12 @@ class PagoController extends Controller
         }
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk('comprobantes');
-        return $disk->download($pago->comprobante_path, 'comprobante-pago-' . $pago->id . '.pdf');
+        $ext = strtolower((string) pathinfo($pago->comprobante_path, PATHINFO_EXTENSION));
+        if ($ext === '' || ! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
+            $ext = 'pdf';
+        }
+        $name = 'comprobante-pago-' . $pago->id . '.' . $ext;
+
+        return $disk->response($pago->comprobante_path, $name);
     }
 }

@@ -63,7 +63,7 @@
                         <td>$ {{ number_format($p->monto_total, 2, ',', '.') }}</td>
                         <td>
                             @if($p->comprobante_path)
-                            <a href="{{ route('pagos.comprobante', $p) }}" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="bi bi-file-pdf"></i> PDF</a>
+                            <a href="{{ route('pagos.comprobante', $p) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"><i class="bi bi-file-earmark"></i> Ver</a>
                             @else
                             —
                             @endif

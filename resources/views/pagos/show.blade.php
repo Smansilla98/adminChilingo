@@ -13,7 +13,7 @@
             <dt class="col-sm-3">Comprobante</dt>
             <dd class="col-sm-9">
                 @if($pago->comprobante_path)
-                <a href="{{ route('pagos.comprobante', $pago) }}" class="btn btn-sm btn-outline-primary" target="_blank"><i class="bi bi-file-pdf"></i> Ver PDF</a>
+                <a href="{{ route('pagos.comprobante', $pago) }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener"><i class="bi bi-file-earmark"></i> Ver comprobante</a>
                 @else
                 —
                 @endif

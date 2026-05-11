@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header">Nuevo pago (varios alumnos, una cuota, comprobante PDF)</div>
+    <div class="card-header">Nuevo pago (varios alumnos, una cuota, comprobante opcional)</div>
     <div class="card-body">
         <form action="{{ route('pagos.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -51,8 +51,8 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Comprobante (PDF)</label>
-                <input type="file" name="comprobante" class="form-control @error('comprobante') is-invalid @enderror" accept=".pdf">
+                <label class="form-label">Comprobante (PDF, JPG, PNG)</label>
+                <input type="file" name="comprobante" class="form-control @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
                 @error('comprobante')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="mb-3">

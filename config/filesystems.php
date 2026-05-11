@@ -48,7 +48,7 @@ return [
         ],
 
         /*
-         * PDFs de comprobantes (persistente en Railway si se configura PERSISTENT_STORAGE_PATH).
+         * Comprobantes de pago (PDF, JPG, PNG; persistente en Railway si se configura PERSISTENT_STORAGE_PATH).
          * En prod, seteá PERSISTENT_STORAGE_PATH a un volumen (ej: /data/storage).
          */
         'comprobantes' => [
