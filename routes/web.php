@@ -50,8 +50,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('alumnos', AlumnoController::class);
         Route::get('/alumnos/export/excel', [AlumnoController::class, 'export'])->name('alumnos.export');
 
-        // Profesores
-        Route::resource('profesores', ProfesorController::class);
+        // Profesores — el segmento plural evita que Str::singular() genere "profesore" en la URL
+        Route::resource('profesores', ProfesorController::class)
+            ->parameters(['profesores' => 'profesor']);
 
         // Bloques
         Route::resource('bloques', BloqueController::class);
