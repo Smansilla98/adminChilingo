@@ -47,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
         // Alumnos
         Route::resource('alumnos', AlumnoController::class);
         Route::get('/alumnos/export/excel', [AlumnoController::class, 'export'])->name('alumnos.export');
+        Route::get('/alumnos/import', [AlumnoController::class, 'importForm'])->name('alumnos.import.form');
+        Route::post('/alumnos/import', [AlumnoController::class, 'importStore'])->name('alumnos.import.store');
 
         // Profesores
         Route::resource('profesores', ProfesorController::class);

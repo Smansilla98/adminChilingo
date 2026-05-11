@@ -9,9 +9,13 @@ use App\Models\PagoDetalle;
 use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AlumnosExport;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Concerns\ToCollection;
 
 class AlumnoController extends Controller
 {
@@ -290,5 +294,285 @@ class AlumnoController extends Controller
     public function export(Request $request)
     {
         return Excel::download(new AlumnosExport($request), 'alumnos_' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function importForm()
+    {
+        $sedes = Sede::orderBy('nombre')->get();
+        $bloques = Bloque::orderBy('nombre')->get();
+
+        return view('alumnos.import', compact('sedes', 'bloques'));
+    }
+
+    public function importStore(Request $request)
+    {
+        $data = $request->validate([
+            'archivo' => ['required', 'file', 'max:10240', 'mimes:csv,txt,xlsx,xls'],
+            'sede_id' => ['required', 'exists:sedes,id'],
+            'bloque_id' => ['nullable', 'exists:bloques,id'],
+        ], [
+            'archivo.required' => 'Tenés que subir un archivo.',
+            'archivo.mimes' => 'Formato inválido. Usá CSV o Excel.',
+            'sede_id.required' => 'Seleccioná una sede.',
+        ]);
+
+        $file = $request->file('archivo');
+        if (!$file) {
+            throw ValidationException::withMessages(['archivo' => 'Archivo inválido.']);
+        }
+
+        $ext = strtolower($file->getClientOriginalExtension());
+        $rows = $this->readSpreadsheetRows($file->getRealPath(), $ext);
+
+        if (count($rows) < 2) {
+            throw ValidationException::withMessages(['archivo' => 'El archivo no tiene filas para importar.']);
+        }
+
+        $headers = $this->normalizeHeaders(array_shift($rows));
+        $indexes = $this->buildIndexMap($headers);
+
+        $imported = 0;
+        $skipped = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($rows as $i => $row) {
+                $line = $i + 2; // + header
+                $mapped = $this->mapAlumnoFromRow(
+                    $row,
+                    $indexes,
+                    (int) $data['sede_id'],
+                    !empty($data['bloque_id']) ? (int) $data['bloque_id'] : null
+                );
+
+                if (!$mapped) {
+                    $skipped++;
+                    $errors[] = "Línea {$line}: faltan datos obligatorios (nombre y/o fecha de nacimiento).";
+                    continue;
+                }
+
+                $lookup = $this->buildAlumnoLookup($mapped);
+
+                /** @var Alumno $alumno */
+                $alumno = Alumno::updateOrCreate($lookup, array_diff_key($mapped, ['dni' => true, '_bloque_attach' => true]));
+
+                if (!empty($mapped['dni'])) {
+                    $alumno->dni = $mapped['dni'];
+                    $alumno->save();
+                }
+
+                if (!empty($mapped['_bloque_attach'])) {
+                    $alumno->bloques()->syncWithoutDetaching([
+                        $mapped['_bloque_attach'] => ['es_principal' => true],
+                    ]);
+                }
+
+                $imported++;
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return redirect()
+            ->route('alumnos.index')
+            ->with('success', "Importación finalizada. Importados: {$imported}. Omitidos: {$skipped}.")
+            ->with('import_errors', $errors);
+    }
+
+    /**
+     * @return array<int, array<int, mixed>>
+     */
+    private function readSpreadsheetRows(string $path, string $ext): array
+    {
+        if (in_array($ext, ['xlsx', 'xls'], true)) {
+            $collection = Excel::toCollection(new class implements ToCollection {
+                public function collection(\Illuminate\Support\Collection $rows) {}
+            }, $path);
+
+            $sheet = $collection->first();
+            if (!$sheet) {
+                return [];
+            }
+
+            return $sheet->map(fn ($r) => is_array($r) ? $r : $r->toArray())->values()->all();
+        }
+
+        $handle = fopen($path, 'r');
+        if ($handle === false) {
+            return [];
+        }
+
+        $rows = [];
+        $firstLine = fgets($handle);
+        if ($firstLine === false) {
+            fclose($handle);
+            return [];
+        }
+
+        $delimiter = str_contains($firstLine, ';') && !str_contains($firstLine, ',') ? ';' : ',';
+        $rows[] = str_getcsv($firstLine, $delimiter);
+
+        while (($data = fgetcsv($handle, 0, $delimiter)) !== false) {
+            $rows[] = $data;
+        }
+        fclose($handle);
+
+        return $rows;
+    }
+
+    /**
+     * @param array<int, mixed> $headers
+     * @return array<int, string>
+     */
+    private function normalizeHeaders(array $headers): array
+    {
+        return array_map(function ($h) {
+            $h = trim((string) $h);
+            $h = Str::lower($h);
+            $h = preg_replace('/\s+/', ' ', $h) ?: $h;
+            return $h;
+        }, $headers);
+    }
+
+    /**
+     * @param array<int, string> $headers
+     * @return array<string, int>
+     */
+    private function buildIndexMap(array $headers): array
+    {
+        $map = [];
+        foreach ($headers as $idx => $h) {
+            $key = $this->headerKey($h);
+            if ($key === 'tambor' && array_key_exists('tambor', $map)) {
+                $key = 'tambor_1';
+            }
+            if (!array_key_exists($key, $map)) {
+                $map[$key] = $idx;
+            }
+        }
+        return $map;
+    }
+
+    private function headerKey(string $header): string
+    {
+        $h = $header;
+        $h = str_replace(['á','é','í','ó','ú','ñ'], ['a','e','i','o','u','n'], $h);
+        $h = preg_replace('/[^a-z0-9 ]/', '', $h) ?: $h;
+        $h = trim($h);
+
+        return match (true) {
+            str_contains($h, 'nombre') && str_contains($h, 'apellido') => 'nombre_apellido',
+            $h === 'dni' => 'dni',
+            str_contains($h, 'fecha') && str_contains($h, 'nacimiento') => 'fecha_nacimiento',
+            str_contains($h, 'telefono') => 'telefono',
+            $h === 'tambor' => 'tambor',
+            default => $h !== '' ? str_replace(' ', '_', $h) : 'col',
+        };
+    }
+
+    /**
+     * @param array<int, mixed> $row
+     * @param array<string, int> $idx
+     * @return array<string, mixed>|null
+     */
+    private function mapAlumnoFromRow(array $row, array $idx, int $sedeId, ?int $bloqueId): ?array
+    {
+        $name = trim((string) ($row[$idx['nombre_apellido']] ?? ''));
+        $name = trim(preg_replace('/\s+/', ' ', $name));
+        if ($name === '') {
+            return null;
+        }
+
+        $fechaRaw = trim((string) ($row[$idx['fecha_nacimiento']] ?? ''));
+        $fecha = $this->parseFechaNacimiento($fechaRaw);
+        if (!$fecha) {
+            return null;
+        }
+
+        $dniRaw = (string) ($row[$idx['dni']] ?? '');
+        $dni = preg_replace('/\D+/', '', $dniRaw);
+        $dni = $dni !== '' ? $dni : null;
+
+        $telefono = trim((string) ($row[$idx['telefono']] ?? ''));
+        $telefono = $telefono !== '' ? $telefono : null;
+
+        $tipoTambor = $this->normalizeOneOf((string) ($row[$idx['tambor']] ?? ''), self::TIPOS_TAMBOR);
+        $procedencia = $this->normalizeOneOf((string) ($row[$idx['tambor_1']] ?? ''), self::TAMBOR_PROCEDENCIAS);
+
+        $instrumentoPrincipal = $tipoTambor && in_array($tipoTambor, self::TIPOS_TAMBOR, true) ? $tipoTambor : 'Otro';
+
+        return [
+            'dni' => $dni,
+            'nombre_apellido' => $name,
+            'fecha_nacimiento' => $fecha->format('Y-m-d'),
+            'telefono' => $telefono,
+            'instrumento_principal' => $instrumentoPrincipal,
+            'instrumento_secundario' => null,
+            'tipo_tambor' => $tipoTambor,
+            'tambor_procedencia' => $procedencia,
+            'bloque_id' => $bloqueId,
+            'sede_id' => $sedeId,
+            'activo' => true,
+            '_bloque_attach' => $bloqueId,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $mapped
+     * @return array<string, mixed>
+     */
+    private function buildAlumnoLookup(array $mapped): array
+    {
+        if (!empty($mapped['dni'])) {
+            return ['dni' => $mapped['dni']];
+        }
+        return [
+            'nombre_apellido' => $mapped['nombre_apellido'],
+            'sede_id' => $mapped['sede_id'],
+        ];
+    }
+
+    private function parseFechaNacimiento(string $raw): ?Carbon
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return null;
+        }
+        $raw = str_replace(['.', '-'], '/', $raw);
+        $raw = preg_replace('/\s+/', '', $raw);
+
+        foreach (['d/m/Y', 'd/m/y', 'j/n/Y', 'j/n/y'] as $fmt) {
+            try {
+                $dt = Carbon::createFromFormat($fmt, $raw);
+                if ($dt) {
+                    return $dt;
+                }
+            } catch (\Throwable) {
+                // seguir
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<int, string> $allowed
+     */
+    private function normalizeOneOf(string $value, array $allowed): ?string
+    {
+        $v = trim($value);
+        if ($v === '') {
+            return null;
+        }
+        foreach ($allowed as $a) {
+            if (Str::lower(trim($a)) === Str::lower($v)) {
+                return $a;
+            }
+        }
+        return null;
     }
 }

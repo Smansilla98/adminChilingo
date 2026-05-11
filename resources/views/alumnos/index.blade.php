@@ -11,6 +11,9 @@
             <a href="{{ route('alumnos.export') }}" class="btn btn-success btn-sm">
                 <i class="bi bi-file-earmark-excel"></i> Exportar Excel
             </a>
+            <a href="{{ route('alumnos.import.form') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-upload"></i> Importar CSV/Excel
+            </a>
             <a href="{{ route('alumnos.create') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-circle"></i> Nuevo Alumno
             </a>

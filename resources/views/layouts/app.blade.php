@@ -39,6 +39,11 @@
                         <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h7v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
                     </svg>
                 </a>
+                <a class="side-link {{ request()->routeIs('alumnos.import.*') ? 'active' : '' }}" href="{{ route('alumnos.import.form') }}" title="Importar alumnos" aria-label="Importar alumnos">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 20h14v-2H5v2zM12 2 6.5 7.5l1.42 1.42L11 5.84V16h2V5.84l3.08 3.08 1.42-1.42L12 2z" fill="currentColor"/>
+                    </svg>
+                </a>
                 <a class="side-link {{ request()->routeIs('cuotas.*') ? 'active' : '' }}" href="{{ route('cuotas.index') }}" title="Cuotas" aria-label="Cuotas">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm1 17.93c-2.83.48-5.62-.9-6.78-3.45l1.74-.99A4.99 4.99 0 0 0 13 16.9V13h-2v-2h2V8.82c-1.16.41-2 1.51-2 2.82H9c0-2.76 2.24-5 5-5v2c-1.66 0-3 1.34-3 3v2h4v2h-2v3.93z" fill="currentColor"/>
@@ -91,6 +96,16 @@
         <section class="content">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('import_errors') && is_array(session('import_errors')) && count(session('import_errors')) > 0)
+                <div class="alert alert-warning">
+                    <div class="fw-semibold">Importación: advertencias</div>
+                    <ul class="mb-0">
+                        @foreach(session('import_errors') as $msg)
+                            <li>{{ $msg }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
             @if($errors->any())
                 <div class="alert alert-danger">
