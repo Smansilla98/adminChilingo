@@ -56,4 +56,25 @@ class Cuota extends Model
         $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         return $meses[$this->mes] ?? (string) $this->mes;
     }
+
+    /**
+     * Si la cuota no tiene alumnos asignados en cuota_alumno, aplica a todos los del bloque;
+     * si tiene lista, solo a esos (que además deben estar en el bloque).
+     */
+    public function aplicaAAlumno(Alumno $alumno): bool
+    {
+        if (! $this->bloque_id) {
+            return false;
+        }
+        $enBloque = $alumno->bloques()->where('bloques.id', $this->bloque_id)->exists()
+            || (int) $alumno->bloque_id === (int) $this->bloque_id;
+        if (! $enBloque) {
+            return false;
+        }
+        if ($this->alumnos()->count() === 0) {
+            return true;
+        }
+
+        return $this->alumnos()->where('alumnos.id', $alumno->id)->exists();
+    }
 }

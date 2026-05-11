@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title"><i class="bi bi-collection"></i> Mis bloques</h5>
@@ -13,7 +13,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title"><i class="bi bi-calendar-event"></i> Próximos eventos</h5>
@@ -21,11 +21,20 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title"><i class="bi bi-people"></i> Alumnos (total)</h5>
                 <h2>{{ $bloques->sum(fn($b) => $b->alumnos ? $b->alumnos->count() : 0) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card {{ ($comprobantesCuotaPendientes ?? 0) > 0 ? 'border-warning' : '' }}">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-upload"></i> Comprobantes alumnos</h5>
+                <h2>{{ $comprobantesCuotaPendientes ?? 0 }}</h2>
+                <a href="{{ route('comprobantes-cuota-alumnos.index', ['estado' => 'pendiente']) }}" class="small">Ver pendientes →</a>
             </div>
         </div>
     </div>

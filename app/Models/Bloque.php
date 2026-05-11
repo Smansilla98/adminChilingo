@@ -93,6 +93,11 @@ class Bloque extends Model
         return $this->belongsTo(Sede::class);
     }
 
+    public function cuotas(): HasMany
+    {
+        return $this->hasMany(Cuota::class);
+    }
+
     /**
      * Alumnos inscritos en este bloque (un alumno puede estar en varios bloques)
      */

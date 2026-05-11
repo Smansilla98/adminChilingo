@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'profesor_o_admin' => \App\Http\Middleware\EnsureProfesorOrAdmin::class,
         ]);
         // Detrás de Railway/HTTPS: confiar en proxies para URL y esquema correctos
         $middleware->trustProxies(at: '*');

@@ -49,6 +49,11 @@
                         <path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm1 17.93c-2.83.48-5.62-.9-6.78-3.45l1.74-.99A4.99 4.99 0 0 0 13 16.9V13h-2v-2h2V8.82c-1.16.41-2 1.51-2 2.82H9c0-2.76 2.24-5 5-5v2c-1.66 0-3 1.34-3 3v2h4v2h-2v3.93z" fill="currentColor"/>
                     </svg>
                 </a>
+                <a class="side-link {{ request()->routeIs('comprobantes-cuota-alumnos.*') ? 'active' : '' }}" href="{{ route('comprobantes-cuota-alumnos.index') }}" title="Comprobantes de alumnos" aria-label="Comprobantes de alumnos">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z" fill="currentColor"/>
+                    </svg>
+                </a>
                 <a class="side-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}" href="{{ route('reportes.index') }}" title="Reportes" aria-label="Reportes">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M3 17h3v-7H3v7zm5 0h3V7H8v10zm5 0h3v-4h-3v4zm5 0h3V3h-3v14z" fill="currentColor"/>
@@ -58,6 +63,11 @@
                 <a class="side-link {{ request()->routeIs('profesor.asistencias.*') ? 'active' : '' }}" href="{{ route('profesor.asistencias.create') }}" title="Asistencia" aria-label="Asistencia">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14-4-4 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7z" fill="currentColor"/>
+                    </svg>
+                </a>
+                <a class="side-link {{ request()->routeIs('comprobantes-cuota-alumnos.*') ? 'active' : '' }}" href="{{ route('comprobantes-cuota-alumnos.index') }}" title="Comprobantes de alumnos" aria-label="Comprobantes de alumnos">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z" fill="currentColor"/>
                     </svg>
                 </a>
             @endif

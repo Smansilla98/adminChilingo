@@ -63,7 +63,7 @@
                         <td>$ {{ number_format($p->monto_total, 2, ',', '.') }}</td>
                         <td>
                             @if($p->comprobante_path)
-                            <a href="{{ route('pagos.comprobante', $p) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"><i class="bi bi-file-earmark"></i> Ver</a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalComprobantePago" data-comprobante-src="{{ route('pagos.comprobante', $p) }}" data-comprobante-label="Comprobante — pago #{{ $p->id }}"><i class="bi bi-file-earmark"></i> Ver</button>
                             @else
                             —
                             @endif
@@ -82,4 +82,5 @@
         {{ $pagos->withQueryString()->links() }}
     </div>
 </div>
+@include('pagos._modal_comprobante')
 @endsection

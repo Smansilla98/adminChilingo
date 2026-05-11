@@ -13,7 +13,7 @@
             <dt class="col-sm-3">Comprobante</dt>
             <dd class="col-sm-9">
                 @if($pago->comprobante_path)
-                <a href="{{ route('pagos.comprobante', $pago) }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener"><i class="bi bi-file-earmark"></i> Ver comprobante</a>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalComprobantePago" data-comprobante-src="{{ route('pagos.comprobante', $pago) }}" data-comprobante-label="Comprobante — pago #{{ $pago->id }}"><i class="bi bi-file-earmark"></i> Ver comprobante</button>
                 @else
                 —
                 @endif
@@ -49,4 +49,5 @@
         <a href="{{ route('pagos.index') }}" class="btn btn-secondary">Volver</a>
     </div>
 </div>
+@include('pagos._modal_comprobante')
 @endsection

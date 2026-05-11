@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class PagoController extends Controller
 {
@@ -65,15 +66,7 @@ class PagoController extends Controller
 
     public function create()
     {
-        $alumnos = collect();
         $cuotas = collect();
-        if (Schema::hasTable('alumnos')) {
-            try {
-                $alumnos = Alumno::where('activo', true)->with('sede')->orderBy('nombre_apellido')->get();
-            } catch (QueryException $e) {
-                // mantener collect()
-            }
-        }
         if (Schema::hasTable('cuotas')) {
             try {
                 $q = Cuota::query();
@@ -81,12 +74,79 @@ class PagoController extends Controller
                     // Incluye retroactivos aunque estén inactivos, para poder registrarlos.
                     $q->orderBy('activo', 'desc');
                 }
-                $cuotas = $q->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
+                $cuotas = $q->with(['bloque.sede'])->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
             } catch (QueryException $e) {
                 // mantener collect()
             }
         }
-        return view('pagos.create', compact('alumnos', 'cuotas'));
+        $bloquesFiltro = $cuotas
+            ->pluck('bloque')
+            ->filter()
+            ->unique('id')
+            ->sortBy(fn ($b) => $b->nombre)
+            ->values();
+
+        return view('pagos.create', compact('cuotas', 'bloquesFiltro'));
+    }
+
+    /**
+     * Alumnos que pueden sumarse a un pago para esta cuota: en el bloque (si aplica), no figuran en cuota_alumno excluidos,
+     * y aún no tienen línea en pago_detalles para la misma cuota.
+     */
+    public function alumnosParaCuota(Request $request): JsonResponse
+    {
+        $request->validate([
+            'cuota_id' => 'required|exists:cuotas,id',
+        ]);
+
+        if (! Schema::hasTable('pago_detalles') || ! Schema::hasTable('alumnos')) {
+            return response()->json(['alumnos' => []]);
+        }
+
+        try {
+            $cuota = Cuota::query()->with('bloque')->findOrFail($request->integer('cuota_id'));
+        } catch (QueryException $e) {
+            return response()->json(['alumnos' => []]);
+        }
+
+        if (! $cuota->bloque_id) {
+            return response()->json(['alumnos' => []]);
+        }
+
+        $query = Alumno::query()->where('activo', true)->orderBy('nombre_apellido')->with('sede');
+
+        if ($cuota->bloque_id) {
+            $bid = (int) $cuota->bloque_id;
+            $query->where(function ($q) use ($bid) {
+                $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))
+                    ->orWhere('bloque_id', $bid);
+            });
+        }
+
+        $idsSoloCuota = $cuota->alumnos()->pluck('id');
+        if ($idsSoloCuota->isNotEmpty()) {
+            $query->whereIn('alumnos.id', $idsSoloCuota->all());
+        }
+
+        $yaPagaron = PagoDetalle::query()
+            ->where('cuota_id', $cuota->id)
+            ->pluck('alumno_id')
+            ->unique()
+            ->filter()
+            ->values();
+        if ($yaPagaron->isNotEmpty()) {
+            $query->whereNotIn('alumnos.id', $yaPagaron->all());
+        }
+
+        $nombreBloque = $cuota->bloque?->nombre;
+        $alumnos = $query->get(['alumnos.id', 'alumnos.nombre_apellido', 'alumnos.sede_id'])->map(fn (Alumno $a) => [
+            'id' => $a->id,
+            'nombre_apellido' => $a->nombre_apellido,
+            'sede_nombre' => $a->sede?->nombre,
+            'bloque_nombre' => $nombreBloque,
+        ]);
+
+        return response()->json(['alumnos' => $alumnos]);
     }
 
     public function store(Request $request)
@@ -110,6 +170,21 @@ class PagoController extends Controller
         $alumnoIds = array_values(array_filter($validated['alumno_ids']));
         if (empty($alumnoIds)) {
             return back()->withErrors(['alumno_ids' => 'Seleccione al menos un alumno.'])->withInput();
+        }
+
+        $cuota = Cuota::query()->findOrFail($validated['cuota_id']);
+        foreach ($alumnoIds as $alumnoId) {
+            if (PagoDetalle::query()->where('cuota_id', $cuota->id)->where('alumno_id', $alumnoId)->exists()) {
+                return back()->withErrors([
+                    'alumno_ids' => 'Uno de los alumnos ya tiene pago registrado para esta cuota. Elegí otra cuota o actualizá la lista de alumnos.',
+                ])->withInput();
+            }
+            $alumno = Alumno::query()->find($alumnoId);
+            if (! $alumno || ! $cuota->aplicaAAlumno($alumno)) {
+                return back()->withErrors([
+                    'alumno_ids' => 'Uno de los alumnos no corresponde a esta cuota o al bloque.',
+                ])->withInput();
+            }
         }
 
         $path = null;

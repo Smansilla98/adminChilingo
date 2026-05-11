@@ -12,7 +12,9 @@ use App\Models\Pago;
 use App\Models\Asistencia;
 use App\Models\Sede;
 use App\Models\Evento;
+use App\Models\ComprobanteCuotaAlumno;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -250,6 +252,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         $bloques = collect();
         $proximosEventos = collect();
+        $comprobantesCuotaPendientes = 0;
 
         try {
             $profesor = $user->profesor;
@@ -260,6 +263,13 @@ class DashboardController extends Controller
                     ->proximos()
                     ->limit(5)
                     ->get();
+                if (Schema::hasTable('comprobantes_cuota_alumnos')) {
+                    $ids = $profesor->bloqueIdsDondeParticipa()->all();
+                    $comprobantesCuotaPendientes = (int) ComprobanteCuotaAlumno::query()
+                        ->where('estado', 'pendiente')
+                        ->whereHas('items', fn ($q) => $q->whereIn('bloque_id', $ids !== [] ? $ids : [0]))
+                        ->count();
+                }
             }
         } catch (\Illuminate\Database\QueryException $e) {
             // Tabla profesors/profesores u otras no existen (migraciones pendientes)
@@ -267,6 +277,6 @@ class DashboardController extends Controller
             // Cualquier otro fallo: mostrar dashboard vacío
         }
 
-        return view('dashboard.profesor', compact('bloques', 'proximosEventos'));
+        return view('dashboard.profesor', compact('bloques', 'proximosEventos', 'comprobantesCuotaPendientes'));
     }
 }

@@ -50,6 +50,9 @@
             </div>
             <div class="auth-footer text-center">
                 ¿No tenés cuenta? <a href="{{ route('register') }}">Registrarse</a>
+                <div class="mt-2 small text-muted">
+                    ¿Pagaste la cuota? <a href="{{ route('comprobante-cuota-public.create') }}">Cargar comprobante (sin cuenta)</a>
+                </div>
             </div>
         </div>
     </div>
