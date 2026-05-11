@@ -5,14 +5,28 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Listado de Asistencias</h5>
-        <a href="{{ route('asistencias.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-circle"></i> Cargar asistencias
-        </a>
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h5 class="mb-0">@if(!empty($vistaLista))Historial de asistencias@elseMatriz de asistencias (tipo Excel)@endif</h5>
+        <div class="d-flex flex-wrap gap-2">
+            @if(empty($vistaLista))
+            <a href="{{ route('asistencias.create') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-calendar-plus"></i> Cargar un día
+            </a>
+            @endif
+            <a href="{{ route('asistencias.index', array_merge(request()->except('vista'), ['vista' => 'lista'])) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-list-ul"></i> Vista lista
+            </a>
+            @if(!empty($vistaLista))
+            <a href="{{ route('asistencias.index', request()->except('vista')) }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-grid-3x3"></i> Volver a matriz
+            </a>
+            @endif
+        </div>
     </div>
     <div class="card-body">
+        @if(!empty($vistaLista))
         <form method="GET" class="mb-3">
+            <input type="hidden" name="vista" value="lista">
             <div class="row g-3">
                 <div class="col-md-4">
                     <select name="bloque_id" class="form-select">
@@ -23,56 +37,132 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <input type="date" name="fecha" class="form-control" value="{{ request('fecha') }}" placeholder="Fecha">
+                    <input type="date" name="fecha" class="form-control" value="{{ request('fecha') }}">
                 </div>
                 <div class="col-md-4">
                     <button type="submit" class="btn btn-primary w-100">Filtrar</button>
                 </div>
             </div>
         </form>
+        @include('asistencias.index-lista')
+        @else
+        <p class="text-muted small mb-3">
+            Elegí <strong>bloque</strong> y <strong>mes</strong>: cada columna es una clase del mes (según los días configurados en el bloque; si no hay horarios, se asume <strong>viernes</strong> como en el Excel).
+            Leyenda: <span class="badge asist-badge-p">P</span> presente · <span class="badge asist-badge-t">T</span> tarde · <span class="badge asist-badge-j">J</span> justificada · <span class="badge asist-badge-i">I</span> injustificada.
+        </p>
 
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Alumno</th>
-                        <th>Bloque</th>
-                        <th>Tipo de asistencia</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($asistencias as $a)
-                    <tr>
-                        <td>{{ $a->fecha->format('d/m/Y') }}</td>
-                        <td>{{ $a->alumno->nombre_apellido ?? '-' }}</td>
-                        <td>{{ $a->bloque->nombre ?? '-' }}</td>
-                        <td>
-                            <span class="badge bg-{{ $a->tipo_asistencia === 'presente' || $a->tipo_asistencia === 'tarde' ? 'success' : (in_array($a->tipo_asistencia, ['ausencia_justificada', 'justificado']) ? 'info' : 'secondary') }}">
-                                {{ $tiposAsistencia[$a->tipo_asistencia] ?? $a->tipo_asistencia }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{{ route('asistencias.show', $a) }}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-                            <a href="{{ route('asistencias.edit', $a) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                            <form action="{{ route('asistencias.destroy', $a) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar registro?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center">No hay asistencias. <a href="{{ route('asistencias.create') }}">Cargar asistencias</a></td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <form method="GET" class="mb-3">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Bloque</label>
+                    <select name="bloque_id" class="form-select" required>
+                        <option value="">Seleccionar bloque…</option>
+                        @foreach($bloques as $b)
+                        <option value="{{ $b->id }}" {{ (string)request('bloque_id') === (string)$b->id ? 'selected' : '' }}>{{ $b->nombre }} — {{ $b->sede->nombre ?? '' }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Mes</label>
+                    <select name="mes" class="form-select">
+                        @foreach(range(1, 12) as $m)
+                        <option value="{{ $m }}" {{ (int)$mes === $m ? 'selected' : '' }}>
+                            {{ ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][$m] }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Año</label>
+                    <input type="number" name="año" class="form-control" min="2000" max="2100" value="{{ $año }}">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Ver matriz</button>
+                </div>
+            </div>
+        </form>
+
+        @if(!empty($matrix) && $bloque && $fechas->isNotEmpty())
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+            <div>
+                <strong>{{ $bloque->nombre }}</strong>
+                @if($bloque->sede)<span class="text-muted"> · {{ $bloque->sede->nombre }}</span>@endif
+                @if($bloque->profesor)<span class="text-muted"> · Profe: {{ $bloque->profesor->nombre }}</span>@endif
+            </div>
         </div>
 
-        {{ $asistencias->withQueryString()->links() }}
+        <form action="{{ route('asistencias.matrix.update') }}" method="POST" class="asistencias-matrix-form">
+            @csrf
+            <input type="hidden" name="bloque_id" value="{{ $bloque->id }}">
+            <input type="hidden" name="mes" value="{{ $mes }}">
+            <input type="hidden" name="año" value="{{ $año }}">
+
+            <div class="table-responsive asistencias-matrix-wrap">
+                <table class="table table-sm table-bordered align-middle asistencias-matrix">
+                    <thead>
+                        <tr>
+                            <th class="sticky-col">Alumno</th>
+                            <th class="sticky-col-2">Instrumento</th>
+                            @foreach($fechas as $f)
+                            @php
+                                $diaAbbr = [1=>'lun',2=>'mar',3=>'mié',4=>'jue',5=>'vie',6=>'sáb',7=>'dom'][$f->dayOfWeekIso] ?? '';
+                            @endphp
+                            <th class="text-center text-nowrap col-fecha" title="{{ $diaAbbr }}">
+                                <div class="small text-muted">{{ $diaAbbr }}</div>
+                                <div>{{ $f->format('d/m') }}</div>
+                            </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($alumnos as $alumno)
+                        <tr>
+                            <td class="sticky-col">{{ $alumno->nombre_apellido }}</td>
+                            <td class="sticky-col-2 text-muted small">{{ $alumno->instrumento_principal ?? '—' }}</td>
+                            @foreach($fechas as $f)
+                            @php
+                                $ymd = $f->format('Y-m-d');
+                                $key = $alumno->id.'|'.$ymd;
+                                $reg = $asistenciasMap[$key] ?? null;
+                                $tipo = $reg?->tipo_asistencia;
+                                $letra = \App\Models\Asistencia::letraTipo($tipo);
+                                $cellClass = match($letra) { 'P' => 'asist-cell-p', 'T' => 'asist-cell-t', 'J' => 'asist-cell-j', 'I' => 'asist-cell-i', default => '' };
+                            @endphp
+                            <td class="text-center p-1 {{ $cellClass }}">
+                                <label class="visually-hidden">{{ $alumno->nombre_apellido }} {{ $ymd }}</label>
+                                <select name="cells[{{ $alumno->id }}][{{ $ymd }}]" class="form-select form-select-sm asistencia-cell-select" aria-label="{{ $alumno->nombre_apellido }} {{ $ymd }}">
+                                    <option value="" {{ $tipo === null || $tipo === '' ? 'selected' : '' }}>—</option>
+                                    <option value="presente" {{ $tipo === 'presente' ? 'selected' : '' }}>P</option>
+                                    <option value="tarde" {{ $tipo === 'tarde' ? 'selected' : '' }}>T</option>
+                                    <option value="ausencia_justificada" {{ in_array($tipo, ['ausencia_justificada', 'justificado'], true) ? 'selected' : '' }}>J</option>
+                                    <option value="ausencia_injustificada" {{ in_array($tipo, ['ausencia_injustificada', 'ausente'], true) ? 'selected' : '' }}>I</option>
+                                </select>
+                            </td>
+                            @endforeach
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="{{ 2 + $fechas->count() }}" class="text-center text-muted">No hay alumnos activos en este bloque.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if($alumnos->isNotEmpty())
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Guardar matriz</button>
+            </div>
+            @endif
+        </form>
+        @elseif(!empty($matrix) && $bloque && $fechas->isEmpty())
+        <div class="alert alert-warning mb-0">No hay días de clase en este mes según el calendario del bloque (o no hay horarios y el mes no tiene viernes).</div>
+        @elseif(request()->filled('bloque_id'))
+        <div class="alert alert-info mb-0">No se encontró el bloque o está inactivo.</div>
+        @else
+        <div class="alert alert-secondary mb-0">Seleccioná un bloque y mes y pulsá <strong>Ver matriz</strong>.</div>
+        @endif
+        @endif
     </div>
 </div>
 @endsection

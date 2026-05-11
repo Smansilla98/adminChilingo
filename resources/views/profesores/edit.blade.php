@@ -35,6 +35,7 @@
                     </div>
                 </div>
             </div>
+            @include('profesores._form_bloques', ['bloquesParaAsignar' => $bloquesParaAsignar, 'profesor' => $profesor])
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('profesores.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>

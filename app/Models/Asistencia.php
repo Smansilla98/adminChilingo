@@ -8,6 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Asistencia extends Model
 {
     /** Tipos de asistencia (igual que hoja "Tipos de asistencia" del Excel Chilinga 2025) */
+    /** Leyenda tipo Excel: P / T / J / I */
+    public static function letraTipo(?string $tipo): string
+    {
+        return match ($tipo) {
+            'presente' => 'P',
+            'tarde' => 'T',
+            'ausencia_justificada', 'justificado' => 'J',
+            'ausencia_injustificada', 'ausente' => 'I',
+            default => '',
+        };
+    }
+
     public const TIPOS_ASISTENCIA = [
         'presente'              => 'Presente',
         'tarde'                 => 'Tarde',

@@ -68,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('eventos', EventoController::class);
 
         // Asistencias (ruta store con nombre explícito por uso en create.blade.php)
+        Route::post('asistencias/matrix', [AsistenciaController::class, 'matrixUpdate'])->name('asistencias.matrix.update');
         Route::post('asistencias', [AsistenciaController::class, 'store'])->name('asistencias.store');
         Route::resource('asistencias', AsistenciaController::class)->except(['store']);
 

@@ -221,6 +221,8 @@ class ImportChilingaExcelCommand extends Command
                 'activo' => true,
             ]
         );
+        $bloque->refresh();
+        $bloque->syncProfesorTitularEnPivot();
         $this->info('Bloque: ' . $bloque->nombre);
         return $bloque;
     }

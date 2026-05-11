@@ -50,8 +50,10 @@ class AlumnoController extends Controller
                 $prof = $user->profesor;
                 if ($prof) {
                     $query->where(function ($sub) use ($prof) {
-                        $sub->whereHas('bloque', fn ($q) => $q->where('profesor_id', $prof->id))
-                            ->orWhereHas('bloques', fn ($q) => $q->where('profesor_id', $prof->id));
+                        $bloqueVisible = fn ($q) => $q->where('profesor_id', $prof->id)
+                            ->orWhereHas('profesores', fn ($q2) => $q2->where('profesores.id', $prof->id));
+                        $sub->whereHas('bloque', $bloqueVisible)
+                            ->orWhereHas('bloques', $bloqueVisible);
                     });
                 } else {
                     $query->whereRaw('1=0');

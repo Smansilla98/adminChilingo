@@ -17,8 +17,19 @@
             <dt class="col-sm-3">A quien corresponde el bloque</dt>
             <dd class="col-sm-9">{{ $bloque->corresponde_a ?? ($bloque->profesor->nombre ?? '-') }}</dd>
 
-            <dt class="col-sm-3">Profesor</dt>
+            <dt class="col-sm-3">Profesor titular</dt>
             <dd class="col-sm-9">{{ $bloque->profesor->nombre ?? '-' }}</dd>
+
+            @if($bloque->profesores->isNotEmpty())
+            <dt class="col-sm-3">Equipo docente</dt>
+            <dd class="col-sm-9">
+                <ul class="mb-0 ps-3">
+                    @foreach($bloque->profesores as $p)
+                        <li>{{ $p->nombre }} — <span class="text-muted">{{ $p->pivot->rol ?? '—' }}</span></li>
+                    @endforeach
+                </ul>
+            </dd>
+            @endif
 
             <dt class="col-sm-3">Tambores</dt>
             <dd class="col-sm-9">

@@ -77,6 +77,55 @@ body {
   white-space: nowrap;
 }
 
+/* Asistencias — matriz tipo Excel */
+.asistencias-matrix-wrap {
+  max-height: min(78vh, 900px);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.asistencias-matrix {
+  margin-bottom: 0;
+  font-size: 12px;
+}
+.asistencias-matrix .sticky-col,
+.asistencias-matrix .sticky-col-2 {
+  position: sticky;
+  z-index: 2;
+  background: var(--s2);
+  box-shadow: 4px 0 8px rgba(0,0,0,.12);
+}
+.asistencias-matrix .sticky-col {
+  left: 0;
+  min-width: 180px;
+  max-width: 240px;
+}
+.asistencias-matrix .sticky-col-2 {
+  left: 180px;
+  min-width: 100px;
+  max-width: 120px;
+}
+.asistencias-matrix .col-fecha {
+  min-width: 56px;
+  vertical-align: bottom;
+}
+.asistencia-cell-select {
+  padding: 2px 4px !important;
+  font-size: 11px !important;
+  font-weight: 800;
+  text-align: center;
+  min-width: 48px;
+  border-radius: 8px;
+}
+.asist-cell-p { background: rgba(93, 184, 122, 0.18); }
+.asist-cell-t { background: rgba(245, 166, 35, 0.18); }
+.asist-cell-j { background: rgba(91, 158, 240, 0.18); }
+.asist-cell-i { background: rgba(232, 93, 43, 0.16); }
+.asist-badge-p { background: #5db87a; color: #0b1220; }
+.asist-badge-t { background: #f5a623; color: #0b1220; }
+.asist-badge-j { background: #5b9ef0; color: #0b1220; }
+.asist-badge-i { background: #e85d2b; color: #0b1220; }
+
 /* Paginación (Bootstrap) adaptada al tema oscuro */
 .pagination {
   --bs-pagination-bg: var(--s2);

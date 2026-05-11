@@ -29,7 +29,7 @@
             </div>
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="profesor_id" class="form-label">Profesor</label>
+                    <label for="profesor_id" class="form-label">Profesor titular</label>
                     <select class="form-select" id="profesor_id" name="profesor_id">
                         <option value="">Sin asignar</option>
                         @foreach($profesores as $p)

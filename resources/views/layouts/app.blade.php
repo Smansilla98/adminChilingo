@@ -87,6 +87,7 @@
             @if(auth()->user()->isAdmin())
                 <div class="topbar-actions">
                     <a href="{{ route('alumnos.create') }}" class="btn btn-pill">+ Alumno</a>
+                    <a href="{{ route('profesores.create') }}" class="btn btn-pill">+ Profesor</a>
                     <a href="{{ route('bloques.create') }}" class="btn btn-pill">+<br>Bloque</a>
                     <a href="{{ route('pagos.create') }}" class="btn btn-pill btn-pill-wide">Registrar pago</a>
                 </div>

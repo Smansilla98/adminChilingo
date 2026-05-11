@@ -24,15 +24,28 @@
         <div class="mb-3">
             <strong>Estado:</strong> {{ $profesor->activo ? 'Activo' : 'Inactivo' }}
         </div>
+        @php
+            $rolLabels = [
+                'titular' => 'Titular',
+                'ayudante' => 'Ayudante',
+                'suplente' => 'Suplente',
+                'coordinador_clase' => 'Coordinador de clase',
+            ];
+        @endphp
         @if($profesor->bloques->isNotEmpty())
-        <h6 class="mt-3">Bloques asignados</h6>
+        <h6 class="mt-3">Bloques y roles</h6>
         <ul class="list-group">
             @foreach($profesor->bloques as $bloque)
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ $bloque->nombre ?? 'Bloque' }}
-                @if($bloque->sede ?? null)
-                <span class="badge bg-secondary">{{ $bloque->sede->nombre }}</span>
-                @endif
+                <span>{{ $bloque->nombre ?? 'Bloque' }}</span>
+                <span>
+                    @if($bloque->pivot->rol ?? null)
+                    <span class="badge bg-primary me-1">{{ $rolLabels[$bloque->pivot->rol] ?? $bloque->pivot->rol }}</span>
+                    @endif
+                    @if($bloque->sede ?? null)
+                    <span class="badge bg-secondary">{{ $bloque->sede->nombre }}</span>
+                    @endif
+                </span>
             </li>
             @endforeach
         </ul>

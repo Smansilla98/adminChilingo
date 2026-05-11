@@ -28,7 +28,7 @@
                         <td>{{ $profesor->nombre }}</td>
                         <td>{{ $profesor->telefono ?? '—' }}</td>
                         <td>{{ $profesor->email ?? '—' }}</td>
-                        <td>{{ $profesor->bloques->count() ?? 0 }}</td>
+                        <td>{{ $profesor->bloques_count ?? 0 }}</td>
                         <td>{{ $profesor->activo ? 'Sí' : 'No' }}</td>
                         <td>
                             <a href="{{ route('profesores.show', $profesor) }}" class="btn btn-sm btn-info" title="Ver"><i class="bi bi-eye"></i></a>

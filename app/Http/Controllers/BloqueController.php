@@ -17,7 +17,8 @@ class BloqueController extends Controller
         $query = Bloque::with(['profesor', 'sede'])->orderBy('año')->orderBy('nombre');
         if ($user && $user->isProfesor() && !$user->isAdmin()) {
             $prof = $user->profesor;
-            $query->where('profesor_id', $prof?->id ?? 0);
+            $ids = $prof ? $prof->bloqueIdsDondeParticipa()->all() : [];
+            $query->whereIn('id', $ids !== [] ? $ids : [0]);
         }
 
         $bloques = $query->paginate(20);
@@ -49,7 +50,8 @@ class BloqueController extends Controller
         $validated['activo'] = $request->boolean('activo');
         $validated['tambores'] = $request->input('tambores') ? array_values($request->input('tambores')) : null;
 
-        Bloque::create($validated);
+        $bloque = Bloque::create($validated);
+        $bloque->syncProfesorTitularEnPivot();
 
         return redirect()->route('bloques.index')
             ->with('success', 'Bloque creado exitosamente.');
@@ -57,7 +59,7 @@ class BloqueController extends Controller
 
     public function show(Bloque $bloque)
     {
-        $bloque->load(['profesor', 'sede', 'alumnos', 'eventos']);
+        $bloque->load(['profesor', 'profesores', 'sede', 'alumnos', 'eventos']);
         return view('bloques.show', compact('bloque'));
     }
 
@@ -84,10 +86,11 @@ class BloqueController extends Controller
             'activo' => 'boolean',
         ]);
 
-        $validated['activo'] = $request->has('activo') ? true : false;
+        $validated['activo'] = $request->boolean('activo');
         $validated['tambores'] = $request->input('tambores') ? array_values($request->input('tambores')) : null;
 
         $bloque->update($validated);
+        $bloque->syncProfesorTitularEnPivot();
 
         return redirect()->route('bloques.index')
             ->with('success', 'Bloque actualizado exitosamente.');

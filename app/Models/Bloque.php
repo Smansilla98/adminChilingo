@@ -38,11 +38,51 @@ class Bloque extends Model
     ];
 
     /**
-     * Relación con profesor
+     * Relación con profesor titular (columna legada; debe coincidir con pivot rol titular).
      */
     public function profesor(): BelongsTo
     {
         return $this->belongsTo(Profesor::class);
+    }
+
+    /**
+     * Profesores asignados al bloque (titular, ayudante, suplente, etc.).
+     */
+    public function profesores(): BelongsToMany
+    {
+        return $this->belongsToMany(Profesor::class, 'bloque_profesor')
+            ->withPivot('rol')
+            ->withTimestamps();
+    }
+
+    /**
+     * Sincroniza la fila pivot titular con bloques.profesor_id (tras crear/editar bloque).
+     */
+    public function syncProfesorTitularEnPivot(): void
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('bloque_profesor')) {
+            return;
+        }
+
+        \Illuminate\Support\Facades\DB::table('bloque_profesor')
+            ->where('bloque_id', $this->id)
+            ->where('rol', 'titular')
+            ->delete();
+
+        if ($this->profesor_id) {
+            $existe = \Illuminate\Support\Facades\DB::table('bloque_profesor')
+                ->where('bloque_id', $this->id)
+                ->where('profesor_id', $this->profesor_id)
+                ->first();
+
+            if ($existe) {
+                \Illuminate\Support\Facades\DB::table('bloque_profesor')
+                    ->where('id', $existe->id)
+                    ->update(['rol' => 'titular', 'updated_at' => now()]);
+            } else {
+                $this->profesores()->attach($this->profesor_id, ['rol' => 'titular']);
+            }
+        }
     }
 
     /**

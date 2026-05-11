@@ -24,7 +24,12 @@ class EventoController extends Controller
             if ($user && $user->isProfesor() && !$user->isAdmin()) {
                 $prof = $user->profesor;
                 if ($prof) {
-                    $bloqueIds = Bloque::query()->where('profesor_id', $prof->id)->pluck('id');
+                    $bloqueIds = Bloque::query()
+                        ->where(function ($q) use ($prof) {
+                            $q->where('profesor_id', $prof->id)
+                                ->orWhereHas('profesores', fn ($q2) => $q2->where('profesores.id', $prof->id));
+                        })
+                        ->pluck('id');
                     $query->where(function ($sub) use ($prof, $bloqueIds) {
                         $sub->where('profesor_id', $prof->id)
                             ->orWhereIn('bloque_id', $bloqueIds);
