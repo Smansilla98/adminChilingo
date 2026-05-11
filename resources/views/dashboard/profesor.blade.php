@@ -6,7 +6,7 @@
 @section('content')
 <div class="row">
     <div class="col-md-4">
-        <div class="card text-white bg-primary">
+        <div class="card">
             <div class="card-body">
                 <h5 class="card-title"><i class="bi bi-collection"></i> Mis bloques</h5>
                 <h2>{{ $bloques->count() }}</h2>
@@ -14,7 +14,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card text-white bg-info">
+        <div class="card">
             <div class="card-body">
                 <h5 class="card-title"><i class="bi bi-calendar-event"></i> Próximos eventos</h5>
                 <h2>{{ $proximosEventos->count() }}</h2>
@@ -22,7 +22,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card text-white bg-success">
+        <div class="card">
             <div class="card-body">
                 <h5 class="card-title"><i class="bi bi-people"></i> Alumnos (total)</h5>
                 <h2>{{ $bloques->sum(fn($b) => $b->alumnos ? $b->alumnos->count() : 0) }}</h2>

@@ -6,6 +6,7 @@ use App\Models\Asistencia;
 use App\Models\Alumno;
 use App\Models\Bloque;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class AsistenciaController extends Controller
 {
@@ -52,6 +53,12 @@ class AsistenciaController extends Controller
 
     public function store(Request $request)
     {
+        if (!Schema::hasTable('asistencias') || !Schema::hasTable('alumnos') || !Schema::hasTable('bloques')) {
+            return back()->withErrors([
+                'general' => 'Faltan tablas requeridas para registrar asistencias. Ejecutá migraciones y reintentá.',
+            ])->withInput();
+        }
+
         $validated = $request->validate([
             'bloque_id' => 'required|exists:bloques,id',
             'fecha' => 'required|date',

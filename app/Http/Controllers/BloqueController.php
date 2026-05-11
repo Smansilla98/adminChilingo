@@ -11,7 +11,16 @@ class BloqueController extends Controller
 {
     public function index()
     {
-        $bloques = Bloque::with(['profesor', 'sede'])->orderBy('año')->orderBy('nombre')->paginate(20);
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+
+        $query = Bloque::with(['profesor', 'sede'])->orderBy('año')->orderBy('nombre');
+        if ($user && $user->isProfesor() && !$user->isAdmin()) {
+            $prof = $user->profesor;
+            $query->where('profesor_id', $prof?->id ?? 0);
+        }
+
+        $bloques = $query->paginate(20);
         return view('bloques.index', compact('bloques'));
     }
 
@@ -37,7 +46,7 @@ class BloqueController extends Controller
             'activo' => 'boolean',
         ]);
 
-        $validated['activo'] = $request->has('activo') ? true : true;
+        $validated['activo'] = $request->boolean('activo');
         $validated['tambores'] = $request->input('tambores') ? array_values($request->input('tambores')) : null;
 
         Bloque::create($validated);

@@ -66,10 +66,15 @@ class FacturacionMensualController extends Controller
             'notas' => 'nullable|string|max:500',
         ]);
 
-        $exists = FacturacionMensual::where('sede_id', $validated['sede_id'])
+        $existsQuery = FacturacionMensual::query()
             ->where('año', $validated['año'])
-            ->where('mes', $validated['mes'])
-            ->first();
+            ->where('mes', $validated['mes']);
+        if (!empty($validated['sede_id'])) {
+            $existsQuery->where('sede_id', $validated['sede_id']);
+        } else {
+            $existsQuery->whereNull('sede_id');
+        }
+        $exists = $existsQuery->first();
         if ($exists) {
             return back()->withErrors(['mes' => 'Ya existe facturación para esa sede, año y mes.'])->withInput();
         }

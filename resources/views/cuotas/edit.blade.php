@@ -59,6 +59,13 @@
                     <input type="number" name="monto" class="form-control" step="0.01" min="0" value="{{ old('monto', $cuota->monto) }}" required>
                 </div>
                 <div class="col-md-6">
+                    <label class="form-label">Fecha de vencimiento (opcional)</label>
+                    <input type="date" name="fecha_vencimiento" class="form-control @error('fecha_vencimiento') is-invalid @enderror" value="{{ old('fecha_vencimiento', $cuota->fecha_vencimiento?->format('Y-m-d')) }}">
+                    @error('fecha_vencimiento')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
                     <label class="form-label">Descripción</label>
                     <input type="text" name="descripcion" class="form-control" value="{{ old('descripcion', $cuota->descripcion) }}">
                 </div>
@@ -76,18 +83,24 @@
 </div>
 
 @push('scripts')
+<script type="application/json" id="bloquesAlumnosJson">
+{!! $bloques->map(function ($b) {
+    return [
+        'id' => $b->id,
+        'alumnos' => $b->alumnos->map(function ($a) {
+            return ['id' => $a->id, 'nombre_apellido' => $a->nombre_apellido];
+        })->values(),
+    ];
+})->keyBy('id')->toJson(JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
+</script>
+<script type="application/json" id="selectedAlumnoIdsJson">
+{!! $cuota->alumnos->pluck('id')->toJson(JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var bloquesAlumnos = @json($bloques->map(function ($b) {
-        return [
-            'id' => $b->id,
-            'alumnos' => $b->alumnos->map(function ($a) {
-                return ['id' => $a->id, 'nombre_apellido' => $a->nombre_apellido];
-            })->values()
-        ];
-    })->keyBy('id'));
+    var bloquesAlumnos = JSON.parse(document.getElementById('bloquesAlumnosJson').textContent || '{}');
 
-    var selectedAlumnoIds = @json($cuota->alumnos->pluck('id')->toArray());
+    var selectedAlumnoIds = JSON.parse(document.getElementById('selectedAlumnoIdsJson').textContent || '[]');
 
     var selectBloque = document.getElementById('bloque_id');
     var selectAlumnos = document.getElementById('alumno_ids');

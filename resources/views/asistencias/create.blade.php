@@ -30,7 +30,7 @@
 
         @if(isset($bloque))
         <hr>
-        <form action="{{ route('asistencias.store') }}" method="POST">
+        <form action="{{ auth()->user()?->isAdmin() ? route('asistencias.store') : route('profesor.asistencias.store') }}" method="POST">
             @csrf
             <input type="hidden" name="bloque_id" value="{{ $bloque->id }}">
             <input type="hidden" name="fecha" value="{{ request('fecha', date('Y-m-d')) }}">

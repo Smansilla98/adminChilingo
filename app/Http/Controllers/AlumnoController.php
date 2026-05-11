@@ -37,7 +37,22 @@ class AlumnoController extends Controller
     public function index(Request $request)
     {
         try {
+            /** @var \App\Models\User|null $user */
+            $user = auth()->user();
+
             $query = Alumno::with(['bloque', 'bloques', 'sede']);
+
+            if ($user && $user->isProfesor() && !$user->isAdmin()) {
+                $prof = $user->profesor;
+                if ($prof) {
+                    $query->where(function ($sub) use ($prof) {
+                        $sub->whereHas('bloque', fn ($q) => $q->where('profesor_id', $prof->id))
+                            ->orWhereHas('bloques', fn ($q) => $q->where('profesor_id', $prof->id));
+                    });
+                } else {
+                    $query->whereRaw('1=0');
+                }
+            }
 
             if ($request->filled('sede_id')) {
                 $query->where('sede_id', $request->sede_id);
@@ -123,7 +138,7 @@ class AlumnoController extends Controller
             'activo' => 'boolean',
         ]);
 
-        $validated['activo'] = $request->has('activo') ? true : true;
+        $validated['activo'] = $request->boolean('activo');
 
         $alumno = Alumno::create($validated);
 
@@ -242,7 +257,7 @@ class AlumnoController extends Controller
             'activo' => 'boolean',
         ]);
 
-        $validated['activo'] = $request->has('activo') ? true : ($request->has('activo') ? false : $alumno->activo);
+        $validated['activo'] = $request->boolean('activo');
 
         $alumno->update($validated);
 

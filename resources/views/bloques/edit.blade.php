@@ -71,55 +71,57 @@
                     <label class="form-check-label" for="activo">Activo</label>
                 </div>
             </div>
-            <hr>
-            <h6 class="mb-2">Días y horarios del bloque</h6>
-            @if($bloque->horarios->isNotEmpty())
-            <table class="table table-sm table-bordered mb-3">
-                <thead><tr><th>Día</th><th>Hora inicio</th><th>Hora fin</th><th></th></tr></thead>
-                <tbody>
-                    @foreach($bloque->horarios as $h)
-                    <tr>
-                        <td>{{ \App\Models\BloqueHorario::DIAS_SEMANA[$h->dia_semana] ?? $h->dia_semana }}</td>
-                        <td>{{ \Carbon\Carbon::parse($h->hora_inicio)->format('H:i') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($h->hora_fin)->format('H:i') }}</td>
-                        <td>
-                            <form action="{{ route('bloque-horarios.destroy', $h) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Quitar este horario?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @else
-            <p class="text-muted small mb-2">Sin horarios cargados. Agregue día y horario abajo.</p>
-            @endif
-            <form action="{{ route('bloques.horarios.store', $bloque) }}" method="POST" class="row g-2 align-items-end mb-3">
-                @csrf
-                <div class="col-md-3">
-                    <label class="form-label small">Día</label>
-                    <select name="dia_semana" class="form-select form-select-sm" required>
-                        @foreach(\App\Models\BloqueHorario::DIAS_SEMANA as $n => $nombre)
-                        <option value="{{ $n }}">{{ $nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small">Desde</label>
-                    <input type="time" name="hora_inicio" class="form-control form-control-sm" value="18:00" required>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small">Hasta</label>
-                    <input type="time" name="hora_fin" class="form-control form-control-sm" value="19:30" required>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-sm btn-outline-primary">Agregar horario</button>
-                </div>
-            </form>
             <button type="submit" class="btn btn-primary">Guardar bloque</button>
             <a href="{{ route('bloques.index') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+
+        <hr class="my-4">
+        <h6 class="mb-2">Días y horarios del bloque</h6>
+        @if($bloque->horarios->isNotEmpty())
+        <table class="table table-sm table-bordered mb-3">
+            <thead><tr><th>Día</th><th>Hora inicio</th><th>Hora fin</th><th></th></tr></thead>
+            <tbody>
+                @foreach($bloque->horarios as $h)
+                <tr>
+                    <td>{{ \App\Models\BloqueHorario::DIAS_SEMANA[$h->dia_semana] ?? $h->dia_semana }}</td>
+                    <td>{{ \Carbon\Carbon::parse($h->hora_inicio)->format('H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($h->hora_fin)->format('H:i') }}</td>
+                    <td>
+                        <form action="{{ route('bloque-horarios.destroy', $h) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Quitar este horario?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <p class="text-muted small mb-2">Sin horarios cargados. Agregue día y horario abajo.</p>
+        @endif
+
+        <form action="{{ route('bloques.horarios.store', $bloque) }}" method="POST" class="row g-2 align-items-end mb-0">
+            @csrf
+            <div class="col-md-3">
+                <label class="form-label small">Día</label>
+                <select name="dia_semana" class="form-select form-select-sm" required>
+                    @foreach(\App\Models\BloqueHorario::DIAS_SEMANA as $n => $nombre)
+                    <option value="{{ $n }}">{{ $nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Desde</label>
+                <input type="time" name="hora_inicio" class="form-control form-control-sm" value="18:00" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Hasta</label>
+                <input type="time" name="hora_fin" class="form-control form-control-sm" value="19:30" required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-outline-primary">Agregar horario</button>
+            </div>
         </form>
     </div>
 </div>

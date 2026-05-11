@@ -28,7 +28,7 @@ class SedeController extends Controller
             'costo_alquiler_mensual' => 'nullable|numeric|min:0',
             'activo' => 'boolean',
         ]);
-        $validated['activo'] = $request->has('activo') ? true : true;
+        $validated['activo'] = $request->boolean('activo');
         if (empty($validated['tipo_propiedad'])) {
             $validated['tipo_propiedad'] = 'alquilada';
         }

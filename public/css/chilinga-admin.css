@@ -28,6 +28,113 @@ body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, sans-serif;
 }
 
+/* Bootstrap components: dark overrides (global) */
+.card {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 22px 55px rgba(0,0,0,.28);
+  color: var(--text);
+}
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  color: color-mix(in srgb, var(--text) 86%, var(--muted));
+}
+.card-body { color: var(--text); }
+
+.table {
+  color: var(--text);
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(255,255,255,0.03);
+  --bs-table-striped-color: var(--text);
+  --bs-table-border-color: var(--border);
+}
+.table thead th {
+  color: rgba(237,233,227,0.65);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: 11px;
+  border-bottom-color: var(--border);
+}
+.table td, .table th {
+  border-color: var(--border);
+}
+
+.list-group-item {
+  background: var(--s1);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.nav-tabs {
+  border-bottom-color: var(--border);
+}
+.nav-tabs .nav-link {
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-weight: 900;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+.nav-tabs .nav-link:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+.nav-tabs .nav-link.active {
+  background: var(--s2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* Buttons (Bootstrap variants) */
+.btn-secondary,
+.btn-outline-secondary {
+  background: var(--s2);
+  border-color: var(--border);
+  color: var(--text);
+}
+.btn-secondary:hover,
+.btn-outline-secondary:hover {
+  filter: brightness(1.06);
+}
+.btn-warning {
+  background: color-mix(in srgb, var(--accent2) 40%, var(--s2));
+  border-color: color-mix(in srgb, var(--accent2) 35%, var(--border));
+  color: var(--text);
+}
+.btn-success {
+  background: color-mix(in srgb, var(--green) 35%, var(--s2));
+  border-color: color-mix(in srgb, var(--green) 30%, var(--border));
+  color: var(--text);
+}
+.btn-danger {
+  background: color-mix(in srgb, var(--accent) 35%, var(--s2));
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  color: var(--text);
+}
+.btn-info {
+  background: color-mix(in srgb, var(--blue) 35%, var(--s2));
+  border-color: color-mix(in srgb, var(--blue) 30%, var(--border));
+  color: var(--text);
+}
+
+/* Badges */
+.badge {
+  border: 1px solid var(--border);
+}
+.bg-secondary { background: var(--s3) !important; }
+.bg-primary { background: color-mix(in srgb, var(--blue) 45%, var(--s2)) !important; }
+.bg-success { background: color-mix(in srgb, var(--green) 45%, var(--s2)) !important; }
+.bg-warning { background: color-mix(in srgb, var(--accent2) 45%, var(--s2)) !important; }
+.bg-danger { background: color-mix(in srgb, var(--accent) 45%, var(--s2)) !important; }
+.bg-info { background: color-mix(in srgb, var(--blue) 35%, var(--s2)) !important; }
+.badge.bg-warning.text-dark { color: var(--text) !important; }
+
+/* Text helpers */
+.text-success { color: var(--green) !important; }
+.text-danger { color: var(--accent) !important; }
+
 /* Auth pages */
 .auth-shell {
   min-height: 100vh;

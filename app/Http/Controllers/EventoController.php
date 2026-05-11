@@ -16,7 +16,23 @@ class EventoController extends Controller
         $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
 
         try {
+            /** @var \App\Models\User|null $user */
+            $user = auth()->user();
+
             $query = Evento::with(['sede', 'profesor', 'bloque', 'creador']);
+
+            if ($user && $user->isProfesor() && !$user->isAdmin()) {
+                $prof = $user->profesor;
+                if ($prof) {
+                    $bloqueIds = Bloque::query()->where('profesor_id', $prof->id)->pluck('id');
+                    $query->where(function ($sub) use ($prof, $bloqueIds) {
+                        $sub->where('profesor_id', $prof->id)
+                            ->orWhereIn('bloque_id', $bloqueIds);
+                    });
+                } else {
+                    $query->whereRaw('1=0');
+                }
+            }
 
             if ($request->filled('sede_id')) {
                 $query->where('sede_id', $request->sede_id);

@@ -32,7 +32,7 @@ class ProfesorController extends Controller
             'activo' => 'boolean',
         ]);
 
-        $validated['activo'] = $request->has('activo') ? true : true;
+        $validated['activo'] = $request->boolean('activo');
 
         Profesor::create($validated);
 

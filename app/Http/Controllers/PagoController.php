@@ -81,6 +81,12 @@ class PagoController extends Controller
 
     public function store(Request $request)
     {
+        if (!Schema::hasTable('pagos') || !Schema::hasTable('pagos_detalles') || !Schema::hasTable('alumnos') || !Schema::hasTable('cuotas')) {
+            return back()->withErrors([
+                'general' => 'Faltan tablas requeridas para registrar pagos. Ejecutá migraciones y reintentá.',
+            ])->withInput();
+        }
+
         $validated = $request->validate([
             'fecha_pago' => 'required|date',
             'cuota_id' => 'required|exists:cuotas,id',
@@ -133,9 +139,8 @@ class PagoController extends Controller
         if (!$pago->comprobante_path) {
             abort(404);
         }
-        return Storage::disk('public')->download(
-            $pago->comprobante_path,
-            'comprobante-pago-' . $pago->id . '.pdf'
-        );
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+        return $disk->download($pago->comprobante_path, 'comprobante-pago-' . $pago->id . '.pdf');
     }
 }
