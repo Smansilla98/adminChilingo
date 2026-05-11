@@ -59,6 +59,7 @@ body {
 }
 .table td, .table th {
   border-color: var(--border);
+  color: var(--text);
 }
 
 /* Alumnos: asegurar lectura de nombres largos */
