@@ -49,7 +49,11 @@ class PagoController extends Controller
         }
         if (Schema::hasTable('cuotas')) {
             try {
-                $cuotas = Cuota::where('activo', true)->orderBy('año', 'desc')->orderBy('mes')->get();
+                $qCuotas = Cuota::query();
+                if (Schema::hasColumn('cuotas', 'activo')) {
+                    $qCuotas->orderBy('activo', 'desc');
+                }
+                $cuotas = $qCuotas->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
             } catch (QueryException $e) {
                 // mantener collect()
             }
@@ -71,7 +75,12 @@ class PagoController extends Controller
         }
         if (Schema::hasTable('cuotas')) {
             try {
-                $cuotas = Cuota::where('activo', true)->orderBy('año', 'desc')->orderBy('mes')->get();
+                $q = Cuota::query();
+                if (Schema::hasColumn('cuotas', 'activo')) {
+                    // Incluye retroactivos aunque estén inactivos, para poder registrarlos.
+                    $q->orderBy('activo', 'desc');
+                }
+                $cuotas = $q->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
             } catch (QueryException $e) {
                 // mantener collect()
             }
@@ -104,7 +113,7 @@ class PagoController extends Controller
 
         $path = null;
         if ($request->hasFile('comprobante')) {
-            $path = $request->file('comprobante')->store('pagos', 'public');
+            $path = $request->file('comprobante')->store('pagos', 'comprobantes');
         }
 
         $pago = Pago::create([
@@ -140,7 +149,7 @@ class PagoController extends Controller
             abort(404);
         }
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = Storage::disk('comprobantes');
         return $disk->download($pago->comprobante_path, 'comprobante-pago-' . $pago->id . '.pdf');
     }
 }

@@ -61,6 +61,45 @@ body {
   border-color: var(--border);
 }
 
+/* Alumnos: asegurar lectura de nombres largos */
+.alumnos-table .table-alumnos {
+  table-layout: auto;
+}
+.alumnos-table .col-nombre {
+  min-width: 260px;
+  max-width: 520px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.25;
+}
+.alumnos-table td:not(.col-nombre) {
+  white-space: nowrap;
+}
+
+/* Paginación (Bootstrap) adaptada al tema oscuro */
+.pagination {
+  --bs-pagination-bg: var(--s2);
+  --bs-pagination-border-color: rgba(255, 255, 255, 0.10);
+  --bs-pagination-color: var(--text);
+  --bs-pagination-hover-bg: rgba(255, 255, 255, 0.06);
+  --bs-pagination-hover-color: var(--text);
+  --bs-pagination-hover-border-color: rgba(255, 255, 255, 0.14);
+  --bs-pagination-focus-bg: rgba(255, 255, 255, 0.08);
+  --bs-pagination-focus-color: var(--text);
+  --bs-pagination-active-bg: var(--accent);
+  --bs-pagination-active-border-color: var(--accent);
+  --bs-pagination-active-color: #0b1220;
+  --bs-pagination-disabled-bg: rgba(255, 255, 255, 0.03);
+  --bs-pagination-disabled-border-color: rgba(255, 255, 255, 0.08);
+  --bs-pagination-disabled-color: rgba(255, 255, 255, 0.45);
+}
+.pagination .page-link {
+  border-radius: 12px;
+}
+.pagination .page-item + .page-item .page-link {
+  margin-left: 6px;
+}
+
 .list-group-item {
   background: var(--s1);
   border-color: var(--border);

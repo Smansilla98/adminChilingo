@@ -20,7 +20,14 @@
                     <select name="cuota_id" class="form-select @error('cuota_id') is-invalid @enderror" required>
                         <option value="">Seleccionar cuota</option>
                         @foreach($cuotas as $c)
-                        <option value="{{ $c->id }}" {{ old('cuota_id') == $c->id ? 'selected' : '' }}>{{ $c->nombre }} — $ {{ number_format($c->monto, 2, ',', '.') }}</option>
+                        @php
+                            $periodo = $c->nombre_mes ? ($c->nombre_mes . ' ' . $c->año) : null;
+                            $etiqueta = $periodo ? ($periodo . ' — ' . $c->nombre) : $c->nombre;
+                            $inactiva = isset($c->activo) && !$c->activo;
+                        @endphp
+                        <option value="{{ $c->id }}" {{ old('cuota_id') == $c->id ? 'selected' : '' }}>
+                            {{ $etiqueta }} — $ {{ number_format($c->monto, 2, ',', '.') }}@if($inactiva) (Retroactiva)@endif
+                        </option>
                         @endforeach
                     </select>
                     @error('cuota_id')<div class="invalid-feedback">{{ $message }}</div>@enderror

@@ -63,11 +63,11 @@
             </div>
         </form>
 
-        <div class="table-responsive">
-            <table class="table table-striped">
+        <div class="table-responsive alumnos-table">
+            <table class="table table-striped table-alumnos">
                 <thead>
                     <tr>
-                        <th>Nombre</th>
+                        <th class="col-nombre">Nombre</th>
                         <th>DNI</th>
                         <th>Edad</th>
                         <th>Instrumento</th>
@@ -81,7 +81,7 @@
                 <tbody>
                     @forelse($alumnos as $alumno)
                     <tr>
-                        <td>{{ $alumno->nombre_apellido }}</td>
+                        <td class="col-nombre">{{ $alumno->nombre_apellido }}</td>
                         <td>{{ $alumno->dni }}</td>
                         <td>{{ $alumno->edad }} años</td>
                         <td>{{ $alumno->instrumento_principal }}</td>
@@ -114,7 +114,7 @@
             </table>
         </div>
 
-        {{ $alumnos->links() }}
+        {{ $alumnos->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
     </div>
 </div>
 @endsection

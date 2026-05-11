@@ -47,6 +47,17 @@ return [
             'report' => false,
         ],
 
+        /*
+         * PDFs de comprobantes (persistente en Railway si se configura PERSISTENT_STORAGE_PATH).
+         * En prod, seteá PERSISTENT_STORAGE_PATH a un volumen (ej: /data/storage).
+         */
+        'comprobantes' => [
+            'driver' => 'local',
+            'root' => env('PERSISTENT_STORAGE_PATH', storage_path('app/persistent')),
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
