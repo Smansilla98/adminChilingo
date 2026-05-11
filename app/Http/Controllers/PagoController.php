@@ -90,7 +90,7 @@ class PagoController extends Controller
 
     public function store(Request $request)
     {
-        if (!Schema::hasTable('pagos') || !Schema::hasTable('pagos_detalles') || !Schema::hasTable('alumnos') || !Schema::hasTable('cuotas')) {
+        if (!Schema::hasTable('pagos') || !Schema::hasTable('pago_detalles') || !Schema::hasTable('alumnos') || !Schema::hasTable('cuotas')) {
             return back()->withErrors([
                 'general' => 'Faltan tablas requeridas para registrar pagos. Ejecutá migraciones y reintentá.',
             ])->withInput();
