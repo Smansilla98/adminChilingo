@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - La Chilinga</title>
+    <title>Login - ITO</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}">
@@ -12,10 +12,10 @@
     <div class="auth-shell">
         <div class="auth-card">
             <div class="auth-head">
-                <div class="auth-brand">LC</div>
+                <div class="auth-brand"><x-brand-logo /></div>
                 <div>
                     <div class="auth-title">Iniciar sesión</div>
-                    <div class="auth-sub">Sistema de Gestión Administrativa</div>
+                    <div class="auth-sub">ITO - Sistema de gestión</div>
                 </div>
             </div>
             <div class="auth-body">

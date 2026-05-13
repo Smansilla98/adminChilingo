@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'La Chilinga')</title>
+    <title>@yield('title', 'ITO - Sistema de gestión')</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -16,8 +16,8 @@
 @auth
 <div class="shell">
     <aside class="sidebar">
-        <a class="side-logo" href="{{ route('dashboard') }}" aria-label="Dashboard">
-            <span class="lc-badge">LC</span>
+        <a class="side-logo" href="{{ route('dashboard') }}" aria-label="Inicio">
+            <x-brand-logo variant="sidebar" />
         </a>
 
         <nav class="side-nav" aria-label="Navegación">
@@ -88,7 +88,7 @@
                 <div class="top-kicker">BIENVENIDO</div>
                 <div class="top-title">@yield('page-title', 'Panel')</div>
                 <div class="top-sub">
-                    <span class="muted">La Chilinga</span>
+                    <span class="muted">ITO - Sistema de gestión</span>
                     <span class="dot">•</span>
                     <span class="muted">{{ now()->locale('es')->translatedFormat('F Y') }}</span>
                 </div>
