@@ -8,69 +8,82 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}">
 </head>
-<body>
+<body class="auth-page-ito">
     <div class="auth-shell">
-        <div class="auth-card">
-            <div class="auth-head">
-                <div class="auth-brand"><x-brand-logo /></div>
-                <div>
-                    <div class="auth-title">Registrarse</div>
-                    <div class="auth-sub">ITO - Sistema de gestión</div>
-                </div>
+        <div class="auth-card auth-card--ito">
+            <div class="auth-card-ito__logo-ring" aria-hidden="true">
+                <img src="{{ asset('images/brand/logo.png') }}" alt="ITO">
             </div>
-            <div class="auth-body">
+            <div class="auth-card-ito__head">
+                <h1 class="auth-card-ito__title">Registrarse</h1>
+                <p class="auth-card-ito__sub">ITO - Sistema de gestión</p>
+            </div>
+            <div class="auth-card-ito__body">
+                @if($errors->any())
+                    <div class="auth-alerts">
+                        <div class="alert alert-danger mb-0 py-2 px-3">
+                            <ul class="mb-0 ps-3 small">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
                 <form method="POST" action="{{ route('register') }}">
                     @csrf
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nombre completo</label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror"
-                               id="name" name="name" value="{{ old('name') }}" required autofocus
-                               autocomplete="name">
-                        @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="auth-infield @error('name') is-invalid @enderror">
+                        <span class="auth-infield__icon"><i class="bi bi-person-fill"></i></span>
+                        <input type="text" class="auth-infield__input" id="name" name="name" value="{{ old('name') }}" required autofocus
+                               placeholder="Nombre completo" autocomplete="name">
                     </div>
+                    @error('name')
+                        <div class="auth-field-error">{{ $message }}</div>
+                    @enderror
+
                     @if(!empty($hasUsernameColumn))
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Usuario</label>
-                        <input type="text" class="form-control @error('username') is-invalid @enderror"
-                               id="username" name="username" value="{{ old('username') }}" required
-                               autocomplete="username">
-                        @error('username')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="auth-infield @error('username') is-invalid @enderror">
+                        <span class="auth-infield__icon"><i class="bi bi-person-badge"></i></span>
+                        <input type="text" class="auth-infield__input" id="username" name="username" value="{{ old('username') }}" required
+                               placeholder="Usuario" autocomplete="username">
                     </div>
+                    @error('username')
+                        <div class="auth-field-error">{{ $message }}</div>
+                    @enderror
                     @endif
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Correo electrónico</label>
-                        <input type="email" class="form-control @error('email') is-invalid @enderror"
-                               id="email" name="email" value="{{ old('email') }}" required
-                               autocomplete="email">
-                        @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+
+                    <div class="auth-infield @error('email') is-invalid @enderror">
+                        <span class="auth-infield__icon"><i class="bi bi-envelope-fill"></i></span>
+                        <input type="email" class="auth-infield__input" id="email" name="email" value="{{ old('email') }}" required
+                               placeholder="Correo electrónico" autocomplete="email">
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control @error('password') is-invalid @enderror"
-                               id="password" name="password" required
-                               autocomplete="new-password">
-                        @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    @error('email')
+                        <div class="auth-field-error">{{ $message }}</div>
+                    @enderror
+
+                    <div class="auth-infield @error('password') is-invalid @enderror">
+                        <span class="auth-infield__icon"><i class="bi bi-key-fill"></i></span>
+                        <input type="password" class="auth-infield__input" id="password" name="password" required
+                               placeholder="Contraseña" autocomplete="new-password">
                     </div>
-                    <div class="mb-3">
-                        <label for="password_confirmation" class="form-label">Confirmar contraseña</label>
-                        <input type="password" class="form-control" id="password_confirmation"
-                               name="password_confirmation" required autocomplete="new-password">
+                    @error('password')
+                        <div class="auth-field-error">{{ $message }}</div>
+                    @enderror
+
+                    <div class="auth-infield">
+                        <span class="auth-infield__icon"><i class="bi bi-shield-lock-fill"></i></span>
+                        <input type="password" class="auth-infield__input" id="password_confirmation" name="password_confirmation" required
+                               placeholder="Confirmar contraseña" autocomplete="new-password">
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-person-check"></i> Crear cuenta
+
+                    <button type="submit" class="auth-btn-submit mt-1">
+                        <i class="bi bi-person-check me-1"></i> Crear cuenta
                     </button>
                 </form>
             </div>
-            <div class="auth-footer text-center">
-                ¿Ya tenés cuenta? <a href="{{ route('login') }}">Iniciar sesión</a>
+            <div class="auth-card-ito__foot">
+                <span class="auth-foot-muted">¿Ya tenés cuenta?</span>
+                <a href="{{ route('login') }}">Iniciar sesión</a>
             </div>
         </div>
     </div>
