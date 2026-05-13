@@ -45,6 +45,24 @@
                     </div>
                 </div>
             </div>
+            @if(\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'liquidacion_porc_docente'))
+            <div class="border rounded p-3 mb-3">
+                <div class="fw-semibold mb-2">Liquidación cuota → docente / escuela</div>
+                <p class="text-muted small mb-3">Sobre el monto de <strong>referencia de la cuota</strong> (X): retención fija escuela; el <strong>%</strong> se aplica sobre <strong>cuota − retención</strong> (base). Al registrar pagos de cuotas de bloques de esta sede se usan por defecto estos valores.</p>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Retención escuela ($)</label>
+                        <input type="number" name="liquidacion_retencion_escuela" class="form-control @error('liquidacion_retencion_escuela') is-invalid @enderror" step="0.01" min="0" value="{{ old('liquidacion_retencion_escuela', $sede->liquidacion_retencion_escuela ?? 0) }}">
+                        @error('liquidacion_retencion_escuela')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">% al docente (sobre la base)</label>
+                        <input type="number" name="liquidacion_porc_docente" class="form-control @error('liquidacion_porc_docente') is-invalid @enderror" step="0.1" min="0" max="100" value="{{ old('liquidacion_porc_docente', $sede->liquidacion_porc_docente ?? 40) }}">
+                        @error('liquidacion_porc_docente')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+            </div>
+            @endif
             <button type="submit" class="btn btn-primary">Actualizar</button>
             <a href="{{ route('sedes.index') }}" class="btn btn-secondary">Cancelar</a>
             <a href="{{ route('sedes.show', $sede) }}" class="btn btn-outline-secondary">Ver</a>

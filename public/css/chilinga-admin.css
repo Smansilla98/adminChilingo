@@ -770,6 +770,48 @@ body {
   color: var(--accent);
 }
 
+/* Mapa de módulos (dashboard) */
+.mod-panel { margin-top: 18px; }
+.mod-nav-wrap { padding-top: 4px; }
+.mod-nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 20px 28px;
+}
+.mod-col-title {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.mod-links {
+  display: grid;
+  gap: 4px;
+}
+.mod-links a {
+  display: block;
+  font-size: 13px;
+  font-weight: 650;
+  color: color-mix(in srgb, var(--text) 92%, var(--muted));
+  text-decoration: none;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.35;
+}
+.mod-links a:last-child { border-bottom: none; }
+.mod-links a:hover {
+  color: var(--accent);
+}
+
+/* Enlaces rápidos — panel profesor */
+.prof-quick-links .btn-outline-secondary:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .dash-grid { grid-template-columns: 1fr; }

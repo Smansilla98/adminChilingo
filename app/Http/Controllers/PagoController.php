@@ -75,7 +75,7 @@ class PagoController extends Controller
                     // Incluye retroactivos aunque estén inactivos, para poder registrarlos.
                     $q->orderBy('activo', 'desc');
                 }
-                $cuotas = $q->with(['bloque.sede'])->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
+                $cuotas = $q->with(['bloque.sede', 'bloque.profesor'])->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
             } catch (QueryException $e) {
                 // mantener collect()
             }
@@ -171,22 +171,34 @@ class PagoController extends Controller
             ])->withInput();
         }
 
+        if ($request->input('prof_abono_base', null) === '') {
+            $request->merge(['prof_abono_base' => null]);
+        }
+        if ($request->input('prof_abono_porcentaje', null) === '') {
+            $request->merge(['prof_abono_porcentaje' => null]);
+        }
+
         $validated = $request->validate([
             'fecha_pago' => 'required|date',
             'cuota_id' => 'required|exists:cuotas,id',
             'alumno_ids' => 'required|array|min:1',
             'alumno_ids.*' => 'exists:alumnos,id',
             'monto_total' => 'required|numeric|min:0',
+            'prof_abono_base' => 'nullable|numeric|min:0',
+            'prof_abono_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'liquidar_profesor' => 'nullable|in:0,1',
             'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'notas' => 'nullable|string|max:1000',
         ]);
+
+        $liquidarProfesor = ($validated['liquidar_profesor'] ?? '1') === '1';
 
         $alumnoIds = array_values(array_filter($validated['alumno_ids']));
         if (empty($alumnoIds)) {
             return back()->withErrors(['alumno_ids' => 'Seleccione al menos un alumno.'])->withInput();
         }
 
-        $cuota = Cuota::query()->findOrFail($validated['cuota_id']);
+        $cuota = Cuota::query()->with('bloque.sede')->findOrFail($validated['cuota_id']);
         foreach ($alumnoIds as $alumnoId) {
             if (PagoDetalle::query()->where('cuota_id', $cuota->id)->where('alumno_id', $alumnoId)->exists()) {
                 return back()->withErrors([
@@ -214,22 +226,76 @@ class PagoController extends Controller
             $path = $upload->storeAs('pagos', (string) Str::uuid() . '.' . $ext, 'comprobantes');
         }
 
-        $pago = Pago::create([
+        $pagoData = [
             'fecha_pago' => $validated['fecha_pago'],
             'monto_total' => $validated['monto_total'],
             'comprobante_path' => $path,
             'notas' => $validated['notas'] ?? null,
             'registrado_por' => auth()->id(),
-        ]);
+        ];
+
+        $pago = Pago::create($pagoData);
 
         $montoPorAlumno = round((float) $validated['monto_total'] / count($alumnoIds), 2);
+
+        $baseLiquidacion = null;
+        $pctLiquidacion = null;
+        $abonoPorAlumno = null;
+        $notaAbono = null;
+
+        if ($liquidarProfesor && Schema::hasColumn('pago_detalles', 'abono_profesor')) {
+            $sede = $cuota->bloque?->sede;
+            $defRet = 0.0;
+            $defPorc = 40.0;
+            if ($sede) {
+                if (Schema::hasColumn('sedes', 'liquidacion_retencion_escuela')) {
+                    $defRet = (float) ($sede->liquidacion_retencion_escuela ?? 0);
+                }
+                if (Schema::hasColumn('sedes', 'liquidacion_porc_docente')) {
+                    $defPorc = (float) ($sede->liquidacion_porc_docente ?? 40);
+                }
+            }
+            $defPorc = max(0.0, min(100.0, $defPorc));
+
+            $baseLiquidacion = isset($validated['prof_abono_base']) && $validated['prof_abono_base'] !== null
+                ? (float) $validated['prof_abono_base']
+                : max(0.0, round((float) $cuota->monto - $defRet, 2));
+            $pctLiquidacion = isset($validated['prof_abono_porcentaje']) && $validated['prof_abono_porcentaje'] !== null
+                ? max(0.0, min(100.0, (float) $validated['prof_abono_porcentaje']))
+                : $defPorc;
+            $abonoPorAlumno = round($baseLiquidacion * ($pctLiquidacion / 100.0), 2);
+            $refEscuela = max(0, round((float) $cuota->monto - $baseLiquidacion, 2));
+            $montoDocente = $abonoPorAlumno;
+            $montoEscuelaRef = max(0, round((float) $cuota->monto - $montoDocente, 2));
+            $notaAbono = sprintf(
+                '%s · cuota ref. %s · ret. %s · base %s · %s%% · doc. %s/alu · esc. ref. %s',
+                $sede?->nombre ?? '—',
+                number_format((float) $cuota->monto, 0, ',', '.'),
+                number_format($defRet, 0, ',', '.'),
+                number_format($baseLiquidacion, 0, ',', '.'),
+                number_format($pctLiquidacion, 1, ',', '.'),
+                number_format($montoDocente, 0, ',', '.'),
+                number_format($montoEscuelaRef, 0, ',', '.')
+            );
+            if (strlen($notaAbono) > 500) {
+                $notaAbono = substr($notaAbono, 0, 497) . '...';
+            }
+        }
+
         foreach ($alumnoIds as $alumnoId) {
-            PagoDetalle::create([
+            $det = [
                 'pago_id' => $pago->id,
                 'alumno_id' => $alumnoId,
                 'cuota_id' => $validated['cuota_id'],
                 'monto' => $montoPorAlumno,
-            ]);
+            ];
+            if ($liquidarProfesor && Schema::hasColumn('pago_detalles', 'abono_profesor')) {
+                $det['abono_profesor'] = $abonoPorAlumno;
+                $det['abono_base'] = $baseLiquidacion;
+                $det['abono_porcentaje'] = $pctLiquidacion;
+                $det['abono_nota'] = $notaAbono;
+            }
+            PagoDetalle::create($det);
         }
 
         return redirect()->route('pagos.index')->with('success', 'Pago registrado correctamente.');

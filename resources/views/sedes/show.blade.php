@@ -26,6 +26,12 @@
             @endif
             <dt class="col-sm-3">Estado</dt>
             <dd class="col-sm-9">{{ $sede->activo ? 'Activa' : 'Inactiva' }}</dd>
+            @if(\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'liquidacion_porc_docente'))
+            <dt class="col-sm-3">Liq. cuota — retención esc.</dt>
+            <dd class="col-sm-9">$ {{ number_format((float) ($sede->liquidacion_retencion_escuela ?? 0), 2, ',', '.') }} <span class="text-muted small">(sobre monto cuota ref., antes del % docente)</span></dd>
+            <dt class="col-sm-3">Liq. cuota — % docente</dt>
+            <dd class="col-sm-9">{{ number_format((float) ($sede->liquidacion_porc_docente ?? 40), 2, ',', '.') }}% <span class="text-muted small">(sobre base = cuota − retención)</span></dd>
+            @endif
         </dl>
         <hr>
         <h6 class="mb-2">Bloques ({{ $sede->bloques->count() }})</h6>

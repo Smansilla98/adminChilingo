@@ -35,7 +35,18 @@
                             $etiqueta = $periodo ? ($periodo . ' — ' . $c->nombre) : $c->nombre;
                             $inactiva = isset($c->activo) && !$c->activo;
                         @endphp
-                        <option value="{{ $c->id }}" data-bloque-id="{{ $c->bloque_id ?? '' }}" {{ old('cuota_id') == $c->id ? 'selected' : '' }}>
+                        @php
+                            $sedeCuota = $c->bloque?->sede;
+                            $liqRet = $sedeCuota?->liquidacion_retencion_escuela;
+                            $liqPorc = $sedeCuota?->liquidacion_porc_docente;
+                        @endphp
+                        <option value="{{ $c->id }}" data-bloque-id="{{ $c->bloque_id ?? '' }}"
+                            data-sede="{{ $sedeCuota?->nombre ?? '' }}"
+                            data-profesor="{{ $c->bloque?->profesor?->nombre ?? '' }}"
+                            data-monto-cuota="{{ $c->monto }}"
+                            data-sede-liq-ret="{{ $liqRet ?? 0 }}"
+                            data-sede-liq-porc="{{ $liqPorc ?? 40 }}"
+                            {{ old('cuota_id') == $c->id ? 'selected' : '' }}>
                             {{ $etiqueta }} — $ {{ number_format($c->monto, 2, ',', '.') }}@if($inactiva) (Retroactiva)@endif
                         </option>
                         @endforeach
@@ -49,6 +60,8 @@
                 </div>
             </div>
 
+            <p id="ctx-cuota-pago" class="form-text text-muted mb-3" aria-live="polite"></p>
+
             <div class="mb-3">
                 <label class="form-label">Alumnos que pagan (seleccionar uno o varios) *</label>
                 <p class="text-muted small">Solo se listan alumnos del bloque de la cuota que <strong>aún no tienen</strong> pago registrado para esa cuota. Ctrl+clic para elegir varios. El monto total se repartirá entre los seleccionados.</p>
@@ -56,6 +69,33 @@
                 <select name="alumno_ids[]" id="alumno_ids_pago" class="form-select @error('alumno_ids') is-invalid @enderror" multiple size="12" disabled></select>
                 <p id="alumnos_pago_ayuda" class="form-text text-muted">Elegí la cuota para cargar la lista de alumnos.</p>
                 @error('alumno_ids')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="border rounded p-3 mb-3">
+                <div class="fw-semibold mb-2">Liquidación al profesor <span class="text-muted fw-normal small">(por cada alumno que paga)</span></div>
+                <p class="text-muted small mb-3">Sobre el <strong>monto de referencia de la cuota</strong> (X), primero podés apartar una suma fija para la escuela (<strong>retención</strong>); sobre lo que queda (<strong>base</strong>) se aplica el <strong>% al docente</strong>. Así se ve claro: <strong>docente = base × %</strong> y <strong>resto de X para la escuela</strong> (referencia: cuota − abono docente). Los valores por defecto salen de la <a href="{{ route('sedes.index') }}">configuración de la sede</a> del bloque; podés ajustarlos acá antes de guardar.</p>
+                <div class="form-check mb-3">
+                    <input type="hidden" name="liquidar_profesor" value="0">
+                    <input class="form-check-input" type="checkbox" name="liquidar_profesor" value="1" id="liquidar_profesor" {{ (string) old('liquidar_profesor', '1') === '1' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="liquidar_profesor">Calcular y guardar abono al profesor</label>
+                </div>
+                <div class="row g-2 align-items-end" id="wrap_liquidacion_prof">
+                    <div class="col-md-4">
+                        <label class="form-label" for="prof_abono_base">Base para liquidar al prof. ($)</label>
+                        <input type="number" name="prof_abono_base" id="prof_abono_base" class="form-control @error('prof_abono_base') is-invalid @enderror" step="0.01" min="0" value="{{ old('prof_abono_base') }}" placeholder="Según sede: cuota − retención">
+                        @error('prof_abono_base')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text">Por defecto: <strong>monto cuota − retención escuela</strong> (según la sede). Podés corregir el importe si hace falta.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="prof_abono_porcentaje">% al profesor</label>
+                        <input type="number" name="prof_abono_porcentaje" id="prof_abono_porcentaje" class="form-control @error('prof_abono_porcentaje') is-invalid @enderror" step="0.1" min="0" max="100" value="{{ old('prof_abono_porcentaje', 40) }}">
+                        @error('prof_abono_porcentaje')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text">Por defecto según la sede del bloque.</div>
+                    </div>
+                    <div class="col-md-12">
+                        <div id="prof_abono_preview" class="small mt-2 text-muted" aria-live="polite"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="mb-3">
@@ -82,6 +122,13 @@
     const alumnoSel = document.getElementById('alumno_ids_pago');
     const buscarAlumnos = document.getElementById('buscar_alumnos_pago');
     const ayuda = document.getElementById('alumnos_pago_ayuda');
+    const ctxCuota = document.getElementById('ctx-cuota-pago');
+    const profBase = document.getElementById('prof_abono_base');
+    const profPct = document.getElementById('prof_abono_porcentaje');
+    const profPreview = document.getElementById('prof_abono_preview');
+    const liqProf = document.getElementById('liquidar_profesor');
+    const wrapLiq = document.getElementById('wrap_liquidacion_prof');
+    const montoTotalInp = document.querySelector('input[name="monto_total"]');
     {{-- Ruta relativa: evita fetch al host de APP_URL si difiere del dominio real (p. ej. Railway). --}}
     const urlApi = @json(route('pagos.api.alumnos-cuota', [], false));
     const oldAlumnoIds = @json(array_values(array_map('intval', old('alumno_ids', []))));
@@ -89,6 +136,113 @@
 
     function setAyuda(text) {
         if (ayuda) ayuda.textContent = text;
+    }
+
+    function actualizarContextoCuota() {
+        if (!ctxCuota || !cuotaSel) return;
+        const opt = cuotaSel.selectedOptions[0];
+        if (!opt || !opt.value) {
+            ctxCuota.textContent = '';
+            return;
+        }
+        const sede = (opt.dataset.sede || '').trim() || '—';
+        const prof = (opt.dataset.profesor || '').trim() || '—';
+        const raw = opt.dataset.montoCuota;
+        let montoTxt = '';
+        if (raw !== undefined && raw !== '') {
+            const n = parseFloat(String(raw).replace(',', '.'));
+            if (!isNaN(n)) {
+                montoTxt = ' · monto de cuota (referencia) $' + n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+            }
+        }
+        let liqTxt = '';
+        const ret = (function () {
+            const v = opt.dataset.sedeLiqRet;
+            if (v === undefined || v === '') return 0;
+            const n = parseFloat(String(v).replace(',', '.'));
+            return isNaN(n) ? 0 : n;
+        })();
+        const porcCfg = (function () {
+            const v = opt.dataset.sedeLiqPorc;
+            if (v === undefined || v === '') return 40;
+            const n = parseFloat(String(v).replace(',', '.'));
+            return isNaN(n) ? 40 : n;
+        })();
+        if (ret > 0) {
+            liqTxt += ' Retención escuela (config. sede): $' + ret.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + '.';
+        }
+        liqTxt += ' % docente por defecto (sede): ' + porcCfg + '%.';
+        ctxCuota.textContent = 'Contexto del registro: sede ' + sede + ' · profesor titular del bloque ' + prof + montoTxt + '.' + liqTxt;
+    }
+
+    function aplicarLiquidacionDesdeSede() {
+        if (!profBase || !profPct || !cuotaSel) return;
+        const opt = cuotaSel.selectedOptions[0];
+        if (!opt || !opt.value) {
+            return;
+        }
+        const rawM = opt.dataset.montoCuota;
+        if (rawM === undefined || rawM === '') return;
+        const montoCuota = parseFloat(String(rawM).replace(',', '.'));
+        if (isNaN(montoCuota)) return;
+        const ret = (function () {
+            const v = opt.dataset.sedeLiqRet;
+            if (v === undefined || v === '') return 0;
+            const n = parseFloat(String(v).replace(',', '.'));
+            return isNaN(n) ? 0 : n;
+        })();
+        const porcCfg = (function () {
+            const v = opt.dataset.sedeLiqPorc;
+            if (v === undefined || v === '') return 40;
+            const n = parseFloat(String(v).replace(',', '.'));
+            return isNaN(n) ? 40 : n;
+        })();
+        const base = Math.max(0, Math.round((montoCuota - (isNaN(ret) ? 0 : ret)) * 100) / 100);
+        profBase.value = String(base);
+        profPct.value = String(isNaN(porcCfg) ? 40 : porcCfg);
+    }
+
+    function contarAlumnosSeleccionados() {
+        if (!alumnoSel) return 0;
+        return Array.from(alumnoSel.selectedOptions).filter(function (o) { return o.value && !o.hidden; }).length;
+    }
+
+    function actualizarPreviewAbono() {
+        if (!profPreview) return;
+        if (!liqProf || !liqProf.checked) {
+            profPreview.textContent = 'No se guardará abono al profesor en este registro.';
+            if (wrapLiq) wrapLiq.classList.add('opacity-50');
+            return;
+        }
+        if (wrapLiq) wrapLiq.classList.remove('opacity-50');
+        const opt = cuotaSel && cuotaSel.selectedOptions[0];
+        const montoCuota = opt && opt.dataset.montoCuota ? parseFloat(String(opt.dataset.montoCuota).replace(',', '.')) : NaN;
+        let base = profBase && profBase.value !== '' ? parseFloat(String(profBase.value).replace(',', '.')) : NaN;
+        if (isNaN(base) && !isNaN(montoCuota)) {
+            base = montoCuota;
+        }
+        const pct = profPct && profPct.value !== '' ? parseFloat(String(profPct.value).replace(',', '.')) : 40;
+        if (isNaN(base) || isNaN(pct)) {
+            profPreview.textContent = 'Completá base y % para ver el cálculo.';
+            return;
+        }
+        const porAlumno = Math.round(base * (pct / 100) * 100) / 100;
+        const n = contarAlumnosSeleccionados();
+        const total = Math.round(porAlumno * n * 100) / 100;
+        const fmt = function (x) {
+            return x.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+        let escuelaHtml = '';
+        if (!isNaN(montoCuota) && !isNaN(base)) {
+            const refEscuela = Math.max(0, Math.round((montoCuota - base) * 100) / 100);
+            escuelaHtml = ' Sobre la cuota de referencia <strong>$' + fmt(montoCuota) + '</strong>, la base para el prof. es <strong>$' + fmt(base) + '</strong> (retención escuela ref. <strong>$' + fmt(refEscuela) + '</strong>).';
+        }
+        const restoEscuela = !isNaN(montoCuota) ? Math.max(0, Math.round((montoCuota - porAlumno) * 100) / 100) : NaN;
+        if (!isNaN(restoEscuela)) {
+            escuelaHtml += ' <strong>Docente</strong> (por alumno): $' + fmt(porAlumno) + ' · <strong>Resto para escuela</strong> (ref. cuota − docente): $' + fmt(restoEscuela) + '.';
+        }
+        profPreview.innerHTML = escuelaHtml + ' ' +
+            (n > 0 ? 'Con <strong>' + n + '</strong> alumno(s), total abono prof.: <strong>$' + fmt(total) + '</strong>.' : 'Seleccioná al menos un alumno para ver el total.');
     }
 
     function aplicarFiltroCuotasPorBloque() {
@@ -106,6 +260,7 @@
         const sel = cuotaSel.selectedOptions[0];
         if (sel && sel.hidden) {
             cuotaSel.value = '';
+            actualizarContextoCuota();
             cargarAlumnos();
         }
     }
@@ -177,6 +332,7 @@
             } else {
                 setAyuda(lista.length + ' alumno(s) disponible(s) para esta cuota.');
             }
+            actualizarPreviewAbono();
         } catch (e) {
             setAyuda('No se pudo cargar la lista. Reintentá.');
         }
@@ -184,6 +340,9 @@
 
     if (cuotaSel) {
         cuotaSel.addEventListener('change', function () {
+            aplicarLiquidacionDesdeSede();
+            actualizarContextoCuota();
+            actualizarPreviewAbono();
             cargarAlumnos();
         });
         document.addEventListener('DOMContentLoaded', function () {
@@ -197,6 +356,11 @@
                 }
             }
             aplicarFiltroCuotasPorBloque();
+            actualizarContextoCuota();
+            if (profBase && cuotaSel && cuotaSel.value && (profBase.value === '' || profBase.value === null)) {
+                aplicarLiquidacionDesdeSede();
+            }
+            actualizarPreviewAbono();
             if (cuotaSel.value) {
                 cargarAlumnos();
             }
@@ -209,6 +373,21 @@
     }
     if (buscarAlumnos) {
         buscarAlumnos.addEventListener('input', aplicarBusquedaAlumnos);
+    }
+    if (profBase) {
+        profBase.addEventListener('input', actualizarPreviewAbono);
+    }
+    if (profPct) {
+        profPct.addEventListener('input', actualizarPreviewAbono);
+    }
+    if (montoTotalInp) {
+        montoTotalInp.addEventListener('input', actualizarPreviewAbono);
+    }
+    if (liqProf) {
+        liqProf.addEventListener('change', actualizarPreviewAbono);
+    }
+    if (alumnoSel) {
+        alumnoSel.addEventListener('change', actualizarPreviewAbono);
     }
 })();
 </script>

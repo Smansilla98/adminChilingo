@@ -49,6 +49,7 @@
                         <th>Cuota</th>
                         <th>Alumnos</th>
                         <th>Monto total</th>
+                        <th>Abono prof.</th>
                         <th>Comprobante</th>
                         <th>Registrado por</th>
                         <th>Acciones</th>
@@ -62,6 +63,17 @@
                         <td>{{ $p->detalles->pluck('alumno.nombre_apellido')->unique()->join(', ') }}</td>
                         <td>$ {{ number_format($p->monto_total, 2, ',', '.') }}</td>
                         <td>
+                            @php
+                                $sumAbono = $p->detalles->sum(fn ($d) => (float) ($d->abono_profesor ?? 0));
+                                $hayAbono = $p->detalles->contains(fn ($d) => $d->abono_profesor !== null);
+                            @endphp
+                            @if($hayAbono)
+                            $ {{ number_format($sumAbono, 2, ',', '.') }}
+                            @else
+                            —
+                            @endif
+                        </td>
+                        <td>
                             @if($p->comprobante_path)
                             <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalComprobantePago" data-comprobante-src="{{ route('pagos.comprobante', $p) }}" data-comprobante-label="Comprobante — pago #{{ $p->id }}"><i class="bi bi-file-earmark"></i> Ver</button>
                             @else
@@ -74,7 +86,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center">No hay pagos. <a href="{{ route('pagos.create') }}">Registrar uno</a></td></tr>
+                    <tr><td colspan="8" class="text-center">No hay pagos. <a href="{{ route('pagos.create') }}">Registrar uno</a></td></tr>
                     @endforelse
                 </tbody>
             </table>

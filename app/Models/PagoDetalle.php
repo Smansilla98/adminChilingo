@@ -9,10 +9,22 @@ class PagoDetalle extends Model
 {
     protected $table = 'pago_detalles';
 
-    protected $fillable = ['pago_id', 'alumno_id', 'cuota_id', 'monto'];
+    protected $fillable = [
+        'pago_id',
+        'alumno_id',
+        'cuota_id',
+        'monto',
+        'abono_profesor',
+        'abono_base',
+        'abono_porcentaje',
+        'abono_nota',
+    ];
 
     protected $casts = [
         'monto' => 'decimal:2',
+        'abono_profesor' => 'decimal:2',
+        'abono_base' => 'decimal:2',
+        'abono_porcentaje' => 'decimal:2',
     ];
 
     public function pago(): BelongsTo

@@ -31,6 +31,72 @@
     </div>
 </div>
 
+<div class="panel mod-panel" id="modulos">
+    <div class="panel-h">
+        <div class="panel-h-title">Accesos a módulos</div>
+    </div>
+    <div class="panel-b mod-nav-wrap">
+        <div class="mod-nav">
+            <div class="mod-col">
+                <div class="mod-col-title">General</div>
+                <div class="mod-links">
+                    <a href="{{ route('programa.index') }}">Programa oficial</a>
+                    <a href="{{ route('calendario.index') }}">Calendario</a>
+                    <a href="{{ route('comprobantes-cuota-alumnos.index') }}">Comprobantes de cuota (alumnos)</a>
+                    <a href="{{ route('comprobante-cuota-public.create') }}" target="_blank" rel="noopener">Formulario público de comprobante</a>
+                </div>
+            </div>
+            <div class="mod-col">
+                <div class="mod-col-title">Personas y sedes</div>
+                <div class="mod-links">
+                    <a href="{{ route('alumnos.index') }}">Alumnos</a>
+                    <a href="{{ route('alumnos.create') }}">Nuevo alumno</a>
+                    <a href="{{ route('alumnos.import.form') }}">Importar alumnos</a>
+                    <a href="{{ route('alumnos.export') }}">Exportar alumnos (Excel)</a>
+                    <a href="{{ route('profesores.index') }}">Profesores</a>
+                    <a href="{{ route('sedes.index') }}">Sedes</a>
+                </div>
+            </div>
+            <div class="mod-col">
+                <div class="mod-col-title">Bloques y clases</div>
+                <div class="mod-links">
+                    <a href="{{ route('bloques.index') }}">Bloques</a>
+                    <a href="{{ route('bloques.create') }}">Nuevo bloque</a>
+                    <a href="{{ route('eventos.index') }}">Eventos</a>
+                    <a href="{{ route('asistencias.index') }}">Asistencias</a>
+                    <a href="{{ route('asistencias.create') }}">Registrar asistencia</a>
+                    <a href="{{ route('shows.index') }}">Shows</a>
+                </div>
+            </div>
+            <div class="mod-col">
+                <div class="mod-col-title">Cuotas y pagos</div>
+                <div class="mod-links">
+                    <a href="{{ route('cuotas.index') }}">Cuotas</a>
+                    <a href="{{ route('pagos.index') }}">Pagos</a>
+                    <a href="{{ route('pagos.create') }}">Registrar pago</a>
+                    <a href="{{ route('facturacion-mensual.index') }}">Facturación mensual</a>
+                </div>
+            </div>
+            <div class="mod-col">
+                <div class="mod-col-title">Inventario y compras</div>
+                <div class="mod-links">
+                    <a href="{{ route('inventarios.index') }}">Inventarios</a>
+                    <a href="{{ route('plan-compras.index') }}">Plan de compras</a>
+                    <a href="{{ route('ordenes-compra.index') }}">Órdenes de compra</a>
+                    <a href="{{ route('gastos.index') }}">Gastos</a>
+                </div>
+            </div>
+            <div class="mod-col">
+                <div class="mod-col-title">Reportes</div>
+                <div class="mod-links">
+                    <a href="{{ route('reportes.index') }}">Reportes</a>
+                    <a href="{{ route('reportes.profesores') }}">Alumnos por profesor</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="dash-grid">
     <div class="col-main">
         <div class="panel">

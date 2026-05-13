@@ -4,6 +4,25 @@
 @section('page-title', 'Mi panel')
 
 @section('content')
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header fw-semibold"><i class="bi bi-grid-3x3-gap"></i> Accesos rápidos</div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2 prof-quick-links">
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('programa.index') }}">Programa</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('calendario.index') }}">Calendario</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.bloques') }}">Mis bloques</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.alumnos') }}">Mis alumnos</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.eventos') }}">Mis eventos</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.asistencias.create') }}">Tomar asistencia</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobantes-cuota-alumnos.index') }}">Comprobantes de cuota</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobante-cuota-public.create') }}" target="_blank" rel="noopener">Formulario público (alumnos)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row">
     <div class="col-md-3">
         <div class="card">
