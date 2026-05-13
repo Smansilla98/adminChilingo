@@ -11,6 +11,7 @@
                 <h1 class="text-dark mb-0 mb-md-2" style="font-weight: 700; font-size: 1.75rem;">
                     <i class="bi bi-calendar-event"></i> Calendario de Eventos
                 </h1>
+                <p class="text-muted small mb-0 mt-1">Los <strong>talleres fijos</strong> se generan desde los <strong>horarios semanales</strong> de cada bloque (día y hora). Configurálos en <em>Bloques → Editar bloque</em>.</p>
             </div>
             @if(auth()->user() && auth()->user()->isAdmin())
             <div class="d-flex gap-2">
@@ -96,6 +97,30 @@
                                                     <span class="event-name">{{ \Illuminate\Support\Str::limit($evento->titulo, 15) }}</span>
                                                 </small>
                                             </div>
+                                        @elseif($item['type'] === 'bloque_taller')
+                                            @php
+                                                $bd = $item['data'];
+                                                $bloqueT = $bd['bloque'];
+                                                $horT = $bd['horario'];
+                                                $urlT = $bd['url'];
+                                                $hIni = $horT->hora_inicio;
+                                                $hFin = $horT->hora_fin;
+                                                $tIni = $hIni ? (\Carbon\Carbon::parse($hIni)->format('H:i')) : '';
+                                                $tFin = $hFin ? (\Carbon\Carbon::parse($hFin)->format('H:i')) : '';
+                                                $tipT = ($bloqueT->sede?->nombre ? $bloqueT->sede->nombre.' · ' : '').($horT->nombre_dia ?? '');
+                                            @endphp
+                                            <div class="event-item event-taller"
+                                                 onclick="window.location.href='{{ $urlT }}'"
+                                                 role="button"
+                                                 tabindex="0"
+                                                 title="Taller fijo: {{ $bloqueT->nombre }} · {{ $tIni }}–{{ $tFin }}hs · {{ $tipT }}">
+                                                <small class="event-text">
+                                                    @if($tIni)
+                                                        <span class="event-time">{{ $tIni }}hs</span>
+                                                    @endif
+                                                    <span class="event-name">{{ \Illuminate\Support\Str::limit($bloqueT->nombre, 16) }}</span>
+                                                </small>
+                                            </div>
                                         @elseif($item['type'] === 'show')
                                             @php $show = $item['data']; @endphp
                                             <div class="event-item event-show"
@@ -126,24 +151,37 @@
 @if($listItems->isNotEmpty())
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">Eventos y shows de {{ $startDate->locale('es')->translatedFormat('F Y') }}</h5>
+        <h5 class="mb-0">Eventos, shows y talleres fijos — {{ $startDate->locale('es')->translatedFormat('F Y') }}</h5>
     </div>
     <div class="card-body p-2 p-md-3">
         <div class="list-group list-group-flush">
             @foreach($listItems as $item)
             <a href="{{ $item->url }}"
-               class="list-group-item list-group-item-action event-list-item">
+               class="list-group-item list-group-item-action event-list-item {{ $item->tipo === 'bloque_taller' ? 'event-list-item--taller' : '' }}">
                 <div class="d-flex w-100 justify-content-between align-items-start">
                     <div class="flex-grow-1">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                            <span class="badge bg-{{ $item->tipo === 'show' ? 'danger' : 'primary' }} event-status-badge">{{ $item->tipo_badge }}</span>
+                            @php
+                                $badgeBg = $item->tipo === 'show' ? 'danger' : ($item->tipo === 'bloque_taller' ? 'success' : 'primary');
+                            @endphp
+                            <span class="badge bg-{{ $badgeBg }} event-status-badge">{{ $item->tipo_badge }}</span>
                             <h6 class="mb-0 event-title">{{ $item->titulo }}</h6>
                         </div>
                         <div class="event-meta mb-1">
                             <small class="text-muted d-flex flex-wrap align-items-center gap-2">
                                 <span><i class="bi bi-calendar"></i> {{ $item->fecha->locale('es')->translatedFormat('d/m/Y') }}</span>
                                 @if($item->hora_inicio)
-                                    <span><i class="bi bi-clock"></i> {{ $item->hora_inicio->format('H:i') }}hs</span>
+                                    <span><i class="bi bi-clock"></i> {{ \Carbon\Carbon::parse($item->hora_inicio)->format('H:i') }}hs
+                                        @if($item->tipo === 'bloque_taller' && isset($item->horario) && $item->horario->hora_fin)
+                                            – {{ \Carbon\Carbon::parse($item->horario->hora_fin)->format('H:i') }}hs
+                                        @endif
+                                    </span>
+                                @endif
+                                @if($item->tipo === 'bloque_taller' && isset($item->horario))
+                                    <span><i class="bi bi-arrow-repeat"></i> Cada {{ $item->horario->nombre_dia }}</span>
+                                @endif
+                                @if($item->tipo === 'bloque_taller' && isset($item->bloque) && $item->bloque->sede)
+                                    <span><i class="bi bi-geo-alt"></i> {{ $item->bloque->sede->nombre }}</span>
                                 @endif
                             </small>
                         </div>
@@ -321,6 +359,12 @@
     border-left: 3px solid #a71d2a;
 }
 
+.event-taller {
+    background-color: #198754;
+    color: #fff;
+    border-left: 3px solid #146c43;
+}
+
 @media (max-width: 767.98px) {
     .calendar-container {
         margin: 0 -15px;
@@ -364,8 +408,13 @@
     color: #6c757d;
 }
 
-.event-list-item:hover .event-arrow {
-    color: #0d6efd;
+.event-list-item--taller:hover {
+    background-color: rgba(25, 135, 84, 0.12);
+    border-left-color: #198754;
+}
+
+.event-list-item--taller:hover .event-arrow {
+    color: #198754;
 }
 </style>
 @endpush
