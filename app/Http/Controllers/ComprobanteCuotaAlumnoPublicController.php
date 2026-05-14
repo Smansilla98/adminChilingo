@@ -27,8 +27,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         $sedes = Sede::query()
             ->where('activo', true)
             ->whereHas('bloques', function ($q) {
-                $q->where('bloques.activo', true)
-                    ->whereHas('cuotas');
+                $q->where('bloques.activo', true);
             })
             ->orderBy('nombre')
             ->get(['id', 'nombre']);
@@ -40,16 +39,38 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
     {
         $request->validate(['sede_id' => 'required|exists:sedes,id']);
 
-        $rows = Cuota::query()
-            ->select(['cuotas.año', 'cuotas.mes'])
-            ->join('bloques', 'cuotas.bloque_id', '=', 'bloques.id')
-            ->where('bloques.sede_id', $request->integer('sede_id'))
-            ->where('bloques.activo', true)
-            ->whereNotNull('cuotas.mes')
-            ->groupBy('cuotas.año', 'cuotas.mes')
-            ->orderByDesc('cuotas.año')
-            ->orderByDesc('cuotas.mes')
-            ->get();
+        if (\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance')) {
+            $sid = $request->integer('sede_id');
+            $rows = Cuota::query()
+                ->select(['cuotas.año', 'cuotas.mes'])
+                ->whereNotNull('cuotas.mes')
+                ->where(function ($q) use ($sid) {
+                    $q->where(function ($q2) use ($sid) {
+                        $q2->where('cuotas.alcance', Cuota::ALCANCE_BLOQUE)
+                            ->whereHas('bloque', fn ($b) => $b->where('bloques.sede_id', $sid)->where('bloques.activo', true));
+                    })
+                        ->orWhere(function ($q3) use ($sid) {
+                            $q3->where('cuotas.alcance', Cuota::ALCANCE_SEDE)
+                                ->where('cuotas.sede_id', $sid);
+                        })
+                        ->orWhere('cuotas.alcance', Cuota::ALCANCE_GENERAL);
+                })
+                ->groupBy('cuotas.año', 'cuotas.mes')
+                ->orderByDesc('cuotas.año')
+                ->orderByDesc('cuotas.mes')
+                ->get();
+        } else {
+            $rows = Cuota::query()
+                ->select(['cuotas.año', 'cuotas.mes'])
+                ->join('bloques', 'cuotas.bloque_id', '=', 'bloques.id')
+                ->where('bloques.sede_id', $request->integer('sede_id'))
+                ->where('bloques.activo', true)
+                ->whereNotNull('cuotas.mes')
+                ->groupBy('cuotas.año', 'cuotas.mes')
+                ->orderByDesc('cuotas.año')
+                ->orderByDesc('cuotas.mes')
+                ->get();
+        }
 
         $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         $data = $rows->map(function ($r) use ($meses) {
@@ -74,24 +95,17 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             'mes' => 'required|integer|min:1|max:12',
         ]);
 
+        $año = $request->integer('año');
+        $mes = $request->integer('mes');
+
         $bloques = Bloque::query()
             ->where('sede_id', $request->integer('sede_id'))
             ->where('activo', true)
-            ->whereHas('cuotas', function ($q) use ($request) {
-                $q->where('año', $request->integer('año'))
-                    ->where('mes', $request->integer('mes'));
-            })
-            ->with(['cuotas' => function ($q) use ($request) {
-                $q->where('año', $request->integer('año'))
-                    ->where('mes', $request->integer('mes'))
-                    ->orderByDesc('activo')
-                    ->orderByDesc('id');
-            }])
             ->orderBy('nombre')
             ->get(['id', 'nombre', 'sede_id']);
 
-        $data = $bloques->map(function (Bloque $b) use ($request) {
-            $cuota = $b->cuotas->first();
+        $data = $bloques->map(function (Bloque $b) use ($año, $mes) {
+            $cuota = Cuota::resolveForBloque((int) $b->id, $año, $mes);
 
             return [
                 'id' => $b->id,
@@ -341,13 +355,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
 
     private function cuotaParaBloqueMes(int $bloqueId, int $año, int $mes): ?Cuota
     {
-        return Cuota::query()
-            ->where('bloque_id', $bloqueId)
-            ->where('año', $año)
-            ->where('mes', $mes)
-            ->orderByDesc('activo')
-            ->orderByDesc('id')
-            ->first();
+        return Cuota::resolveForBloque($bloqueId, $año, $mes);
     }
 
     private function alumnoYaPagoCuota(int $alumnoId, int $cuotaId): bool

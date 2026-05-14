@@ -168,15 +168,34 @@ class AlumnoController extends Controller
             $bloquesIds = collect([$alumno->bloque_id]);
         }
 
-        $cuotas = $bloquesIds->isNotEmpty()
-            ? Cuota::query()
+        $cuotas = collect();
+        if ($bloquesIds->isNotEmpty()) {
+            $q = Cuota::query()
                 ->with(['alumnos:id'])
-                ->whereIn('bloque_id', $bloquesIds->all())
-                ->where('activo', true)
-                ->orderByDesc('año')
-                ->orderByDesc('mes')
-                ->get()
-            : collect();
+                ->where('activo', true);
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance')) {
+                $sidList = $alumno->bloques->pluck('sede_id')->filter()->unique()->values()->all();
+                if ($alumno->sede_id) {
+                    $sidList = array_values(array_unique(array_merge($sidList, [(int) $alumno->sede_id])));
+                }
+                $q->where(function ($outer) use ($bloquesIds, $sidList) {
+                    $outer->whereIn('bloque_id', $bloquesIds->all())
+                        ->orWhere(function ($g) {
+                            $g->where('alcance', Cuota::ALCANCE_GENERAL)->whereNull('bloque_id');
+                        });
+                    if ($sidList !== []) {
+                        $outer->orWhere(function ($s) use ($sidList) {
+                            $s->where('alcance', Cuota::ALCANCE_SEDE)->whereIn('sede_id', $sidList);
+                        });
+                    }
+                });
+            } else {
+                $q->whereIn('bloque_id', $bloquesIds->all());
+            }
+
+            $cuotas = $q->orderByDesc('año')->orderByDesc('mes')->get();
+        }
 
         $cuotasAplicables = $cuotas->filter(function (Cuota $cuota) use ($alumno) {
             if ($cuota->alumnos->isEmpty()) {

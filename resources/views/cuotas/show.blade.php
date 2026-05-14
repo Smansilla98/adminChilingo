@@ -10,7 +10,18 @@
         <dl class="row">
             <dt class="col-sm-3">Nombre</dt>
             <dd class="col-sm-9">{{ $cuota->nombre }}</dd>
-            @if($cuota->bloque)
+            @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'))
+            <dt class="col-sm-3">Alcance</dt>
+            <dd class="col-sm-9">
+                @if(($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_GENERAL)
+                    General (toda la escuela)
+                @elseif(($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_SEDE)
+                    Diferencial — sede {{ $cuota->sede?->nombre ?? '—' }}
+                @else
+                    Bloque: {{ $cuota->bloque?->nombre ?? '—' }} @if($cuota->bloque?->sede) ({{ $cuota->bloque->sede->nombre }}) @endif
+                @endif
+            </dd>
+            @elseif($cuota->bloque)
             <dt class="col-sm-3">Bloque</dt>
             <dd class="col-sm-9">{{ $cuota->bloque->nombre }} @if($cuota->bloque->sede)({{ $cuota->bloque->sede->nombre }})@endif</dd>
             @endif
@@ -19,7 +30,15 @@
             <dt class="col-sm-3">Monto</dt>
             <dd class="col-sm-9">$ {{ number_format($cuota->monto, 2, ',', '.') }}</dd>
             <dt class="col-sm-3">Alumnos que pueden pagar</dt>
-            <dd class="col-sm-9">@if($cuota->alumnos->isEmpty()) Todos los del bloque @else {{ $cuota->alumnos->pluck('nombre_apellido')->join(', ') }} @endif</dd>
+            <dd class="col-sm-9">@if($cuota->alumnos->isEmpty())
+                @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance') && ($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_GENERAL)
+                    Todos los alumnos con bloque
+                @elseif(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance') && ($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_SEDE)
+                    Todos los alumnos de la sede (o lista abajo)
+                @else
+                    Todos los del bloque
+                @endif
+            @else {{ $cuota->alumnos->pluck('nombre_apellido')->join(', ') }} @endif</dd>
             <dt class="col-sm-3">Registros de pago</dt>
             <dd class="col-sm-9">{{ $cuota->pago_detalles_count }}</dd>
         </dl>

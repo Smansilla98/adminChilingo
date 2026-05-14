@@ -55,7 +55,7 @@
                         <th>Cuota</th>
                         <th>Monto alumno</th>
                         <th>Cuota (ref.)</th>
-                        <th>Base prof.</th>
+                        <th>Ref. cuota (liq.)</th>
                         <th>Resto escuela (ref.)</th>
                         <th>%</th>
                         <th>Abono prof.</th>

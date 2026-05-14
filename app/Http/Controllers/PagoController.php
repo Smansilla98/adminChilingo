@@ -6,6 +6,7 @@ use App\Models\Pago;
 use App\Models\PagoDetalle;
 use App\Models\Cuota;
 use App\Models\Alumno;
+use App\Models\Bloque;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
@@ -75,7 +76,7 @@ class PagoController extends Controller
                     // Incluye retroactivos aunque estén inactivos, para poder registrarlos.
                     $q->orderBy('activo', 'desc');
                 }
-                $cuotas = $q->with(['bloque.sede', 'bloque.profesor'])->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
+                $cuotas = $q->with(['bloque.sede', 'bloque.profesor', 'sede'])->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
             } catch (QueryException $e) {
                 // mantener collect()
             }
@@ -86,8 +87,29 @@ class PagoController extends Controller
             ->unique('id')
             ->sortBy(fn ($b) => $b->nombre)
             ->values();
+        if ($bloquesFiltro->isEmpty() && Schema::hasColumn('cuotas', 'alcance')) {
+            try {
+                $bloquesFiltro = Bloque::query()
+                    ->where('activo', true)
+                    ->with('sede')
+                    ->orderBy('nombre')
+                    ->get();
+            } catch (\Throwable $e) {
+                $bloquesFiltro = collect();
+            }
+        }
 
-        return view('pagos.create', compact('cuotas', 'bloquesFiltro'));
+        $cuotasMeta = $cuotas->map(fn (Cuota $c) => [
+            'id' => $c->id,
+            'monto' => (float) $c->monto,
+            'label' => ($c->nombre_mes ? $c->nombre_mes.' '.$c->año.' — ' : '').$c->nombre.' — $ '.number_format((float) $c->monto, 2, ',', '.'),
+            'alcance' => Schema::hasColumn('cuotas', 'alcance') ? ($c->alcance ?? 'bloque') : 'bloque',
+            'bloque_id' => $c->bloque_id,
+            'sede_id' => $c->sede_id,
+            'activo' => (bool) ($c->activo ?? true),
+        ])->values()->all();
+
+        return view('pagos.create', compact('cuotas', 'bloquesFiltro', 'cuotasMeta'));
     }
 
     /**
@@ -105,53 +127,69 @@ class PagoController extends Controller
         }
 
         try {
-            $cuota = Cuota::query()->with('bloque')->find($request->integer('cuota_id'));
+            $cuota = Cuota::query()->with(['bloque.sede', 'sede'])->find($request->integer('cuota_id'));
             if (! $cuota) {
                 return response()->json(['alumnos' => []]);
             }
 
-            if (! $cuota->bloque_id) {
+            if (! Schema::hasColumn('cuotas', 'alcance')) {
+                if (! $cuota->bloque_id) {
+                    return response()->json(['alumnos' => []]);
+                }
+                $query = Alumno::query()->where('activo', true)->orderBy('nombre_apellido')->with('sede');
+                $bid = (int) $cuota->bloque_id;
+                if (Schema::hasTable('alumno_bloque')) {
+                    $query->where(function ($q) use ($bid) {
+                        $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))
+                            ->orWhere('bloque_id', $bid);
+                    });
+                } else {
+                    $query->where('bloque_id', $bid);
+                }
+                $this->aplicarFiltroCuotaAlumnoPivot($cuota, $query);
+                $this->excluirAlumnosYaPagaron($cuota, $query);
+                $ctx = $cuota->bloque?->nombre ?? '';
+
+                return response()->json(['alumnos' => $this->mapearAlumnosRespuesta($query, $ctx)]);
+            }
+
+            $alcance = $cuota->alcanceNormalizado();
+            $query = Alumno::query()->where('activo', true)->orderBy('nombre_apellido')->with('sede');
+
+            if ($alcance === Cuota::ALCANCE_BLOQUE) {
+                if (! $cuota->bloque_id) {
+                    return response()->json(['alumnos' => []]);
+                }
+                $bid = (int) $cuota->bloque_id;
+                if (Schema::hasTable('alumno_bloque')) {
+                    $query->where(function ($q) use ($bid) {
+                        $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))
+                            ->orWhere('bloque_id', $bid);
+                    });
+                } else {
+                    $query->where('bloque_id', $bid);
+                }
+                $ctx = $cuota->bloque?->nombre ?? '';
+            } elseif ($alcance === Cuota::ALCANCE_GENERAL) {
+                $query->where(function ($q) {
+                    $q->whereHas('bloques')->orWhereNotNull('bloque_id');
+                });
+                $ctx = 'Cuota general';
+            } elseif ($alcance === Cuota::ALCANCE_SEDE && $cuota->sede_id) {
+                $sid = (int) $cuota->sede_id;
+                $query->where(function ($q) use ($sid) {
+                    $q->whereHas('bloques', fn ($b) => $b->where('bloques.sede_id', $sid))
+                        ->orWhere('sede_id', $sid);
+                });
+                $ctx = $cuota->sede?->nombre ?? 'Sede';
+            } else {
                 return response()->json(['alumnos' => []]);
             }
 
-            $query = Alumno::query()->where('activo', true)->orderBy('nombre_apellido')->with('sede');
+            $this->aplicarFiltroCuotaAlumnoPivot($cuota, $query);
+            $this->excluirAlumnosYaPagaron($cuota, $query);
 
-            $bid = (int) $cuota->bloque_id;
-            if (Schema::hasTable('alumno_bloque')) {
-                $query->where(function ($q) use ($bid) {
-                    $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))
-                        ->orWhere('bloque_id', $bid);
-                });
-            } else {
-                $query->where('bloque_id', $bid);
-            }
-
-            if (Schema::hasTable('cuota_alumno')) {
-                $idsSoloCuota = $cuota->alumnos()->pluck('alumnos.id');
-                if ($idsSoloCuota->isNotEmpty()) {
-                    $query->whereIn('alumnos.id', $idsSoloCuota->all());
-                }
-            }
-
-            $yaPagaron = PagoDetalle::query()
-                ->where('cuota_id', $cuota->id)
-                ->pluck('alumno_id')
-                ->unique()
-                ->filter()
-                ->values();
-            if ($yaPagaron->isNotEmpty()) {
-                $query->whereNotIn('alumnos.id', $yaPagaron->all());
-            }
-
-            $nombreBloque = $cuota->bloque?->nombre;
-            $alumnos = $query->get(['alumnos.id', 'alumnos.nombre_apellido', 'alumnos.sede_id'])->map(fn (Alumno $a) => [
-                'id' => $a->id,
-                'nombre_apellido' => $a->nombre_apellido,
-                'sede_nombre' => $a->sede?->nombre,
-                'bloque_nombre' => $nombreBloque,
-            ]);
-
-            return response()->json(['alumnos' => $alumnos]);
+            return response()->json(['alumnos' => $this->mapearAlumnosRespuesta($query, $ctx)]);
         } catch (QueryException $e) {
             report($e);
 
@@ -165,27 +203,24 @@ class PagoController extends Controller
 
     public function store(Request $request)
     {
-        if (!Schema::hasTable('pagos') || !Schema::hasTable('pago_detalles') || !Schema::hasTable('alumnos') || !Schema::hasTable('cuotas')) {
+        if (! Schema::hasTable('pagos') || ! Schema::hasTable('pago_detalles') || ! Schema::hasTable('alumnos') || ! Schema::hasTable('cuotas')) {
             return back()->withErrors([
                 'general' => 'Faltan tablas requeridas para registrar pagos. Ejecutá migraciones y reintentá.',
             ])->withInput();
         }
 
-        if ($request->input('prof_abono_base', null) === '') {
-            $request->merge(['prof_abono_base' => null]);
-        }
-        if ($request->input('prof_abono_porcentaje', null) === '') {
-            $request->merge(['prof_abono_porcentaje' => null]);
+        if ($request->input('monto_abono_profesor', null) === '') {
+            $request->merge(['monto_abono_profesor' => null]);
         }
 
         $validated = $request->validate([
             'fecha_pago' => 'required|date',
-            'cuota_id' => 'required|exists:cuotas,id',
-            'alumno_ids' => 'required|array|min:1',
-            'alumno_ids.*' => 'exists:alumnos,id',
-            'monto_total' => 'required|numeric|min:0',
-            'prof_abono_base' => 'nullable|numeric|min:0',
-            'prof_abono_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'lineas' => 'required|array|min:1',
+            'lineas.*.alumno_id' => 'required|exists:alumnos,id',
+            'lineas.*.cuota_id' => 'required|exists:cuotas,id',
+            'lineas.*.monto' => 'required|numeric|min:0.01',
+            'monto_total' => 'required|numeric|min:0.01',
+            'monto_abono_profesor' => 'nullable|numeric|min:0',
             'liquidar_profesor' => 'nullable|in:0,1',
             'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'notas' => 'nullable|string|max:1000',
@@ -193,22 +228,48 @@ class PagoController extends Controller
 
         $liquidarProfesor = ($validated['liquidar_profesor'] ?? '1') === '1';
 
-        $alumnoIds = array_values(array_filter($validated['alumno_ids']));
-        if (empty($alumnoIds)) {
-            return back()->withErrors(['alumno_ids' => 'Seleccione al menos un alumno.'])->withInput();
+        $lineas = array_values($validated['lineas']);
+        $paresVistos = [];
+        foreach ($lineas as $i => $linea) {
+            $par = $linea['alumno_id'].'-'.$linea['cuota_id'];
+            if (isset($paresVistos[$par])) {
+                return back()->withErrors([
+                    'lineas' => 'Hay líneas duplicadas (mismo alumno y misma cuota). Unificá el monto en una sola línea o separá en otro pago.',
+                ])->withInput();
+            }
+            $paresVistos[$par] = true;
         }
 
-        $cuota = Cuota::query()->with('bloque.sede')->findOrFail($validated['cuota_id']);
-        foreach ($alumnoIds as $alumnoId) {
+        $sumaLineas = round(array_sum(array_map(fn ($l) => (float) $l['monto'], $lineas)), 2);
+        $montoTotal = round((float) $validated['monto_total'], 2);
+        if (abs($sumaLineas - $montoTotal) > 0.02) {
+            return back()->withErrors([
+                'monto_total' => 'El monto total ($'.number_format($montoTotal, 2, ',', '.').') debe coincidir con la suma de las líneas ($'.number_format($sumaLineas, 2, ',', '.').').',
+            ])->withInput();
+        }
+
+        $cuotaIds = array_values(array_unique(array_map(fn ($l) => (int) $l['cuota_id'], $lineas)));
+        $cuotasPorId = Cuota::query()
+            ->with(['bloque.sede', 'sede'])
+            ->whereIn('id', $cuotaIds)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($lineas as $idx => $linea) {
+            $cuota = $cuotasPorId->get((int) $linea['cuota_id']);
+            if (! $cuota) {
+                return back()->withErrors(['lineas.'.$idx.'.cuota_id' => 'Cuota no válida.'])->withInput();
+            }
+            $alumnoId = (int) $linea['alumno_id'];
             if (PagoDetalle::query()->where('cuota_id', $cuota->id)->where('alumno_id', $alumnoId)->exists()) {
                 return back()->withErrors([
-                    'alumno_ids' => 'Uno de los alumnos ya tiene pago registrado para esta cuota. Elegí otra cuota o actualizá la lista de alumnos.',
+                    'lineas.'.$idx.'.alumno_id' => 'Este alumno ya tiene pago registrado para la cuota elegida en esa línea.',
                 ])->withInput();
             }
             $alumno = Alumno::query()->find($alumnoId);
             if (! $alumno || ! $cuota->aplicaAAlumno($alumno)) {
                 return back()->withErrors([
-                    'alumno_ids' => 'Uno de los alumnos no corresponde a esta cuota o al bloque.',
+                    'lineas.'.$idx.'.alumno_id' => 'El alumno de la línea '.($idx + 1).' no corresponde a la cuota según alcance / bloques.',
                 ])->withInput();
             }
         }
@@ -236,69 +297,130 @@ class PagoController extends Controller
 
         $pago = Pago::create($pagoData);
 
-        $montoPorAlumno = round((float) $validated['monto_total'] / count($alumnoIds), 2);
+        $totalAbonoDocente = $liquidarProfesor
+            ? max(0.0, round((float) ($validated['monto_abono_profesor'] ?? 0), 2))
+            : null;
 
-        $baseLiquidacion = null;
-        $pctLiquidacion = null;
-        $abonoPorAlumno = null;
-        $notaAbono = null;
-
-        if ($liquidarProfesor && Schema::hasColumn('pago_detalles', 'abono_profesor')) {
-            $sede = $cuota->bloque?->sede;
-            $defRet = 0.0;
-            $defPorc = 40.0;
-            if ($sede) {
-                if (Schema::hasColumn('sedes', 'liquidacion_retencion_escuela')) {
-                    $defRet = (float) ($sede->liquidacion_retencion_escuela ?? 0);
-                }
-                if (Schema::hasColumn('sedes', 'liquidacion_porc_docente')) {
-                    $defPorc = (float) ($sede->liquidacion_porc_docente ?? 40);
-                }
-            }
-            $defPorc = max(0.0, min(100.0, $defPorc));
-
-            $baseLiquidacion = isset($validated['prof_abono_base']) && $validated['prof_abono_base'] !== null
-                ? (float) $validated['prof_abono_base']
-                : max(0.0, round((float) $cuota->monto - $defRet, 2));
-            $pctLiquidacion = isset($validated['prof_abono_porcentaje']) && $validated['prof_abono_porcentaje'] !== null
-                ? max(0.0, min(100.0, (float) $validated['prof_abono_porcentaje']))
-                : $defPorc;
-            $abonoPorAlumno = round($baseLiquidacion * ($pctLiquidacion / 100.0), 2);
-            $refEscuela = max(0, round((float) $cuota->monto - $baseLiquidacion, 2));
-            $montoDocente = $abonoPorAlumno;
-            $montoEscuelaRef = max(0, round((float) $cuota->monto - $montoDocente, 2));
-            $notaAbono = sprintf(
-                '%s · cuota ref. %s · ret. %s · base %s · %s%% · doc. %s/alu · esc. ref. %s',
-                $sede?->nombre ?? '—',
-                number_format((float) $cuota->monto, 0, ',', '.'),
-                number_format($defRet, 0, ',', '.'),
-                number_format($baseLiquidacion, 0, ',', '.'),
-                number_format($pctLiquidacion, 1, ',', '.'),
-                number_format($montoDocente, 0, ',', '.'),
-                number_format($montoEscuelaRef, 0, ',', '.')
-            );
-            if (strlen($notaAbono) > 500) {
-                $notaAbono = substr($notaAbono, 0, 497) . '...';
-            }
+        $montosLinea = array_map(fn ($l) => (float) $l['monto'], $lineas);
+        $n = count($lineas);
+        $abonosPorIndice = [];
+        if ($liquidarProfesor && $totalAbonoDocente !== null && Schema::hasColumn('pago_detalles', 'abono_profesor') && $n > 0) {
+            $abonosPorIndice = $this->distribuirAbonoDocenteProporcionalMontos($montosLinea, $totalAbonoDocente);
         }
 
-        foreach ($alumnoIds as $alumnoId) {
+        foreach ($lineas as $idx => $linea) {
+            $cuota = $cuotasPorId->get((int) $linea['cuota_id']);
+            $alumnoId = (int) $linea['alumno_id'];
+            $montoLinea = round((float) $linea['monto'], 2);
+            $cuotaRef = (float) $cuota->monto;
+            $alumno = Alumno::query()->with('sede')->find($alumnoId);
+            $sedeNombre = $cuota->bloque?->sede?->nombre
+                ?? $cuota->sede?->nombre
+                ?? $alumno?->sede?->nombre
+                ?? '—';
+
             $det = [
                 'pago_id' => $pago->id,
                 'alumno_id' => $alumnoId,
-                'cuota_id' => $validated['cuota_id'],
-                'monto' => $montoPorAlumno,
+                'cuota_id' => (int) $linea['cuota_id'],
+                'monto' => $montoLinea,
             ];
             if ($liquidarProfesor && Schema::hasColumn('pago_detalles', 'abono_profesor')) {
-                $det['abono_profesor'] = $abonoPorAlumno;
-                $det['abono_base'] = $baseLiquidacion;
-                $det['abono_porcentaje'] = $pctLiquidacion;
-                $det['abono_nota'] = $notaAbono;
+                $abonoAl = (float) ($abonosPorIndice[$idx] ?? 0.0);
+                $pctEf = $cuotaRef > 0 ? round(100 * $abonoAl / $cuotaRef, 4) : null;
+                $det['abono_profesor'] = $abonoAl;
+                $det['abono_base'] = $cuotaRef;
+                $det['abono_porcentaje'] = $pctEf;
+                $det['abono_nota'] = sprintf(
+                    'Línea pago: abono docente $%s (reparto prop. al total docente $%s). Cuota ref. $%s. %% efectivo sobre cuota ref.: %s. Sede ref.: %s.',
+                    number_format($abonoAl, 2, ',', '.'),
+                    number_format((float) ($totalAbonoDocente ?? 0), 2, ',', '.'),
+                    number_format($cuotaRef, 2, ',', '.'),
+                    $pctEf !== null ? number_format((float) $pctEf, 2, ',', '.') : '—',
+                    $sedeNombre
+                );
+                if (strlen((string) $det['abono_nota']) > 500) {
+                    $det['abono_nota'] = substr((string) $det['abono_nota'], 0, 497).'...';
+                }
             }
             PagoDetalle::create($det);
         }
 
         return redirect()->route('pagos.index')->with('success', 'Pago registrado correctamente.');
+    }
+
+    /**
+     * Reparte el abono total al docente entre líneas en proporción al monto de cada línea (centavos exactos).
+     *
+     * @param  array<int, float>  $montosLinea
+     * @return array<int, float> abono por índice de línea
+     */
+    private function distribuirAbonoDocenteProporcionalMontos(array $montosLinea, float $totalAbono): array
+    {
+        $n = count($montosLinea);
+        if ($n === 0) {
+            return [];
+        }
+        $centTot = (int) round($totalAbono * 100);
+        if ($centTot <= 0) {
+            return array_fill(0, $n, 0.0);
+        }
+        $sumM = array_sum($montosLinea);
+        if ($sumM <= 0) {
+            return array_fill(0, $n, 0.0);
+        }
+        $out = [];
+        $asignados = 0;
+        for ($i = 0; $i < $n; $i++) {
+            if ($i === $n - 1) {
+                $centLinea = $centTot - $asignados;
+            } else {
+                $centLinea = (int) floor(($centTot * $montosLinea[$i] / $sumM) + 1e-9);
+                $asignados += $centLinea;
+            }
+            $out[$i] = $centLinea / 100.0;
+        }
+
+        return $out;
+    }
+
+    private function aplicarFiltroCuotaAlumnoPivot(Cuota $cuota, $query): void
+    {
+        if (Schema::hasTable('cuota_alumno')) {
+            $idsSoloCuota = $cuota->alumnos()->pluck('alumnos.id');
+            if ($idsSoloCuota->isNotEmpty()) {
+                $query->whereIn('alumnos.id', $idsSoloCuota->all());
+            }
+        }
+    }
+
+    private function excluirAlumnosYaPagaron(Cuota $cuota, $query): void
+    {
+        if (! Schema::hasTable('pago_detalles')) {
+            return;
+        }
+        $yaPagaron = PagoDetalle::query()
+            ->where('cuota_id', $cuota->id)
+            ->pluck('alumno_id')
+            ->unique()
+            ->filter()
+            ->values();
+        if ($yaPagaron->isNotEmpty()) {
+            $query->whereNotIn('alumnos.id', $yaPagaron->all());
+        }
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder  $query
+     */
+    private function mapearAlumnosRespuesta($query, string $etiquetaBloque): array
+    {
+        return $query->get(['alumnos.id', 'alumnos.nombre_apellido', 'alumnos.sede_id'])->map(fn (Alumno $a) => [
+            'id' => $a->id,
+            'nombre_apellido' => $a->nombre_apellido,
+            'sede_nombre' => $a->sede?->nombre,
+            'bloque_nombre' => $etiquetaBloque,
+        ])->values()->all();
     }
 
     public function show(Pago $pago)

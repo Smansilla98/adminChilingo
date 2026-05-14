@@ -48,7 +48,7 @@ class DashboardController extends Controller
 
             // Total "cuotas emitidas" del mes = suma de asignaciones (cuota_alumno o todos los alumnos del bloque)
             $cuotasMes = Cuota::query()
-                ->with(['alumnos:id', 'bloque.alumnos' => fn ($q) => $q->where('alumnos.activo', true)])
+                ->with(['alumnos:id', 'bloque.alumnos' => fn ($q) => $q->where('alumnos.activo', true), 'sede'])
                 ->where('año', $anioActual)
                 ->where('mes', $mesActual)
                 ->where('activo', true)
@@ -56,9 +56,26 @@ class DashboardController extends Controller
 
             $cuotasTotal = 0;
             foreach ($cuotasMes as $c) {
-                $objetivo = $c->alumnos->isNotEmpty()
-                    ? $c->alumnos->unique('id')->count()
-                    : ($c->bloque?->alumnos?->unique('id')->count() ?? 0);
+                $alc = Schema::hasColumn('cuotas', 'alcance') ? $c->alcanceNormalizado() : Cuota::ALCANCE_BLOQUE;
+                if ($alc === Cuota::ALCANCE_GENERAL) {
+                    $objetivo = $c->alumnos->isNotEmpty()
+                        ? $c->alumnos->unique('id')->count()
+                        : (int) Alumno::query()->where('activo', true)->where(function ($q) {
+                            $q->whereHas('bloques')->orWhereNotNull('bloque_id');
+                        })->count();
+                } elseif ($alc === Cuota::ALCANCE_SEDE && $c->sede_id) {
+                    $sid = (int) $c->sede_id;
+                    $objetivo = $c->alumnos->isNotEmpty()
+                        ? $c->alumnos->unique('id')->count()
+                        : (int) Alumno::query()->where('activo', true)->where(function ($q) use ($sid) {
+                            $q->whereHas('bloques', fn ($b) => $b->where('bloques.sede_id', $sid))
+                                ->orWhere('sede_id', $sid);
+                        })->count();
+                } else {
+                    $objetivo = $c->alumnos->isNotEmpty()
+                        ? $c->alumnos->unique('id')->count()
+                        : ($c->bloque?->alumnos?->unique('id')->count() ?? 0);
+                }
                 $cuotasTotal += $objetivo;
             }
 

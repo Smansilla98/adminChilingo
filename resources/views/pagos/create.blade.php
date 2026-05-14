@@ -5,9 +5,12 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header">Nuevo pago (varios alumnos, una cuota, comprobante opcional)</div>
+    <div class="card-header">Nuevo pago (varias líneas: alumno + cuota + monto; un comprobante opcional)</div>
     <div class="card-body">
-        <form action="{{ route('pagos.store') }}" method="POST" enctype="multipart/form-data">
+        <p class="text-muted small mb-3">
+            Podés registrar en un solo pago <strong>varias cuotas</strong> (distintos meses o talleres), el mismo alumno en más de un bloque, o <strong>un adulto y su hijo</strong> con cuotas distintas: cada fila es un alumno, una cuota y el monto que corresponde a esa línea. La <strong>suma de las filas</strong> debe coincidir con el <strong>monto total</strong> del comprobante.
+        </p>
+        <form action="{{ route('pagos.store') }}" method="POST" enctype="multipart/form-data" id="form-pago-lineas">
             @csrf
             <div class="row mb-3">
                 <div class="col-md-3">
@@ -20,77 +23,56 @@
                     <select id="filtro_bloque_pagos" class="form-select" aria-describedby="help-filtro-bloque">
                         <option value="">Todos los bloques</option>
                         @foreach($bloquesFiltro as $b)
-                            <option value="{{ $b->id }}">{{ $b->nombre }}@if($b->sede) — {{ $b->sede->nombre }}@endif</option>
+                            <option value="{{ $b->id }}" data-sede-id="{{ $b->sede_id ?? '' }}">{{ $b->nombre }}@if($b->sede) — {{ $b->sede->nombre }}@endif</option>
                         @endforeach
                     </select>
-                    <div id="help-filtro-bloque" class="form-text">Acota el listado de cuotas al bloque elegido.</div>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Cuota que se paga *</label>
-                    <select name="cuota_id" id="cuota_id_pago" class="form-select @error('cuota_id') is-invalid @enderror" required>
-                        <option value="">Seleccionar cuota</option>
-                        @foreach($cuotas as $c)
-                        @php
-                            $periodo = $c->nombre_mes ? ($c->nombre_mes . ' ' . $c->año) : null;
-                            $etiqueta = $periodo ? ($periodo . ' — ' . $c->nombre) : $c->nombre;
-                            $inactiva = isset($c->activo) && !$c->activo;
-                        @endphp
-                        @php
-                            $sedeCuota = $c->bloque?->sede;
-                            $liqRet = $sedeCuota?->liquidacion_retencion_escuela;
-                            $liqPorc = $sedeCuota?->liquidacion_porc_docente;
-                        @endphp
-                        <option value="{{ $c->id }}" data-bloque-id="{{ $c->bloque_id ?? '' }}"
-                            data-sede="{{ $sedeCuota?->nombre ?? '' }}"
-                            data-profesor="{{ $c->bloque?->profesor?->nombre ?? '' }}"
-                            data-monto-cuota="{{ $c->monto }}"
-                            data-sede-liq-ret="{{ $liqRet ?? 0 }}"
-                            data-sede-liq-porc="{{ $liqPorc ?? 40 }}"
-                            {{ old('cuota_id') == $c->id ? 'selected' : '' }}>
-                            {{ $etiqueta }} — $ {{ number_format($c->monto, 2, ',', '.') }}@if($inactiva) (Retroactiva)@endif
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('cuota_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div id="help-filtro-bloque" class="form-text">Filtra las cuotas disponibles en cada fila (general, sede del bloque o cuota de ese bloque).</div>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Monto total *</label>
-                    <input type="number" name="monto_total" class="form-control" step="0.01" min="0" value="{{ old('monto_total') }}" required>
+                    <input type="number" name="monto_total" id="monto_total_pago" class="form-control @error('monto_total') is-invalid @enderror" step="0.01" min="0.01" value="{{ old('monto_total') }}" required>
                     @error('monto_total')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div class="form-text">Debe ser igual a la suma de las líneas.</div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="w-100 small" id="resumen-suma-lineas" aria-live="polite">
+                        <span class="text-muted">Suma líneas:</span> <strong id="suma-lineas-val">0,00</strong>
+                        <span id="suma-lineas-ok" class="text-success d-none ms-1">✓</span>
+                        <span id="suma-lineas-warn" class="text-warning d-none ms-1">≠ total</span>
+                    </div>
                 </div>
             </div>
 
-            <p id="ctx-cuota-pago" class="form-text text-muted mb-3" aria-live="polite"></p>
+            @error('lineas')<div class="alert alert-danger py-2 small">{{ $message }}</div>@enderror
 
-            <div class="mb-3">
-                <label class="form-label">Alumnos que pagan (seleccionar uno o varios) *</label>
-                <p class="text-muted small">Solo se listan alumnos del bloque de la cuota que <strong>aún no tienen</strong> pago registrado para esa cuota. Ctrl+clic para elegir varios. El monto total se repartirá entre los seleccionados.</p>
-                <input type="search" id="buscar_alumnos_pago" class="form-control form-control-sm mb-2" placeholder="Buscar por nombre, sede o bloque…" autocomplete="off" disabled aria-label="Filtrar lista de alumnos">
-                <select name="alumno_ids[]" id="alumno_ids_pago" class="form-select @error('alumno_ids') is-invalid @enderror" multiple size="12" disabled></select>
-                <p id="alumnos_pago_ayuda" class="form-text text-muted">Elegí la cuota para cargar la lista de alumnos.</p>
-                @error('alumno_ids')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+            <div class="table-responsive mb-2">
+                <table class="table table-sm align-middle" id="tabla-lineas-pago">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px">Cuota *</th>
+                            <th style="min-width:200px">Alumno *</th>
+                            <th style="width:120px">Monto $ *</th>
+                            <th style="width:48px"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineas-pago-body"></tbody>
+                </table>
             </div>
+            <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="btn-add-linea-pago"><i class="bi bi-plus-lg"></i> Añadir línea</button>
 
             <div class="border rounded p-3 mb-3">
-                <div class="fw-semibold mb-2">Liquidación al profesor <span class="text-muted fw-normal small">(por cada alumno que paga)</span></div>
-                <p class="text-muted small mb-3">Sobre el <strong>monto de referencia de la cuota</strong> (X), primero podés apartar una suma fija para la escuela (<strong>retención</strong>); sobre lo que queda (<strong>base</strong>) se aplica el <strong>% al docente</strong>. Así se ve claro: <strong>docente = base × %</strong> y <strong>resto de X para la escuela</strong> (referencia: cuota − abono docente). Los valores por defecto salen de la <a href="{{ route('sedes.index') }}">configuración de la sede</a> del bloque; podés ajustarlos acá antes de guardar.</p>
+                <div class="fw-semibold mb-2">Abono al profesor</div>
+                <p class="text-muted small mb-3">Un solo importe <strong>total</strong> para este pago. Se reparte entre las líneas <strong>en proporción al monto</strong> de cada una; en cada línea se guarda el % efectivo respecto de la cuota de esa línea.</p>
                 <div class="form-check mb-3">
                     <input type="hidden" name="liquidar_profesor" value="0">
                     <input class="form-check-input" type="checkbox" name="liquidar_profesor" value="1" id="liquidar_profesor" {{ (string) old('liquidar_profesor', '1') === '1' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="liquidar_profesor">Calcular y guardar abono al profesor</label>
+                    <label class="form-check-label" for="liquidar_profesor">Registrar abono al profesor</label>
                 </div>
                 <div class="row g-2 align-items-end" id="wrap_liquidacion_prof">
-                    <div class="col-md-4">
-                        <label class="form-label" for="prof_abono_base">Base para liquidar al prof. ($)</label>
-                        <input type="number" name="prof_abono_base" id="prof_abono_base" class="form-control @error('prof_abono_base') is-invalid @enderror" step="0.01" min="0" value="{{ old('prof_abono_base') }}" placeholder="Según sede: cuota − retención">
-                        @error('prof_abono_base')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        <div class="form-text">Por defecto: <strong>monto cuota − retención escuela</strong> (según la sede). Podés corregir el importe si hace falta.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="prof_abono_porcentaje">% al profesor</label>
-                        <input type="number" name="prof_abono_porcentaje" id="prof_abono_porcentaje" class="form-control @error('prof_abono_porcentaje') is-invalid @enderror" step="0.1" min="0" max="100" value="{{ old('prof_abono_porcentaje', 40) }}">
-                        @error('prof_abono_porcentaje')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        <div class="form-text">Por defecto según la sede del bloque.</div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="monto_abono_profesor">Total abono docente ($)</label>
+                        <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor') }}" placeholder="Opcional / total del pago">
+                        @error('monto_abono_profesor')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-12">
                         <div id="prof_abono_preview" class="small mt-2 text-muted" aria-live="polite"></div>
@@ -115,96 +97,113 @@
 @endsection
 
 @push('scripts')
+<script type="application/json" id="cuotas-meta-json">{!! json_encode($cuotasMeta ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 <script>
 (function () {
-    const cuotaSel = document.getElementById('cuota_id_pago');
+    const cuotasMeta = JSON.parse(document.getElementById('cuotas-meta-json').textContent || '[]');
     const filtroBloque = document.getElementById('filtro_bloque_pagos');
-    const alumnoSel = document.getElementById('alumno_ids_pago');
-    const buscarAlumnos = document.getElementById('buscar_alumnos_pago');
-    const ayuda = document.getElementById('alumnos_pago_ayuda');
-    const ctxCuota = document.getElementById('ctx-cuota-pago');
-    const profBase = document.getElementById('prof_abono_base');
-    const profPct = document.getElementById('prof_abono_porcentaje');
+    const tbody = document.getElementById('lineas-pago-body');
+    const btnAdd = document.getElementById('btn-add-linea-pago');
+    const montoTotalInp = document.getElementById('monto_total_pago');
+    const sumaVal = document.getElementById('suma-lineas-val');
+    const sumaOk = document.getElementById('suma-lineas-ok');
+    const sumaWarn = document.getElementById('suma-lineas-warn');
+    const montoAbonoProf = document.getElementById('monto_abono_profesor');
     const profPreview = document.getElementById('prof_abono_preview');
     const liqProf = document.getElementById('liquidar_profesor');
     const wrapLiq = document.getElementById('wrap_liquidacion_prof');
-    const montoTotalInp = document.querySelector('input[name="monto_total"]');
-    {{-- Ruta relativa: evita fetch al host de APP_URL si difiere del dominio real (p. ej. Railway). --}}
     const urlApi = @json(route('pagos.api.alumnos-cuota', [], false));
-    const oldAlumnoIds = @json(array_values(array_map('intval', old('alumno_ids', []))));
-    const oldCuotaId = @json((int) old('cuota_id', 0));
+    const oldLineas = @json(array_values((array) old('lineas', [])));
 
-    function setAyuda(text) {
-        if (ayuda) ayuda.textContent = text;
+    function filtroBloqueVal() {
+        if (!filtroBloque || !filtroBloque.value) return { bid: '', sid: '' };
+        const o = filtroBloque.selectedOptions[0];
+        return { bid: String(filtroBloque.value), sid: String(o && o.dataset ? (o.dataset.sedeId || '') : '') };
     }
 
-    function actualizarContextoCuota() {
-        if (!ctxCuota || !cuotaSel) return;
-        const opt = cuotaSel.selectedOptions[0];
-        if (!opt || !opt.value) {
-            ctxCuota.textContent = '';
-            return;
+    function cuotaVisible(c, fb) {
+        if (!fb.bid) return true;
+        const alc = (c.alcance || 'bloque').trim();
+        if (alc === 'general') return true;
+        if (alc === 'sede') {
+            const sid = c.sede_id != null ? String(c.sede_id) : '';
+            return Boolean(sid && fb.sid && sid === fb.sid);
         }
-        const sede = (opt.dataset.sede || '').trim() || '—';
-        const prof = (opt.dataset.profesor || '').trim() || '—';
-        const raw = opt.dataset.montoCuota;
-        let montoTxt = '';
-        if (raw !== undefined && raw !== '') {
-            const n = parseFloat(String(raw).replace(',', '.'));
-            if (!isNaN(n)) {
-                montoTxt = ' · monto de cuota (referencia) $' + n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        return String(c.bloque_id || '') === fb.bid;
+    }
+
+    function reindexLineas() {
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(function (tr, i) {
+            tr.dataset.lineIndex = String(i);
+            const sc = tr.querySelector('.linea-cuota');
+            const sa = tr.querySelector('.linea-alumno');
+            const sm = tr.querySelector('.linea-monto');
+            if (sc) sc.name = 'lineas[' + i + '][cuota_id]';
+            if (sa) sa.name = 'lineas[' + i + '][alumno_id]';
+            if (sm) sm.name = 'lineas[' + i + '][monto]';
+        });
+    }
+
+    function llenarCuotaSelect(select, selectedId) {
+        const fb = filtroBloqueVal();
+        const prev = selectedId != null ? String(selectedId) : String(select.value || '');
+        select.innerHTML = '<option value="">— Elegir cuota —</option>';
+        cuotasMeta.forEach(function (c) {
+            if (!cuotaVisible(c, fb)) return;
+            const o = document.createElement('option');
+            o.value = String(c.id);
+            o.textContent = c.label;
+            o.dataset.montoCuota = String(c.monto);
+            select.appendChild(o);
+        });
+        if (prev && Array.from(select.options).some(function (o) { return o.value === prev; })) {
+            select.value = prev;
+        }
+    }
+
+    function parseNum(v) {
+        if (v === '' || v === null || v === undefined) return NaN;
+        const n = parseFloat(String(v).replace(',', '.'));
+        return isNaN(n) ? NaN : n;
+    }
+
+    function sumaMontosLineas() {
+        let s = 0;
+        if (!tbody) return 0;
+        tbody.querySelectorAll('.linea-monto').forEach(function (inp) {
+            const n = parseNum(inp.value);
+            if (!isNaN(n)) s += n;
+        });
+        return Math.round(s * 100) / 100;
+    }
+
+    function actualizarSumaVista() {
+        const s = sumaMontosLineas();
+        if (sumaVal) sumaVal.textContent = s.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const tot = montoTotalInp ? parseNum(montoTotalInp.value) : NaN;
+        const ok = !isNaN(tot) && Math.abs(s - tot) < 0.03;
+        if (sumaOk) sumaOk.classList.toggle('d-none', !ok);
+        if (sumaWarn) sumaWarn.classList.toggle('d-none', ok || isNaN(tot) || tot <= 0);
+    }
+
+    function distribuirPreviewCentavos(montos, centTot) {
+        const n = montos.length;
+        if (n === 0 || centTot <= 0) return montos.map(function () { return 0; });
+        const sumM = montos.reduce(function (a, b) { return a + b; }, 0);
+        if (sumM <= 0) return montos.map(function () { return 0; });
+        const out = [];
+        let asign = 0;
+        for (let i = 0; i < n; i++) {
+            let c;
+            if (i === n - 1) c = centTot - asign;
+            else {
+                c = Math.floor((centTot * montos[i] / sumM) + 1e-9);
+                asign += c;
             }
+            out.push(c / 100);
         }
-        let liqTxt = '';
-        const ret = (function () {
-            const v = opt.dataset.sedeLiqRet;
-            if (v === undefined || v === '') return 0;
-            const n = parseFloat(String(v).replace(',', '.'));
-            return isNaN(n) ? 0 : n;
-        })();
-        const porcCfg = (function () {
-            const v = opt.dataset.sedeLiqPorc;
-            if (v === undefined || v === '') return 40;
-            const n = parseFloat(String(v).replace(',', '.'));
-            return isNaN(n) ? 40 : n;
-        })();
-        if (ret > 0) {
-            liqTxt += ' Retención escuela (config. sede): $' + ret.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + '.';
-        }
-        liqTxt += ' % docente por defecto (sede): ' + porcCfg + '%.';
-        ctxCuota.textContent = 'Contexto del registro: sede ' + sede + ' · profesor titular del bloque ' + prof + montoTxt + '.' + liqTxt;
-    }
-
-    function aplicarLiquidacionDesdeSede() {
-        if (!profBase || !profPct || !cuotaSel) return;
-        const opt = cuotaSel.selectedOptions[0];
-        if (!opt || !opt.value) {
-            return;
-        }
-        const rawM = opt.dataset.montoCuota;
-        if (rawM === undefined || rawM === '') return;
-        const montoCuota = parseFloat(String(rawM).replace(',', '.'));
-        if (isNaN(montoCuota)) return;
-        const ret = (function () {
-            const v = opt.dataset.sedeLiqRet;
-            if (v === undefined || v === '') return 0;
-            const n = parseFloat(String(v).replace(',', '.'));
-            return isNaN(n) ? 0 : n;
-        })();
-        const porcCfg = (function () {
-            const v = opt.dataset.sedeLiqPorc;
-            if (v === undefined || v === '') return 40;
-            const n = parseFloat(String(v).replace(',', '.'));
-            return isNaN(n) ? 40 : n;
-        })();
-        const base = Math.max(0, Math.round((montoCuota - (isNaN(ret) ? 0 : ret)) * 100) / 100);
-        profBase.value = String(base);
-        profPct.value = String(isNaN(porcCfg) ? 40 : porcCfg);
-    }
-
-    function contarAlumnosSeleccionados() {
-        if (!alumnoSel) return 0;
-        return Array.from(alumnoSel.selectedOptions).filter(function (o) { return o.value && !o.hidden; }).length;
+        return out;
     }
 
     function actualizarPreviewAbono() {
@@ -215,84 +214,105 @@
             return;
         }
         if (wrapLiq) wrapLiq.classList.remove('opacity-50');
-        const opt = cuotaSel && cuotaSel.selectedOptions[0];
-        const montoCuota = opt && opt.dataset.montoCuota ? parseFloat(String(opt.dataset.montoCuota).replace(',', '.')) : NaN;
-        let base = profBase && profBase.value !== '' ? parseFloat(String(profBase.value).replace(',', '.')) : NaN;
-        if (isNaN(base) && !isNaN(montoCuota)) {
-            base = montoCuota;
-        }
-        const pct = profPct && profPct.value !== '' ? parseFloat(String(profPct.value).replace(',', '.')) : 40;
-        if (isNaN(base) || isNaN(pct)) {
-            profPreview.textContent = 'Completá base y % para ver el cálculo.';
+        const totalAbono = montoAbonoProf && montoAbonoProf.value !== '' ? parseNum(montoAbonoProf.value) : NaN;
+        const fmt = function (x) { return x.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+        if (isNaN(totalAbono) || totalAbono < 0) {
+            profPreview.textContent = 'Ingresá el total abonado al docente para ver el reparto proporcional por línea.';
             return;
         }
-        const porAlumno = Math.round(base * (pct / 100) * 100) / 100;
-        const n = contarAlumnosSeleccionados();
-        const total = Math.round(porAlumno * n * 100) / 100;
-        const fmt = function (x) {
-            return x.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        };
-        let escuelaHtml = '';
-        if (!isNaN(montoCuota) && !isNaN(base)) {
-            const refEscuela = Math.max(0, Math.round((montoCuota - base) * 100) / 100);
-            escuelaHtml = ' Sobre la cuota de referencia <strong>$' + fmt(montoCuota) + '</strong>, la base para el prof. es <strong>$' + fmt(base) + '</strong> (retención escuela ref. <strong>$' + fmt(refEscuela) + '</strong>).';
-        }
-        const restoEscuela = !isNaN(montoCuota) ? Math.max(0, Math.round((montoCuota - porAlumno) * 100) / 100) : NaN;
-        if (!isNaN(restoEscuela)) {
-            escuelaHtml += ' <strong>Docente</strong> (por alumno): $' + fmt(porAlumno) + ' · <strong>Resto para escuela</strong> (ref. cuota − docente): $' + fmt(restoEscuela) + '.';
-        }
-        profPreview.innerHTML = escuelaHtml + ' ' +
-            (n > 0 ? 'Con <strong>' + n + '</strong> alumno(s), total abono prof.: <strong>$' + fmt(total) + '</strong>.' : 'Seleccioná al menos un alumno para ver el total.');
-    }
-
-    function aplicarFiltroCuotasPorBloque() {
-        if (!cuotaSel || !filtroBloque) return;
-        const bid = filtroBloque.value;
-        Array.from(cuotaSel.options).forEach(function (opt) {
-            if (!opt.value) {
-                opt.hidden = false;
-                return;
-            }
-            const ob = String(opt.getAttribute('data-bloque-id') || '');
-            const show = !bid || ob === String(bid);
-            opt.hidden = !show;
+        const montos = [];
+        const metas = [];
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(function (tr) {
+            const m = parseNum(tr.querySelector('.linea-monto') && tr.querySelector('.linea-monto').value);
+            const sel = tr.querySelector('.linea-cuota');
+            const opt = sel && sel.selectedOptions[0];
+            const mc = opt && opt.dataset.montoCuota ? parseNum(opt.dataset.montoCuota) : NaN;
+            montos.push(isNaN(m) ? 0 : m);
+            metas.push({ montoCuota: mc });
         });
-        const sel = cuotaSel.selectedOptions[0];
-        if (sel && sel.hidden) {
-            cuotaSel.value = '';
-            actualizarContextoCuota();
-            cargarAlumnos();
+        const sumM = montos.reduce(function (a, b) { return a + b; }, 0);
+        if (sumM <= 0) {
+            profPreview.textContent = 'Completá montos en las líneas para calcular el reparto del abono docente.';
+            return;
+        }
+        const centTot = Math.round(totalAbono * 100);
+        const partes = distribuirPreviewCentavos(montos, centTot);
+        let html = '<ul class="mb-0 ps-3">';
+        tbody.querySelectorAll('tr').forEach(function (tr, i) {
+            const ab = partes[i] || 0;
+            const mc = metas[i] && !isNaN(metas[i].montoCuota) ? metas[i].montoCuota : NaN;
+            let pct = '';
+            if (!isNaN(mc) && mc > 0) {
+                pct = ' · % sobre cuota ref.: ' + fmt(Math.round(10000 * ab / mc) / 100) + '%';
+            }
+            const al = tr.querySelector('.linea-alumno');
+            const nom = al && al.selectedOptions[0] ? al.selectedOptions[0].textContent.trim() : '—';
+            html += '<li class="mb-1"><strong>' + nom + '</strong>: abono ~$' + fmt(ab) + pct + '</li>';
+        });
+        html += '</ul>';
+        profPreview.innerHTML = html;
+    }
+
+    function bindLinea(tr) {
+        const sc = tr.querySelector('.linea-cuota');
+        const sa = tr.querySelector('.linea-alumno');
+        const sm = tr.querySelector('.linea-monto');
+        const btn = tr.querySelector('.btn-quitar-linea');
+        if (sc) {
+            sc.addEventListener('change', function () {
+                cargarAlumnosFila(tr);
+                if (sm && (sm.value === '' || sm.value === null)) {
+                    const opt = sc.selectedOptions[0];
+                    const mc = opt && opt.dataset.montoCuota ? parseNum(opt.dataset.montoCuota) : NaN;
+                    if (!isNaN(mc)) sm.value = String(mc);
+                }
+                actualizarSumaVista();
+                actualizarPreviewAbono();
+            });
+        }
+        if (sa) {
+            sa.addEventListener('change', function () {
+                actualizarPreviewAbono();
+            });
+        }
+        if (sm) {
+            sm.addEventListener('input', function () {
+                actualizarSumaVista();
+                actualizarPreviewAbono();
+            });
+        }
+        if (btn) {
+            btn.addEventListener('click', function () {
+                if (tbody.querySelectorAll('tr').length <= 1) return;
+                tr.remove();
+                reindexLineas();
+                actualizarSumaVista();
+                actualizarPreviewAbono();
+                actualizarBotonesQuitar();
+            });
         }
     }
 
-    function aplicarBusquedaAlumnos() {
-        if (!alumnoSel || !buscarAlumnos) return;
-        const q = (buscarAlumnos.value || '').trim().toLowerCase();
-        Array.from(alumnoSel.options).forEach(function (opt) {
-            const bloque = (opt.dataset.bloqueNombre || '').toLowerCase();
-            const texto = (opt.textContent || '').toLowerCase();
-            const ok = !q || texto.indexOf(q) !== -1 || bloque.indexOf(q) !== -1;
-            opt.hidden = !ok;
-            if (!ok && opt.selected) {
-                opt.selected = false;
-            }
+    function actualizarBotonesQuitar() {
+        if (!tbody) return;
+        const n = tbody.querySelectorAll('tr').length;
+        tbody.querySelectorAll('.btn-quitar-linea').forEach(function (b) {
+            b.disabled = n <= 1;
         });
     }
 
-    async function cargarAlumnos() {
-        const cuotaId = cuotaSel && cuotaSel.value;
-        if (!cuotaSel || !alumnoSel) return;
-        alumnoSel.innerHTML = '';
-        alumnoSel.disabled = true;
+    async function cargarAlumnosFila(tr, preselectAlumnoId) {
+        const sc = tr.querySelector('.linea-cuota');
+        const sa = tr.querySelector('.linea-alumno');
+        if (!sc || !sa) return;
+        const cuotaId = sc.value;
+        sa.innerHTML = '<option value="">—</option>';
+        sa.disabled = true;
         if (!cuotaId) {
-            setAyuda('Elegí la cuota para cargar la lista de alumnos.');
-            if (buscarAlumnos) {
-                buscarAlumnos.value = '';
-                buscarAlumnos.disabled = true;
-            }
+            sa.innerHTML = '<option value="">Primero elegí la cuota</option>';
             return;
         }
-        setAyuda('Cargando…');
         try {
             const u = new URL(urlApi, window.location.origin);
             u.searchParams.set('cuota_id', cuotaId);
@@ -300,94 +320,104 @@
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'same-origin',
             });
-            if (!r.ok) throw new Error('Error');
+            if (!r.ok) throw new Error('err');
             const data = await r.json();
             const lista = data.alumnos || [];
-            const cuotaInt = parseInt(cuotaId, 10);
-            const restaurarSeleccion = oldCuotaId > 0 && cuotaInt === oldCuotaId;
             lista.forEach(function (a) {
-                const opt = document.createElement('option');
-                opt.value = a.id;
+                const o = document.createElement('option');
+                o.value = String(a.id);
                 const sede = a.sede_nombre ? ' (' + a.sede_nombre + ')' : '';
                 const bn = a.bloque_nombre || '';
-                if (bn) {
-                    opt.dataset.bloqueNombre = bn;
-                    opt.textContent = (a.nombre_apellido || '') + sede + ' — ' + bn;
-                } else {
-                    opt.textContent = (a.nombre_apellido || '') + sede;
-                }
-                if (restaurarSeleccion && oldAlumnoIds.indexOf(parseInt(a.id, 10)) !== -1) {
-                    opt.selected = true;
-                }
-                alumnoSel.appendChild(opt);
+                o.textContent = (a.nombre_apellido || '') + sede + (bn ? ' — ' + bn : '');
+                sa.appendChild(o);
             });
-            if (buscarAlumnos) {
-                buscarAlumnos.value = '';
-                buscarAlumnos.disabled = lista.length === 0;
+            sa.disabled = lista.length === 0;
+            if (preselectAlumnoId) {
+                const ps = String(preselectAlumnoId);
+                if (Array.from(sa.options).some(function (o) { return o.value === ps; })) {
+                    sa.value = ps;
+                }
             }
-            aplicarBusquedaAlumnos();
-            alumnoSel.disabled = lista.length === 0;
-            if (lista.length === 0) {
-                setAyuda('No hay alumnos disponibles: todos los del bloque ya pagaron esta cuota, o la cuota no tiene bloque asignado.');
-            } else {
-                setAyuda(lista.length + ' alumno(s) disponible(s) para esta cuota.');
-            }
-            actualizarPreviewAbono();
         } catch (e) {
-            setAyuda('No se pudo cargar la lista. Reintentá.');
+            sa.innerHTML = '<option value="">Error al cargar</option>';
         }
+        actualizarPreviewAbono();
     }
 
-    if (cuotaSel) {
-        cuotaSel.addEventListener('change', function () {
-            aplicarLiquidacionDesdeSede();
-            actualizarContextoCuota();
-            actualizarPreviewAbono();
-            cargarAlumnos();
+    function crearFila() {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td><select class="form-select form-select-sm linea-cuota" required><option value="">— Elegir cuota —</option></select></td>' +
+            '<td><select class="form-select form-select-sm linea-alumno" required disabled><option value="">Primero la cuota</option></select></td>' +
+            '<td><input type="number" class="form-control form-control-sm linea-monto" step="0.01" min="0.01" value="" required></td>' +
+            '<td class="text-nowrap"><button type="button" class="btn btn-sm btn-outline-danger btn-quitar-linea" title="Quitar línea">×</button></td>';
+        const sel = tr.querySelector('.linea-cuota');
+        llenarCuotaSelect(sel, null);
+        return tr;
+    }
+
+    async function addLinea(initial) {
+        if (!tbody) return;
+        const tr = crearFila();
+        tbody.appendChild(tr);
+        reindexLineas();
+        bindLinea(tr);
+        actualizarBotonesQuitar();
+        if (initial && initial.cuota_id) {
+            const sc = tr.querySelector('.linea-cuota');
+            const sm = tr.querySelector('.linea-monto');
+            sc.value = String(initial.cuota_id);
+            await cargarAlumnosFila(tr, initial.alumno_id);
+            if (sm && initial.monto != null && initial.monto !== '') {
+                sm.value = String(initial.monto);
+            }
+        }
+        actualizarSumaVista();
+        actualizarPreviewAbono();
+    }
+
+    function refrescarSelectsCuotaTodos() {
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(function (tr) {
+            const sel = tr.querySelector('.linea-cuota');
+            const prev = sel.value;
+            llenarCuotaSelect(sel, prev);
+            if (prev && sel.value !== prev) {
+                sel.value = '';
+                cargarAlumnosFila(tr, null);
+            }
         });
-        document.addEventListener('DOMContentLoaded', function () {
-            if (oldCuotaId > 0 && cuotaSel && filtroBloque) {
-                const optOld = cuotaSel.querySelector('option[value="' + String(oldCuotaId) + '"]');
-                if (optOld) {
-                    const bidOld = optOld.getAttribute('data-bloque-id');
-                    if (bidOld) {
-                        filtroBloque.value = bidOld;
-                    }
-                }
-            }
-            aplicarFiltroCuotasPorBloque();
-            actualizarContextoCuota();
-            if (profBase && cuotaSel && cuotaSel.value && (profBase.value === '' || profBase.value === null)) {
-                aplicarLiquidacionDesdeSede();
-            }
-            actualizarPreviewAbono();
-            if (cuotaSel.value) {
-                cargarAlumnos();
-            }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const arr = Array.isArray(oldLineas) && oldLineas.length ? oldLineas : [{}];
+        for (let j = 0; j < arr.length; j++) {
+            await addLinea(arr[j]);
+        }
+    });
+
+    if (btnAdd) {
+        btnAdd.addEventListener('click', function () {
+            void addLinea(null);
         });
     }
     if (filtroBloque) {
         filtroBloque.addEventListener('change', function () {
-            aplicarFiltroCuotasPorBloque();
+            refrescarSelectsCuotaTodos();
+            actualizarSumaVista();
+            actualizarPreviewAbono();
         });
     }
-    if (buscarAlumnos) {
-        buscarAlumnos.addEventListener('input', aplicarBusquedaAlumnos);
-    }
-    if (profBase) {
-        profBase.addEventListener('input', actualizarPreviewAbono);
-    }
-    if (profPct) {
-        profPct.addEventListener('input', actualizarPreviewAbono);
-    }
     if (montoTotalInp) {
-        montoTotalInp.addEventListener('input', actualizarPreviewAbono);
+        montoTotalInp.addEventListener('input', actualizarSumaVista);
+    }
+    if (montoAbonoProf) {
+        montoAbonoProf.addEventListener('input', actualizarPreviewAbono);
     }
     if (liqProf) {
         liqProf.addEventListener('change', actualizarPreviewAbono);
-    }
-    if (alumnoSel) {
-        alumnoSel.addEventListener('change', actualizarPreviewAbono);
     }
 })();
 </script>

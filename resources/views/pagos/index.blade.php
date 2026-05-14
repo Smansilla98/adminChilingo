@@ -59,7 +59,7 @@
                     @forelse($pagos as $p)
                     <tr>
                         <td>{{ $p->fecha_pago->format('d/m/Y') }}</td>
-                        <td>{{ $p->detalles->first()?->cuota?->nombre ?? '-' }}</td>
+                        <td>{{ $p->detalles->pluck('cuota.nombre')->filter()->unique()->implode(', ') ?: '—' }}</td>
                         <td>{{ $p->detalles->pluck('alumno.nombre_apellido')->unique()->join(', ') }}</td>
                         <td>$ {{ number_format($p->monto_total, 2, ',', '.') }}</td>
                         <td>
