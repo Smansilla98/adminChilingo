@@ -4,12 +4,17 @@
 @section('page-title', 'Alumno')
 
 @section('content')
+@php $isAdmin = auth()->user()->isAdmin(); @endphp
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">{{ $alumno->nombre_apellido }}</h5>
         <div>
+            @if($isAdmin)
             <a href="{{ route('alumnos.edit', $alumno) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
             <a href="{{ route('alumnos.index') }}" class="btn btn-secondary btn-sm">Volver</a>
+            @else
+            <a href="{{ route('profesor.alumnos') }}" class="btn btn-secondary btn-sm">Volver a mis alumnos</a>
+            @endif
         </div>
     </div>
     <div class="card-body">

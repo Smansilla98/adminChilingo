@@ -6,6 +6,7 @@ use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\PagoDetalle;
+use App\Models\Profesor;
 use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
@@ -14,6 +15,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AlumnosExport;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Concerns\ToCollection;
 
@@ -161,6 +163,14 @@ class AlumnoController extends Controller
      */
     public function show(Alumno $alumno)
     {
+        $user = auth()->user();
+        if ($user && $user->isProfesor() && ! $user->isAdmin()) {
+            $prof = $user->profesor;
+            if (! $prof || ! $this->alumnoPerteneceABloquesDelProfesor($alumno, $prof)) {
+                abort(403);
+            }
+        }
+
         $alumno->load(['bloque.profesor', 'bloques.profesor', 'sede', 'asistencias']);
 
         $bloquesIds = $alumno->bloques->pluck('id')->filter()->values();
@@ -595,5 +605,21 @@ class AlumnoController extends Controller
             }
         }
         return null;
+    }
+
+    private function alumnoPerteneceABloquesDelProfesor(Alumno $alumno, Profesor $profesor): bool
+    {
+        $ids = $profesor->bloqueIdsDondeParticipa()->map(fn ($id) => (int) $id)->unique()->values()->all();
+        if ($ids === []) {
+            return false;
+        }
+        if ($alumno->bloque_id && in_array((int) $alumno->bloque_id, $ids, true)) {
+            return true;
+        }
+        if (Schema::hasTable('alumno_bloque')) {
+            return $alumno->bloques()->whereIn('bloques.id', $ids)->exists();
+        }
+
+        return false;
     }
 }

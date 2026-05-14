@@ -7,17 +7,23 @@
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
-            <div class="card-header fw-semibold"><i class="bi bi-grid-3x3-gap"></i> Accesos rápidos</div>
+            <div class="card-header fw-semibold"><i class="bi bi-grid-3x3-gap"></i> Panel principal</div>
             <div class="card-body">
-                <div class="d-flex flex-wrap gap-2 prof-quick-links">
+                <div class="fw-semibold small text-uppercase text-muted mb-2">Acciones</div>
+                <div class="d-flex flex-wrap gap-2 prof-quick-links mb-4">
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.asistencias.create') }}">Tomar asistencia</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobante-cuota-public.create') }}" target="_blank" rel="noopener">Formulario público (alumnos)</a>
+                </div>
+                <div class="fw-semibold small text-uppercase text-muted mb-2">Listados (cada módulo)</div>
+                <p class="text-muted small mb-2">Acceso directo al índice de cada sección.</p>
+                <div class="d-flex flex-wrap gap-2">
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('programa.index') }}">Programa</a>
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('calendario.index') }}">Calendario</a>
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.bloques') }}">Mis bloques</a>
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.alumnos') }}">Mis alumnos</a>
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.eventos') }}">Mis eventos</a>
-                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.asistencias.create') }}">Tomar asistencia</a>
-                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobantes-cuota-alumnos.index') }}">Comprobantes de cuota</a>
-                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobante-cuota-public.create') }}" target="_blank" rel="noopener">Formulario público (alumnos)</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobantes-cuota-alumnos.index') }}">Comprobantes cuota</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.pagos-cuotas.index') }}">Pagos de cuotas</a>
                 </div>
             </div>
         </div>

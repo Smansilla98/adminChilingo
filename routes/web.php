@@ -23,6 +23,7 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoPublicController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoGestionController;
+use App\Http\Controllers\ProfesorPagoCuotaController;
 use App\Models\Bloque;
 
 // Carga pública de comprobante de cuota (sin sesión)
@@ -140,6 +141,8 @@ Route::middleware(['auth'])->group(function () {
         // Profesores pueden ver sus bloques y alumnos
         Route::get('/mis-bloques', [BloqueController::class, 'index'])->name('profesor.bloques');
         Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->name('profesor.alumnos');
+        Route::get('/profesor/alumnos/{alumno}', [AlumnoController::class, 'show'])->name('profesor.alumnos.show');
+        Route::get('/profesor/pagos-cuotas', [ProfesorPagoCuotaController::class, 'index'])->name('profesor.pagos-cuotas.index');
         Route::get('/mis-eventos', [EventoController::class, 'index'])->name('profesor.eventos');
         Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->name('profesor.asistencias.create');
         Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->name('profesor.asistencias.store');

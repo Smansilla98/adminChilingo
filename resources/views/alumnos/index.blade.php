@@ -1,12 +1,20 @@
 @extends('layouts.app')
 
 @section('title', 'Alumnos')
-@section('page-title', 'Gestión de Alumnos')
+@section('page-title')
+    @if(auth()->user()->isAdmin())
+        Gestión de Alumnos
+    @else
+        Mis alumnos
+    @endif
+@endsection
 
 @section('content')
+@php $isAdmin = auth()->user()->isAdmin(); @endphp
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Listado de Alumnos</h5>
+        <h5 class="mb-0">@if($isAdmin) Listado de Alumnos @else Mis alumnos @endif</h5>
+        @if($isAdmin)
         <div>
             <a href="{{ route('alumnos.export') }}" class="btn btn-success btn-sm">
                 <i class="bi bi-file-earmark-excel"></i> Exportar Excel
@@ -18,6 +26,7 @@
                 <i class="bi bi-plus-circle"></i> Nuevo Alumno
             </a>
         </div>
+        @endif
     </div>
     <div class="card-body">
         <form method="GET" class="mb-3">
@@ -90,9 +99,10 @@
                         <td>{{ $alumno->bloques->isNotEmpty() ? $alumno->bloques->pluck('nombre')->join(', ') : ($alumno->bloque ? $alumno->bloque->nombre : '-') }}</td>
                         <td>{{ $alumno->sede->nombre }}</td>
                         <td>
-                            <a href="{{ route('alumnos.show', $alumno) }}" class="btn btn-sm btn-info">
+                            <a href="{{ $isAdmin ? route('alumnos.show', $alumno) : route('profesor.alumnos.show', $alumno) }}" class="btn btn-sm btn-info">
                                 <i class="bi bi-eye"></i>
                             </a>
+                            @if($isAdmin)
                             <a href="{{ route('alumnos.edit', $alumno) }}" class="btn btn-sm btn-warning">
                                 <i class="bi bi-pencil"></i>
                             </a>
@@ -103,6 +113,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
+                            @endif
                         </td>
                     </tr>
                     @empty

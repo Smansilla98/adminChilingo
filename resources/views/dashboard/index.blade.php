@@ -31,6 +31,36 @@
     </div>
 </div>
 
+<div class="panel mod-panel" id="listados-modulos">
+    <div class="panel-h">
+        <div class="panel-h-title">Listados de cada módulo</div>
+        <span class="muted small">Acceso directo al índice (listado) de cada sección.</span>
+    </div>
+    <div class="panel-b">
+        <div class="index-mod-grid d-flex flex-wrap gap-2">
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('programa.index') }}">Programa</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('calendario.index') }}">Calendario</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobantes-cuota-alumnos.index') }}">Comprobantes cuota</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('alumnos.index') }}">Alumnos</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesores.index') }}">Profesores</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('sedes.index') }}">Sedes</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('bloques.index') }}">Bloques</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('eventos.index') }}">Eventos</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('asistencias.index') }}">Asistencias</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('shows.index') }}">Shows</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('cuotas.index') }}">Cuotas</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('pagos.index') }}">Pagos</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('facturacion-mensual.index') }}">Facturación mensual</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('inventarios.index') }}">Inventarios</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('plan-compras.index') }}">Plan de compras</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('ordenes-compra.index') }}">Órdenes de compra</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('gastos.index') }}">Gastos</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('reportes.index') }}">Reportes</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('reportes.profesores') }}">Listado por profesor</a>
+        </div>
+    </div>
+</div>
+
 <div class="panel mod-panel" id="modulos">
     <div class="panel-h">
         <div class="panel-h-title">Accesos a módulos</div>

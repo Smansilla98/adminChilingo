@@ -70,6 +70,14 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14-4-4 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7z" fill="currentColor"/></svg>
                     <span class="side-link-text">Asistencia</span>
                 </a>
+                <a class="side-link {{ request()->routeIs('profesor.alumnos*') ? 'active' : '' }}" href="{{ route('profesor.alumnos') }}" title="Mis alumnos">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13z" fill="currentColor"/></svg>
+                    <span class="side-link-text">Mis alumnos</span>
+                </a>
+                <a class="side-link {{ request()->routeIs('profesor.pagos-cuotas.*') ? 'active' : '' }}" href="{{ route('profesor.pagos-cuotas.index') }}" title="Pagos de cuotas">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.09.16-2.02.71-2.61 1.56-.59.84-.88 1.81-.88 2.89 0 2.35 1.51 3.77 4.6 4.48 2.35.55 3.17 1.07 3.17 2.41 0 .95-.74 1.86-2.7 1.86-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" fill="currentColor"/></svg>
+                    <span class="side-link-text">Pagos cuotas</span>
+                </a>
                 <a class="side-link {{ request()->routeIs('comprobantes-cuota-alumnos.*') ? 'active' : '' }}" href="{{ route('comprobantes-cuota-alumnos.index') }}" title="Comprobantes">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z" fill="currentColor"/></svg>
                     <span class="side-link-text">Comprobantes</span>
