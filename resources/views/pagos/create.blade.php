@@ -1,21 +1,39 @@
 @extends('layouts.app')
 
-@section('title', 'Registrar pago')
-@section('page-title', 'Registrar pago')
+@php
+    $editando = isset($pago);
+    $sumAbonoEdit = $editando ? $pago->detalles->sum(fn ($d) => (float) ($d->abono_profesor ?? 0)) : 0;
+    $hayAbonoEdit = $editando && $pago->detalles->contains(fn ($d) => $d->abono_profesor !== null);
+    if (old('lineas') !== null) {
+        $initialLineas = array_values((array) old('lineas'));
+    } elseif ($editando) {
+        $initialLineas = $pago->detalles->map(fn ($d) => [
+            'cuota_id' => $d->cuota_id,
+            'alumno_id' => $d->alumno_id,
+            'monto' => $d->monto,
+        ])->values()->all();
+    } else {
+        $initialLineas = [];
+    }
+@endphp
+
+@section('title', $editando ? 'Editar pago #' . $pago->id : 'Registrar pago')
+@section('page-title', $editando ? 'Editar pago' : 'Registrar pago')
 
 @section('content')
 <div class="card">
-    <div class="card-header">Nuevo pago (varias líneas: alumno + cuota + monto; un comprobante opcional)</div>
+    <div class="card-header">{{ $editando ? 'Editar pago #' . $pago->id : 'Nuevo pago' }} (varias líneas: alumno + cuota + monto; comprobante opcional)</div>
     <div class="card-body">
         <p class="text-muted small mb-3">
             Podés registrar en un solo pago <strong>varias cuotas</strong> (distintos meses o talleres), el mismo alumno en más de un bloque, o <strong>un adulto y su hijo</strong> con cuotas distintas: cada fila es un alumno, una cuota y el monto que corresponde a esa línea. La <strong>suma de las filas</strong> debe coincidir con el <strong>monto total</strong> del comprobante.
         </p>
-        <form action="{{ route('pagos.store') }}" method="POST" enctype="multipart/form-data" id="form-pago-lineas">
+        <form action="{{ $editando ? route('pagos.update', $pago) : route('pagos.store') }}" method="POST" enctype="multipart/form-data" id="form-pago-lineas">
             @csrf
+            @if($editando) @method('PUT') @endif
             <div class="row mb-3">
                 <div class="col-md-3">
                     <label class="form-label">Fecha de pago *</label>
-                    <input type="date" name="fecha_pago" class="form-control @error('fecha_pago') is-invalid @enderror" value="{{ old('fecha_pago', date('Y-m-d')) }}" required>
+                    <input type="date" name="fecha_pago" class="form-control @error('fecha_pago') is-invalid @enderror" value="{{ old('fecha_pago', $editando ? $pago->fecha_pago->format('Y-m-d') : date('Y-m-d')) }}" required>
                     @error('fecha_pago')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-3">
@@ -30,7 +48,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Monto total *</label>
-                    <input type="number" name="monto_total" id="monto_total_pago" class="form-control @error('monto_total') is-invalid @enderror" step="0.01" min="0.01" value="{{ old('monto_total') }}" required>
+                    <input type="number" name="monto_total" id="monto_total_pago" class="form-control @error('monto_total') is-invalid @enderror" step="0.01" min="0.01" value="{{ old('monto_total', $editando ? $pago->monto_total : '') }}" required>
                     @error('monto_total')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     <div class="form-text">Debe ser igual a la suma de las líneas.</div>
                 </div>
@@ -65,13 +83,13 @@
                 <p class="text-muted small mb-3">Un solo importe <strong>total</strong> para este pago. Se reparte entre las líneas <strong>en proporción al monto</strong> de cada una; en cada línea se guarda el % efectivo respecto de la cuota de esa línea.</p>
                 <div class="form-check mb-3">
                     <input type="hidden" name="liquidar_profesor" value="0">
-                    <input class="form-check-input" type="checkbox" name="liquidar_profesor" value="1" id="liquidar_profesor" {{ (string) old('liquidar_profesor', '1') === '1' ? 'checked' : '' }}>
+                    <input class="form-check-input" type="checkbox" name="liquidar_profesor" value="1" id="liquidar_profesor" {{ (string) old('liquidar_profesor', $editando ? ($hayAbonoEdit ? '1' : '0') : '1') === '1' ? 'checked' : '' }}>
                     <label class="form-check-label" for="liquidar_profesor">Registrar abono al profesor</label>
                 </div>
                 <div class="row g-2 align-items-end" id="wrap_liquidacion_prof">
                     <div class="col-md-6">
                         <label class="form-label" for="monto_abono_profesor">Total abono docente ($)</label>
-                        <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor') }}" placeholder="Opcional / total del pago">
+                        <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor', $editando && $hayAbonoEdit ? $sumAbonoEdit : '') }}" placeholder="Opcional / total del pago">
                         @error('monto_abono_profesor')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-12">
@@ -82,18 +100,31 @@
 
             <div class="mb-3">
                 <label class="form-label">Comprobante (PDF, JPG, PNG)</label>
+                @if($editando && $pago->comprobante_path)
+                <div class="mb-2 d-flex flex-wrap align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalComprobantePago" data-comprobante-src="{{ route('pagos.comprobante', $pago) }}" data-comprobante-label="Comprobante actual — pago #{{ $pago->id }}"><i class="bi bi-file-earmark"></i> Ver comprobante actual</button>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" name="quitar_comprobante" value="1" id="quitar_comprobante" {{ old('quitar_comprobante') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="quitar_comprobante">Quitar comprobante al guardar</label>
+                    </div>
+                </div>
+                @endif
                 <input type="file" name="comprobante" class="form-control @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                <div class="form-text">{{ $editando ? 'Subí un archivo nuevo para reemplazar el actual (opcional).' : 'Opcional.' }}</div>
                 @error('comprobante')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="mb-3">
                 <label class="form-label">Notas</label>
-                <textarea name="notas" class="form-control" rows="2">{{ old('notas') }}</textarea>
+                <textarea name="notas" class="form-control" rows="2">{{ old('notas', $editando ? $pago->notas : '') }}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Guardar pago</button>
-            <a href="{{ route('pagos.index') }}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">{{ $editando ? 'Guardar cambios' : 'Guardar pago' }}</button>
+            <a href="{{ $editando ? route('pagos.show', $pago) : route('pagos.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
 </div>
+@if($editando)
+@include('pagos._modal_comprobante')
+@endif
 @endsection
 
 @push('scripts')
@@ -113,7 +144,8 @@
     const liqProf = document.getElementById('liquidar_profesor');
     const wrapLiq = document.getElementById('wrap_liquidacion_prof');
     const urlApi = @json(route('pagos.api.alumnos-cuota', [], false));
-    const oldLineas = @json(array_values((array) old('lineas', [])));
+    const pagoId = @json($editando ? $pago->id : null);
+    const oldLineas = @json(array_values((array) $initialLineas));
 
     function filtroBloqueVal() {
         if (!filtroBloque || !filtroBloque.value) return { bid: '', sid: '' };
@@ -316,6 +348,7 @@
         try {
             const u = new URL(urlApi, window.location.origin);
             u.searchParams.set('cuota_id', cuotaId);
+            if (pagoId) u.searchParams.set('pago_id', String(pagoId));
             const r = await fetch(u.toString(), {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'same-origin',

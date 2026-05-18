@@ -86,6 +86,7 @@
         @if($primeraNotaAbono)
         <p class="small text-muted mb-0"><strong>Nota liquidación:</strong> {{ $primeraNotaAbono }}</p>
         @endif
+        <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-primary"><i class="bi bi-pencil"></i> Editar</a>
         <a href="{{ route('pagos.index') }}" class="btn btn-secondary">Volver</a>
     </div>
 </div>

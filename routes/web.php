@@ -102,6 +102,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pagos/crear', [PagoController::class, 'create'])->name('pagos.create');
         Route::post('/pagos', [PagoController::class, 'store'])->name('pagos.store');
         Route::get('/pagos/{pago}', [PagoController::class, 'show'])->name('pagos.show');
+        Route::get('/pagos/{pago}/editar', [PagoController::class, 'edit'])->name('pagos.edit');
+        Route::put('/pagos/{pago}', [PagoController::class, 'update'])->name('pagos.update');
         Route::get('/pagos/{pago}/comprobante', [PagoController::class, 'downloadComprobante'])->name('pagos.comprobante');
         Route::get('/pagos/api/alumnos-por-cuota', [PagoController::class, 'alumnosParaCuota'])->name('pagos.api.alumnos-cuota');
 

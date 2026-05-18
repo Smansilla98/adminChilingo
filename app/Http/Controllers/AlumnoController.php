@@ -497,12 +497,31 @@ class AlumnoController extends Controller
 
         return match (true) {
             str_contains($h, 'nombre') && str_contains($h, 'apellido') => 'nombre_apellido',
-            $h === 'dni' => 'dni',
+            str_contains($h, 'nombre') && ! str_contains($h, 'bloque') && ! str_contains($h, 'sede') => 'nombre_apellido',
+            $h === 'dni' || str_contains($h, 'documento') => 'dni',
             str_contains($h, 'fecha') && str_contains($h, 'nacimiento') => 'fecha_nacimiento',
-            str_contains($h, 'telefono') => 'telefono',
+            str_contains($h, 'telefono') || str_contains($h, 'celular') || str_contains($h, 'movil') => 'telefono',
+            str_contains($h, 'procedencia') => 'tambor_1',
+            str_contains($h, 'tipo') && str_contains($h, 'tambor') => 'tambor',
+            str_contains($h, 'instrumento') => 'tambor',
             $h === 'tambor' => 'tambor',
             default => $h !== '' ? str_replace(' ', '_', $h) : 'col',
         };
+    }
+
+    /**
+     * Celda del archivo importado (columna opcional si no está en el encabezado).
+     *
+     * @param  array<int, mixed>  $row
+     * @param  array<string, int>  $idx
+     */
+    private function importCell(array $row, array $idx, string $key): string
+    {
+        if (! array_key_exists($key, $idx)) {
+            return '';
+        }
+
+        return trim((string) ($row[$idx[$key]] ?? ''));
     }
 
     /**
@@ -512,27 +531,26 @@ class AlumnoController extends Controller
      */
     private function mapAlumnoFromRow(array $row, array $idx, int $sedeId, ?int $bloqueId): ?array
     {
-        $name = trim((string) ($row[$idx['nombre_apellido']] ?? ''));
-        $name = trim(preg_replace('/\s+/', ' ', $name));
+        $name = trim(preg_replace('/\s+/', ' ', $this->importCell($row, $idx, 'nombre_apellido')));
         if ($name === '') {
             return null;
         }
 
-        $fechaRaw = trim((string) ($row[$idx['fecha_nacimiento']] ?? ''));
+        $fechaRaw = $this->importCell($row, $idx, 'fecha_nacimiento');
         $fecha = $this->parseFechaNacimiento($fechaRaw);
         if (!$fecha) {
             return null;
         }
 
-        $dniRaw = (string) ($row[$idx['dni']] ?? '');
+        $dniRaw = $this->importCell($row, $idx, 'dni');
         $dni = preg_replace('/\D+/', '', $dniRaw);
         $dni = $dni !== '' ? $dni : null;
 
-        $telefono = trim((string) ($row[$idx['telefono']] ?? ''));
+        $telefono = $this->importCell($row, $idx, 'telefono');
         $telefono = $telefono !== '' ? $telefono : null;
 
-        $tipoTambor = $this->normalizeOneOf((string) ($row[$idx['tambor']] ?? ''), self::TIPOS_TAMBOR);
-        $procedencia = $this->normalizeOneOf((string) ($row[$idx['tambor_1']] ?? ''), self::TAMBOR_PROCEDENCIAS);
+        $tipoTambor = $this->normalizeOneOf($this->importCell($row, $idx, 'tambor'), self::TIPOS_TAMBOR);
+        $procedencia = $this->normalizeOneOf($this->importCell($row, $idx, 'tambor_1'), self::TAMBOR_PROCEDENCIAS);
 
         $instrumentoPrincipal = $tipoTambor && in_array($tipoTambor, self::TIPOS_TAMBOR, true) ? $tipoTambor : 'Otro';
 

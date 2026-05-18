@@ -8,6 +8,7 @@ use App\Models\Cuota;
 use App\Models\Alumno;
 use App\Models\Bloque;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -68,12 +69,28 @@ class PagoController extends Controller
 
     public function create()
     {
+        return view('pagos.create', $this->pagoFormViewData());
+    }
+
+    public function edit(Pago $pago)
+    {
+        $pago->load(['detalles.alumno', 'detalles.cuota']);
+
+        return view('pagos.create', array_merge($this->pagoFormViewData(), [
+            'pago' => $pago,
+        ]));
+    }
+
+    /**
+     * @return array{cuotas: \Illuminate\Support\Collection, bloquesFiltro: \Illuminate\Support\Collection, cuotasMeta: array<int, array<string, mixed>>}
+     */
+    private function pagoFormViewData(): array
+    {
         $cuotas = collect();
         if (Schema::hasTable('cuotas')) {
             try {
                 $q = Cuota::query();
                 if (Schema::hasColumn('cuotas', 'activo')) {
-                    // Incluye retroactivos aunque estén inactivos, para poder registrarlos.
                     $q->orderBy('activo', 'desc');
                 }
                 $cuotas = $q->with(['bloque.sede', 'bloque.profesor', 'sede'])->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
@@ -109,7 +126,7 @@ class PagoController extends Controller
             'activo' => (bool) ($c->activo ?? true),
         ])->values()->all();
 
-        return view('pagos.create', compact('cuotas', 'bloquesFiltro', 'cuotasMeta'));
+        return compact('cuotas', 'bloquesFiltro', 'cuotasMeta');
     }
 
     /**
@@ -120,7 +137,10 @@ class PagoController extends Controller
     {
         $request->validate([
             'cuota_id' => 'required|exists:cuotas,id',
+            'pago_id' => 'nullable|integer|exists:pagos,id',
         ]);
+
+        $exceptPagoId = $request->filled('pago_id') ? $request->integer('pago_id') : null;
 
         if (! Schema::hasTable('pago_detalles') || ! Schema::hasTable('alumnos')) {
             return response()->json(['alumnos' => []]);
@@ -147,7 +167,7 @@ class PagoController extends Controller
                     $query->where('bloque_id', $bid);
                 }
                 $this->aplicarFiltroCuotaAlumnoPivot($cuota, $query);
-                $this->excluirAlumnosYaPagaron($cuota, $query);
+                $this->excluirAlumnosYaPagaron($cuota, $query, $exceptPagoId);
                 $ctx = $cuota->bloque?->nombre ?? '';
 
                 return response()->json(['alumnos' => $this->mapearAlumnosRespuesta($query, $ctx)]);
@@ -187,7 +207,7 @@ class PagoController extends Controller
             }
 
             $this->aplicarFiltroCuotaAlumnoPivot($cuota, $query);
-            $this->excluirAlumnosYaPagaron($cuota, $query);
+            $this->excluirAlumnosYaPagaron($cuota, $query, $exceptPagoId);
 
             return response()->json(['alumnos' => $this->mapearAlumnosRespuesta($query, $ctx)]);
         } catch (QueryException $e) {
@@ -203,17 +223,99 @@ class PagoController extends Controller
 
     public function store(Request $request)
     {
-        if (! Schema::hasTable('pagos') || ! Schema::hasTable('pago_detalles') || ! Schema::hasTable('alumnos') || ! Schema::hasTable('cuotas')) {
+        if (! $this->tablasPagoDisponibles()) {
             return back()->withErrors([
                 'general' => 'Faltan tablas requeridas para registrar pagos. Ejecutá migraciones y reintentá.',
             ])->withInput();
         }
 
+        $payload = $this->validarFormularioPago($request);
+        if ($payload instanceof \Illuminate\Http\RedirectResponse) {
+            return $payload;
+        }
+
+        $path = $this->resolverComprobantePath($request, null);
+
+        $pago = Pago::create([
+            'fecha_pago' => $payload['validated']['fecha_pago'],
+            'monto_total' => $payload['validated']['monto_total'],
+            'comprobante_path' => $path,
+            'notas' => $payload['validated']['notas'] ?? null,
+            'registrado_por' => auth()->id(),
+        ]);
+
+        $this->sincronizarDetallesPago(
+            $pago,
+            $payload['lineas'],
+            $payload['cuotasPorId'],
+            $payload['liquidarProfesor'],
+            $payload['totalAbonoDocente']
+        );
+
+        return redirect()->route('pagos.show', $pago)->with('success', 'Pago registrado correctamente.');
+    }
+
+    public function update(Request $request, Pago $pago)
+    {
+        if (! $this->tablasPagoDisponibles()) {
+            return back()->withErrors([
+                'general' => 'Faltan tablas requeridas para actualizar pagos. Ejecutá migraciones y reintentá.',
+            ])->withInput();
+        }
+
+        $payload = $this->validarFormularioPago($request, $pago->id);
+        if ($payload instanceof \Illuminate\Http\RedirectResponse) {
+            return $payload;
+        }
+
+        $path = $this->resolverComprobantePath($request, $pago->comprobante_path);
+
+        DB::transaction(function () use ($pago, $payload, $path) {
+            $pago->update([
+                'fecha_pago' => $payload['validated']['fecha_pago'],
+                'monto_total' => $payload['validated']['monto_total'],
+                'comprobante_path' => $path,
+                'notas' => $payload['validated']['notas'] ?? null,
+            ]);
+
+            $pago->detalles()->delete();
+
+            $this->sincronizarDetallesPago(
+                $pago,
+                $payload['lineas'],
+                $payload['cuotasPorId'],
+                $payload['liquidarProfesor'],
+                $payload['totalAbonoDocente']
+            );
+        });
+
+        return redirect()->route('pagos.show', $pago)->with('success', 'Pago actualizado correctamente.');
+    }
+
+    private function tablasPagoDisponibles(): bool
+    {
+        return Schema::hasTable('pagos')
+            && Schema::hasTable('pago_detalles')
+            && Schema::hasTable('alumnos')
+            && Schema::hasTable('cuotas');
+    }
+
+    /**
+     * @return array{
+     *     validated: array<string, mixed>,
+     *     lineas: array<int, array<string, mixed>>,
+     *     cuotasPorId: \Illuminate\Support\Collection<int, Cuota>,
+     *     liquidarProfesor: bool,
+     *     totalAbonoDocente: float|null
+     * }|\Illuminate\Http\RedirectResponse
+     */
+    private function validarFormularioPago(Request $request, ?int $exceptPagoId = null)
+    {
         if ($request->input('monto_abono_profesor', null) === '') {
             $request->merge(['monto_abono_profesor' => null]);
         }
 
-        $validated = $request->validate([
+        $rules = [
             'fecha_pago' => 'required|date',
             'lineas' => 'required|array|min:1',
             'lineas.*.alumno_id' => 'required|exists:alumnos,id',
@@ -224,13 +326,18 @@ class PagoController extends Controller
             'liquidar_profesor' => 'nullable|in:0,1',
             'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'notas' => 'nullable|string|max:1000',
-        ]);
+        ];
+        if ($exceptPagoId !== null) {
+            $rules['quitar_comprobante'] = 'nullable|boolean';
+        }
+
+        $validated = $request->validate($rules);
 
         $liquidarProfesor = ($validated['liquidar_profesor'] ?? '1') === '1';
-
         $lineas = array_values($validated['lineas']);
+
         $paresVistos = [];
-        foreach ($lineas as $i => $linea) {
+        foreach ($lineas as $linea) {
             $par = $linea['alumno_id'].'-'.$linea['cuota_id'];
             if (isset($paresVistos[$par])) {
                 return back()->withErrors([
@@ -261,9 +368,15 @@ class PagoController extends Controller
                 return back()->withErrors(['lineas.'.$idx.'.cuota_id' => 'Cuota no válida.'])->withInput();
             }
             $alumnoId = (int) $linea['alumno_id'];
-            if (PagoDetalle::query()->where('cuota_id', $cuota->id)->where('alumno_id', $alumnoId)->exists()) {
+            $duplicado = PagoDetalle::query()
+                ->where('cuota_id', $cuota->id)
+                ->where('alumno_id', $alumnoId);
+            if ($exceptPagoId !== null) {
+                $duplicado->where('pago_id', '!=', $exceptPagoId);
+            }
+            if ($duplicado->exists()) {
                 return back()->withErrors([
-                    'lineas.'.$idx.'.alumno_id' => 'Este alumno ya tiene pago registrado para la cuota elegida en esa línea.',
+                    'lineas.'.$idx.'.alumno_id' => 'Este alumno ya tiene pago registrado para la cuota elegida en esa línea (en otro pago).',
                 ])->withInput();
             }
             $alumno = Alumno::query()->find($alumnoId);
@@ -274,33 +387,61 @@ class PagoController extends Controller
             }
         }
 
-        $path = null;
-        if ($request->hasFile('comprobante')) {
-            $upload = $request->file('comprobante');
-            $ext = strtolower((string) $upload->getClientOriginalExtension());
-            if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
-                $ext = strtolower((string) ($upload->guessExtension() ?: 'pdf'));
-            }
-            if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
-                $ext = 'pdf';
-            }
-            $path = $upload->storeAs('pagos', (string) Str::uuid() . '.' . $ext, 'comprobantes');
-        }
-
-        $pagoData = [
-            'fecha_pago' => $validated['fecha_pago'],
-            'monto_total' => $validated['monto_total'],
-            'comprobante_path' => $path,
-            'notas' => $validated['notas'] ?? null,
-            'registrado_por' => auth()->id(),
-        ];
-
-        $pago = Pago::create($pagoData);
-
         $totalAbonoDocente = $liquidarProfesor
             ? max(0.0, round((float) ($validated['monto_abono_profesor'] ?? 0), 2))
             : null;
 
+        return [
+            'validated' => $validated,
+            'lineas' => $lineas,
+            'cuotasPorId' => $cuotasPorId,
+            'liquidarProfesor' => $liquidarProfesor,
+            'totalAbonoDocente' => $totalAbonoDocente,
+        ];
+    }
+
+    private function resolverComprobantePath(Request $request, ?string $pathAnterior): ?string
+    {
+        if ($request->boolean('quitar_comprobante') && $pathAnterior) {
+            Storage::disk('comprobantes')->delete($pathAnterior);
+            $pathAnterior = null;
+        }
+
+        if ($request->hasFile('comprobante')) {
+            if ($pathAnterior) {
+                Storage::disk('comprobantes')->delete($pathAnterior);
+            }
+
+            return $this->guardarArchivoComprobante($request->file('comprobante'));
+        }
+
+        return $pathAnterior;
+    }
+
+    private function guardarArchivoComprobante(\Illuminate\Http\UploadedFile $upload): string
+    {
+        $ext = strtolower((string) $upload->getClientOriginalExtension());
+        if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
+            $ext = strtolower((string) ($upload->guessExtension() ?: 'pdf'));
+        }
+        if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
+            $ext = 'pdf';
+        }
+
+        return $upload->storeAs('pagos', (string) Str::uuid().'.'.$ext, 'comprobantes');
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $lineas
+     * @param  \Illuminate\Support\Collection<int, Cuota>  $cuotasPorId
+     */
+    private function sincronizarDetallesPago(
+        Pago $pago,
+        array $lineas,
+        $cuotasPorId,
+        bool $liquidarProfesor,
+        ?float $totalAbonoDocente
+    ): void {
         $montosLinea = array_map(fn ($l) => (float) $l['monto'], $lineas);
         $n = count($lineas);
         $abonosPorIndice = [];
@@ -345,8 +486,6 @@ class PagoController extends Controller
             }
             PagoDetalle::create($det);
         }
-
-        return redirect()->route('pagos.index')->with('success', 'Pago registrado correctamente.');
     }
 
     /**
@@ -394,13 +533,14 @@ class PagoController extends Controller
         }
     }
 
-    private function excluirAlumnosYaPagaron(Cuota $cuota, $query): void
+    private function excluirAlumnosYaPagaron(Cuota $cuota, $query, ?int $exceptPagoId = null): void
     {
         if (! Schema::hasTable('pago_detalles')) {
             return;
         }
         $yaPagaron = PagoDetalle::query()
             ->where('cuota_id', $cuota->id)
+            ->when($exceptPagoId !== null, fn ($q) => $q->where('pago_id', '!=', $exceptPagoId))
             ->pluck('alumno_id')
             ->unique()
             ->filter()

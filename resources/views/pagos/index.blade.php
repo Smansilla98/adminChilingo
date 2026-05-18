@@ -81,8 +81,9 @@
                             @endif
                         </td>
                         <td>{{ $p->registradoPor?->name ?? '-' }}</td>
-                        <td>
-                            <a href="{{ route('pagos.show', $p) }}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                        <td class="text-nowrap">
+                            <a href="{{ route('pagos.show', $p) }}" class="btn btn-sm btn-info" title="Ver"><i class="bi bi-eye"></i></a>
+                            <a href="{{ route('pagos.edit', $p) }}" class="btn btn-sm btn-warning" title="Editar"><i class="bi bi-pencil"></i></a>
                         </td>
                     </tr>
                     @empty
