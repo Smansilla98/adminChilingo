@@ -242,6 +242,9 @@ body {
   box-shadow: 0 26px 70px rgba(0,0,0,.35);
   overflow: hidden;
 }
+.auth-card--fluid {
+  max-width: min(52rem, 100%);
+}
 .auth-head {
   padding: 18px 18px 14px;
   display: flex;
@@ -1307,18 +1310,299 @@ body.shell-nav-open {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-/* Responsive */
+/* ——— Responsive (tablet y móvil) ——— */
 @media (max-width: 1200px) {
   .dash-grid { grid-template-columns: 1fr; }
   .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .asist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 768px) {
-  .content { padding: 18px 16px 26px; }
-  .topbar { padding: 18px 16px; flex-direction: column; align-items: flex-start; }
-  .stat-strip { grid-template-columns: 1fr; }
-  .asist-grid { grid-template-columns: 1fr; }
-  .prof-row { grid-template-columns: 44px 1fr auto auto; }
-  .prof-bar-wrap { display: none; }
+
+@media (max-width: 991.98px) {
+  .main--maxton {
+    padding: 10px 10px 0;
+  }
+  .content--maxton {
+    padding: 14px 10px 24px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .content,
+  .content--maxton {
+    padding: 12px 10px 22px;
+  }
+
+  .topbar,
+  .topbar--maxton {
+    padding: 12px 14px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .topbar-left {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .topbar-titles {
+    overflow: hidden;
+  }
+
+  .top-title {
+    font-size: 17px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .top-sub {
+    font-size: 11px;
+  }
+
+  .topbar-actions--mobile {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .topbar-actions--mobile .dropdown-toggle {
+    white-space: nowrap;
+  }
+
+  .topbar-actions-menu {
+    min-width: min(280px, calc(100vw - 24px));
+  }
+
+  .stat-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .asist-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prof-row {
+    grid-template-columns: 40px 1fr auto;
+    gap: 8px;
+  }
+
+  .prof-bar-wrap {
+    display: none;
+  }
+
+  .index-mod-grid .btn {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 0;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  /* Tablas: scroll horizontal en pantallas chicas */
+  .content--maxton .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .content--maxton .card-body:has(> .table),
+  .content--maxton .card-body:has(> form > .table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .content--maxton .card-body .table:not(.asistencias-matrix) {
+    min-width: 520px;
+  }
+
+  .content--maxton .table-responsive > .table {
+    min-width: 520px;
+  }
+
+  .alumnos-table .col-nombre {
+    min-width: 160px;
+    max-width: none;
+    white-space: normal;
+  }
+
+  .asistencias-matrix-wrap {
+    max-height: min(70vh, 720px);
+  }
+
+  .asistencias-matrix .sticky-col {
+    min-width: 140px;
+    max-width: 180px;
+  }
+
+  .asistencias-matrix .sticky-col-2 {
+    left: 140px;
+    min-width: 88px;
+  }
+
+  /* Encabezados de tarjeta con botones */
+  .content--maxton .card-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .content--maxton .card-header.d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .content--maxton .card-header .btn,
+  .content--maxton .card-header .btn-group {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .content--maxton .card-header.d-flex.flex-row {
+    flex-direction: column !important;
+  }
+
+  /* Filtros de listados: una columna */
+  .content--maxton form .row.g-2 > [class*="col-"],
+  .content--maxton form .row.g-3 > [class*="col-"],
+  .content--maxton form .row.align-items-end > [class*="col-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* Formularios multi-columna */
+  .content--maxton .row.mb-3 > [class*="col-md-"],
+  .content--maxton .row.g-2 > [class*="col-md-"],
+  .content--maxton .row.g-3 > [class*="col-md-"] {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Botones táctiles */
+  .content--maxton .btn:not(.btn-sm) {
+    min-height: 42px;
+  }
+
+  .content--maxton .btn-sm {
+    min-height: 36px;
+    padding: 6px 10px;
+  }
+
+  .content--maxton td .btn-sm {
+    min-height: 34px;
+  }
+
+  .content--maxton td.text-nowrap .btn-sm {
+    margin-bottom: 4px;
+  }
+
+  /* Paginación */
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  /* Modales */
+  .modal-dialog {
+    margin: 0.65rem;
+    max-width: calc(100% - 1.3rem);
+  }
+
+  .modal-body {
+    max-height: min(75vh, 640px);
+    overflow-y: auto;
+  }
+
+  /* Definición horizontal (dl) en fichas */
+  .content--maxton dl.row dt {
+    margin-bottom: 0.15rem;
+  }
+
+  .content--maxton dl.row dd {
+    margin-bottom: 0.75rem;
+  }
+
+  .cuota-row {
+    grid-template-columns: 8px 1fr auto;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .cuota-monto {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .main--maxton {
+    padding: 8px 6px 0;
+  }
+
+  .content--maxton {
+    padding: 10px 8px 20px;
+  }
+
+  .topbar--maxton {
+    border-radius: 14px;
+  }
+
+  .top-kicker {
+    font-size: 10px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .card {
+    border-radius: 14px;
+  }
+
+  .card-body {
+    padding: 14px;
+  }
+
+  .index-mod-grid {
+    flex-direction: column !important;
+  }
+
+  .index-mod-grid .btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .qa-grid .qa-btn {
+    font-size: 13px;
+    padding: 12px 14px;
+  }
+
+  .auth-shell {
+    padding: 12px !important;
+  }
+
+  .auth-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+  }
+
+  .auth-head {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+
+  .dropdown-menu {
+    max-width: calc(100vw - 16px);
+  }
+}
+
+/* Safe area (notch / barra inferior en iOS) */
+@supports (padding: max(0px)) {
+  .content--maxton {
+    padding-bottom: max(22px, env(safe-area-inset-bottom));
+  }
+  .sidebar--maxton {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
