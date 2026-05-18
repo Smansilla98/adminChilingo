@@ -9,6 +9,7 @@ use App\Models\Bloque;
 use App\Models\BloqueHorario;
 use App\Models\Cuota;
 use App\Models\Pago;
+use App\Models\PagoDetalle;
 use App\Models\Asistencia;
 use App\Models\Sede;
 use App\Models\Evento;
@@ -48,7 +49,12 @@ class DashboardController extends Controller
 
             // Total "cuotas emitidas" del mes = suma de asignaciones (cuota_alumno o todos los alumnos del bloque)
             $cuotasMes = Cuota::query()
-                ->with(['alumnos:id', 'bloque.alumnos' => fn ($q) => $q->where('alumnos.activo', true), 'sede'])
+                ->with([
+                    'alumnos' => fn ($q) => $q->where('activo', true)->with('sede'),
+                    'bloque.alumnos' => fn ($q) => $q->where('alumnos.activo', true),
+                    'bloque.sede',
+                    'sede',
+                ])
                 ->where('año', $anioActual)
                 ->where('mes', $mesActual)
                 ->where('activo', true)
@@ -196,42 +202,8 @@ class DashboardController extends Controller
                 return ($row['horario']->dia_semana * 10000) + (int) str_replace(':', '', substr((string) $row['horario']->hora_inicio, 0, 5));
             })->values();
 
-            // Cuotas pendientes del mes (últimas 5 asignaciones sin pago)
-            $cuotasPendientesList = collect(DB::table('cuotas as c')
-                ->join('bloques as b', 'c.bloque_id', '=', 'b.id')
-                ->join('alumno_bloque as ab', 'ab.bloque_id', '=', 'b.id')
-                ->join('alumnos as a', 'a.id', '=', 'ab.alumno_id')
-                ->join('sedes as s', 's.id', '=', 'a.sede_id')
-                ->leftJoin('pago_detalles as pd', function ($join) {
-                    $join->on('pd.cuota_id', '=', 'c.id')->on('pd.alumno_id', '=', 'a.id');
-                })
-                ->whereNull('pd.id')
-                ->where('c.año', $anioActual)
-                ->where('c.mes', $mesActual)
-                ->where('c.activo', true)
-                ->where('a.activo', true)
-                ->orderByDesc('c.fecha_vencimiento')
-                ->orderByDesc('c.created_at')
-                ->limit(5)
-                ->get([
-                    'a.nombre_apellido as alumno',
-                    's.nombre as sede',
-                    'c.monto as monto',
-                    'c.fecha_vencimiento as fecha_vencimiento',
-                    'c.created_at as created_at',
-                ]));
-
-            $cuotasPendientesList = $cuotasPendientesList->map(function ($row) use ($hoy) {
-                $fv = $row->fecha_vencimiento ? Carbon::parse($row->fecha_vencimiento) : null;
-                $isVencida = $fv ? $fv->lt($hoy->copy()->subDays(5)) : false;
-                return [
-                    'alumno' => $row->alumno,
-                    'sede' => $row->sede,
-                    'monto' => (float) $row->monto,
-                    'dot_class' => $isVencida ? 'dot-danger' : '',
-                    'mes_label' => now()->locale('es')->translatedFormat('M Y'),
-                ];
-            });
+            // Cobros pendientes del mes (misma lógica de alcance / cuota_alumno que el contador superior)
+            $cuotasPendientesList = $this->armarListadoCobrosPendientes($cuotasMes, $hoy, 8);
 
             // Recaudación últimas 6 semanas (sum monto_total por fecha_pago)
             $recaudacion = collect(range(5, 0))->map(function ($i) {
@@ -307,6 +279,129 @@ class DashboardController extends Controller
         }
 
         return view('dashboard.profesor', compact('bloques', 'proximosEventos', 'comprobantesCuotaPendientes'));
+    }
+
+    /**
+     * Listado lateral de cobros pendientes (alumno + cuota del mes sin línea en pago_detalles).
+     *
+     * @param  \Illuminate\Support\Collection<int, Cuota>  $cuotasMes
+     */
+    private function armarListadoCobrosPendientes($cuotasMes, Carbon $hoy, int $limit = 8): \Illuminate\Support\Collection
+    {
+        if ($cuotasMes->isEmpty() || ! Schema::hasTable('pago_detalles')) {
+            return collect();
+        }
+
+        $cuotaIds = $cuotasMes->pluck('id')->filter()->values();
+        $pagados = PagoDetalle::query()
+            ->whereIn('cuota_id', $cuotaIds)
+            ->get(['alumno_id', 'cuota_id'])
+            ->mapWithKeys(fn (PagoDetalle $pd) => [$pd->alumno_id.'-'.$pd->cuota_id => true]);
+
+        $mesLabel = now()->locale('es')->translatedFormat('M Y');
+        $filas = collect();
+
+        foreach ($cuotasMes as $cuota) {
+            foreach ($this->alumnosObjetivoCuota($cuota) as $alumno) {
+                if ($pagados->has($alumno->id.'-'.$cuota->id)) {
+                    continue;
+                }
+
+                $fv = $cuota->fecha_vencimiento;
+                $isVencida = $fv ? $fv->copy()->startOfDay()->lt($hoy->copy()->subDays(5)) : false;
+
+                $filas->push([
+                    'alumno' => $alumno->nombre_apellido,
+                    'sede' => $alumno->sede?->nombre
+                        ?? $cuota->sede?->nombre
+                        ?? $cuota->bloque?->sede?->nombre
+                        ?? '—',
+                    'monto' => (float) $cuota->monto,
+                    'cuota_nombre' => $cuota->nombre,
+                    'dot_class' => $isVencida ? 'dot-danger' : '',
+                    'mes_label' => $mesLabel,
+                    '_sort_venc' => $fv ? $fv->timestamp : 0,
+                    '_sort_created' => $cuota->created_at?->timestamp ?? 0,
+                ]);
+            }
+        }
+
+        return $filas
+            ->sort(function (array $a, array $b) {
+                if ($a['_sort_venc'] !== $b['_sort_venc']) {
+                    return $b['_sort_venc'] <=> $a['_sort_venc'];
+                }
+
+                return $b['_sort_created'] <=> $a['_sort_created'];
+            })
+            ->take($limit)
+            ->map(fn (array $row) => collect($row)->except(['_sort_venc', '_sort_created'])->all())
+            ->values();
+    }
+
+    /**
+     * Alumnos a los que aplica una cuota del mes (lista explícita en cuota_alumno o por alcance).
+     *
+     * @return \Illuminate\Support\Collection<int, Alumno>
+     */
+    private function alumnosObjetivoCuota(Cuota $cuota): \Illuminate\Support\Collection
+    {
+        if ($cuota->relationLoaded('alumnos') && $cuota->alumnos->isNotEmpty()) {
+            return $cuota->alumnos
+                ->where('activo', true)
+                ->loadMissing('sede')
+                ->unique('id')
+                ->values();
+        }
+
+        $alcance = Schema::hasColumn('cuotas', 'alcance')
+            ? $cuota->alcanceNormalizado()
+            : Cuota::ALCANCE_BLOQUE;
+
+        if ($alcance === Cuota::ALCANCE_GENERAL) {
+            return Alumno::query()
+                ->where('activo', true)
+                ->where(function ($q) {
+                    $q->whereHas('bloques')->orWhereNotNull('bloque_id');
+                })
+                ->with('sede')
+                ->orderBy('nombre_apellido')
+                ->get();
+        }
+
+        if ($alcance === Cuota::ALCANCE_SEDE && $cuota->sede_id) {
+            $sid = (int) $cuota->sede_id;
+
+            return Alumno::query()
+                ->where('activo', true)
+                ->where(function ($q) use ($sid) {
+                    $q->whereHas('bloques', fn ($b) => $b->where('bloques.sede_id', $sid))
+                        ->orWhere('sede_id', $sid);
+                })
+                ->with('sede')
+                ->orderBy('nombre_apellido')
+                ->get();
+        }
+
+        if (! $cuota->bloque_id) {
+            return collect();
+        }
+
+        $bid = (int) $cuota->bloque_id;
+
+        return Alumno::query()
+            ->where('activo', true)
+            ->where(function ($q) use ($bid) {
+                if (Schema::hasTable('alumno_bloque')) {
+                    $q->whereHas('bloques', fn ($b) => $b->where('bloques.id', $bid))
+                        ->orWhere('bloque_id', $bid);
+                } else {
+                    $q->where('bloque_id', $bid);
+                }
+            })
+            ->with('sede')
+            ->orderBy('nombre_apellido')
+            ->get();
     }
 
     /**

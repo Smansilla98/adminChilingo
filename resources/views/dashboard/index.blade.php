@@ -237,7 +237,7 @@
                             <div class="cuota-dot {{ $c['dot_class'] ?? '' }}"></div>
                             <div>
                                 <div class="cuota-name">{{ $c['alumno'] }}</div>
-                                <div class="cuota-meta">{{ $c['sede'] }} · {{ $c['mes_label'] }}</div>
+                                <div class="cuota-meta">{{ $c['sede'] }} · {{ $c['cuota_nombre'] ?? $c['mes_label'] }}</div>
                             </div>
                             <div class="cuota-monto">${{ number_format($c['monto'] ?? 0, 0, ',', '.') }}</div>
                         </div>
