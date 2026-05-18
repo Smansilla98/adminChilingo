@@ -62,6 +62,8 @@
 </div>
 @endif
 
+@include('programa.partials.medios-show', ['programaRitmo' => $programaRitmo, 'medios' => $medios ?? []])
+
 @foreach($secciones as $i => $sec)
 @if(filled($sec['titulo'] ?? null) || filled($sec['contenido'] ?? null))
 <section class="card mb-3 programa-seccion-profund">
@@ -120,5 +122,5 @@
 @endsection
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=1">
+<link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=2">
 @endpush

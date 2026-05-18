@@ -20,7 +20,7 @@
     </ol>
 </nav>
 
-<form action="{{ route('programa.toque.update', $programaRitmo) }}" method="POST">
+<form action="{{ route('programa.toque.update', $programaRitmo) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
 
@@ -113,6 +113,8 @@
         </div>
     </div>
 
+    @include('programa.partials.medios-edit')
+
     <button type="submit" class="btn btn-primary">Guardar</button>
     <a href="{{ route('programa.toque.show', $programaRitmo) }}" class="btn btn-secondary">Cancelar</a>
 </form>
@@ -188,6 +190,84 @@
             if (e.target.classList.contains('btn-quitar-enlace')) {
                 e.target.closest('.enlace-item')?.remove();
                 reindexEnlaces();
+            }
+        });
+    }
+})();
+
+(function () {
+    const tiposRecurso = @json($tiposRecurso);
+    const wrapCortes = document.getElementById('cortes-wrap');
+    const wrapRecursos = document.getElementById('recursos-wrap');
+    const btnCorte = document.getElementById('btn-add-corte');
+    const btnRecurso = document.getElementById('btn-add-recurso');
+
+    function optionsTipos(selected) {
+        return Object.entries(tiposRecurso).map(function (pair) {
+            const sel = pair[0] === selected ? ' selected' : '';
+            return '<option value="' + pair[0] + '"' + sel + '>' + pair[1] + '</option>';
+        }).join('');
+    }
+
+    function reindexCortes() {
+        if (!wrapCortes) return;
+        wrapCortes.querySelectorAll('.corte-item').forEach(function (el, i) {
+            el.querySelectorAll('[name^="cortes["]').forEach(function (input) {
+                input.name = input.name.replace(/cortes\[\d+\]/, 'cortes[' + i + ']');
+            });
+        });
+    }
+
+    function reindexRecursos() {
+        if (!wrapRecursos) return;
+        wrapRecursos.querySelectorAll('.recurso-item').forEach(function (el, i) {
+            el.querySelectorAll('[name^="recursos["]').forEach(function (input) {
+                input.name = input.name.replace(/recursos\[\d+\]/, 'recursos[' + i + ']');
+            });
+        });
+    }
+
+    if (btnCorte && wrapCortes) {
+        btnCorte.addEventListener('click', function () {
+            const i = wrapCortes.querySelectorAll('.corte-item').length;
+            const div = document.createElement('div');
+            div.className = 'border rounded p-3 corte-item';
+            div.innerHTML =
+                '<div class="d-flex justify-content-between mb-2"><span class="small text-muted">Corte ' + (i + 1) + '</span>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger btn-quitar-corte">×</button></div>' +
+                '<input type="text" name="cortes[' + i + '][titulo]" class="form-control form-control-sm mb-2" placeholder="Título del corte">' +
+                '<input type="text" name="cortes[' + i + '][url]" class="form-control form-control-sm mb-2" placeholder="URL de video (opcional)">' +
+                '<input type="file" name="cortes[' + i + '][archivo]" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4,.webm">';
+            wrapCortes.appendChild(div);
+        });
+        wrapCortes.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btn-quitar-corte')) {
+                e.target.closest('.corte-item')?.remove();
+                reindexCortes();
+            }
+        });
+    }
+
+    if (btnRecurso && wrapRecursos) {
+        btnRecurso.addEventListener('click', function () {
+            const i = wrapRecursos.querySelectorAll('.recurso-item').length;
+            const div = document.createElement('div');
+            div.className = 'border rounded p-3 recurso-item';
+            div.innerHTML =
+                '<div class="d-flex justify-content-between mb-2"><span class="small text-muted">Recurso ' + (i + 1) + '</span>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger btn-quitar-recurso">×</button></div>' +
+                '<div class="row g-2 mb-2"><div class="col-md-4"><select name="recursos[' + i + '][tipo]" class="form-select form-select-sm">' +
+                optionsTipos('enlace') + '</select></div>' +
+                '<div class="col-md-8"><input type="text" name="recursos[' + i + '][titulo]" class="form-control form-control-sm" placeholder="Título"></div></div>' +
+                '<input type="text" name="recursos[' + i + '][url]" class="form-control form-control-sm mb-2" placeholder="URL">' +
+                '<textarea name="recursos[' + i + '][contenido]" class="form-control form-control-sm mb-2" rows="3" placeholder="Texto"></textarea>' +
+                '<input type="file" name="recursos[' + i + '][archivo]" class="form-control form-control-sm">';
+            wrapRecursos.appendChild(div);
+        });
+        wrapRecursos.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btn-quitar-recurso')) {
+                e.target.closest('.recurso-item')?.remove();
+                reindexRecursos();
             }
         });
     }

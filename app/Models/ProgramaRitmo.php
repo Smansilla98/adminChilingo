@@ -20,6 +20,7 @@ class ProgramaRitmo extends Model
         'contenido',
         'secciones',
         'enlaces',
+        'medios',
         'publicado',
     ];
 
@@ -29,8 +30,21 @@ class ProgramaRitmo extends Model
         'opcional' => 'boolean',
         'secciones' => 'array',
         'enlaces' => 'array',
+        'medios' => 'array',
         'publicado' => 'boolean',
     ];
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function mediosNormalizados(): array
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn($this->getTable(), 'medios')) {
+            return \App\Support\ProgramaRitmoMedios::estructuraVacia();
+        }
+
+        return \App\Support\ProgramaRitmoMedios::normalizar($this->medios);
+    }
 
     public function getRouteKeyName(): string
     {
@@ -78,6 +92,10 @@ class ProgramaRitmo extends Model
             }
         }
         if (is_array($this->enlaces) && count($this->enlaces) > 0) {
+            return true;
+        }
+
+        if (\App\Support\ProgramaRitmoMedios::tieneContenidoMultimedia($this->mediosNormalizados())) {
             return true;
         }
 

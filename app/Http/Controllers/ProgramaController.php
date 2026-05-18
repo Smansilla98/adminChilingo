@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\ProgramaRitmo;
 use App\Models\ProgramaSeccion;
+use App\Services\ProgramaRitmoMediosService;
+use App\Support\ProgramaRitmoMedios;
 use Database\Seeders\ProgramaRitmosSeeder;
 use Database\Seeders\ProgramaSeccionesSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProgramaController extends Controller
 {
@@ -93,14 +97,56 @@ class ProgramaController extends Controller
                 ->first();
         }
 
-        return view('programa.toque', compact('programaRitmo', 'años', 'anterior', 'siguiente', 'objetivosAnio'));
+        $medios = $programaRitmo->mediosNormalizados();
+
+        return view('programa.toque', compact('programaRitmo', 'años', 'anterior', 'siguiente', 'objetivosAnio', 'medios'));
     }
 
     public function editToque(ProgramaRitmo $programaRitmo)
     {
         $this->authorizeAdmin();
 
-        return view('programa.toque-edit', compact('programaRitmo'));
+        $medios = $programaRitmo->mediosNormalizados();
+
+        return view('programa.toque-edit', [
+            'programaRitmo' => $programaRitmo,
+            'medios' => $medios,
+            'videosBase' => ProgramaRitmoMedios::VIDEOS_BASE,
+            'videosGrupo' => ProgramaRitmoMedios::VIDEOS_GRUPO,
+            'tiposRecurso' => ProgramaRitmoMedios::TIPOS_RECURSO,
+        ]);
+    }
+
+    public function descargarMedio(ProgramaRitmo $programaRitmo, Request $request): StreamedResponse
+    {
+        $tipo = (string) $request->query('tipo', '');
+        $index = $request->integer('i');
+        $medios = $programaRitmo->mediosNormalizados();
+        $path = null;
+        $nombre = 'archivo';
+
+        if ($tipo === 'partitura' && ! empty($medios['partitura']['path'])) {
+            $path = $medios['partitura']['path'];
+            $nombre = $medios['partitura']['nombre'] ?? 'partitura-'.$programaRitmo->slug;
+        } elseif ($tipo === 'corte' && isset($medios['cortes'][$index]['path'])) {
+            $path = $medios['cortes'][$index]['path'];
+            $nombre = $medios['cortes'][$index]['nombre'] ?? 'corte-'.$index;
+        } elseif ($tipo === 'recurso' && isset($medios['recursos'][$index]['path'])) {
+            $path = $medios['recursos'][$index]['path'];
+            $nombre = $medios['recursos'][$index]['nombre'] ?? 'recurso-'.$index;
+        }
+
+        if (! $path || ! Storage::disk('comprobantes')->exists($path)) {
+            abort(404);
+        }
+
+        if ($request->boolean('inline')) {
+            return Storage::disk('comprobantes')->response($path, $nombre, [
+                'Content-Disposition' => 'inline; filename="'.addslashes($nombre).'"',
+            ]);
+        }
+
+        return Storage::disk('comprobantes')->download($path, $nombre);
     }
 
     public function updateToque(Request $request, ProgramaRitmo $programaRitmo)
@@ -120,7 +166,23 @@ class ProgramaController extends Controller
             'secciones.*.contenido' => 'nullable|string|max:20000',
             'enlaces' => 'nullable|array',
             'enlaces.*.etiqueta' => 'nullable|string|max:120',
-            'enlaces.*.url' => 'nullable|url|max:500',
+            'enlaces.*.url' => 'nullable|string|max:500',
+            'quitar_partitura' => 'nullable|boolean',
+            'partitura_archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:20480',
+            'videos_base' => 'nullable|array',
+            'videos_base.*.url' => 'nullable|string|max:500',
+            'videos_grupo' => 'nullable|array',
+            'videos_grupo.*.url' => 'nullable|string|max:500',
+            'cortes' => 'nullable|array',
+            'cortes.*.titulo' => 'nullable|string|max:255',
+            'cortes.*.url' => 'nullable|string|max:500',
+            'cortes.*.archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,mp4,webm|max:51200',
+            'recursos' => 'nullable|array',
+            'recursos.*.tipo' => 'nullable|string|max:32',
+            'recursos.*.titulo' => 'nullable|string|max:255',
+            'recursos.*.url' => 'nullable|string|max:500',
+            'recursos.*.contenido' => 'nullable|string|max:20000',
+            'recursos.*.archivo' => 'nullable|file|max:51200',
         ]);
 
         $secciones = collect($validated['secciones'] ?? [])
@@ -141,7 +203,7 @@ class ProgramaController extends Controller
             ->values()
             ->all();
 
-        $programaRitmo->update([
+        $update = [
             'nombre' => $validated['nombre'],
             'autor' => $validated['autor'] ?? null,
             'notas' => $validated['notas'] ?? null,
@@ -151,7 +213,13 @@ class ProgramaController extends Controller
             'publicado' => $request->boolean('publicado'),
             'secciones' => $secciones !== [] ? $secciones : null,
             'enlaces' => $enlaces !== [] ? $enlaces : null,
-        ]);
+        ];
+
+        if (Schema::hasColumn('programa_ritmos', 'medios')) {
+            $update['medios'] = app(ProgramaRitmoMediosService::class)->procesarDesdeRequest($request, $programaRitmo);
+        }
+
+        $programaRitmo->update($update);
 
         return redirect()
             ->route('programa.toque.show', $programaRitmo)

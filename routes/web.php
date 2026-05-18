@@ -51,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
     // Programa oficial — accesible para todos; edición solo admin
     Route::get('/programa', [ProgramaController::class, 'index'])->name('programa.index');
     Route::get('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->name('programa.toque.show');
+    Route::get('/programa/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->name('programa.toque.archivo');
 
     // Calendario (accesible para todos)
     Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario.index');
@@ -67,7 +68,7 @@ Route::middleware(['auth'])->group(function () {
     // Rutas de Admin
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/programa/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
-        Route::put('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])->name('programa.toque.update');
+        Route::match(['put', 'post'], '/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])->name('programa.toque.update');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
 
