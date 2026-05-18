@@ -5,15 +5,13 @@ namespace Database\Seeders;
 use App\Models\ProgramaRitmo;
 use App\Support\ProgramaRitmoSlug;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class ProgramaRitmosSeeder extends Seeder
 {
-    /**
-     * Inserta ritmos solo si la tabla está vacía (migraciones / deploy).
-     */
     public static function poblarSiVacio(): int
     {
-        if (! \Illuminate\Support\Facades\Schema::hasTable('programa_ritmos')) {
+        if (! Schema::hasTable('programa_ritmos')) {
             return 0;
         }
         if (ProgramaRitmo::query()->exists()) {
@@ -23,20 +21,17 @@ class ProgramaRitmosSeeder extends Seeder
         return self::poblar();
     }
 
-    /**
-     * Programa oficial La Chilinga - Toques por año (del texto del programa).
-     */
     public function run(): void
     {
         self::poblar();
+        self::asegurarSlugs();
     }
 
-    /**
-     * @return int Cantidad de filas procesadas
-     */
     public static function poblar(): int
     {
         $ritmos = self::datos();
+        $usaSlug = Schema::hasColumn('programa_ritmos', 'slug');
+        $usaPublicado = Schema::hasColumn('programa_ritmos', 'publicado');
 
         foreach ($ritmos as $r) {
             $existente = ProgramaRitmo::query()
@@ -49,36 +44,51 @@ class ProgramaRitmosSeeder extends Seeder
                 'autor' => $r[3],
                 'opcional' => $r[4],
                 'notas' => $r[5],
-                'publicado' => true,
             ];
+            if ($usaPublicado) {
+                $attrs['publicado'] = true;
+            }
 
             if ($existente) {
-                if (! $existente->slug) {
+                if ($usaSlug && empty($existente->slug)) {
                     $attrs['slug'] = ProgramaRitmoSlug::generar($r[0], $r[2], $existente->id);
                 }
                 $existente->update($attrs);
             } else {
-                ProgramaRitmo::create(array_merge([
+                $create = [
                     'año' => $r[0],
                     'orden' => $r[1],
                     'nombre' => $r[2],
-                    'slug' => ProgramaRitmoSlug::generar($r[0], $r[2]),
-                ], $attrs));
+                ];
+                if ($usaSlug) {
+                    $create['slug'] = ProgramaRitmoSlug::generar($r[0], $r[2]);
+                }
+                ProgramaRitmo::create(array_merge($create, $attrs));
             }
         }
 
-        self::asegurarSlugs();
+        if ($usaSlug) {
+            self::asegurarSlugs();
+        }
 
         return count($ritmos);
     }
 
     public static function asegurarSlugs(): void
     {
-        ProgramaRitmo::query()->whereNull('slug')->orWhere('slug', '')->each(function (ProgramaRitmo $ritmo) {
-            $ritmo->update([
-                'slug' => ProgramaRitmoSlug::generar((int) $ritmo->año, $ritmo->nombre, $ritmo->id),
-            ]);
-        });
+        if (! Schema::hasTable('programa_ritmos') || ! Schema::hasColumn('programa_ritmos', 'slug')) {
+            return;
+        }
+
+        ProgramaRitmo::query()
+            ->where(function ($q) {
+                $q->whereNull('slug')->orWhere('slug', '');
+            })
+            ->each(function (ProgramaRitmo $ritmo) {
+                $ritmo->update([
+                    'slug' => ProgramaRitmoSlug::generar((int) $ritmo->año, $ritmo->nombre, $ritmo->id),
+                ]);
+            });
     }
 
     /**
@@ -87,7 +97,6 @@ class ProgramaRitmosSeeder extends Seeder
     public static function datos(): array
     {
         return [
-            // 1er Año
             [1, 1, 'Ritmo Chilinga', 'D. Buira', false, null],
             [1, 2, 'Ochosi', 'Ritmo Popular | Adaptación: D. Buira', false, null],
             [1, 3, 'Marcha Camión', 'Ritmo Popular Uruguay | Adaptación: D. Buira', false, null],
@@ -97,7 +106,6 @@ class ProgramaRitmosSeeder extends Seeder
             [1, 7, 'Toque de Marcha', 'D. Buira', false, null],
             [1, 8, 'Rap - Murga', 'D. Buira', false, null],
             [1, 9, 'Ixesa I', 'Ritmo Popular Brasil | Adaptación: D. Buira', true, 'Opcional 1er o 2do año'],
-            // 2do Año
             [2, 1, 'Ixesa I', 'Ritmo Popular Brasil | Adaptación: D. Buira', true, 'Opcional 1er o 2do año'],
             [2, 2, 'Candombe Argentino', 'Ritmo Argentino | Adaptación: Egle Martin, D. Buira', false, null],
             [2, 3, 'Toque de Comparsa', 'Ritmo del litoral | Adaptación: D. Buira', false, null],
@@ -105,7 +113,6 @@ class ProgramaRitmosSeeder extends Seeder
             [2, 5, 'Chiruda', 'D. Buira', false, null],
             [2, 6, 'Ritmo de Chacarera', 'Santiago del Estero | Adaptación: D. Buira', false, null],
             [2, 7, 'Ritmo de Rumba', 'Ritmo Popular Cuba | Adaptación: D. Buira', false, null],
-            // 3er Año
             [3, 1, 'Buscando a Coco', 'D. Buira', false, null],
             [3, 2, 'Solo de timbales I', 'D. Buira', false, null],
             [3, 3, 'Malamakua I', 'D. Buira', false, null],
@@ -115,7 +122,6 @@ class ProgramaRitmosSeeder extends Seeder
             [3, 7, 'Chiruda Blues', 'D. Buira', false, null],
             [3, 8, 'Arabe', 'Turca Zahra', false, null],
             [3, 9, 'Batería', 'T. Barbeira', false, null],
-            // 4to Año
             [4, 1, 'Iyesa II', 'Ritmo Popular Cuba | Adaptación: D. Buira', false, null],
             [4, 2, 'La Meta', 'D. Buira', false, null],
             [4, 3, 'Solo de Repiques (La Meta)', 'D. Buira', false, null],
@@ -125,7 +131,6 @@ class ProgramaRitmosSeeder extends Seeder
             [4, 7, 'Kukomalo', 'D. Buira', true, 'Opcional 4to o 5to año'],
             [4, 8, 'Samborombón', 'D. Buira', false, null],
             [4, 9, 'Ritmo de Makuta (Cuba)', 'Adaptación D. Buira', false, null],
-            // 5to Año
             [5, 1, 'Kukomalo', 'D. Buira', true, 'Opcional 4to o 5to año'],
             [5, 2, 'Chilinga II', 'D. Buira', true, 'Opcional 5to o 6to año'],
             [5, 3, 'Solo de Timbales II', 'D. Buira', false, null],
@@ -133,7 +138,6 @@ class ProgramaRitmosSeeder extends Seeder
             [5, 5, 'Malamakua II', 'D. Buira', false, null],
             [5, 6, 'Solos de tambor individual', 'D. Buira', false, null],
             [5, 7, 'Toque en 7 - Timbales', 'D. Buira', false, null],
-            // 6to Año
             [6, 1, 'Chilinga II', 'D. Buira', true, 'Opcional 5to o 6to año'],
             [6, 2, 'Santito', 'D. Buira', false, null],
             [6, 3, 'Ritmo sobre Paradiddle', 'Adaptación: D. Buira', false, null],

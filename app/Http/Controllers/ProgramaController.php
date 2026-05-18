@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ProgramaRitmo;
 use App\Models\ProgramaSeccion;
-use App\Support\ProgramaRitmoSlug;
 use Database\Seeders\ProgramaRitmosSeeder;
 use Database\Seeders\ProgramaSeccionesSeeder;
 use Illuminate\Http\Request;
@@ -33,11 +32,11 @@ class ProgramaController extends Controller
         try {
             $this->asegurarDatosBase();
 
-            $ritmos = ProgramaRitmo::query()
-                ->where('publicado', true)
-                ->orderBy('año')
-                ->orderBy('orden')
-                ->get();
+            $qRitmos = ProgramaRitmo::query()->orderBy('año')->orderBy('orden');
+            if (Schema::hasColumn('programa_ritmos', 'publicado')) {
+                $qRitmos->where('publicado', true);
+            }
+            $ritmos = $qRitmos->get();
             $totalRitmos = $ritmos->count();
             $porAño = $ritmos->groupBy(fn (ProgramaRitmo $r) => (int) $r->año);
 
@@ -64,16 +63,18 @@ class ProgramaController extends Controller
 
     public function showToque(ProgramaRitmo $programaRitmo)
     {
-        if (! $programaRitmo->publicado && ! auth()->user()?->isAdmin()) {
+        if (Schema::hasColumn('programa_ritmos', 'publicado')
+            && ! $programaRitmo->publicado
+            && ! auth()->user()?->isAdmin()) {
             abort(404);
         }
 
         $años = ProgramaRitmo::años();
-        $vecinos = ProgramaRitmo::query()
-            ->where('publicado', true)
-            ->orderBy('año')
-            ->orderBy('orden')
-            ->get();
+        $qVecinos = ProgramaRitmo::query()->orderBy('año')->orderBy('orden');
+        if (Schema::hasColumn('programa_ritmos', 'publicado')) {
+            $qVecinos->where('publicado', true);
+        }
+        $vecinos = $qVecinos->get();
 
         $idx = $vecinos->search(fn ($r) => $r->id === $programaRitmo->id);
         $anterior = $idx !== false && $idx > 0 ? $vecinos[$idx - 1] : null;
@@ -195,7 +196,9 @@ class ProgramaController extends Controller
         if (! ProgramaRitmo::query()->exists()) {
             ProgramaRitmosSeeder::poblarSiVacio();
         }
-        ProgramaRitmosSeeder::asegurarSlugs();
+        if (Schema::hasColumn('programa_ritmos', 'slug')) {
+            ProgramaRitmosSeeder::asegurarSlugs();
+        }
 
         if (Schema::hasTable('programa_secciones') && ! ProgramaSeccion::query()->exists()) {
             ProgramaSeccionesSeeder::poblarSiVacio();

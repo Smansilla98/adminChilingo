@@ -15,11 +15,8 @@ return new class extends Migration
             return;
         }
 
-        if (Schema::hasTable('programa_secciones')) {
-            \Database\Seeders\ProgramaSeccionesSeeder::poblarSiVacio();
-        }
+        // Solo datos base (sin slug). Columnas extra y slugs: migración 140000+.
         ProgramaRitmosSeeder::poblarSiVacio();
-        ProgramaRitmosSeeder::asegurarSlugs();
     }
 
     public function down(): void

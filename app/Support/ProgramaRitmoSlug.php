@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\ProgramaRitmo;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ProgramaRitmoSlug
@@ -22,6 +23,10 @@ class ProgramaRitmoSlug
 
     private static function existe(string $slug, ?int $excluirId): bool
     {
+        if (! Schema::hasTable('programa_ritmos') || ! Schema::hasColumn('programa_ritmos', 'slug')) {
+            return false;
+        }
+
         $q = ProgramaRitmo::query()->where('slug', $slug);
         if ($excluirId !== null) {
             $q->where('id', '!=', $excluirId);

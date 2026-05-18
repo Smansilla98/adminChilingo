@@ -1,5 +1,7 @@
 <?php
 
+use Database\Seeders\ProgramaRitmosSeeder;
+use Database\Seeders\ProgramaSeccionesSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -45,6 +47,13 @@ return new class extends Migration
                     $table->boolean('publicado')->default(true)->after('enlaces');
                 }
             });
+        }
+
+        if (Schema::hasTable('programa_secciones')) {
+            ProgramaSeccionesSeeder::poblarSiVacio();
+        }
+        if (Schema::hasTable('programa_ritmos') && Schema::hasColumn('programa_ritmos', 'slug')) {
+            ProgramaRitmosSeeder::asegurarSlugs();
         }
     }
 
