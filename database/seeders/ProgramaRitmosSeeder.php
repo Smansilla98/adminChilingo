@@ -3,16 +3,90 @@
 namespace Database\Seeders;
 
 use App\Models\ProgramaRitmo;
+use App\Support\ProgramaRitmoSlug;
 use Illuminate\Database\Seeder;
 
 class ProgramaRitmosSeeder extends Seeder
 {
     /**
+     * Inserta ritmos solo si la tabla está vacía (migraciones / deploy).
+     */
+    public static function poblarSiVacio(): int
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('programa_ritmos')) {
+            return 0;
+        }
+        if (ProgramaRitmo::query()->exists()) {
+            return (int) ProgramaRitmo::query()->count();
+        }
+
+        return self::poblar();
+    }
+
+    /**
      * Programa oficial La Chilinga - Toques por año (del texto del programa).
      */
     public function run(): void
     {
-        $ritmos = [
+        self::poblar();
+    }
+
+    /**
+     * @return int Cantidad de filas procesadas
+     */
+    public static function poblar(): int
+    {
+        $ritmos = self::datos();
+
+        foreach ($ritmos as $r) {
+            $existente = ProgramaRitmo::query()
+                ->where('año', $r[0])
+                ->where('orden', $r[1])
+                ->where('nombre', $r[2])
+                ->first();
+
+            $attrs = [
+                'autor' => $r[3],
+                'opcional' => $r[4],
+                'notas' => $r[5],
+                'publicado' => true,
+            ];
+
+            if ($existente) {
+                if (! $existente->slug) {
+                    $attrs['slug'] = ProgramaRitmoSlug::generar($r[0], $r[2], $existente->id);
+                }
+                $existente->update($attrs);
+            } else {
+                ProgramaRitmo::create(array_merge([
+                    'año' => $r[0],
+                    'orden' => $r[1],
+                    'nombre' => $r[2],
+                    'slug' => ProgramaRitmoSlug::generar($r[0], $r[2]),
+                ], $attrs));
+            }
+        }
+
+        self::asegurarSlugs();
+
+        return count($ritmos);
+    }
+
+    public static function asegurarSlugs(): void
+    {
+        ProgramaRitmo::query()->whereNull('slug')->orWhere('slug', '')->each(function (ProgramaRitmo $ritmo) {
+            $ritmo->update([
+                'slug' => ProgramaRitmoSlug::generar((int) $ritmo->año, $ritmo->nombre, $ritmo->id),
+            ]);
+        });
+    }
+
+    /**
+     * @return array<int, array{0: int, 1: int, 2: string, 3: string, 4: bool, 5: ?string}>
+     */
+    public static function datos(): array
+    {
+        return [
             // 1er Año
             [1, 1, 'Ritmo Chilinga', 'D. Buira', false, null],
             [1, 2, 'Ochosi', 'Ritmo Popular | Adaptación: D. Buira', false, null],
@@ -68,12 +142,5 @@ class ProgramaRitmosSeeder extends Seeder
             [6, 6, 'Solo de Timbales II', 'D. Buira', false, null],
             [6, 7, 'Muñequitos II y III', 'D. Buira', false, null],
         ];
-
-        foreach ($ritmos as $r) {
-            ProgramaRitmo::firstOrCreate(
-                ['año' => $r[0], 'orden' => $r[1], 'nombre' => $r[2]],
-                ['autor' => $r[3], 'opcional' => $r[4], 'notas' => $r[5]]
-            );
-        }
     }
 }

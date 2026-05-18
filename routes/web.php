@@ -48,8 +48,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Programa oficial (toques por año) — accesible para todos
+    // Programa oficial — accesible para todos; edición solo admin
     Route::get('/programa', [ProgramaController::class, 'index'])->name('programa.index');
+    Route::get('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->name('programa.toque.show');
 
     // Calendario (accesible para todos)
     Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario.index');
@@ -65,6 +66,11 @@ Route::middleware(['auth'])->group(function () {
 
     // Rutas de Admin
     Route::middleware(['role:admin'])->group(function () {
+        Route::get('/programa/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
+        Route::put('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])->name('programa.toque.update');
+        Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
+        Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
+
         // Alumnos
         Route::get('/alumnos/import', [AlumnoController::class, 'importForm'])->name('alumnos.import.form');
         Route::post('/alumnos/import', [AlumnoController::class, 'importStore'])->name('alumnos.import.store');

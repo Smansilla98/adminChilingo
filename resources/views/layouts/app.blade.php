@@ -39,6 +39,11 @@
                 <span class="side-link-text">Inicio</span>
             </a>
 
+            <a class="side-link {{ request()->routeIs('programa.*') ? 'active' : '' }}" href="{{ route('programa.index') }}" title="Programa">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" fill="currentColor"/></svg>
+                <span class="side-link-text">Programa</span>
+            </a>
+
             <a class="side-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}" title="Calendario">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" fill="currentColor"/></svg>
                 <span class="side-link-text">Calendario</span>
