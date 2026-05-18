@@ -184,9 +184,19 @@
                             $b = $row['bloque'];
                             $h = $row['horario'];
                             $pct = (int) ($row['pct'] ?? 0);
-                            $barColor = $row['estado'] === 'Tomada' ? 'var(--green)' : ($row['estado'] === 'Incompleta' ? 'var(--accent2)' : 'var(--accent)');
+                            $barColor = match ($row['estado'] ?? '') {
+                                'Tomada' => 'var(--green)',
+                                'Incompleta' => 'var(--accent2)',
+                                'Próxima' => 'var(--s3)',
+                                default => 'var(--accent)',
+                            };
+                            $fechaClaseCard = $row['fecha_clase'] ?? null;
+                            $urlAsist = route('asistencias.create', array_filter([
+                                'bloque_id' => $b->id ?? null,
+                                'fecha' => $fechaClaseCard ? $fechaClaseCard->format('Y-m-d') : null,
+                            ]));
                         @endphp
-                        <a class="asist-card" href="{{ url('/asistencias/bloque/' . ($b->id ?? 0)) }}">
+                        <a class="asist-card" href="{{ $urlAsist }}">
                             <div class="asist-top">
                                 <div class="asist-sede">{{ $row['sede']?->nombre ?? '—' }}</div>
                                 <div class="{{ $row['badge_class'] }}">{{ $row['estado'] }}</div>
@@ -195,6 +205,9 @@
                             <div class="asist-sub">
                                 {{ $h?->nombre_dia ?? '—' }} {{ $h?->hora_inicio ? \Carbon\Carbon::parse($h->hora_inicio)->format('H:i') : '' }} hs ·
                                 {{ $b?->nombre ?? 'Bloque' }}
+                                @if($fechaClaseCard)
+                                · clase {{ $fechaClaseCard->format('d/m') }}
+                                @endif
                             </div>
                             <div class="asist-bar" aria-hidden="true">
                                 <span style="--w: {{ $pct }}%; --bar: {{ $barColor }}"></span>

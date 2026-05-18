@@ -135,29 +135,42 @@ class DashboardController extends Controller
                 ->values();
 
             $bloqueIds = $horarios->pluck('bloque_id')->unique()->values();
+            $hoy = Carbon::today();
 
-            $asistAgg = Asistencia::query()
-                ->selectRaw('bloque_id, fecha, COUNT(*) as total_reg, SUM(CASE WHEN presente = 1 THEN 1 ELSE 0 END) as presentes')
+            // Asistencias de la semana (agrupadas por bloque + día para cruzar con fecha de clase)
+            $asistPorBloqueFecha = Asistencia::query()
                 ->whereBetween('fecha', [$inicioSemana->toDateString(), $finSemana->toDateString()])
                 ->whereIn('bloque_id', $bloqueIds->all())
-                ->groupBy('bloque_id', 'fecha')
-                ->get()
-                ->groupBy('bloque_id')
-                ->map(fn ($rows) => $rows->sortByDesc('fecha')->first());
+                ->get(['bloque_id', 'fecha', 'presente', 'tipo_asistencia'])
+                ->groupBy(fn (Asistencia $a) => $a->bloque_id.'|'.$a->fecha->format('Y-m-d'))
+                ->map(function ($filas) {
+                    return (object) [
+                        'bloque_id' => $filas->first()->bloque_id,
+                        'fecha_dia' => $filas->first()->fecha->format('Y-m-d'),
+                        'total_reg' => $filas->count(),
+                        'presentes' => $filas->filter(
+                            fn (Asistencia $a) => $a->presente || in_array($a->tipo_asistencia, ['presente', 'tarde'], true)
+                        )->count(),
+                    ];
+                });
 
-            $bloquesSemanales = $horarios->map(function (BloqueHorario $h) use ($inicioSemana, $asistAgg) {
+            $bloquesSemanales = $horarios->map(function (BloqueHorario $h) use ($inicioSemana, $asistPorBloqueFecha, $hoy) {
                 $bloque = $h->bloque;
-                $fechaClase = $inicioSemana->copy()->addDays(max(0, ((int) $h->dia_semana) - 1));
+                $fechaClase = $inicioSemana->copy()->addDays(max(0, ((int) $h->dia_semana) - 1))->startOfDay();
 
-                $totalAlumnos = $bloque?->alumnos?->unique('id')->count() ?? 0;
-                $agg = $asistAgg->get($bloque->id);
+                $totalAlumnos = $bloque ? (int) $bloque->alumnos()->where('activo', true)->count() : 0;
+
+                $agg = $this->resolverAsistenciaClaseSemana($asistPorBloqueFecha, (int) $bloque->id, $fechaClase, $inicioSemana, $hoy);
                 $regTotal = (int) ($agg->total_reg ?? 0);
                 $presentes = (int) ($agg->presentes ?? 0);
 
-                if ($regTotal > 0 && $regTotal >= $totalAlumnos && $totalAlumnos > 0) {
+                if ($fechaClase->gt($hoy)) {
+                    $estado = 'Próxima';
+                    $badge = 'badge-pend';
+                } elseif ($regTotal > 0 && ($totalAlumnos === 0 || $regTotal >= $totalAlumnos)) {
                     $estado = 'Tomada';
                     $badge = 'badge-ok';
-                } elseif ($regTotal > 0 && $totalAlumnos > 0 && $regTotal < $totalAlumnos) {
+                } elseif ($regTotal > 0) {
                     $estado = 'Incompleta';
                     $badge = 'badge-warn';
                 } else {
@@ -208,7 +221,6 @@ class DashboardController extends Controller
                     'c.created_at as created_at',
                 ]));
 
-            $hoy = Carbon::today();
             $cuotasPendientesList = $cuotasPendientesList->map(function ($row) use ($hoy) {
                 $fv = $row->fecha_vencimiento ? Carbon::parse($row->fecha_vencimiento) : null;
                 $isVencida = $fv ? $fv->lt($hoy->copy()->subDays(5)) : false;
@@ -295,5 +307,40 @@ class DashboardController extends Controller
         }
 
         return view('dashboard.profesor', compact('bloques', 'proximosEventos', 'comprobantesCuotaPendientes'));
+    }
+
+    /**
+     * Busca registros de asistencia para el día de clase de esta semana (fecha exacta de la clase).
+     */
+    private function resolverAsistenciaClaseSemana(
+        $asistPorBloqueFecha,
+        int $bloqueId,
+        Carbon $fechaClase,
+        Carbon $inicioSemana,
+        Carbon $hoy
+    ): object {
+        $claveExacta = $bloqueId.'|'.$fechaClase->toDateString();
+        if ($asistPorBloqueFecha->has($claveExacta)) {
+            return $asistPorBloqueFecha->get($claveExacta);
+        }
+
+        // Si la clase ya pasó: aceptar asistencia cargada en otra fecha de la misma semana (p. ej. fecha del formulario distinta al viernes de clase)
+        if ($fechaClase->lte($hoy)) {
+            $candidatos = $asistPorBloqueFecha->filter(function ($row) use ($bloqueId, $fechaClase, $inicioSemana) {
+                if ((int) $row->bloque_id !== $bloqueId) {
+                    return false;
+                }
+                $f = Carbon::parse($row->fecha_dia)->startOfDay();
+                $desde = $inicioSemana->copy()->startOfDay();
+
+                return $f->gte($desde) && $f->lte($fechaClase);
+            })->sortByDesc('fecha_dia');
+
+            if ($candidatos->isNotEmpty()) {
+                return $candidatos->first();
+            }
+        }
+
+        return (object) ['total_reg' => 0, 'presentes' => 0];
     }
 }
