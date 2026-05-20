@@ -124,7 +124,9 @@ class AlumnoController extends Controller
         $tiposTambor = self::TIPOS_TAMBOR;
         $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
 
-        return view('alumnos.create', compact('sedes', 'bloques', 'instrumentos', 'tiposTambor', 'procedenciasTambor'));
+        $profesoresSinVinculo = $this->profesoresDisponiblesParaVinculo();
+
+        return view('alumnos.create', compact('sedes', 'bloques', 'instrumentos', 'tiposTambor', 'procedenciasTambor', 'profesoresSinVinculo'));
     }
 
     /**
@@ -141,18 +143,23 @@ class AlumnoController extends Controller
             'instrumento_secundario' => 'nullable|string',
             'tipo_tambor' => 'nullable|string|in:' . implode(',', self::TIPOS_TAMBOR),
             'tambor_procedencia' => 'nullable|string|in:' . implode(',', self::TAMBOR_PROCEDENCIAS),
-            'bloque_id' => 'nullable|exists:bloques,id',
+            'bloque_ids' => 'nullable|array',
+            'bloque_ids.*' => 'exists:bloques,id',
+            'bloque_principal_id' => 'nullable|exists:bloques,id',
             'sede_id' => 'required|exists:sedes,id',
             'activo' => 'boolean',
+            'crear_perfil_profesor' => 'nullable|boolean',
+            'vincular_profesor_id' => 'nullable|exists:profesores,id',
         ]);
 
         $validated['activo'] = $request->boolean('activo');
+        $bloqueIds = array_map('intval', $request->input('bloque_ids', []));
+        $principalId = $request->integer('bloque_principal_id') ?: ($bloqueIds[0] ?? null);
+        $validated['bloque_id'] = $principalId;
 
         $alumno = Alumno::create($validated);
-
-        if (!empty($validated['bloque_id'])) {
-            $alumno->bloques()->attach($validated['bloque_id'], ['es_principal' => true]);
-        }
+        $this->sincronizarBloquesAlumno($alumno, $bloqueIds, $principalId);
+        $this->vincularPerfilProfesor($request, $alumno);
 
         return redirect()->route('alumnos.index')
             ->with('success', 'Alumno creado exitosamente.');
@@ -171,7 +178,8 @@ class AlumnoController extends Controller
             }
         }
 
-        $alumno->load(['bloque.profesor', 'bloques.profesor', 'sede', 'asistencias']);
+        $alumno->load(['bloque.profesor', 'bloques.sede', 'bloques.profesor', 'sede', 'asistencias', 'user']);
+        $profesorPerfil = $alumno->profesorPerfil();
 
         $bloquesIds = $alumno->bloques->pluck('id')->filter()->values();
         if ($bloquesIds->isEmpty() && $alumno->bloque_id) {
@@ -214,14 +222,19 @@ class AlumnoController extends Controller
             return $cuota->alumnos->contains('id', $alumno->id);
         })->values();
 
-        $pagosPorCuota = $cuotasAplicables->isNotEmpty()
-            ? PagoDetalle::query()
-                ->with(['pago:id,fecha_pago'])
+        try {
+            $historialPagos = PagoDetalle::query()
+                ->with(['pago', 'cuota'])
                 ->where('alumno_id', $alumno->id)
-                ->whereIn('cuota_id', $cuotasAplicables->pluck('id')->all())
+                ->whereHas('pago')
                 ->get()
-                ->keyBy('cuota_id')
-            : collect();
+                ->sortByDesc(fn ($d) => $d->pago?->fecha_pago)
+                ->values();
+        } catch (QueryException $e) {
+            $historialPagos = collect();
+        }
+
+        $pagosPorCuota = $historialPagos->keyBy('cuota_id');
 
         $hoy = Carbon::today();
         $estadoCuenta = $cuotasAplicables->map(function (Cuota $cuota) use ($pagosPorCuota, $hoy) {
@@ -251,7 +264,7 @@ class AlumnoController extends Controller
             ];
         });
 
-        return view('alumnos.show', compact('alumno', 'estadoCuenta'));
+        return view('alumnos.show', compact('alumno', 'estadoCuenta', 'historialPagos', 'profesorPerfil'));
     }
 
     /**
@@ -270,7 +283,10 @@ class AlumnoController extends Controller
         $tiposTambor = self::TIPOS_TAMBOR;
         $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
 
-        return view('alumnos.edit', compact('alumno', 'sedes', 'bloques', 'instrumentos', 'tiposTambor', 'procedenciasTambor'));
+        $alumno->load('bloques');
+        $profesoresSinVinculo = $this->profesoresDisponiblesParaVinculo($alumno);
+
+        return view('alumnos.edit', compact('alumno', 'sedes', 'bloques', 'instrumentos', 'tiposTambor', 'procedenciasTambor', 'profesoresSinVinculo'));
     }
 
     /**
@@ -287,24 +303,25 @@ class AlumnoController extends Controller
             'instrumento_secundario' => 'nullable|string',
             'tipo_tambor' => 'nullable|string|in:' . implode(',', self::TIPOS_TAMBOR),
             'tambor_procedencia' => 'nullable|string|in:' . implode(',', self::TAMBOR_PROCEDENCIAS),
-            'bloque_id' => 'nullable|exists:bloques,id',
+            'bloque_ids' => 'nullable|array',
+            'bloque_ids.*' => 'exists:bloques,id',
+            'bloque_principal_id' => 'nullable|exists:bloques,id',
             'sede_id' => 'required|exists:sedes,id',
             'activo' => 'boolean',
+            'crear_perfil_profesor' => 'nullable|boolean',
+            'vincular_profesor_id' => 'nullable|exists:profesores,id',
         ]);
 
         $validated['activo'] = $request->boolean('activo');
+        $bloqueIds = array_map('intval', $request->input('bloque_ids', []));
+        $principalId = $request->integer('bloque_principal_id') ?: ($bloqueIds[0] ?? null);
+        $validated['bloque_id'] = $principalId;
 
         $alumno->update($validated);
+        $this->sincronizarBloquesAlumno($alumno, $bloqueIds, $principalId);
+        $this->vincularPerfilProfesor($request, $alumno);
 
-        if (array_key_exists('bloque_id', $validated)) {
-            $alumno->bloques()->sync(
-                $validated['bloque_id']
-                    ? [$validated['bloque_id'] => ['es_principal' => true]]
-                    : []
-            );
-        }
-
-        return redirect()->route('alumnos.index')
+        return redirect()->route('alumnos.show', $alumno)
             ->with('success', 'Alumno actualizado exitosamente.');
     }
 
@@ -631,13 +648,79 @@ class AlumnoController extends Controller
         if ($ids === []) {
             return false;
         }
-        if ($alumno->bloque_id && in_array((int) $alumno->bloque_id, $ids, true)) {
-            return true;
-        }
-        if (Schema::hasTable('alumno_bloque')) {
-            return $alumno->bloques()->whereIn('bloques.id', $ids)->exists();
+
+        return $alumno->bloqueIds()->intersect($ids)->isNotEmpty();
+    }
+
+    /**
+     * @param  array<int, int>  $bloqueIds
+     */
+    private function sincronizarBloquesAlumno(Alumno $alumno, array $bloqueIds, ?int $principalId): void
+    {
+        if (! Schema::hasTable('alumno_bloque')) {
+            return;
         }
 
-        return false;
+        $bloqueIds = array_values(array_unique(array_filter($bloqueIds)));
+        if ($principalId && ! in_array($principalId, $bloqueIds, true)) {
+            $bloqueIds[] = $principalId;
+        }
+        if ($principalId === null && $bloqueIds !== []) {
+            $principalId = $bloqueIds[0];
+        }
+
+        $sync = [];
+        foreach ($bloqueIds as $bid) {
+            $sync[$bid] = ['es_principal' => $principalId && (int) $bid === (int) $principalId];
+        }
+        $alumno->bloques()->sync($sync);
+    }
+
+    private function vincularPerfilProfesor(Request $request, Alumno $alumno): void
+    {
+        if ($alumno->profesorPerfil()) {
+            return;
+        }
+
+        $pid = $request->integer('vincular_profesor_id');
+        if ($pid > 0) {
+            $prof = Profesor::query()->find($pid);
+            if ($prof && ! $prof->user_id && $alumno->user_id) {
+                $prof->update(['user_id' => $alumno->user_id]);
+                $prof->sincronizarRolesUsuario();
+            }
+
+            return;
+        }
+
+        if (! $request->boolean('crear_perfil_profesor')) {
+            return;
+        }
+
+        $prof = Profesor::create([
+            'nombre' => $alumno->nombre_apellido,
+            'telefono' => $alumno->telefono,
+            'email' => null,
+            'activo' => $alumno->activo,
+            'user_id' => $alumno->user_id,
+        ]);
+        $prof->sincronizarRolesUsuario();
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, Profesor>
+     */
+    private function profesoresDisponiblesParaVinculo(?Alumno $exceptoAlumno = null): \Illuminate\Support\Collection
+    {
+        try {
+            $q = Profesor::query()->where('activo', true)->orderBy('nombre');
+            if ($exceptoAlumno?->profesorPerfil()) {
+                $q->where('id', '!=', $exceptoAlumno->profesorPerfil()->id);
+            }
+
+            return $q->get();
+        } catch (QueryException $e) {
+            return collect();
+        }
     }
 }

@@ -7,6 +7,7 @@ use App\Models\PagoDetalle;
 use App\Models\Cuota;
 use App\Models\Alumno;
 use App\Models\Bloque;
+use App\Support\LiquidacionDocente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -116,15 +117,23 @@ class PagoController extends Controller
             }
         }
 
-        $cuotasMeta = $cuotas->map(fn (Cuota $c) => [
-            'id' => $c->id,
-            'monto' => (float) $c->monto,
-            'label' => ($c->nombre_mes ? $c->nombre_mes.' '.$c->año.' — ' : '').$c->nombre.' — $ '.number_format((float) $c->monto, 2, ',', '.'),
-            'alcance' => Schema::hasColumn('cuotas', 'alcance') ? ($c->alcance ?? 'bloque') : 'bloque',
-            'bloque_id' => $c->bloque_id,
-            'sede_id' => $c->sede_id,
-            'activo' => (bool) ($c->activo ?? true),
-        ])->values()->all();
+        $cuotasMeta = $cuotas->map(function (Cuota $c) {
+            $sede = LiquidacionDocente::sedeParaCuota($c);
+            $abonoRef = $sede ? $sede->montoAbonoDocenteDesdeCuota((float) $c->monto) : 0.0;
+
+            return [
+                'id' => $c->id,
+                'monto' => (float) $c->monto,
+                'label' => ($c->nombre_mes ? $c->nombre_mes.' '.$c->año.' — ' : '').$c->nombre.' — $ '.number_format((float) $c->monto, 2, ',', '.'),
+                'alcance' => Schema::hasColumn('cuotas', 'alcance') ? ($c->alcance ?? 'bloque') : 'bloque',
+                'bloque_id' => $c->bloque_id,
+                'sede_id' => $c->sede_id,
+                'sede_nombre' => $sede?->nombre,
+                'activo' => (bool) ($c->activo ?? true),
+                'abono_docente_ref' => $abonoRef,
+                'liquidacion_resumen' => $sede ? $sede->resumenLiquidacionDocente((float) $c->monto) : null,
+            ];
+        })->values()->all();
 
         return compact('cuotas', 'bloquesFiltro', 'cuotasMeta');
     }
@@ -249,7 +258,9 @@ class PagoController extends Controller
             $payload['lineas'],
             $payload['cuotasPorId'],
             $payload['liquidarProfesor'],
-            $payload['totalAbonoDocente']
+            $payload['totalAbonoDocente'],
+            $payload['abonosPreset'] ?? [],
+            $payload['usarAbonoPreset'] ?? false
         );
 
         return redirect()->route('pagos.show', $pago)->with('success', 'Pago registrado correctamente.');
@@ -285,7 +296,9 @@ class PagoController extends Controller
                 $payload['lineas'],
                 $payload['cuotasPorId'],
                 $payload['liquidarProfesor'],
-                $payload['totalAbonoDocente']
+                $payload['totalAbonoDocente'],
+                $payload['abonosPreset'] ?? [],
+                $payload['usarAbonoPreset'] ?? false
             );
         });
 
@@ -387,8 +400,15 @@ class PagoController extends Controller
             }
         }
 
+        $abonosPreset = $liquidarProfesor
+            ? LiquidacionDocente::abonosPorLinea($lineas, $cuotasPorId)
+            : [];
+        $sumaPreset = round(array_sum($abonosPreset), 2);
+
+        $montoAbonoInput = $validated['monto_abono_profesor'] ?? null;
+        $usarPreset = $liquidarProfesor && ($montoAbonoInput === null || $montoAbonoInput === '');
         $totalAbonoDocente = $liquidarProfesor
-            ? max(0.0, round((float) ($validated['monto_abono_profesor'] ?? 0), 2))
+            ? ($usarPreset ? $sumaPreset : max(0.0, round((float) $montoAbonoInput, 2)))
             : null;
 
         return [
@@ -397,6 +417,8 @@ class PagoController extends Controller
             'cuotasPorId' => $cuotasPorId,
             'liquidarProfesor' => $liquidarProfesor,
             'totalAbonoDocente' => $totalAbonoDocente,
+            'abonosPreset' => $abonosPreset,
+            'usarAbonoPreset' => $usarPreset,
         ];
     }
 
@@ -435,18 +457,27 @@ class PagoController extends Controller
      * @param  array<int, array<string, mixed>>  $lineas
      * @param  \Illuminate\Support\Collection<int, Cuota>  $cuotasPorId
      */
+    /**
+     * @param  array<int, float>  $abonosPreset
+     */
     private function sincronizarDetallesPago(
         Pago $pago,
         array $lineas,
         $cuotasPorId,
         bool $liquidarProfesor,
-        ?float $totalAbonoDocente
+        ?float $totalAbonoDocente,
+        array $abonosPreset = [],
+        bool $usarAbonoPreset = false
     ): void {
         $montosLinea = array_map(fn ($l) => (float) $l['monto'], $lineas);
         $n = count($lineas);
         $abonosPorIndice = [];
         if ($liquidarProfesor && $totalAbonoDocente !== null && Schema::hasColumn('pago_detalles', 'abono_profesor') && $n > 0) {
-            $abonosPorIndice = $this->distribuirAbonoDocenteProporcionalMontos($montosLinea, $totalAbonoDocente);
+            if ($usarAbonoPreset && $abonosPreset !== []) {
+                $abonosPorIndice = $abonosPreset;
+            } else {
+                $abonosPorIndice = $this->distribuirAbonoDocenteProporcionalMontos($montosLinea, $totalAbonoDocente);
+            }
         }
 
         foreach ($lineas as $idx => $linea) {
@@ -455,7 +486,9 @@ class PagoController extends Controller
             $montoLinea = round((float) $linea['monto'], 2);
             $cuotaRef = (float) $cuota->monto;
             $alumno = Alumno::query()->with('sede')->find($alumnoId);
-            $sedeNombre = $cuota->bloque?->sede?->nombre
+            $sede = LiquidacionDocente::sedeParaCuota($cuota);
+            $sedeNombre = $sede?->nombre
+                ?? $cuota->bloque?->sede?->nombre
                 ?? $cuota->sede?->nombre
                 ?? $alumno?->sede?->nombre
                 ?? '—';
@@ -472,14 +505,22 @@ class PagoController extends Controller
                 $det['abono_profesor'] = $abonoAl;
                 $det['abono_base'] = $cuotaRef;
                 $det['abono_porcentaje'] = $pctEf;
-                $det['abono_nota'] = sprintf(
-                    'Línea pago: abono docente $%s (reparto prop. al total docente $%s). Cuota ref. $%s. %% efectivo sobre cuota ref.: %s. Sede ref.: %s.',
-                    number_format($abonoAl, 2, ',', '.'),
-                    number_format((float) ($totalAbonoDocente ?? 0), 2, ',', '.'),
-                    number_format($cuotaRef, 2, ',', '.'),
-                    $pctEf !== null ? number_format((float) $pctEf, 2, ',', '.') : '—',
-                    $sedeNombre
-                );
+                if ($usarAbonoPreset && $sede) {
+                    $det['abono_nota'] = sprintf(
+                        'Abono según regla sede %s: %s. Cuota ref. $%s.',
+                        $sedeNombre,
+                        $sede->resumenLiquidacionDocente($cuotaRef),
+                        number_format($cuotaRef, 2, ',', '.')
+                    );
+                } else {
+                    $det['abono_nota'] = sprintf(
+                        'Abono docente $%s (total manual $%s, reparto proporcional por línea). Cuota ref. $%s. Sede: %s.',
+                        number_format($abonoAl, 2, ',', '.'),
+                        number_format((float) ($totalAbonoDocente ?? 0), 2, ',', '.'),
+                        number_format($cuotaRef, 2, ',', '.'),
+                        $sedeNombre
+                    );
+                }
                 if (strlen((string) $det['abono_nota']) > 500) {
                     $det['abono_nota'] = substr((string) $det['abono_nota'], 0, 497).'...';
                 }

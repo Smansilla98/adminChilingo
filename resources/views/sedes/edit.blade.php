@@ -52,7 +52,7 @@
                 <div class="row g-2">
                     <div class="col-md-6">
                         <label class="form-label">Retención escuela ($)</label>
-                        <input type="number" name="liquidacion_retencion_escuela" class="form-control @error('liquidacion_retencion_escuela') is-invalid @enderror" step="0.01" min="0" value="{{ old('liquidacion_retencion_escuela', $sede->liquidacion_retencion_escuela ?? 0) }}">
+                        <input type="number" name="liquidacion_retencion_escuela" class="form-control @error('liquidacion_retencion_escuela') is-invalid @enderror" step="0.01" min="0" value="{{ old('liquidacion_retencion_escuela', $sede->liquidacion_retencion_escuela ?? 0) }}" placeholder="Ej. 14400 si la cuota es 24000 y el docente cobra 9600">
                         @error('liquidacion_retencion_escuela')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">

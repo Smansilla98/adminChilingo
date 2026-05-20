@@ -134,23 +134,8 @@
                     @enderror
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="bloque_id" class="form-label">Bloque</label>
-                    <select class="form-select @error('bloque_id') is-invalid @enderror" 
-                            id="bloque_id" name="bloque_id">
-                        <option value="">Sin asignar</option>
-                        @foreach($bloques as $bloque)
-                        <option value="{{ $bloque->id }}" {{ old('bloque_id', $alumno->bloque_id) == $bloque->id ? 'selected' : '' }}>
-                            {{ $bloque->nombre }} - {{ $bloque->sede->nombre }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('bloque_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
+            @include('alumnos._form_bloques', ['bloques' => $bloques, 'alumno' => $alumno])
+            @include('alumnos._form_profesor_vinculo', ['alumno' => $alumno, 'profesoresSinVinculo' => $profesoresSinVinculo ?? collect()])
             <div class="mb-3">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="activo" name="activo" value="1" 

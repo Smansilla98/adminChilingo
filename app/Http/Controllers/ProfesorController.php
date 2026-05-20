@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Bloque;
 use App\Models\Profesor;
+use App\Models\Sede;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Schema;
 
 class ProfesorController extends Controller
 {
@@ -22,8 +24,9 @@ class ProfesorController extends Controller
     public function create()
     {
         $bloquesParaAsignar = Bloque::with('sede')->where('activo', true)->orderBy('nombre')->get();
+        $sedes = Sede::where('activo', true)->orderBy('nombre')->get();
 
-        return view('profesores.create', compact('bloquesParaAsignar'));
+        return view('profesores.create', compact('bloquesParaAsignar', 'sedes'));
     }
 
     public function store(Request $request)
@@ -39,6 +42,8 @@ class ProfesorController extends Controller
 
         $profesor = Profesor::create($validated);
         $profesor->sincronizarAsignacionesBloques($this->filasAsignacionesBloquesDesdeRequest($request));
+        $profesor->sincronizarRolesSede($this->filasSedeRolesDesdeRequest($request));
+        $profesor->sincronizarRolesUsuario();
 
         return redirect()->route('profesores.index')
             ->with('success', 'Profesor creado exitosamente.');
@@ -46,16 +51,19 @@ class ProfesorController extends Controller
 
     public function show(Profesor $profesor)
     {
-        $profesor->load(['bloques.sede', 'eventos']);
-        return view('profesores.show', compact('profesor'));
+        $profesor->load(['bloques.sede', 'sedesConRol', 'eventos', 'user', 'coordinadorAreas']);
+        $alumnoPerfil = $profesor->alumnoPerfil();
+
+        return view('profesores.show', compact('profesor', 'alumnoPerfil'));
     }
 
     public function edit(Profesor $profesor)
     {
-        $profesor->load('bloques');
+        $profesor->load(['bloques', 'sedesConRol']);
         $bloquesParaAsignar = Bloque::with('sede')->where('activo', true)->orderBy('nombre')->get();
+        $sedes = Sede::where('activo', true)->orderBy('nombre')->get();
 
-        return view('profesores.edit', compact('profesor', 'bloquesParaAsignar'));
+        return view('profesores.edit', compact('profesor', 'bloquesParaAsignar', 'sedes'));
     }
 
     public function update(Request $request, Profesor $profesor)
@@ -71,8 +79,10 @@ class ProfesorController extends Controller
 
         $profesor->update($validated);
         $profesor->sincronizarAsignacionesBloques($this->filasAsignacionesBloquesDesdeRequest($request));
+        $profesor->sincronizarRolesSede($this->filasSedeRolesDesdeRequest($request));
+        $profesor->sincronizarRolesUsuario();
 
-        return redirect()->route('profesores.index')
+        return redirect()->route('profesores.show', $profesor)
             ->with('success', 'Profesor actualizado exitosamente.');
     }
 
@@ -106,6 +116,38 @@ class ProfesorController extends Controller
                 $rol = 'ayudante';
             }
             $filas[] = ['bloque_id' => $bid, 'rol' => $rol];
+        }
+
+        return $filas;
+    }
+
+    /**
+     * @return array<int, array{sede_id: int, rol: string}>
+     */
+    private function filasSedeRolesDesdeRequest(Request $request): array
+    {
+        if (! Schema::hasTable('profesor_sede')) {
+            return [];
+        }
+
+        $filas = [];
+        foreach ($request->input('sede_roles', []) as $sedeId => $roles) {
+            if (! is_array($roles)) {
+                continue;
+            }
+            $sid = (int) $sedeId;
+            if ($sid <= 0) {
+                continue;
+            }
+            foreach ($roles as $rol => $on) {
+                if (! $on) {
+                    continue;
+                }
+                if (! array_key_exists($rol, Profesor::ROLES_SEDE)) {
+                    continue;
+                }
+                $filas[] = ['sede_id' => $sid, 'rol' => (string) $rol];
+            }
         }
 
         return $filas;

@@ -80,7 +80,7 @@
 
             <div class="border rounded p-3 mb-3">
                 <div class="fw-semibold mb-2">Abono al profesor</div>
-                <p class="text-muted small mb-3">Un solo importe <strong>total</strong> para este pago. Se reparte entre las líneas <strong>en proporción al monto</strong> de cada una; en cada línea se guarda el % efectivo respecto de la cuota de esa línea.</p>
+                <p class="text-muted small mb-3">Si dejás el total vacío, se calcula automáticamente según la <strong>regla de liquidación de cada sede</strong> (configurada en Sedes). Ej. Banfield: retención escuela + % docente sobre la base. Si ingresás un total manual, se reparte proporcionalmente entre las líneas.</p>
                 <div class="form-check mb-3">
                     <input type="hidden" name="liquidar_profesor" value="0">
                     <input class="form-check-input" type="checkbox" name="liquidar_profesor" value="1" id="liquidar_profesor" {{ (string) old('liquidar_profesor', $editando ? ($hayAbonoEdit ? '1' : '0') : '1') === '1' ? 'checked' : '' }}>
@@ -89,7 +89,7 @@
                 <div class="row g-2 align-items-end" id="wrap_liquidacion_prof">
                     <div class="col-md-6">
                         <label class="form-label" for="monto_abono_profesor">Total abono docente ($)</label>
-                        <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor', $editando && $hayAbonoEdit ? $sumAbonoEdit : '') }}" placeholder="Opcional / total del pago">
+                        <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor', $editando && $hayAbonoEdit ? $sumAbonoEdit : '') }}" placeholder="Vacío = regla de la sede por cuota">
                         @error('monto_abono_profesor')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-12">
@@ -187,6 +187,8 @@
             o.value = String(c.id);
             o.textContent = c.label;
             o.dataset.montoCuota = String(c.monto);
+            o.dataset.abonoDocenteRef = String(c.abono_docente_ref != null ? c.abono_docente_ref : 0);
+            if (c.liquidacion_resumen) o.dataset.liquidacionResumen = c.liquidacion_resumen;
             select.appendChild(o);
         });
         if (prev && Array.from(select.options).some(function (o) { return o.value === prev; })) {
@@ -238,6 +240,25 @@
         return out;
     }
 
+    function abonoPresetPorLineas() {
+        const items = [];
+        let sum = 0;
+        if (!tbody) return { sum: 0, items: [] };
+        tbody.querySelectorAll('tr').forEach(function (tr) {
+            const sel = tr.querySelector('.linea-cuota');
+            const opt = sel && sel.selectedOptions[0];
+            const ab = opt && opt.dataset.abonoDocenteRef ? parseNum(opt.dataset.abonoDocenteRef) : 0;
+            const resumen = opt && opt.dataset.liquidacionResumen ? opt.dataset.liquidacionResumen : '';
+            if (!isNaN(ab) && ab > 0) {
+                sum += ab;
+                const al = tr.querySelector('.linea-alumno');
+                const nom = al && al.selectedOptions[0] ? al.selectedOptions[0].textContent.trim() : '—';
+                items.push({ nom: nom, ab: ab, resumen: resumen });
+            }
+        });
+        return { sum: Math.round(sum * 100) / 100, items: items };
+    }
+
     function actualizarPreviewAbono() {
         if (!profPreview) return;
         if (!liqProf || !liqProf.checked) {
@@ -246,10 +267,24 @@
             return;
         }
         if (wrapLiq) wrapLiq.classList.remove('opacity-50');
-        const totalAbono = montoAbonoProf && montoAbonoProf.value !== '' ? parseNum(montoAbonoProf.value) : NaN;
         const fmt = function (x) { return x.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+        const totalAbono = montoAbonoProf && montoAbonoProf.value !== '' ? parseNum(montoAbonoProf.value) : NaN;
+        const preset = abonoPresetPorLineas();
+
+        if ((isNaN(totalAbono) || montoAbonoProf.value === '') && preset.items.length > 0) {
+            let html = '<p class="mb-1"><strong>Automático (regla por sede):</strong> total docente $' + fmt(preset.sum) + '</p><ul class="mb-0 ps-3">';
+            preset.items.forEach(function (it) {
+                html += '<li class="mb-1"><strong>' + it.nom + '</strong>: $' + fmt(it.ab);
+                if (it.resumen) html += ' <span class="text-muted">(' + it.resumen + ')</span>';
+                html += '</li>';
+            });
+            html += '</ul>';
+            profPreview.innerHTML = html;
+            return;
+        }
+
         if (isNaN(totalAbono) || totalAbono < 0) {
-            profPreview.textContent = 'Ingresá el total abonado al docente para ver el reparto proporcional por línea.';
+            profPreview.textContent = 'Elegí cuotas en las líneas para ver el abono sugerido por sede, o ingresá un total manual.';
             return;
         }
         const montos = [];

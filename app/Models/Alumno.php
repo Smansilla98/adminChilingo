@@ -92,4 +92,36 @@ class Alumno extends Model
     {
         return $this->asistencias()->where('bloque_id', $bloqueId);
     }
+
+    public function pagosDetalle(): HasMany
+    {
+        return $this->hasMany(PagoDetalle::class);
+    }
+
+    /**
+     * Perfil docente vinculado al mismo usuario (un alumno puede ser profesor).
+     */
+    public function profesorPerfil(): ?Profesor
+    {
+        if ($this->user_id) {
+            return Profesor::query()->where('user_id', $this->user_id)->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * IDs de bloques (pivot + columna legacy).
+     *
+     * @return \Illuminate\Support\Collection<int, int>
+     */
+    public function bloqueIds(): \Illuminate\Support\Collection
+    {
+        $ids = $this->bloques->pluck('id');
+        if ($this->bloque_id && ! $ids->contains($this->bloque_id)) {
+            $ids->push($this->bloque_id);
+        }
+
+        return $ids->filter()->unique()->values();
+    }
 }

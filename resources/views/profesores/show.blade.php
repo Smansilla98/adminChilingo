@@ -24,6 +24,23 @@
         <div class="mb-3">
             <strong>Estado:</strong> {{ $profesor->activo ? 'Activo' : 'Inactivo' }}
         </div>
+        @if(!empty($alumnoPerfil))
+        <div class="alert alert-info py-2 small mb-3">
+            <i class="bi bi-mortarboard"></i> También tiene perfil de <strong>alumno</strong>:
+            <a href="{{ route('alumnos.show', $alumnoPerfil) }}">{{ $alumnoPerfil->nombre_apellido }}</a>
+        </div>
+        @endif
+        @if($profesor->sedesConRol && $profesor->sedesConRol->isNotEmpty())
+        <h6 class="mt-3">Roles por sede</h6>
+        <ul class="list-group mb-3">
+            @foreach($profesor->sedesConRol as $sede)
+            <li class="list-group-item d-flex justify-content-between">
+                <span>{{ $sede->nombre }}</span>
+                <span class="badge bg-primary">{{ \App\Models\Profesor::ROLES_SEDE[$sede->pivot->rol] ?? $sede->pivot->rol }}</span>
+            </li>
+            @endforeach
+        </ul>
+        @endif
         @php
             $rolLabels = [
                 'titular' => 'Titular',

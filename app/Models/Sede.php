@@ -43,6 +43,30 @@ class Sede extends Model
     }
 
     /**
+     * Monto que corresponde al docente por cuota de referencia (regla de la sede).
+     * Ej.: cuota $24.000, retención escuela $14.400, % docente 100% → $9.600.
+     */
+    public function montoAbonoDocenteDesdeCuota(float $montoCuotaReferencia): float
+    {
+        $base = $this->baseLiquidacionDocenteDesdeCuota($montoCuotaReferencia);
+
+        return round($base * ($this->porcentajeLiquidacionDocente() / 100), 2);
+    }
+
+    public function resumenLiquidacionDocente(float $montoCuotaReferencia): string
+    {
+        $abono = $this->montoAbonoDocenteDesdeCuota($montoCuotaReferencia);
+        $escuela = max(0, round($montoCuotaReferencia - $abono, 2));
+
+        return sprintf(
+            'Docente $%s · Escuela $%s (cuota ref. $%s)',
+            number_format($abono, 2, ',', '.'),
+            number_format($escuela, 2, ',', '.'),
+            number_format($montoCuotaReferencia, 2, ',', '.')
+        );
+    }
+
+    /**
      * Profesor coordinador de esta sede (ej: Banfield)
      */
     public function coordinador(): BelongsTo

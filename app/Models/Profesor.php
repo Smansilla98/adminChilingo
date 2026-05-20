@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Alumno;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,6 +14,13 @@ use Illuminate\Support\Facades\DB;
 class Profesor extends Model
 {
     public const ROLES_BLOQUE = ['titular', 'ayudante', 'suplente', 'coordinador_clase'];
+
+    /** Roles del profesor en una sede (puede tener varios por sede). */
+    public const ROLES_SEDE = [
+        'profesor' => 'Profesor',
+        'encargado' => 'Encargado',
+        'coordinador' => 'Coordinador de sede',
+    ];
 
     /** Tabla real: 'profesores'. Laravel infiere 'profesors' por defecto. */
     protected $table = 'profesores';
@@ -48,6 +56,16 @@ class Profesor extends Model
     public function bloques(): BelongsToMany
     {
         return $this->belongsToMany(Bloque::class, 'bloque_profesor')
+            ->withPivot('rol')
+            ->withTimestamps();
+    }
+
+    /**
+     * Roles en sedes (profesor, encargado, coordinador).
+     */
+    public function sedesConRol(): BelongsToMany
+    {
+        return $this->belongsToMany(Sede::class, 'profesor_sede')
             ->withPivot('rol')
             ->withTimestamps();
     }
@@ -163,5 +181,82 @@ class Profesor extends Model
     public function bloquesActivos(): BelongsToMany
     {
         return $this->bloques()->where('bloques.activo', true);
+    }
+
+    /**
+     * @param  array<int, array{sede_id: int, rol: string}>  $filas
+     */
+    public function sincronizarRolesSede(array $filas): void
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('profesor_sede')) {
+            return;
+        }
+
+        DB::transaction(function () use ($filas) {
+            $this->sedesConRol()->detach();
+            $coordinadorSedeIds = [];
+
+            foreach ($filas as $row) {
+                $sid = (int) ($row['sede_id'] ?? 0);
+                if ($sid <= 0) {
+                    continue;
+                }
+                $rol = (string) ($row['rol'] ?? 'profesor');
+                if (! array_key_exists($rol, self::ROLES_SEDE)) {
+                    $rol = 'profesor';
+                }
+                $this->sedesConRol()->attach($sid, ['rol' => $rol]);
+                if ($rol === 'coordinador') {
+                    $coordinadorSedeIds[$sid] = true;
+                }
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'coordinador_id')) {
+                Sede::query()->where('coordinador_id', $this->id)->update(['coordinador_id' => null]);
+                foreach (array_keys($coordinadorSedeIds) as $sedeId) {
+                    Sede::query()->whereKey($sedeId)->update(['coordinador_id' => $this->id]);
+                }
+            }
+        });
+    }
+
+    /**
+     * Roles Spatie sugeridos según perfiles (alumno + profesor + coordinación).
+     */
+    public function sincronizarRolesUsuario(): void
+    {
+        $user = $this->user;
+        if (! $user) {
+            return;
+        }
+
+        $roles = ['profesor'];
+        if ($this->alumnoPerfil()) {
+            $roles[] = 'alumno';
+        }
+        if ($this->sedeCoordinada()->exists() || $this->sedesConRol()->wherePivot('rol', 'coordinador')->exists()) {
+            $roles[] = 'coordinador_sede';
+        }
+        if ($this->coordinadorAreas()->exists()) {
+            $roles[] = 'coordinador_area';
+        }
+
+        foreach (array_unique($roles) as $rol) {
+            if (! $user->hasRole($rol)) {
+                $user->assignRole($rol);
+            }
+        }
+        if ($user->role !== 'admin') {
+            $user->update(['role' => 'profesor']);
+        }
+    }
+
+    public function alumnoPerfil(): ?Alumno
+    {
+        if ($this->user_id) {
+            return Alumno::query()->where('user_id', $this->user_id)->first();
+        }
+
+        return null;
     }
 }
