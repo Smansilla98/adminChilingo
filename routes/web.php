@@ -21,6 +21,8 @@ use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ProgramaController;
+use App\Http\Controllers\AyudaController;
+use App\Http\Controllers\AccesosController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoPublicController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoGestionController;
 use App\Http\Controllers\ProfesorPagoCuotaController;
@@ -48,17 +50,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Ayuda (guía de uso)
+    Route::get('/ayuda', [AyudaController::class, 'index'])->middleware('modulo:ayuda')->name('ayuda');
+
     // Programa oficial — accesible para todos; edición solo admin
-    Route::get('/programa', [ProgramaController::class, 'index'])->name('programa.index');
-    Route::get('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->name('programa.toque.show');
-    Route::get('/programa/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->name('programa.toque.archivo');
+    Route::get('/programa', [ProgramaController::class, 'index'])->middleware('modulo:programa')->name('programa.index');
+    Route::get('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->middleware('modulo:programa')->name('programa.toque.show');
+    Route::get('/programa/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->middleware('modulo:programa')->name('programa.toque.archivo');
 
     // Calendario (accesible para todos)
-    Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario.index');
-    Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->name('calendario.eventos');
+    Route::get('/calendario', [CalendarioController::class, 'index'])->middleware('modulo:calendario')->name('calendario.index');
+    Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->middleware('modulo:calendario')->name('calendario.eventos');
 
     // Comprobantes de cuota enviados por alumnos (admin o profesor)
-    Route::middleware(['profesor_o_admin'])->group(function () {
+    Route::middleware(['profesor_o_admin', 'modulo:comprobantes'])->group(function () {
         Route::get('/comprobantes-cuota-alumnos', [ComprobanteCuotaAlumnoGestionController::class, 'index'])->name('comprobantes-cuota-alumnos.index');
         Route::get('/comprobantes-cuota-alumnos/{id}', [ComprobanteCuotaAlumnoGestionController::class, 'show'])->name('comprobantes-cuota-alumnos.show')->whereNumber('id');
         Route::get('/comprobantes-cuota-alumnos/{id}/comprobante', [ComprobanteCuotaAlumnoGestionController::class, 'comprobante'])->name('comprobantes-cuota-alumnos.comprobante')->whereNumber('id');
@@ -67,6 +72,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Rutas de Admin
     Route::middleware(['role:admin'])->group(function () {
+        // Matriz de accesos por usuario
+        Route::get('/accesos', [AccesosController::class, 'index'])->name('accesos.index');
+        Route::post('/accesos', [AccesosController::class, 'update'])->name('accesos.update');
+
         Route::get('/programa/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
         Route::match(['put', 'post'], '/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])->name('programa.toque.update');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
@@ -148,12 +157,12 @@ Route::middleware(['auth'])->group(function () {
     // Rutas de Profesor
     Route::middleware(['role:profesor'])->group(function () {
         // Profesores pueden ver sus bloques y alumnos
-        Route::get('/mis-bloques', [BloqueController::class, 'index'])->name('profesor.bloques');
-        Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->name('profesor.alumnos');
-        Route::get('/profesor/alumnos/{alumno}', [AlumnoController::class, 'show'])->name('profesor.alumnos.show');
-        Route::get('/profesor/pagos-cuotas', [ProfesorPagoCuotaController::class, 'index'])->name('profesor.pagos-cuotas.index');
-        Route::get('/mis-eventos', [EventoController::class, 'index'])->name('profesor.eventos');
-        Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->name('profesor.asistencias.create');
-        Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->name('profesor.asistencias.store');
+        Route::get('/mis-bloques', [BloqueController::class, 'index'])->middleware('modulo:profesor.mis_bloques')->name('profesor.bloques');
+        Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->middleware('modulo:profesor.mis_alumnos')->name('profesor.alumnos');
+        Route::get('/profesor/alumnos/{alumno}', [AlumnoController::class, 'show'])->middleware('modulo:profesor.mis_alumnos')->name('profesor.alumnos.show');
+        Route::get('/profesor/pagos-cuotas', [ProfesorPagoCuotaController::class, 'index'])->middleware('modulo:profesor.pagos_cuotas')->name('profesor.pagos-cuotas.index');
+        Route::get('/mis-eventos', [EventoController::class, 'index'])->middleware('modulo:profesor.mis_eventos')->name('profesor.eventos');
+        Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->middleware('modulo:profesor.asistencia')->name('profesor.asistencias.create');
+        Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware('modulo:profesor.asistencia')->name('profesor.asistencias.store');
     });
 });

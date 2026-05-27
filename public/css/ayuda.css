@@ -1,0 +1,27 @@
+/* Ayuda — guía de uso (simple, legible, tercera edad) */
+
+.ayuda-body {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.ayuda-body ul,
+.ayuda-body ol {
+  padding-left: 1.25rem;
+}
+
+.ayuda-body li + li {
+  margin-top: 0.35rem;
+}
+
+/* Botones del acordeón un poco más grandes */
+.accordion-button {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Mejor contraste */
+.accordion-item {
+  border-color: var(--border, #2b2b2b);
+}
+

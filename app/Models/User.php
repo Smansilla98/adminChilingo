@@ -36,6 +36,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'modulos_access' => 'array',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -44,6 +50,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            // legacy (kept for compatibility)
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
@@ -119,5 +126,27 @@ class User extends Authenticatable
     public function eventos()
     {
         return $this->hasMany(Evento::class, 'created_by');
+    }
+
+    /**
+     * Control simple de accesos por módulo/submódulo.
+     *
+     * - Admin: siempre tiene acceso (para no bloquear administración).
+     * - Otros usuarios: si la clave existe y es false → bloquea; si no existe → permite.
+     */
+    public function tieneAccesoModulo(string $clave): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $map = is_array($this->modulos_access) ? $this->modulos_access : [];
+
+        // Si la clave no existe, por defecto permitimos (fallback seguro para despliegues graduales).
+        if (! array_key_exists($clave, $map)) {
+            return true;
+        }
+
+        return (bool) $map[$clave];
     }
 }
