@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header py-3">Nueva orden de compra</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Pedido de compra: sede, motivo y lista de cosas a comprar (podés sumar varias filas).'])
         <form action="{{ route('ordenes-compra.store') }}" method="POST">
             @csrf
             @include('ordenes-compra._form')

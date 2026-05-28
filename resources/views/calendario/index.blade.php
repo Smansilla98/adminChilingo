@@ -11,7 +11,7 @@
                 <h1 class="text-dark mb-0 mb-md-2" style="font-weight: 700; font-size: 1.75rem;">
                     <i class="bi bi-calendar-event"></i> Calendario de Eventos
                 </h1>
-                <p class="text-muted small mb-0 mt-1">Los <strong>talleres fijos</strong> se generan desde los <strong>horarios semanales</strong> de cada bloque (día y hora). Configurálos en <em>Bloques → Editar bloque</em>.</p>
+                <p class="text-muted small mb-0 mt-1">Las clases fijas salen de los horarios de cada bloque. Para cambiarlos: <em>Bloques → Editar</em> y sumá día y hora.</p>
             </div>
             @if(auth()->user() && auth()->user()->isAdmin())
             <div class="d-flex gap-2">

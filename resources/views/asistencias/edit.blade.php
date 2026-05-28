@@ -10,7 +10,7 @@
         <form action="{{ route('asistencias.update', $asistencia) }}" method="POST">
             @csrf
             @method('PUT')
-            <p class="text-muted">{{ $asistencia->alumno->nombre_apellido ?? '-' }} — {{ $asistencia->fecha->format('d/m/Y') }} — Bloque: {{ $asistencia->bloque->nombre ?? '-' }}</p>
+            <p class="text-muted small mb-3">{{ $asistencia->alumno->nombre_apellido ?? '-' }} — {{ $asistencia->fecha->format('d/m/Y') }} — {{ $asistencia->bloque->nombre ?? '-' }}. Elegí el tipo correcto y guardá.</p>
             @php
                 $valorActual = $asistencia->tipo_asistencia;
                 if ($valorActual === 'ausente') $valorActual = 'ausencia_injustificada';

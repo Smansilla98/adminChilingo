@@ -6,7 +6,7 @@
 <div class="card mb-3">
     <div class="card-header">Roles por sede</div>
     <div class="card-body">
-        <p class="text-muted small mb-3">Un profesor puede ser docente, encargado o coordinador en una o varias sedes. El rol <strong>Coordinador de sede</strong> actualiza el coordinador en la ficha de la sede.</p>
+        <p class="text-muted small mb-3">Marcá en qué sedes participa y con qué función. Si es <strong>coordinador de sede</strong>, queda registrado así en la ficha de esa sede.</p>
         <div class="table-responsive">
             <table class="table table-sm align-middle">
                 <thead>

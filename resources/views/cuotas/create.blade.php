@@ -7,14 +7,12 @@
 <div class="card">
     <div class="card-header">Nueva cuota</div>
     <div class="card-body">
-        <p class="text-muted small mb-3">
-            <strong>General:</strong> un mismo monto para toda la escuela (todas las sedes y bloques), salvo que exista una cuota <strong>por sede</strong> (más barata, ej. Tacheles, F. Varela) o <strong>por bloque</strong> (caso particular), que tienen prioridad al cobrar.
-        </p>
+        @include('partials.form-ayuda-intro', ['text' => 'Definí el monto y para quién es la cuota (toda la escuela, una sede o un bloque). Si hay varias para el mismo mes, al cobrar se usa la más específica.'])
         <form action="{{ route('cuotas.store') }}" method="POST" id="formCuota">
             @csrf
             <div class="row mb-3">
                 <div class="col-md-12">
-                    <label class="form-label">Alcance *</label>
+                    <label class="form-label">Para quién es *</label>
                     <div class="d-flex flex-wrap gap-3">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="alcance" id="alc_general" value="general" {{ old('alcance', 'bloque') === 'general' ? 'checked' : '' }}>
@@ -48,7 +46,7 @@
                 <div class="col-md-12">
                     <label class="form-label" id="lblBloque">Bloque *</label>
                     <select name="bloque_id" id="bloque_id" class="form-select @error('bloque_id') is-invalid @enderror">
-                        <option value="">Seleccionar bloque</option>
+                        <option value="">Elegí bloque</option>
                         @foreach($bloques as $b)
                         <option value="{{ $b->id }}" {{ (string) old('bloque_id') === (string) $b->id ? 'selected' : '' }} data-sede-id="{{ $b->sede_id ?? '' }}">
                             {{ $b->nombre }} @if($b->sede) ({{ $b->sede->nombre }}) @endif
@@ -61,7 +59,7 @@
             <div class="row mb-3" id="wrapAlumnos" style="display: none;">
                 <div class="col-md-12">
                     <label class="form-label">Alumnos que pueden pagar esta cuota</label>
-                    <p class="text-muted small mb-1">Opcional. Sin selección: aplica a todos los alumnos del alcance (todos en la escuela, todos de la sede o todos del bloque).</p>
+                    <div class="form-text">Opcional. Si no elegís nadie, la cuota vale para todos los alumnos de ese grupo (escuela, sede o bloque).</div>
                     <select name="alumno_ids[]" id="alumno_ids" class="form-select @error('alumno_ids') is-invalid @enderror" multiple size="10">
                     </select>
                     @error('alumno_ids')<div class="invalid-feedback">{{ $message }}</div>@enderror

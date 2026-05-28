@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Editar sede</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Corregí los datos de la sede. Los porcentajes de abajo se usan al registrar pagos.'])
         <form action="{{ route('sedes.update', $sede) }}" method="POST">
             @csrf
             @method('PUT')
@@ -47,16 +48,16 @@
             </div>
             @if(\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'liquidacion_porc_docente'))
             <div class="border rounded p-3 mb-3">
-                <div class="fw-semibold mb-2">Liquidación cuota → docente / escuela</div>
-                <p class="text-muted small mb-3">Sobre el monto de <strong>referencia de la cuota</strong> (X): retención fija escuela; el <strong>%</strong> se aplica sobre <strong>cuota − retención</strong> (base). Al registrar pagos de cuotas de bloques de esta sede se usan por defecto estos valores.</p>
+                <div class="fw-semibold mb-2">Cómo repartir la cuota (escuela y profesor)</div>
+                <p class="text-muted small mb-3">Cuánto se queda la escuela y qué parte va al profe cuando cargás un pago de esta sede. Si dejás el monto del profe en blanco al registrar un pago, se usa esto.</p>
                 <div class="row g-2">
                     <div class="col-md-6">
-                        <label class="form-label">Retención escuela ($)</label>
-                        <input type="number" name="liquidacion_retencion_escuela" class="form-control @error('liquidacion_retencion_escuela') is-invalid @enderror" step="0.01" min="0" value="{{ old('liquidacion_retencion_escuela', $sede->liquidacion_retencion_escuela ?? 0) }}" placeholder="Ej. 14400 si la cuota es 24000 y el docente cobra 9600">
+                        <label class="form-label">Lo que se queda la escuela ($)</label>
+                        <input type="number" name="liquidacion_retencion_escuela" class="form-control @error('liquidacion_retencion_escuela') is-invalid @enderror" step="0.01" min="0" value="{{ old('liquidacion_retencion_escuela', $sede->liquidacion_retencion_escuela ?? 0) }}" placeholder="Ej.: 14400">
                         @error('liquidacion_retencion_escuela')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">% al docente (sobre la base)</label>
+                        <label class="form-label">Porcentaje para el profesor (%)</label>
                         <input type="number" name="liquidacion_porc_docente" class="form-control @error('liquidacion_porc_docente') is-invalid @enderror" step="0.1" min="0" max="100" value="{{ old('liquidacion_porc_docente', $sede->liquidacion_porc_docente ?? 40) }}">
                         @error('liquidacion_porc_docente')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>

@@ -14,8 +14,8 @@
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.asistencias.create') }}">Tomar asistencia</a>
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobante-cuota-public.create') }}" target="_blank" rel="noopener">Formulario público (alumnos)</a>
                 </div>
-                <div class="fw-semibold small text-uppercase text-muted mb-2">Listados (cada módulo)</div>
-                <p class="text-muted small mb-2">Acceso directo al índice de cada sección.</p>
+                <div class="fw-semibold small text-uppercase text-muted mb-2">Tus secciones</div>
+                <p class="text-muted small mb-2">Entrá directo a cada parte del sistema.</p>
                 <div class="d-flex flex-wrap gap-2">
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('programa.index') }}">Programa</a>
                     <a class="btn btn-sm btn-outline-secondary" href="{{ route('calendario.index') }}">Calendario</a>

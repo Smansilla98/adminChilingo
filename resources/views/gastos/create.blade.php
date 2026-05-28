@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Registrar gasto</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Anotá un egreso: fecha, monto y de qué se trata. La sede y el bloque son opcionales.'])
         <form action="{{ route('gastos.store') }}" method="POST">
             @csrf
             <div class="row mb-3">

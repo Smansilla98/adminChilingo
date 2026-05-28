@@ -9,7 +9,7 @@
 <div class="card mb-3">
     <div class="card-header">Bloques</div>
     <div class="card-body">
-        <p class="text-muted small mb-3">Un alumno puede participar en varios bloques. Marcá todos los que correspondan y elegí cuál es el principal.</p>
+        <p class="text-muted small mb-3">Si va a más de una clase, tildá cada bloque. El círculo marca cuál es su grupo principal.</p>
         @if($bloques->isEmpty())
         <p class="text-muted mb-0">No hay bloques activos.</p>
         @else

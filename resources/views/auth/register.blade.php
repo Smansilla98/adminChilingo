@@ -16,7 +16,7 @@
             </div>
             <div class="auth-card-ito__head">
                 <h1 class="auth-card-ito__title">Registrarse</h1>
-                <p class="auth-card-ito__sub">ITO - Sistema de gestión</p>
+                <p class="auth-card-ito__sub">Completá tus datos para pedir acceso</p>
             </div>
             <div class="auth-card-ito__body">
                 @if($errors->any())

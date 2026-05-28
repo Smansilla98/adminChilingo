@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header py-3">Nuevo ítem de inventario</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Registrá un tambor, parche u otro elemento. Sede y nombre son lo principal.'])
         <form action="{{ route('inventarios.store') }}" method="POST">
             @csrf
             @include('inventarios._form', ['item' => null, 'values' => $defaults])

@@ -5,14 +5,15 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header">Seleccionar bloque y fecha</div>
+    <div class="card-header">Elegí bloque y fecha</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Primero elegí el bloque y el día. Después marcás presente o ausente a cada alumno.'])
         <form method="GET" class="mb-4">
             <div class="row g-3">
                 <div class="col-md-5">
                     <label class="form-label">Bloque</label>
                     <select name="bloque_id" class="form-select" required>
-                        <option value="">Seleccionar bloque...</option>
+                        <option value="">Elegí bloque…</option>
                         @foreach($bloques as $b)
                         <option value="{{ $b->id }}" {{ (request('bloque_id') == $b->id || (isset($bloque) && $bloque->id == $b->id)) ? 'selected' : '' }}>{{ $b->nombre }} — {{ $b->sede->nombre ?? '' }}</option>
                         @endforeach
@@ -35,7 +36,7 @@
             <input type="hidden" name="bloque_id" value="{{ $bloque->id }}">
             <input type="hidden" name="fecha" value="{{ request('fecha', date('Y-m-d')) }}">
 
-            <p class="text-muted">Bloque: <strong>{{ $bloque->nombre }}</strong>. A quien corresponde: <strong>{{ $bloque->corresponde_a ?? $bloque->profesor->nombre ?? '-' }}</strong>. Fecha: <strong>{{ request('fecha', date('Y-m-d')) }}</strong></p>
+            <p class="text-muted small mb-3">Bloque <strong>{{ $bloque->nombre }}</strong> — fecha <strong>{{ request('fecha', date('Y-m-d')) }}</strong>. Marcá quién vino y guardá.</p>
 
             <div class="table-responsive">
                 <table class="table table-sm">

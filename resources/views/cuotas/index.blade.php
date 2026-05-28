@@ -18,7 +18,7 @@
                 </div>
                 @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'))
                 <div class="col-md-2">
-                    <label class="form-label small">Alcance</label>
+                    <label class="form-label small">Para quién</label>
                     <select name="alcance" class="form-select">
                         <option value="">Todos</option>
                         <option value="general" {{ request('alcance') === 'general' ? 'selected' : '' }}>General</option>
@@ -54,7 +54,7 @@
                     <tr>
                         <th>Nombre</th>
                         @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'))
-                        <th>Alcance</th>
+                        <th>Para quién</th>
                         <th>Sede</th>
                         @endif
                         <th>Bloque</th>

@@ -7,7 +7,8 @@
 <div class="card">
     <div class="card-header">Editar facturación mensual</div>
     <div class="card-body">
-        <p class="text-muted small">Período: {{ $facturacionMensual->nombre_mes }} {{ $facturacionMensual->año }} — Sede: {{ $facturacionMensual->sede?->nombre ?? 'General' }}</p>
+        @include('partials.form-ayuda-intro', ['text' => 'Corregí los números de este mes.'])
+        <p class="text-muted small mb-3">Mes: {{ $facturacionMensual->nombre_mes }} {{ $facturacionMensual->año }} — {{ $facturacionMensual->sede?->nombre ?? 'Toda la escuela' }}</p>
         <form action="{{ route('facturacion-mensual.update', $facturacionMensual) }}" method="POST">
             @csrf
             @method('PUT')

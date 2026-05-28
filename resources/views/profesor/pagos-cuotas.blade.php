@@ -7,7 +7,7 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h5 class="mb-0">Pagos registrados (tus bloques)</h5>
-        <span class="text-muted small">Se listan líneas ya cargadas en el sistema (administración). Los comprobantes enviados sin registrar pago siguen en Comprobantes.</span>
+        <span class="text-muted small">Solo para mirar pagos ya cargados. Si un alumno mandó comprobante pero no está el pago, mirá Comprobantes.</span>
     </div>
     <div class="card-body">
         @php $hasAlcanceCuota = \Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'); @endphp
@@ -43,7 +43,7 @@
                         <th>Fecha pago</th>
                         <th>Alumno</th>
                         <th>Cuota</th>
-                        <th>Alcance / bloque</th>
+                        <th>Para quién / bloque</th>
                         <th>Monto línea</th>
                         <th>Abono prof.</th>
                         <th>Pago #</th>

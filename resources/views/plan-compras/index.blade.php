@@ -8,7 +8,7 @@
     <div class="card-header py-3">
         Plan de compras sugerido
         <div class="text-muted small">
-            Basado en alumnos activos, carga horaria semanal y stock actual de instrumentos de cada sede.
+            Sugerencias según cuántos alumnos hay, las horas de clase y qué hay en inventario.
         </div>
     </div>
     <div class="card-body">

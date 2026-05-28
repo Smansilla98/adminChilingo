@@ -26,7 +26,7 @@
     </div>
     <div class="mb-3">
         <label class="form-label">Bloque(s) *</label>
-        <p class="text-muted small mb-1">Podés elegir varios bloques (Ctrl+clic) si en todos cursa el mismo alumno y querés declarar el pago de varias cuotas juntas. No se listan alumnos que <strong>ya tienen pago registrado</strong> en el sistema para esa cuota.</p>
+        <div class="form-text mb-1">Si el alumno va a varios grupos, podés elegir más de uno (Ctrl + clic). No aparecen quienes ya figuran como pagados en el sistema.</div>
         <select name="bloque_ids[]" id="bloque_ids" class="form-select" multiple size="8" required disabled></select>
     </div>
     <div class="mb-3" id="wrap-alumno">
@@ -38,7 +38,7 @@
     </div>
     <div class="mb-3 border rounded p-3 d-none" id="panel-extra-bloques">
         <div class="fw-semibold mb-2">También podés sumar otros bloques de la misma sede</div>
-        <p class="text-muted small">Si el alumno cursa en más bloques y hay cuota para el mismo mes, podés marcarlos para incluirlos en este mismo envío.</p>
+        <div class="form-text">Si cursa en otro bloque del mismo mes, tildalo para mandar todo junto.</div>
         <div id="extra-bloques-checks"></div>
     </div>
     <div class="row mb-3">

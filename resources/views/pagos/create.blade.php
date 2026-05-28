@@ -22,11 +22,9 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header">{{ $editando ? 'Editar pago #' . $pago->id : 'Nuevo pago' }} (varias líneas: alumno + cuota + monto; comprobante opcional)</div>
+    <div class="card-header">{{ $editando ? 'Editar pago #' . $pago->id : 'Nuevo pago' }}</div>
     <div class="card-body">
-        <p class="text-muted small mb-3">
-            Podés registrar en un solo pago <strong>varias cuotas</strong> (distintos meses o talleres), el mismo alumno en más de un bloque, o <strong>un adulto y su hijo</strong> con cuotas distintas: cada fila es un alumno, una cuota y el monto que corresponde a esa línea. La <strong>suma de las filas</strong> debe coincidir con el <strong>monto total</strong> del comprobante.
-        </p>
+        @include('partials.form-ayuda-intro', ['text' => 'Cada fila es alumno + cuota + monto. El total debe ser la suma de todas las filas. El comprobante es opcional.'])
         <form action="{{ $editando ? route('pagos.update', $pago) : route('pagos.store') }}" method="POST" enctype="multipart/form-data" id="form-pago-lineas">
             @csrf
             @if($editando) @method('PUT') @endif
@@ -44,13 +42,13 @@
                             <option value="{{ $b->id }}" data-sede-id="{{ $b->sede_id ?? '' }}">{{ $b->nombre }}@if($b->sede) — {{ $b->sede->nombre }}@endif</option>
                         @endforeach
                     </select>
-                    <div id="help-filtro-bloque" class="form-text">Filtra las cuotas disponibles en cada fila (general, sede del bloque o cuota de ese bloque).</div>
+                    <div id="help-filtro-bloque" class="form-text">Si elegís un bloque, en cada fila solo verás las cuotas que le corresponden a ese grupo.</div>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Monto total *</label>
                     <input type="number" name="monto_total" id="monto_total_pago" class="form-control @error('monto_total') is-invalid @enderror" step="0.01" min="0.01" value="{{ old('monto_total', $editando ? $pago->monto_total : '') }}" required>
                     @error('monto_total')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    <div class="form-text">Debe ser igual a la suma de las líneas.</div>
+                    <div class="form-text">Tiene que coincidir con la suma de todas las filas de abajo.</div>
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
                     <div class="w-100 small" id="resumen-suma-lineas" aria-live="polite">
@@ -79,17 +77,17 @@
             <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="btn-add-linea-pago"><i class="bi bi-plus-lg"></i> Añadir línea</button>
 
             <div class="border rounded p-3 mb-3">
-                <div class="fw-semibold mb-2">Abono al profesor</div>
-                <p class="text-muted small mb-3">Si dejás el total vacío, se calcula automáticamente según la <strong>regla de liquidación de cada sede</strong> (configurada en Sedes). Ej. Banfield: retención escuela + % docente sobre la base. Si ingresás un total manual, se reparte proporcionalmente entre las líneas.</p>
+                <div class="fw-semibold mb-2">Parte del pago para el profesor</div>
+                <p class="text-muted small mb-3">Si dejás el monto en blanco, el sistema calcula cuánto le corresponde al profe según lo que configuraste en <strong>Sedes</strong>. Si escribís un número, se reparte entre las filas del pago.</p>
                 <div class="form-check mb-3">
                     <input type="hidden" name="liquidar_profesor" value="0">
                     <input class="form-check-input" type="checkbox" name="liquidar_profesor" value="1" id="liquidar_profesor" {{ (string) old('liquidar_profesor', $editando ? ($hayAbonoEdit ? '1' : '0') : '1') === '1' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="liquidar_profesor">Registrar abono al profesor</label>
+                    <label class="form-check-label" for="liquidar_profesor">Registrar lo que va al profesor</label>
                 </div>
                 <div class="row g-2 align-items-end" id="wrap_liquidacion_prof">
                     <div class="col-md-6">
-                        <label class="form-label" for="monto_abono_profesor">Total abono docente ($)</label>
-                        <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor', $editando && $hayAbonoEdit ? $sumAbonoEdit : '') }}" placeholder="Vacío = regla de la sede por cuota">
+                        <label class="form-label" for="monto_abono_profesor">Total para el profesor ($)</label>
+                        <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor', $editando && $hayAbonoEdit ? $sumAbonoEdit : '') }}" placeholder="En blanco = se calcula solo">
                         @error('monto_abono_profesor')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-12">
@@ -110,7 +108,7 @@
                 </div>
                 @endif
                 <input type="file" name="comprobante" class="form-control @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-                <div class="form-text">{{ $editando ? 'Subí un archivo nuevo para reemplazar el actual (opcional).' : 'Opcional.' }}</div>
+                <div class="form-text">{{ $editando ? 'Podés subir otro archivo para cambiar el comprobante (no es obligatorio).' : 'Foto o PDF del comprobante, si lo tenés.' }}</div>
                 @error('comprobante')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="mb-3">

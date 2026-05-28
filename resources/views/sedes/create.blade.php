@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Nueva sede</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Datos de la sede (nombre y dirección). Más abajo podés definir cuánto de cada cuota va a la escuela y al profesor.'])
         <form action="{{ route('sedes.store') }}" method="POST">
             @csrf
             <div class="row mb-3">
@@ -46,17 +47,17 @@
             </div>
             @if(\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'liquidacion_porc_docente'))
             <div class="border rounded p-3 mb-3">
-                <div class="fw-semibold mb-2">Liquidación cuota → docente / escuela</div>
-                <p class="text-muted small mb-3">Sobre el monto de <strong>referencia de la cuota</strong> (X): primero queda una suma fija para la <strong>escuela</strong> (retención); sobre el resto (<strong>base</strong>) se aplica el <strong>% al docente</strong>. Al registrar un pago, estos valores precargan base y % (se pueden cambiar en ese momento).</p>
+                <div class="fw-semibold mb-2">Cómo repartir la cuota (escuela y profesor)</div>
+                <p class="text-muted small mb-3">Definí cuánto va a la escuela y qué porcentaje le corresponde al profe. Al cargar un pago se usan estos valores si no escribís otro monto a mano.</p>
                 <div class="row g-2">
                     <div class="col-md-6">
-                        <label class="form-label">Retención escuela ($)</label>
+                        <label class="form-label">Lo que se queda la escuela ($)</label>
                         <input type="number" name="liquidacion_retencion_escuela" class="form-control @error('liquidacion_retencion_escuela') is-invalid @enderror" step="0.01" min="0" value="{{ old('liquidacion_retencion_escuela', 0) }}">
                         @error('liquidacion_retencion_escuela')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        <div class="form-text">Ej.: cuota $25.000 y retención $1.000 → base para el % = $24.000.</div>
+                        <div class="form-text">Ej.: si la cuota es $25.000 y la escuela se queda $1.000, el % del profe se calcula sobre $24.000.</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">% al docente (sobre la base)</label>
+                        <label class="form-label">Porcentaje para el profesor (%)</label>
                         <input type="number" name="liquidacion_porc_docente" class="form-control @error('liquidacion_porc_docente') is-invalid @enderror" step="0.1" min="0" max="100" value="{{ old('liquidacion_porc_docente', 40) }}">
                         @error('liquidacion_porc_docente')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>

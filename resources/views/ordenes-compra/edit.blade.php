@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header py-3">Editar orden de compra #{{ $orden->id }}</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Corregí la orden y sus ítems.'])
         <form action="{{ route('ordenes-compra.update', $orden) }}" method="POST">
             @csrf
             @method('PUT')

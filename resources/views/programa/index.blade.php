@@ -81,7 +81,7 @@
         <section id="toques-por-anio" class="card">
             <div class="card-header">
                 <h3 class="h6 mb-0">Toques por año</h3>
-                <p class="text-muted small mb-0 mt-1">Cada toque tiene su página de profundización (material, contexto, enlaces).</p>
+                <p class="text-muted small mb-0 mt-1">Cada toque puede tener su página con textos, videos y archivos.</p>
             </div>
             <div class="card-body">
                 @foreach([1, 2, 3, 4, 5, 6] as $año)

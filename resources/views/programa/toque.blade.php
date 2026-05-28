@@ -34,7 +34,7 @@
                 @endif
             </div>
             @if(auth()->user()?->isAdmin())
-            <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i> Editar profundización</a>
+            <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i> Editar página del toque</a>
             @endif
         </div>
         @if($programaRitmo->resumen)
@@ -98,7 +98,7 @@
 
 @if(!$programaRitmo->tieneProfundizacion())
 <div class="alert alert-secondary">
-    <p class="mb-0">Esta página de profundización está en preparación.
+    <p class="mb-0">Esta página del toque todavía no tiene contenido cargado.
     @if(auth()->user()?->isAdmin())
     <a href="{{ route('programa.toque.edit', $programaRitmo) }}">Cargar contenido</a> (solo administración).
     @else

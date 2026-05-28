@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Crear bloque</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Un bloque es un grupo de clase en una sede. Poné nombre, sede y, si querés, el profe titular y los tambores que usan.'])
         <form action="{{ route('bloques.store') }}" method="POST">
             @csrf
             <div class="row mb-3">
@@ -38,7 +39,7 @@
                 </div>
                 <div class="col-md-6">
                     <label for="corresponde_a" class="form-label">A quien corresponde el bloque</label>
-                    <input type="text" class="form-control" id="corresponde_a" name="corresponde_a" value="{{ old('corresponde_a') }}" placeholder="Responsable o destinatario del bloque">
+                    <input type="text" class="form-control" id="corresponde_a" name="corresponde_a" value="{{ old('corresponde_a') }}" placeholder="Ej.: grupo de adultos, niños…">
                     @error('corresponde_a')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
@@ -46,7 +47,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Sede *</label>
                     <select class="form-select @error('sede_id') is-invalid @enderror" name="sede_id" required>
-                        <option value="">Seleccionar...</option>
+                        <option value="">Elegí…</option>
                         @foreach($sedes as $sede)
                         <option value="{{ $sede->id }}" {{ old('sede_id') == $sede->id ? 'selected' : '' }}>{{ $sede->nombre }}</option>
                         @endforeach
@@ -64,7 +65,7 @@
                     </div>
                     @endforeach
                 </div>
-                <small class="text-muted">Seleccione los tambores que usa este bloque</small>
+                <div class="form-text">Tildá los instrumentos que tocan en este grupo.</div>
             </div>
             <div class="mb-3">
                 <div class="form-check">

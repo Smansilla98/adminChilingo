@@ -47,8 +47,8 @@
         @include('asistencias.index-lista')
         @else
         <p class="text-muted small mb-3">
-            Elegí <strong>bloque</strong> y <strong>mes</strong>: cada columna es una clase del mes (según los días configurados en el bloque; si no hay horarios, se asume <strong>viernes</strong> como en el Excel).
-            Leyenda: <span class="badge asist-badge-p">P</span> presente · <span class="badge asist-badge-t">T</span> tarde · <span class="badge asist-badge-j">J</span> justificada · <span class="badge asist-badge-i">I</span> injustificada.
+            Elegí <strong>bloque</strong> y <strong>mes</strong>. Cada columna es un día de clase.
+            <span class="badge asist-badge-p">P</span> vino · <span class="badge asist-badge-t">T</span> tarde · <span class="badge asist-badge-j">J</span> justificó · <span class="badge asist-badge-i">I</span> faltó sin avisar.
         </p>
 
         <form method="GET" class="mb-3">
@@ -56,7 +56,7 @@
                 <div class="col-md-4">
                     <label class="form-label">Bloque</label>
                     <select name="bloque_id" class="form-select" required>
-                        <option value="">Seleccionar bloque…</option>
+                        <option value="">Elegí bloque…</option>
                         @foreach($bloques as $b)
                         <option value="{{ $b->id }}" {{ (string)request('bloque_id') === (string)$b->id ? 'selected' : '' }}>{{ $b->nombre }} — {{ $b->sede->nombre ?? '' }}</option>
                         @endforeach
@@ -160,7 +160,7 @@
         @elseif(request()->filled('bloque_id'))
         <div class="alert alert-info mb-0">No se encontró el bloque o está inactivo.</div>
         @else
-        <div class="alert alert-secondary mb-0">Seleccioná un bloque y mes y pulsá <strong>Ver matriz</strong>.</div>
+        <div class="alert alert-secondary mb-0">Elegí bloque y mes, luego tocá <strong>Ver matriz</strong>.</div>
         @endif
         @endif
     </div>

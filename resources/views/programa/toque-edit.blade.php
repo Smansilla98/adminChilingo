@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Editar: ' . $programaRitmo->nombre)
-@section('page-title', 'Editar profundización del toque')
+@section('page-title', 'Editar página del toque')
 
 @section('content')
 @php
@@ -24,8 +24,9 @@
     @csrf
     @method('PUT')
 
+    @include('partials.form-ayuda-intro', ['text' => 'Podés ir de a poco: primero nombre y un texto; después videos y archivos más abajo.'])
     <div class="card mb-3">
-        <div class="card-header">Datos del toque (listado)</div>
+        <div class="card-header">Datos del toque (en el listado)</div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-8">
@@ -59,7 +60,7 @@
     </div>
 
     <div class="card mb-3">
-        <div class="card-header">Página de profundización</div>
+        <div class="card-header">Textos de la página del toque</div>
         <div class="card-body">
             <div class="mb-3">
                 <label class="form-label">Resumen (aparece arriba de la página)</label>
@@ -68,15 +69,15 @@
             <div class="mb-3">
                 <label class="form-label">Introducción / texto principal</label>
                 <textarea name="contenido" class="form-control" rows="6">{{ old('contenido', $programaRitmo->contenido) }}</textarea>
-                <div class="form-text">Podés usar párrafos separados por líneas en blanco.</div>
+                <div class="form-text">Cada párrafo en una línea; dejá una línea en blanco entre párrafos.</div>
             </div>
 
             <hr>
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <label class="form-label mb-0">Secciones de profundización</label>
+                <label class="form-label mb-0">Apartados del toque</label>
                 <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-seccion"><i class="bi bi-plus"></i> Añadir sección</button>
             </div>
-            <p class="small text-muted">Ej.: Contexto del toque, Estructura, Material de práctica, Escucha recomendada.</p>
+            <p class="small text-muted">Podés armar apartados, por ejemplo: de dónde sale el toque, cómo está armado, qué practicar.</p>
             <div id="secciones-wrap" class="d-grid gap-3">
                 @foreach($secciones as $i => $sec)
                 <div class="border rounded p-3 seccion-item">

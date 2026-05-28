@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Nuevo profesor</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Nombre y contacto alcanzan para empezar. Después indicá en qué bloques y sedes participa.'])
         <form action="{{ route('profesores.store') }}" method="POST">
             @csrf
             <div class="row mb-3">

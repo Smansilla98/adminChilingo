@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Nuevo evento</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Actividad con fecha y, si querés, sede, profe o bloque. Aparece en el calendario.'])
         <form action="{{ route('eventos.store') }}" method="POST">
             @csrf
             <div class="row mb-3">

@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Editar profesor</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Actualizá los datos y, si cambió, los bloques o sedes donde da clase.'])
         <form action="{{ route('profesores.update', $profesor) }}" method="POST">
             @csrf
             @method('PUT')

@@ -16,7 +16,7 @@
             @endphp
             @if($tieneAbonoProf)
             <dt class="col-sm-3">Total abono profesor</dt>
-            <dd class="col-sm-9">$ {{ number_format($sumAbonoProf, 2, ',', '.') }} <span class="text-muted small">(suma de lo liquidado por alumno en este pago)</span></dd>
+            <dd class="col-sm-9">$ {{ number_format($sumAbonoProf, 2, ',', '.') }} <span class="text-muted small">(total que va al profesor en este pago)</span></dd>
             @php
                 $sumRestoEscuela = $pago->detalles->sum(function ($d) {
                     if ($d->abono_profesor === null || ! $d->cuota) {
@@ -28,7 +28,7 @@
             @endphp
             @if($sumRestoEscuela > 0)
             <dt class="col-sm-3">Ref. resto escuela</dt>
-            <dd class="col-sm-9">$ {{ number_format($sumRestoEscuela, 2, ',', '.') }} <span class="text-muted small">(por línea: monto cuota de referencia − abono al docente; suma si hay varios alumnos)</span></dd>
+            <dd class="col-sm-9">$ {{ number_format($sumRestoEscuela, 2, ',', '.') }} <span class="text-muted small">(parte que queda para la escuela)</span></dd>
             @endif
             @endif
             <dt class="col-sm-3">Comprobante</dt>
@@ -84,7 +84,7 @@
         </div>
         @php $primeraNotaAbono = $pago->detalles->first(fn ($d) => filled($d->abono_nota))?->abono_nota; @endphp
         @if($primeraNotaAbono)
-        <p class="small text-muted mb-0"><strong>Nota liquidación:</strong> {{ $primeraNotaAbono }}</p>
+        <p class="small text-muted mb-0"><strong>Nota sobre el pago al profesor:</strong> {{ $primeraNotaAbono }}</p>
         @endif
         <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-primary"><i class="bi bi-pencil"></i> Editar</a>
         <a href="{{ route('pagos.index') }}" class="btn btn-secondary">Volver</a>

@@ -7,7 +7,7 @@
     <div class="col-md-4">
         <label class="form-label">Sede *</label>
         <select name="sede_id" class="form-select @error('sede_id') is-invalid @enderror" required>
-            <option value="">Seleccionar sede</option>
+            <option value="">Elegí sede</option>
             @foreach($sedes as $s)
             <option value="{{ $s->id }}" {{ old('sede_id', $orden->sede_id ?? $defaults['sede_id'] ?? null) == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
             @endforeach
@@ -45,9 +45,8 @@
 <hr class="my-3">
 
 <h6>Ítems de la orden</h6>
-<p class="small text-muted">
-Describí qué se quiere comprar (ej: “10 repiques 12&quot; marca X línea Y”, “20 parches 12&quot; Remo Ambassador”).  
-Podés agregar varias filas con el botón “Agregar ítem”.
+<p class="small text-muted mb-2">
+Escribí qué hay que comprar (cantidad, tamaño, marca). Usá <strong>Agregar ítem</strong> si son varias cosas distintas.
 </p>
 
 @error('items')<div class="alert alert-danger py-1 mb-2 small">{{ $message }}</div>@enderror

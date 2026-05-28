@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header py-3">Editar ítem de inventario</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Actualizá los datos del ítem del inventario.'])
         <form action="{{ route('inventarios.update', $inventario) }}" method="POST">
             @csrf
             @method('PUT')

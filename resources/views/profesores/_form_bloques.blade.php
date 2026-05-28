@@ -10,7 +10,7 @@
 <div class="card mb-3">
     <div class="card-header">Bloques y rol</div>
     <div class="card-body">
-        <p class="text-muted small mb-3">Un mismo profesor puede estar en varios bloques con un rol distinto en cada uno. El rol <strong>Titular</strong> coincide con el &laquo;profesor titular&raquo; del bloque en la ficha de bloque.</p>
+        <p class="text-muted small mb-3">Tildá en qué bloques da clase y qué rol tiene en cada uno. <strong>Titular</strong> es quien figura como profe principal de ese bloque.</p>
         <div class="table-responsive">
             <table class="table table-sm align-middle">
                 <thead>

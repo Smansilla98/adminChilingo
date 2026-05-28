@@ -33,7 +33,7 @@
 
 <div class="panel mod-panel" id="listados-modulos">
     <div class="panel-h">
-        <div class="panel-h-title">Listados de cada módulo</div>
+        <div class="panel-h-title">Accesos a cada sección</div>
         <span class="muted small">Acceso directo al índice (listado) de cada sección.</span>
     </div>
     <div class="panel-b">
@@ -63,7 +63,7 @@
 
 <div class="panel mod-panel" id="modulos">
     <div class="panel-h">
-        <div class="panel-h-title">Accesos a módulos</div>
+        <div class="panel-h-title">Quién puede ver qué</div>
     </div>
     <div class="panel-b mod-nav-wrap">
         <div class="mod-nav">

@@ -2,7 +2,7 @@
     $profesorVinculado = isset($alumno) ? $alumno->profesorPerfil() : null;
 @endphp
 <div class="card mb-3">
-    <div class="card-header">También es profesor</div>
+    <div class="card-header">También da clases</div>
     <div class="card-body">
         @if($profesorVinculado)
         <p class="mb-2">
@@ -14,11 +14,11 @@
         <div class="form-check mb-2">
             <input type="hidden" name="crear_perfil_profesor" value="0">
             <input class="form-check-input" type="checkbox" name="crear_perfil_profesor" value="1" id="crear_perfil_profesor" {{ old('crear_perfil_profesor') ? 'checked' : '' }}>
-            <label class="form-check-label" for="crear_perfil_profesor">Crear o vincular perfil de profesor con los mismos datos</label>
+            <label class="form-check-label" for="crear_perfil_profesor">Usar los mismos datos para su perfil de profesor</label>
         </div>
-        <p class="text-muted small mb-2">Si ya existe un profesor, podés vincularlo sin crear uno nuevo:</p>
+        <p class="text-muted small mb-2">Si ya está cargado como profesor, elegilo acá y no hace falta crear otro:</p>
         <select name="vincular_profesor_id" class="form-select form-select-sm">
-            <option value="">— Crear nuevo si marcás la casilla —</option>
+            <option value="">— O crear uno nuevo si tildaste arriba —</option>
             @foreach(($profesoresSinVinculo ?? collect()) as $p)
             <option value="{{ $p->id }}" @selected((int) old('vincular_profesor_id') === (int) $p->id)>{{ $p->nombre }} @if($p->email)({{ $p->email }})@endif</option>
             @endforeach

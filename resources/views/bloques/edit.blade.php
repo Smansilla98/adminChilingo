@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Editar bloque</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Cambiá los datos del bloque abajo. Más abajo podés sumar los días y horarios de clase (así salen en el calendario).'])
         <form action="{{ route('bloques.update', $bloque) }}" method="POST">
             @csrf
             @method('PUT')
@@ -39,7 +40,7 @@
                 </div>
                 <div class="col-md-6">
                     <label for="corresponde_a" class="form-label">A quien corresponde el bloque</label>
-                    <input type="text" class="form-control" id="corresponde_a" name="corresponde_a" value="{{ old('corresponde_a', $bloque->corresponde_a) }}" placeholder="Responsable o destinatario del bloque">
+                    <input type="text" class="form-control" id="corresponde_a" name="corresponde_a" value="{{ old('corresponde_a', $bloque->corresponde_a) }}" placeholder="Ej.: grupo de adultos, niños…">
                     @error('corresponde_a')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
@@ -98,7 +99,7 @@
             </tbody>
         </table>
         @else
-        <p class="text-muted small mb-2">Sin horarios cargados. Agregue día y horario abajo.</p>
+        <p class="text-muted small mb-2">Todavía no hay horarios. Sumá día y hora abajo para que aparezcan en el calendario.</p>
         @endif
 
         <form action="{{ route('bloques.horarios.store', $bloque) }}" method="POST" class="row g-2 align-items-end mb-0">

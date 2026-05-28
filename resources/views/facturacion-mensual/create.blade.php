@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Nueva facturación mensual</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Resumen del mes: cuántos alumnos y cuánto se facturó. La sede es opcional si es para toda la escuela.'])
         <form action="{{ route('facturacion-mensual.store') }}" method="POST">
             @csrf
             <div class="row mb-3">

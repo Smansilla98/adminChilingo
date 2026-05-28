@@ -54,7 +54,7 @@
                 </tbody>
             </table>
         </div>
-        <p class="text-muted small mb-0">Este envío <strong>no</strong> registra aún el pago en el módulo de pagos: podés cargarlo desde «Registrar pago» cuando verifiques el comprobante.</p>
+        <p class="text-muted small mb-0">Esto es solo el comprobante que mandó el alumno. Para darlo por pagado, andá a <strong>Registrar pago</strong> cuando lo hayas revisado.</p>
     </div>
 </div>
 @endsection

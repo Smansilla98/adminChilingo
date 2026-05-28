@@ -7,7 +7,7 @@
     <div class="col-md-4">
         <label class="form-label">Sede *</label>
         <select name="sede_id" class="form-select @error('sede_id') is-invalid @enderror" required>
-            <option value="">Seleccionar sede</option>
+            <option value="">Elegí sede</option>
             @foreach($sedes as $s)
             <option value="{{ $s->id }}" {{ old('sede_id', $values['sede_id'] ?? $item?->sede_id) == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
             @endforeach
@@ -45,7 +45,7 @@
     <div class="col-md-6" id="alumno_wrap">
         <label class="form-label">Alumno (si es propio)</label>
         <select name="alumno_id" class="form-select @error('alumno_id') is-invalid @enderror">
-            <option value="">Seleccionar alumno</option>
+            <option value="">Elegí alumno</option>
             @foreach($alumnos as $a)
             <option value="{{ $a->id }}" {{ old('alumno_id', $item?->alumno_id) == $a->id ? 'selected' : '' }}>{{ $a->nombre_apellido }}</option>
             @endforeach

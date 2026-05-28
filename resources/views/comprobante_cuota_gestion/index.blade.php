@@ -6,7 +6,7 @@
 @section('content')
 <div class="card">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <span>Envíos desde el formulario público (sin login)</span>
+        <span>Lo que mandaron los alumnos por el link público (sin entrar al sistema)</span>
         <form method="get" class="d-flex gap-2 align-items-center">
             <select name="estado" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
                 <option value="">Todos los estados</option>

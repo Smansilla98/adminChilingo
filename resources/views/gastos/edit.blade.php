@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Editar gasto</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Corregí el gasto y guardá.'])
         <form action="{{ route('gastos.update', $gasto) }}" method="POST">
             @csrf
             @method('PUT')

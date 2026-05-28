@@ -13,9 +13,9 @@
 @endphp
 
 <div class="card mb-3">
-    <div class="card-header">Material multimedia y pedagógico</div>
+    <div class="card-header">Videos, partitura y archivos del toque</div>
     <div class="card-body">
-        <p class="small text-muted mb-4">Partitura, videos de bases por tambor, ensamble, llamadas, cortes y recursos extra para la página pública del toque.</p>
+        <p class="small text-muted mb-4">Lo que cargues acá lo verán en la página del toque: partitura, videos por tambor, ensamble y otros archivos. Podés ir sumando de a poco.</p>
 
         <h3 class="h6 mb-3">Partitura</h3>
         @if(!empty($partitura['path']))
@@ -30,12 +30,12 @@
         <div class="mb-4">
             <label class="form-label">{{ !empty($partitura['path']) ? 'Reemplazar partitura' : 'Subir partitura' }}</label>
             <input type="file" name="partitura_archivo" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp">
-            <div class="form-text">PDF o imagen (máx. 20 MB).</div>
+            <div class="form-text">PDF o imagen, hasta 20 MB.</div>
         </div>
 
         <hr>
         <h3 class="h6 mb-2">Videos de bases (por tambor)</h3>
-        <p class="small text-muted mb-3">Enlaces de YouTube, Vimeo u otra URL de video.</p>
+        <p class="small text-muted mb-3">Pegá el enlace del video (YouTube, Vimeo, etc.).</p>
         <div class="row g-3 mb-4">
             @foreach($videosBase as $key => $label)
             <div class="col-md-6">
@@ -65,7 +65,7 @@
             <h3 class="h6 mb-0">Cortes</h3>
             <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-corte"><i class="bi bi-plus"></i> Añadir corte</button>
         </div>
-        <p class="small text-muted">Fragmentos del toque: enlace de video o archivo (PDF, imagen, video).</p>
+        <p class="small text-muted">Trozos del toque: un video por enlace o un archivo (PDF, foto o video).</p>
         <div id="cortes-wrap" class="d-grid gap-3 mb-4">
             @foreach($cortes as $i => $corte)
             <div class="border rounded p-3 corte-item">
@@ -93,7 +93,7 @@
             <h3 class="h6 mb-0">Recursos adicionales</h3>
             <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-recurso"><i class="bi bi-plus"></i> Añadir recurso</button>
         </div>
-        <p class="small text-muted">Imágenes, PDFs, videos, enlaces o bloques de texto.</p>
+        <p class="small text-muted">Cualquier extra: foto, PDF, video, enlace o un texto escrito.</p>
         <div id="recursos-wrap" class="d-grid gap-3">
             @foreach($recursos as $i => $rec)
             <div class="border rounded p-3 recurso-item">

@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Editar evento</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Cambiá lo que haga falta del evento y guardá.'])
         <form action="{{ route('eventos.update', $evento) }}" method="POST">
             @csrf
             @method('PUT')

@@ -7,6 +7,7 @@
 <div class="card">
     <div class="card-header">Crear Nuevo Alumno</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Lo mínimo: nombre, fecha de nacimiento, instrumento y sede. Después elegí en qué bloques va.'])
         <form action="{{ route('alumnos.store') }}" method="POST">
             @csrf
             <div class="row">
@@ -55,7 +56,7 @@
                     <label for="instrumento_principal" class="form-label">Instrumento Principal *</label>
                     <select class="form-select @error('instrumento_principal') is-invalid @enderror" 
                             id="instrumento_principal" name="instrumento_principal" required>
-                        <option value="">Seleccionar...</option>
+                        <option value="">Elegí…</option>
                         @foreach($instrumentos as $instrumento)
                         <option value="{{ $instrumento }}" {{ old('instrumento_principal') == $instrumento ? 'selected' : '' }}>
                             {{ $instrumento }}
@@ -87,7 +88,7 @@
                     <label for="tipo_tambor" class="form-label">Tipo de instrumento (tambor)</label>
                     <select class="form-select @error('tipo_tambor') is-invalid @enderror" 
                             id="tipo_tambor" name="tipo_tambor">
-                        <option value="">Seleccionar...</option>
+                        <option value="">Elegí…</option>
                         @foreach($tiposTambor as $tipo)
                         <option value="{{ $tipo }}" {{ old('tipo_tambor') == $tipo ? 'selected' : '' }}>
                             {{ $tipo }}
@@ -102,7 +103,7 @@
                     <label for="tambor_procedencia" class="form-label">Procedencia del instrumento</label>
                     <select class="form-select @error('tambor_procedencia') is-invalid @enderror"
                             id="tambor_procedencia" name="tambor_procedencia">
-                        <option value="">Seleccionar...</option>
+                        <option value="">Elegí…</option>
                         @foreach($procedenciasTambor as $procedencia)
                         <option value="{{ $procedencia }}" {{ old('tambor_procedencia') == $procedencia ? 'selected' : '' }}>
                             {{ $procedencia }}
@@ -119,7 +120,7 @@
                     <label for="sede_id" class="form-label">Sede *</label>
                     <select class="form-select @error('sede_id') is-invalid @enderror" 
                             id="sede_id" name="sede_id" required>
-                        <option value="">Seleccionar...</option>
+                        <option value="">Elegí…</option>
                         @foreach($sedes as $sede)
                         <option value="{{ $sede->id }}" {{ old('sede_id') == $sede->id ? 'selected' : '' }}>
                             {{ $sede->nombre }}

@@ -15,6 +15,7 @@
     @csrf
     @method('PUT')
 
+    @include('partials.form-ayuda-intro', ['text' => 'Texto de esta parte del programa. Título y contenido son lo principal.'])
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between">
             <span>{{ $categorias[$seccion->categoria] ?? $seccion->categoria }}</span>
@@ -32,7 +33,7 @@
             <div class="mb-3">
                 <label class="form-label">Contenido (HTML permitido)</label>
                 <textarea name="cuerpo" class="form-control font-monospace" rows="16">{{ old('cuerpo', $seccion->cuerpo) }}</textarea>
-                <div class="form-text">Usá &lt;p&gt;, &lt;ul&gt;, &lt;strong&gt;, etc. El texto proviene del PDF oficial del programa.</div>
+                <div class="form-text">Podés usar párrafos y listas (etiquetas HTML simples si las conocés).</div>
             </div>
             <div class="form-check">
                 <input type="hidden" name="activo" value="0">

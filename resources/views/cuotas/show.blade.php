@@ -11,7 +11,7 @@
             <dt class="col-sm-3">Nombre</dt>
             <dd class="col-sm-9">{{ $cuota->nombre }}</dd>
             @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'))
-            <dt class="col-sm-3">Alcance</dt>
+            <dt class="col-sm-3">Para quién</dt>
             <dd class="col-sm-9">
                 @if(($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_GENERAL)
                     General (toda la escuela)

@@ -7,6 +7,7 @@
 <div class="card shadow-sm">
     <div class="card-header py-3">Nuevo show</div>
     <div class="card-body">
+        @include('partials.form-ayuda-intro', ['text' => 'Show o presentación: título, fecha y qué bloques participan (o marcá convocatoria abierta).'])
         <form action="{{ route('shows.store') }}" method="POST">
             @csrf
             <div class="row mb-3">
@@ -47,7 +48,7 @@
             </div>
             <div class="mb-3" id="bloques-wrap">
                 <label class="form-label">Bloques que participan</label>
-                <p class="text-muted small">Si no es convocatoria abierta, seleccione uno o más bloques. Ctrl+clic para varios.</p>
+                <div class="form-text">Si no es convocatoria abierta, elegí uno o más bloques (mantené Ctrl para varios).</div>
                 <select name="bloque_ids[]" class="form-select" multiple size="8">
                     @foreach($bloques as $b)
                     <option value="{{ $b->id }}" {{ in_array($b->id, old('bloque_ids', [])) ? 'selected' : '' }}>

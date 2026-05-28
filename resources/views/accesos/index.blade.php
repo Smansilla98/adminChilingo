@@ -6,8 +6,8 @@
 @section('content')
 <div class="card mb-3">
     <div class="card-body">
-        <h2 class="h5 mb-1">Matriz de accesos</h2>
-        <p class="text-muted mb-3">Elegí un usuario y marcá qué módulos puede ver/usar. <strong>Administradores</strong> siempre mantienen acceso total para evitar bloqueos.</p>
+        <h2 class="h5 mb-1">Quién puede ver qué</h2>
+        <p class="text-muted mb-3">Elegí una persona y tildá las partes del sistema que puede usar. Los <strong>administradores</strong> siempre ven todo, para no quedar sin acceso.</p>
 
         <form method="GET" action="{{ route('accesos.index') }}" class="row g-2 align-items-end mb-3">
             <div class="col-md-6">
@@ -64,6 +64,7 @@
                     @endforeach
                 </div>
 
+                <p class="form-text mb-2">Solo se guardan los accesos de la persona elegida arriba. Los administradores siempre ven todo.</p>
                 <div class="mt-3 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Guardar accesos</button>
                     <a href="{{ route('dashboard') }}" class="btn btn-secondary">Volver</a>
