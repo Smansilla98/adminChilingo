@@ -122,5 +122,9 @@
 @endsection
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=2">
+<link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=3">
+@endpush
+
+@push('vite')
+@vite(['resources/js/programa-partitura.js'])
 @endpush

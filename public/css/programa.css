@@ -133,6 +133,49 @@
   background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
+.programa-partitura-lectura .card-header {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.programa-partitura-lectura-toggle {
+  color: var(--text);
+}
+
+.programa-partitura-lectura-toggle:hover,
+.programa-partitura-lectura-toggle:focus {
+  color: var(--accent);
+}
+
+.programa-partitura-lectura-chevron {
+  transition: transform 0.2s ease;
+}
+
+.programa-partitura-lectura-toggle[aria-expanded="true"] .programa-partitura-lectura-chevron {
+  transform: rotate(180deg);
+}
+
+.programa-partitura-leyenda-img {
+  background: #fff;
+  max-width: 100%;
+}
+
+.programa-partitura-preview-img {
+  background: #fff;
+  max-height: min(85vh, 900px);
+  width: 100%;
+  object-fit: contain;
+}
+
+.programa-partitura-pdf-frame {
+  display: block;
+  width: 100%;
+  min-height: 480px;
+  height: min(75vh, 720px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
 @media (max-width: 991.98px) {
   .programa-nav-card {
     position: static !important;

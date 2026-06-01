@@ -46,6 +46,7 @@ class ProgramaRitmoMedios
 
         return [
             'partitura' => null,
+            'partitura_vexflow' => null,
             'videos_base' => $bases,
             'videos_grupo' => $grupo,
             'cortes' => [],
@@ -70,6 +71,8 @@ class ProgramaRitmoMedios
                 'nombre' => $medios['partitura']['nombre'] ?? null,
             ];
         }
+
+        $out['partitura_vexflow'] = self::normalizarPartituraVexflow($medios['partitura_vexflow'] ?? null);
 
         if (isset($medios['videos_base']) && is_array($medios['videos_base'])) {
             foreach (array_keys(self::VIDEOS_BASE) as $k) {
@@ -126,6 +129,79 @@ class ProgramaRitmoMedios
         return $out;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
+    public static function normalizarPartituraVexflow(mixed $raw): ?array
+    {
+        if (! is_array($raw) || empty($raw['hits']) || ! is_array($raw['hits'])) {
+            return null;
+        }
+
+        $measureCount = min(4, max(1, (int) ($raw['measureCount'] ?? 1)));
+        $beats = 16;
+        $drumIds = array_keys(self::VIDEOS_BASE);
+        $hits = [];
+
+        foreach ($drumIds as $id) {
+            $hits[$id] = [];
+            for ($m = 0; $m < $measureCount; $m++) {
+                $hits[$id][$m] = [];
+            }
+        }
+
+        foreach ($drumIds as $id) {
+            if (! isset($raw['hits'][$id])) {
+                continue;
+            }
+            $row = $raw['hits'][$id];
+            if (! is_array($row)) {
+                continue;
+            }
+            if ($row !== [] && (! isset($row[0]) || ! is_array($row[0]))) {
+                $row = [$row];
+            }
+            for ($m = 0; $m < $measureCount; $m++) {
+                $cell = $row[$m] ?? [];
+                if (! is_array($cell)) {
+                    continue;
+                }
+                foreach ($cell as $n) {
+                    $n = (int) $n;
+                    if ($n >= 0 && $n < $beats) {
+                        $hits[$id][$m][] = $n;
+                    }
+                }
+                $hits[$id][$m] = array_values(array_unique($hits[$id][$m]));
+                sort($hits[$id][$m]);
+            }
+        }
+
+        $tieneGolpes = false;
+        foreach ($hits as $rows) {
+            foreach ($rows as $cell) {
+                if ($cell !== []) {
+                    $tieneGolpes = true;
+                    break 2;
+                }
+            }
+        }
+
+        if (! $tieneGolpes) {
+            return null;
+        }
+
+        $time = ($raw['timeSignature'] ?? '4/4') === '2/4' ? '2/4' : '4/4';
+
+        return [
+            'version' => 1,
+            'timeSignature' => $time,
+            'beats' => $beats,
+            'measureCount' => $measureCount,
+            'hits' => $hits,
+        ];
+    }
+
     public static function limpiarUrl(mixed $url): ?string
     {
         $u = trim((string) $url);
@@ -169,6 +245,9 @@ class ProgramaRitmoMedios
     public static function tieneContenidoMultimedia(array $medios): bool
     {
         if (! empty($medios['partitura']['path'])) {
+            return true;
+        }
+        if (! empty($medios['partitura_vexflow']['hits'])) {
             return true;
         }
         foreach ($medios['videos_base'] ?? [] as $v) {

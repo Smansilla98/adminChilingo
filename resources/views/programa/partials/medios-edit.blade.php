@@ -17,7 +17,8 @@
     <div class="card-body">
         <p class="small text-muted mb-4">Lo que cargues acá lo verán en la página del toque: partitura, videos por tambor, ensamble y otros archivos. Podés ir sumando de a poco.</p>
 
-        <h3 class="h6 mb-3">Partitura</h3>
+        <h3 class="h6 mb-2">Partitura (archivo)</h3>
+        <p class="small text-muted mb-3">PDF o imagen opcional. También podés armar la partitura en la rejilla de abajo.</p>
         @if(!empty($partitura['path']))
         <div class="alert alert-secondary py-2 small d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
             <span><i class="bi bi-file-earmark-pdf"></i> {{ $partitura['nombre'] ?? 'Archivo cargado' }}</span>
@@ -32,6 +33,8 @@
             <input type="file" name="partitura_archivo" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp">
             <div class="form-text">PDF o imagen, hasta 20 MB.</div>
         </div>
+
+        @include('programa.partials.partitura-vexflow-edit', ['medios' => $m])
 
         <hr>
         <h3 class="h6 mb-2">Videos de bases (por tambor)</h3>

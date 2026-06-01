@@ -6,13 +6,48 @@
 
 @if($tieneMedios)
 <section class="programa-medios mb-3">
+    @include('programa.partials.partitura-vexflow-show', ['medios' => $m, 'programaRitmo' => $programaRitmo])
+
     @if(!empty($m['partitura']['path']))
+    @php
+        $partituraUrl = route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'partitura']);
+        $partituraInlineUrl = route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'partitura', 'inline' => 1]);
+        $partituraNombre = $m['partitura']['nombre'] ?? '';
+        $partituraEsImagen = (bool) preg_match('/\.(jpe?g|png|webp)$/i', $partituraNombre);
+        $partituraEsPdf = (bool) preg_match('/\.pdf$/i', $partituraNombre);
+    @endphp
     <div class="card mb-3">
-        <div class="card-header"><h3 class="h6 mb-0"><i class="bi bi-music-note-beamed"></i> Partitura</h3></div>
-        <div class="card-body">
-            <a href="{{ route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'partitura']) }}" class="btn btn-outline-warning btn-sm" target="_blank" rel="noopener">
-                <i class="bi bi-download"></i> {{ $m['partitura']['nombre'] ?? 'Descargar partitura' }}
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h3 class="h6 mb-0"><i class="bi bi-music-note-beamed"></i> Partitura</h3>
+            <a href="{{ $partituraUrl }}" class="btn btn-outline-warning btn-sm" target="_blank" rel="noopener">
+                <i class="bi bi-{{ $partituraEsPdf ? 'file-pdf' : 'download' }}"></i>
+                {{ $partituraEsPdf ? 'Abrir PDF' : 'Descargar' }}
             </a>
+        </div>
+        <div class="card-body">
+            @include('programa.partials.partitura-lectura', ['collapseId' => 'partituraLecturaToque', 'expanded' => true])
+
+            @if($partituraEsImagen)
+            <div class="programa-partitura-preview mt-3">
+                <img
+                    src="{{ $partituraInlineUrl }}"
+                    alt="Partitura: {{ $programaRitmo->nombre }}"
+                    class="img-fluid rounded border programa-partitura-preview-img"
+                    loading="lazy"
+                >
+            </div>
+            @elseif($partituraEsPdf)
+            <div class="programa-partitura-preview mt-3">
+                <iframe
+                    src="{{ $partituraInlineUrl }}#view=FitH"
+                    title="Partitura PDF — {{ $programaRitmo->nombre }}"
+                    class="programa-partitura-pdf-frame"
+                ></iframe>
+                <p class="form-text mb-0 mt-2">Si no se ve el PDF, usá el botón «Abrir PDF» de arriba.</p>
+            </div>
+            @else
+            <p class="text-muted small mb-0">Descargá el archivo para verlo en tu dispositivo.</p>
+            @endif
         </div>
     </div>
     @endif

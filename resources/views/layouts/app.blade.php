@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}">
 
+    @stack('vite')
     @stack('styles')
 </head>
 <body>

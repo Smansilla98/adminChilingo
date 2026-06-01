@@ -157,6 +157,7 @@
                             <li>Tocá <strong>Programa</strong> en el menú.</li>
                             <li>Elegí el toque que quieras.</li>
                             <li>Los videos se abren al tocarlos.</li>
+                            <li>Con partitura: tocá <strong>¿Cómo leer la partitura?</strong> para ver la leyenda de símbolos.</li>
                         </ol>
                         @if(auth()->user()->isAdmin())
                         <hr class="my-3">
@@ -164,7 +165,8 @@
                         <ol class="mb-0">
                             <li><strong>Editar página del toque</strong>.</li>
                             <li>Primero: un <strong>resumen</strong>, el <strong>texto</strong> y un <strong>video</strong> — alcanza para empezar.</li>
-                            <li>Después, si querés: partitura, videos por tambor, cortes y más archivos.</li>
+                            <li>Partitura digital: rejilla de golpes (se genera sola) o PDF/imagen.</li>
+                            <li>Después, si querés: videos por tambor, cortes y más archivos.</li>
                             <li><strong>Guardar</strong> al terminar.</li>
                         </ol>
                         @endif

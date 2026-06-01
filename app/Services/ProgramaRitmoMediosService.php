@@ -21,6 +21,16 @@ class ProgramaRitmoMediosService
 
         $pathsAntes = $this->pathsEnMedios($medios);
 
+        if ($request->boolean('quitar_partitura_vexflow')) {
+            $medios['partitura_vexflow'] = null;
+        } else {
+            $json = $request->input('partitura_vexflow_json');
+            if (is_string($json) && trim($json) !== '') {
+                $decoded = json_decode($json, true);
+                $medios['partitura_vexflow'] = ProgramaRitmoMedios::normalizarPartituraVexflow($decoded);
+            }
+        }
+
         if ($request->boolean('quitar_partitura')) {
             $medios['partitura'] = null;
         } elseif ($request->hasFile('partitura_archivo')) {
