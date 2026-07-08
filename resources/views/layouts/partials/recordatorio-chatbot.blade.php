@@ -1,4 +1,13 @@
-<div id="recordatorio-chatbot" class="recordatorio-chatbot" aria-live="polite" data-api-url="{{ route('recordatorios.chat') }}">
+@php
+    $waResumen = auth()->user()->isAdmin() ? app(\App\Services\WhatsAppResumenAdminService::class) : null;
+    $mostrarWhatsApp = $waResumen?->isDisponible() ?? false;
+@endphp
+<div id="recordatorio-chatbot" class="recordatorio-chatbot" aria-live="polite"
+     data-api-url="{{ route('recordatorios.chat') }}"
+     @if($mostrarWhatsApp)
+     data-whatsapp-url="{{ route('recordatorios.whatsapp.enviar') }}"
+     @endif
+>
     <div id="recordatorio-chat-panel" class="recordatorio-chat-panel d-none" role="dialog" aria-labelledby="recordatorio-chat-title" aria-modal="true">
         <div class="recordatorio-chat-header">
             <div>
@@ -16,8 +25,19 @@
                 <span class="recordatorio-chat-typing">Revisando pendientes…</span>
             </div>
         </div>
-        <div class="recordatorio-chat-footer small text-muted">
-            Se actualiza cada vez que abrís este panel.
+        <div class="recordatorio-chat-footer">
+            <p class="small text-muted mb-2">Se actualiza cada vez que abrís este panel.</p>
+            @if($mostrarWhatsApp)
+                <div class="recordatorio-chat-whatsapp-actions">
+                    <button type="button" id="recordatorio-chat-whatsapp-preview" class="btn btn-sm btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-eye" aria-hidden="true"></i> Ver mensaje de WhatsApp
+                    </button>
+                    <button type="button" id="recordatorio-chat-whatsapp-send" class="btn btn-sm btn-success w-100">
+                        <i class="bi bi-whatsapp" aria-hidden="true"></i> Enviar resumen por WhatsApp
+                    </button>
+                    <div id="recordatorio-chat-whatsapp-status" class="recordatorio-chat-whatsapp-status d-none" role="status"></div>
+                </div>
+            @endif
         </div>
     </div>
 

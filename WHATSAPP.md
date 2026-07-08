@@ -105,6 +105,14 @@ php artisan whatsapp:resumen-admin --dry-run
 php artisan whatsapp:resumen-admin
 ```
 
+**Desde el panel (solo admin):**
+
+1. Iniciá sesión como administrador.
+2. Abrí el botón de **Recordatorios** (abajo a la derecha).
+3. Usá **Ver mensaje de WhatsApp** para la vista previa, o **Enviar resumen por WhatsApp** para mandarlo al instante.
+
+Los botones solo aparecen si Twilio está configurado y hay al menos un número destino.
+
 **Cron del servidor** (Laravel Scheduler — obligatorio en producción):
 
 ```cron

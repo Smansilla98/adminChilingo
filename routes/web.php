@@ -24,6 +24,7 @@ use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\AyudaController;
 use App\Http\Controllers\AccesosController;
 use App\Http\Controllers\RecordatorioChatbotController;
+use App\Http\Controllers\RecordatorioWhatsAppController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoPublicController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoGestionController;
 use App\Http\Controllers\ProfesorPagoCuotaController;
@@ -52,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/recordatorios/chat', RecordatorioChatbotController::class)->name('recordatorios.chat');
+    Route::post('/recordatorios/whatsapp', [RecordatorioWhatsAppController::class, 'enviar'])->name('recordatorios.whatsapp.enviar');
 
     // Ayuda (guía de uso)
     Route::get('/ayuda', [AyudaController::class, 'index'])->middleware('modulo:ayuda')->name('ayuda');

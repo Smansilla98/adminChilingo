@@ -13,7 +13,7 @@
     @stack('vite')
     @stack('styles')
     @auth
-    <link rel="stylesheet" href="{{ asset('css/recordatorio-chatbot.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/recordatorio-chatbot.css') }}?v=2">
     @endauth
 </head>
 <body>
@@ -231,7 +231,7 @@
 })();
 </script>
 @auth
-<script src="{{ asset('js/recordatorio-chatbot.js') }}?v=1"></script>
+<script src="{{ asset('js/recordatorio-chatbot.js') }}?v=2"></script>
 @endauth
 @stack('scripts')
 </body>

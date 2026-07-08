@@ -132,6 +132,49 @@
   border-top: 1px solid var(--border, #dee2e6);
 }
 
+.recordatorio-chat-whatsapp-actions .btn-success {
+  background: #25d366;
+  border-color: #25d366;
+}
+
+.recordatorio-chat-whatsapp-actions .btn-success:hover {
+  background: #1ebe57;
+  border-color: #1ebe57;
+}
+
+.recordatorio-chat-whatsapp-status {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.recordatorio-chat-whatsapp-status.is-ok {
+  color: #198754;
+}
+
+.recordatorio-chat-whatsapp-status.is-error {
+  color: #dc3545;
+}
+
+.recordatorio-chat-whatsapp-status.is-info {
+  color: #6c757d;
+}
+
+.recordatorio-chat-bubble--wa-preview {
+  margin-top: 0.25rem;
+}
+
+.recordatorio-chat-wa-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 0.8rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
 @media (max-width: 575.98px) {
   .recordatorio-chat-panel {
     width: calc(100vw - 2rem);
