@@ -64,6 +64,17 @@
                     @endforeach
                 </div>
 
+                @if($usuario->isAdmin())
+                    <div class="border rounded p-3 mb-3 bg-light">
+                        <label class="form-label mb-1" for="telefono">WhatsApp (resumen semanal)</label>
+                        <input type="text" name="telefono" id="telefono" class="form-control @error('telefono') is-invalid @enderror"
+                               value="{{ old('telefono', $usuario->telefono) }}"
+                               placeholder="Ej. +5491112345678 o 91112345678">
+                        <div class="form-text">Si cargás un teléfono, recibirá cada lunes el resumen de asistencias y cuotas pendientes.</div>
+                        @error('telefono')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                @endif
+
                 <p class="form-text mb-2">Solo se guardan los accesos de la persona elegida arriba. Los administradores siempre ven todo.</p>
                 <div class="mt-3 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">Guardar accesos</button>

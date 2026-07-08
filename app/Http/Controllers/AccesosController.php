@@ -74,6 +74,7 @@ class AccesosController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'access' => 'nullable|array',
+            'telefono' => 'nullable|string|max:20',
         ]);
 
         $usuario = User::query()->findOrFail($request->integer('user_id'));
@@ -91,7 +92,13 @@ class AccesosController extends Controller
             }
         }
 
-        $usuario->forceFill(['modulos_access' => $out])->saveQuietly();
+        $usuario->forceFill(['modulos_access' => $out]);
+
+        if ($usuario->isAdmin() && $request->has('telefono')) {
+            $usuario->telefono = trim((string) $request->input('telefono')) ?: null;
+        }
+
+        $usuario->saveQuietly();
 
         return redirect()
             ->route('accesos.index', ['user_id' => $usuario->id])

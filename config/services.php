@@ -46,6 +46,10 @@ return [
         'account_sid' => env('TWILIO_ACCOUNT_SID'),
         'auth_token' => env('TWILIO_AUTH_TOKEN'),
         'whatsapp_from' => env('TWILIO_WHATSAPP_FROM', ''), // ej. +14155238886 (sin prefijo whatsapp:)
+        'admin_whatsapp_numbers' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('WHATSAPP_ADMIN_NUMBERS', ''))
+        ))),
     ],
 
 ];

@@ -12,6 +12,9 @@
 
     @stack('vite')
     @stack('styles')
+    @auth
+    <link rel="stylesheet" href="{{ asset('css/recordatorio-chatbot.css') }}?v=1">
+    @endauth
 </head>
 <body>
 @auth
@@ -194,6 +197,8 @@
             @yield('content')
         </section>
     </main>
+
+    @include('layouts.partials.recordatorio-chatbot')
 </div>
 @endauth
 
@@ -225,6 +230,9 @@
     });
 })();
 </script>
+@auth
+<script src="{{ asset('js/recordatorio-chatbot.js') }}?v=1"></script>
+@endauth
 @stack('scripts')
 </body>
 </html>

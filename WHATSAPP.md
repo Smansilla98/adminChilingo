@@ -84,6 +84,35 @@ Para que los recordatorios se envíen solos, agregá en el crontab del servidor 
 
 (Ejemplo: todos los días a las 10:00.)
 
+## 5.1 Resumen semanal para administradores
+
+Cada **lunes a las 9:00** (hora Argentina) el sistema puede enviar por WhatsApp un resumen de pendientes del panel: asistencias sin cargar y cuotas del mes sin registrar. Usa la misma lógica que el chatbot de recordatorios.
+
+**Destinatarios** (al menos uno):
+
+1. Usuarios **admin** con teléfono cargado en **Accesos → WhatsApp (resumen semanal)**, o
+2. Números en `.env`: `WHATSAPP_ADMIN_NUMBERS=+5491112345678,+5491198765432`
+
+**Probar sin enviar:**
+
+```bash
+php artisan whatsapp:resumen-admin --dry-run
+```
+
+**Enviar manualmente:**
+
+```bash
+php artisan whatsapp:resumen-admin
+```
+
+**Cron del servidor** (Laravel Scheduler — obligatorio en producción):
+
+```cron
+* * * * * cd /ruta/al/proyecto && php artisan schedule:run >> /dev/null 2>&1
+```
+
+El comando `whatsapp:resumen-admin` ya está programado en la app para los lunes a las 9:00.
+
 ## 6. Producción con Twilio
 
 Para producción necesitás un **número de WhatsApp Business** aprobado por Twilio/Meta (no el sandbox). Ese número se configura en `TWILIO_WHATSAPP_FROM`. Los mensajes iniciados por el negocio suelen requerir **plantillas aprobadas** por Meta; para mensajes de texto libres (como estos recordatorios) Twilio tiene restricciones según el tipo de cuenta. Revisá la documentación de [Twilio WhatsApp](https://www.twilio.com/docs/whatsapp) para tu caso.
