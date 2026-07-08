@@ -8,7 +8,11 @@
     var messagesEl = document.getElementById('recordatorio-chat-messages');
     var badge = document.getElementById('recordatorio-chat-badge');
     var apiUrl = root.getAttribute('data-api-url');
+    var mailUrl = root.getAttribute('data-mail-url');
     var whatsappUrl = root.getAttribute('data-whatsapp-url');
+    var mailPreviewBtn = document.getElementById('recordatorio-chat-mail-preview');
+    var mailSendBtn = document.getElementById('recordatorio-chat-mail-send');
+    var mailStatus = document.getElementById('recordatorio-chat-mail-status');
     var waPreviewBtn = document.getElementById('recordatorio-chat-whatsapp-preview');
     var waSendBtn = document.getElementById('recordatorio-chat-whatsapp-send');
     var waStatus = document.getElementById('recordatorio-chat-whatsapp-status');
@@ -90,10 +94,79 @@
         if (tipo) waStatus.classList.add('is-' + tipo);
     }
 
+    function setMailStatus(texto, tipo) {
+        if (!mailStatus) return;
+        mailStatus.textContent = texto;
+        mailStatus.classList.remove('d-none', 'is-ok', 'is-error', 'is-info');
+        if (tipo) mailStatus.classList.add('is-' + tipo);
+    }
+
     function setWaLoading(cargando) {
         [waPreviewBtn, waSendBtn].forEach(function (btn) {
             if (btn) btn.disabled = cargando;
         });
+    }
+
+    function setMailLoading(cargando) {
+        [mailPreviewBtn, mailSendBtn].forEach(function (btn) {
+            if (btn) btn.disabled = cargando;
+        });
+    }
+
+    function enviarMail(preview) {
+        if (!mailUrl) return;
+
+        if (!preview && !window.confirm('¿Enviar el resumen por mail al destinatario configurado?')) {
+            return;
+        }
+
+        setMailLoading(true);
+        setMailStatus(preview ? 'Generando vista previa…' : 'Enviando mail…', 'info');
+
+        var body = preview ? 'preview=1' : '';
+        fetch(mailUrl, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken(),
+            },
+            credentials: 'same-origin',
+            body: body,
+        })
+            .then(function (r) {
+                return r.json().then(function (data) {
+                    return { ok: r.ok, data: data };
+                });
+            })
+            .then(function (res) {
+                var data = res.data || {};
+                if (preview && data.detalles && data.detalles[0] && data.detalles[0].preview) {
+                    var previewHtml = '<div class="recordatorio-chat-bubble recordatorio-chat-bubble--bot recordatorio-chat-bubble--mail-preview">'
+                        + '<div class="fw-semibold mb-1">Vista previa mail</div>'
+                        + '<pre class="recordatorio-chat-mail-pre">' + escHtml(data.detalles[0].preview) + '</pre>'
+                        + '</div>';
+                    messagesEl.insertAdjacentHTML('beforeend', previewHtml);
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                    setMailStatus(data.mensaje || 'Vista previa lista.', 'ok');
+                    return;
+                }
+
+                if (res.ok && data.ok) {
+                    setMailStatus(data.mensaje || 'Mail enviado.', 'ok');
+                    return;
+                }
+
+                var err = data.mensaje || (data.detalles && data.detalles[0] && data.detalles[0].error) || 'No se pudo enviar el mail.';
+                setMailStatus(err, 'error');
+            })
+            .catch(function () {
+                setMailStatus('Error de conexión al enviar mail.', 'error');
+            })
+            .finally(function () {
+                setMailLoading(false);
+            });
     }
 
     function enviarWhatsApp(preview) {
@@ -170,6 +243,18 @@
         else abrir();
     });
     closeBtn.addEventListener('click', cerrar);
+
+    if (mailPreviewBtn) {
+        mailPreviewBtn.addEventListener('click', function () {
+            enviarMail(true);
+        });
+    }
+
+    if (mailSendBtn) {
+        mailSendBtn.addEventListener('click', function () {
+            enviarMail(false);
+        });
+    }
 
     if (waPreviewBtn) {
         waPreviewBtn.addEventListener('click', function () {

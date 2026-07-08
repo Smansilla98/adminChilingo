@@ -1,9 +1,14 @@
 @php
     $waResumen = auth()->user()->isAdmin() ? app(\App\Services\WhatsAppResumenAdminService::class) : null;
     $mostrarWhatsApp = $waResumen?->isDisponible() ?? false;
+    $mailResumen = auth()->user()->isAdmin() ? app(\App\Services\MailResumenAdminService::class) : null;
+    $mostrarMail = $mailResumen?->isDisponible() ?? true;
 @endphp
 <div id="recordatorio-chatbot" class="recordatorio-chatbot" aria-live="polite"
      data-api-url="{{ route('recordatorios.chat') }}"
+     @if(auth()->user()->isAdmin())
+     data-mail-url="{{ route('recordatorios.mail.enviar') }}"
+     @endif
      @if($mostrarWhatsApp)
      data-whatsapp-url="{{ route('recordatorios.whatsapp.enviar') }}"
      @endif
@@ -27,6 +32,17 @@
         </div>
         <div class="recordatorio-chat-footer">
             <p class="small text-muted mb-2">Se actualiza cada vez que abrís este panel.</p>
+            @if(auth()->user()->isAdmin() && $mostrarMail)
+                <div class="recordatorio-chat-mail-actions mb-2">
+                    <button type="button" id="recordatorio-chat-mail-preview" class="btn btn-sm btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-envelope-open" aria-hidden="true"></i> Ver mail
+                    </button>
+                    <button type="button" id="recordatorio-chat-mail-send" class="btn btn-sm btn-primary w-100">
+                        <i class="bi bi-envelope" aria-hidden="true"></i> Enviar resumen por mail
+                    </button>
+                    <div id="recordatorio-chat-mail-status" class="recordatorio-chat-mail-status d-none" role="status"></div>
+                </div>
+            @endif
             @if($mostrarWhatsApp)
                 <div class="recordatorio-chat-whatsapp-actions">
                     <button type="button" id="recordatorio-chat-whatsapp-preview" class="btn btn-sm btn-outline-secondary w-100 mb-2">

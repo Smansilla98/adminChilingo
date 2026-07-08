@@ -148,6 +148,24 @@
   line-height: 1.35;
 }
 
+.recordatorio-chat-mail-status {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.recordatorio-chat-mail-status.is-ok {
+  color: #198754;
+}
+
+.recordatorio-chat-mail-status.is-error {
+  color: #dc3545;
+}
+
+.recordatorio-chat-mail-status.is-info {
+  color: #6c757d;
+}
+
 .recordatorio-chat-whatsapp-status.is-ok {
   color: #198754;
 }
@@ -165,6 +183,21 @@
 }
 
 .recordatorio-chat-wa-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 0.8rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.recordatorio-chat-bubble--mail-preview {
+  margin-top: 0.25rem;
+}
+
+.recordatorio-chat-mail-pre {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;

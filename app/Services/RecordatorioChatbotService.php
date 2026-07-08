@@ -81,6 +81,49 @@ class RecordatorioChatbotService
     }
 
     /**
+     * Texto plano para envío por email (resumen semanal).
+     *
+     * @param  array{saludo?: string, mensajes?: array<int, array<string, mixed>>, todo_ok?: bool}  $data
+     */
+    public function formatMailResumenSemanal(array $data): string
+    {
+        $inicio = now()->startOfWeek()->format('d/m');
+        $fin = now()->endOfWeek()->format('d/m');
+
+        $lines = [
+            'ITO — Resumen semanal',
+            'Semana: '.$inicio.' al '.$fin,
+            '',
+        ];
+
+        $saludo = trim($data['saludo'] ?? '');
+        if ($saludo !== '') {
+            $lines[] = preg_replace('/hoy:?/i', 'esta semana:', $saludo);
+            $lines[] = '';
+        }
+
+        if (! empty($data['todo_ok'])) {
+            $lines[] = 'Todo al día: no hay asistencias atrasadas ni cuotas del mes sin registrar en el panel.';
+        } else {
+            foreach ($data['mensajes'] ?? [] as $mensaje) {
+                if (($mensaje['tipo'] ?? '') === 'ok') {
+                    continue;
+                }
+                $linea = '- '.($mensaje['texto'] ?? '');
+                if (! empty($mensaje['accion_url'])) {
+                    $linea .= "\n  ".$mensaje['accion_url'];
+                }
+                $lines[] = $linea;
+                $lines[] = '';
+            }
+        }
+
+        $lines[] = 'Panel: '.url('/dashboard');
+
+        return implode("\n", $lines);
+    }
+
+    /**
      * @return array{saludo: string, mensajes: array<int, array<string, mixed>>, resumen: array<string, int>, todo_ok: bool}
      */
     private function buildInterno(User $user): array

@@ -29,4 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->timezone(config('app.timezone'))
             ->withoutOverlapping()
             ->onOneServer();
+
+        $schedule->command('mail:resumen-admin')
+            ->weeklyOn(1, '09:00')
+            ->timezone(config('app.timezone'))
+            ->withoutOverlapping()
+            ->onOneServer();
     })->create();

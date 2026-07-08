@@ -115,4 +115,14 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin — Resumen semanal
+    |--------------------------------------------------------------------------
+    |
+    | Destinatario del resumen semanal (pendientes del panel).
+    |
+    */
+    'admin_resumen_email' => env('ADMIN_RESUMEN_EMAIL', ''),
+
 ];
