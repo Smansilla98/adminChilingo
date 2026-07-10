@@ -10,6 +10,10 @@
 @php
     $flat = $medios['partitura_flat'] ?? null;
     $tieneFlat = ! empty($flat['musicxml']);
+    $embedHost = request()->getHost();
+    $esLocalEmbed = in_array($embedHost, ['localhost', '127.0.0.1'], true)
+        || str_ends_with($embedHost, '.localhost')
+        || str_ends_with($embedHost, '.test');
 @endphp
 
 <form method="POST"
@@ -47,11 +51,29 @@
         </div>
     @endif
 
-  @if($flatAppId === '' && ! app()->environment('local'))
-        <div class="compositor-alert compositor-alert-warning">
-            <i class="bi bi-exclamation-triangle"></i>
-            Configurá <code>FLAT_EMBED_APP_ID</code> en el servidor para usar el editor en producción.
-            <a href="https://flat.io/developers/apps" target="_blank" rel="noopener">Crear app en Flat</a>
+    @if(!$esLocalEmbed)
+        <div class="compositor-alert compositor-alert-warning compositor-setup-alert">
+            <div class="compositor-setup-title">
+                <i class="bi bi-exclamation-triangle"></i>
+                Configuración requerida para producción (Flat.io)
+            </div>
+            <p class="mb-2">
+                Si ves <strong>«Invalid embed referer»</strong>, el dominio actual no está autorizado en tu app de Flat.
+            </p>
+            <ol class="compositor-setup-steps mb-2">
+                <li>Entrá a <a href="https://flat.io/developers/apps" target="_blank" rel="noopener">flat.io/developers/apps</a> y abrí tu app (o creá una nueva).</li>
+                <li>En <strong>Embed → Settings → Authorized domains</strong>, agregá exactamente:
+                    <code class="compositor-setup-domain">{{ $embedHost }}</code>
+                    (sin <code>https://</code> ni barra final).
+                </li>
+                <li>Copiá el <strong>App ID</strong> de esa misma página y definilo en Railway como variable <code>FLAT_EMBED_APP_ID</code>.</li>
+                <li>Redeploy o reiniciá el servicio y recargá esta página.</li>
+            </ol>
+            @if($flatAppId === '')
+                <p class="mb-0 text-danger"><strong>Falta <code>FLAT_EMBED_APP_ID</code></strong> en las variables de entorno del servidor.</p>
+            @else
+                <p class="mb-0 text-muted">App ID configurado. Si el error persiste, revisá que el dominio autorizado coincida con <code>{{ $embedHost }}</code>.</p>
+            @endif
         </div>
     @endif
 
@@ -59,6 +81,7 @@
          id="compositorApp"
          data-app-id="{{ $flatAppId }}"
          data-user-id="{{ auth()->id() }}"
+         data-host="{{ $embedHost }}"
          data-mode="edit">
         @if($tieneFlat)
             <script type="application/json" id="compositorInitialXml">@json($flat['musicxml'])</script>

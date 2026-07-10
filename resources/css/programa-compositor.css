@@ -148,6 +148,29 @@
   font-weight: 600;
 }
 
+.compositor-setup-alert {
+  line-height: 1.45;
+}
+
+.compositor-setup-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.compositor-setup-steps {
+  padding-left: 1.25rem;
+  margin-bottom: 0;
+}
+
+.compositor-setup-domain {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  font-weight: 600;
+}
+
 .compositor-body {
   flex: 1;
   min-height: 0;
