@@ -11,20 +11,17 @@ class ResumenSemanalAdminMail extends Mailable
     use Queueable, SerializesModels;
 
     /**
-     * @param  string  $subjectText
-     * @param  string  $bodyText
+     * @param  array<string, mixed>  $payload
      */
     public function __construct(
         public string $subjectText,
-        public string $bodyText,
+        public array $payload,
     ) {}
 
     public function build(): self
     {
         return $this->subject($this->subjectText)
-            ->text('mail.resumen-semanal-admin-text', [
-                'bodyText' => $this->bodyText,
-            ]);
+            ->view('mail.resumen-admin', $this->payload)
+            ->text('mail.resumen-admin-text', $this->payload);
     }
 }
-

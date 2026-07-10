@@ -14,6 +14,7 @@ use App\Models\Asistencia;
 use App\Models\Sede;
 use App\Models\Evento;
 use App\Models\ComprobanteCuotaAlumno;
+use App\Models\Gasto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
@@ -212,6 +213,75 @@ class DashboardController extends Controller
                 return (float) Pago::whereBetween('fecha_pago', [$inicio->toDateString(), $fin->toDateString()])->sum('monto_total');
             });
 
+            $cobradoMes = (float) Pago::query()
+                ->whereYear('fecha_pago', $anioActual)
+                ->whereMonth('fecha_pago', $mesActual)
+                ->sum('monto_total');
+
+            $proximosEventos = Evento::query()->proximos()->orderBy('fecha')->limit(5)->get();
+            $proximosEventosCount = (int) Evento::query()->proximos()->count();
+
+            $comprobantesPendientesCount = 0;
+            $comprobantesPendientesList = collect();
+            if (Schema::hasTable('comprobantes_cuota_alumnos')) {
+                $comprobantesPendientesCount = (int) ComprobanteCuotaAlumno::query()
+                    ->where('estado', 'pendiente')
+                    ->count();
+                $comprobantesPendientesList = ComprobanteCuotaAlumno::query()
+                    ->where('estado', 'pendiente')
+                    ->with('alumno')
+                    ->latest()
+                    ->limit(5)
+                    ->get();
+            }
+
+            $bloquesCupo = Bloque::query()
+                ->where('activo', true)
+                ->with(['sede', 'profesor'])
+                ->withCount(['alumnos as alumnos_activos_count' => fn ($q) => $q->where('alumnos.activo', true)])
+                ->orderBy('nombre')
+                ->take(12)
+                ->get();
+
+            $chartLabels = [];
+            $chartIngresos = [];
+            $chartGastos = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $d = now()->subMonths($i);
+                $chartLabels[] = $d->locale('es')->translatedFormat('M y');
+                $chartIngresos[] = (float) Pago::query()
+                    ->whereYear('fecha_pago', $d->year)
+                    ->whereMonth('fecha_pago', $d->month)
+                    ->sum('monto_total');
+                $chartGastos[] = Schema::hasTable('gastos')
+                    ? (float) Gasto::query()->whereYear('fecha', $d->year)->whereMonth('fecha', $d->month)->sum('monto')
+                    : 0.0;
+            }
+
+            $alumnosPorSedeChart = Sede::query()
+                ->orderBy('nombre')
+                ->get()
+                ->map(function (Sede $sede) {
+                    $total = Alumno::query()
+                        ->where('activo', true)
+                        ->where(function ($q) use ($sede) {
+                            $q->where('sede_id', $sede->id)
+                                ->orWhereHas('bloques', fn ($b) => $b->where('bloques.sede_id', $sede->id));
+                        })
+                        ->count();
+
+                    return ['nombre' => $sede->nombre, 'total' => $total];
+                })
+                ->filter(fn ($r) => $r['total'] > 0)
+                ->values();
+
+            $asistenciasMes = (int) Asistencia::query()
+                ->whereYear('fecha', $anioActual)
+                ->whereMonth('fecha', $mesActual)
+                ->count();
+
+            $adminNombre = trim(auth()->user()->name ?: auth()->user()->username ?: '');
+
             return view('dashboard.index', compact(
                 'alumnosActivos',
                 'bloquesActivos',
@@ -226,7 +296,19 @@ class DashboardController extends Controller
                 'maxAlumnosProfesor',
                 'bloquesSemanales',
                 'cuotasPendientesList',
-                'recaudacion'
+                'recaudacion',
+                'cobradoMes',
+                'proximosEventos',
+                'proximosEventosCount',
+                'comprobantesPendientesCount',
+                'comprobantesPendientesList',
+                'bloquesCupo',
+                'chartLabels',
+                'chartIngresos',
+                'chartGastos',
+                'alumnosPorSedeChart',
+                'asistenciasMes',
+                'adminNombre'
             ));
         } catch (\Illuminate\Database\QueryException $e) {
             return view('dashboard.index', [
@@ -244,6 +326,18 @@ class DashboardController extends Controller
                 'bloquesSemanales' => collect(),
                 'cuotasPendientesList' => collect(),
                 'recaudacion' => collect([0, 0, 0, 0, 0, 0]),
+                'cobradoMes' => 0,
+                'proximosEventos' => collect(),
+                'proximosEventosCount' => 0,
+                'comprobantesPendientesCount' => 0,
+                'comprobantesPendientesList' => collect(),
+                'bloquesCupo' => collect(),
+                'chartLabels' => [],
+                'chartIngresos' => [],
+                'chartGastos' => [],
+                'alumnosPorSedeChart' => collect(),
+                'asistenciasMes' => 0,
+                'adminNombre' => '',
             ]);
         }
     }

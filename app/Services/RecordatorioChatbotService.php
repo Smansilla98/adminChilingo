@@ -21,10 +21,10 @@ class RecordatorioChatbotService
     /**
      * @return array{saludo: string, mensajes: array<int, array<string, mixed>>, resumen: array<string, int>, todo_ok: bool}
      */
-    public function build(User $user): array
+    public function build(User $user, ?int $maxAsistencias = null, ?int $maxCuotasEjemplos = null): array
     {
         try {
-            return $this->buildInterno($user);
+            return $this->buildInterno($user, $maxAsistencias, $maxCuotasEjemplos);
         } catch (\Throwable) {
             return [
                 'saludo' => $this->saludo($user),
@@ -81,44 +81,86 @@ class RecordatorioChatbotService
     }
 
     /**
-     * Texto plano para envío por email (resumen semanal).
+     * Datos estructurados para el mail HTML del resumen diario.
      *
-     * @param  array{saludo?: string, mensajes?: array<int, array<string, mixed>>, todo_ok?: bool}  $data
+     * @return array<string, mixed>
      */
-    public function formatMailResumenSemanal(array $data): string
+    public function buildMailPayload(User $user): array
     {
-        $inicio = now()->startOfWeek()->format('d/m');
-        $fin = now()->endOfWeek()->format('d/m');
+        $data = $this->build($user, 12, 8);
+        $hoy = now();
 
+        $asistencias = [];
+        $cuotas = [];
+        foreach ($data['mensajes'] ?? [] as $mensaje) {
+            if (($mensaje['tipo'] ?? '') === 'ok') {
+                continue;
+            }
+            $item = [
+                'texto' => $mensaje['texto'] ?? '',
+                'prioridad' => $mensaje['prioridad'] ?? 'baja',
+                'url' => $mensaje['accion_url'] ?? null,
+                'accion' => $mensaje['accion_texto'] ?? null,
+            ];
+            if (($mensaje['tipo'] ?? '') === 'asistencia') {
+                $asistencias[] = $item;
+            } elseif (($mensaje['tipo'] ?? '') === 'cuota') {
+                $cuotas[] = $item;
+            }
+        }
+
+        $resumen = $data['resumen'] ?? ['asistencias' => 0, 'cuotas' => 0, 'total' => 0];
+
+        return [
+            'fecha_larga' => ucfirst($hoy->locale('es')->isoFormat('dddd D [de] MMMM [de] YYYY')),
+            'fecha_corta' => $hoy->format('d/m/Y'),
+            'saludo' => preg_replace('/hoy:?/i', 'hoy:', trim($data['saludo'] ?? '')),
+            'todo_ok' => (bool) ($data['todo_ok'] ?? false),
+            'resumen' => $resumen,
+            'asistencias' => $asistencias,
+            'cuotas' => $cuotas,
+            'panel_url' => url('/dashboard'),
+            'asistencias_url' => route('asistencias.index'),
+            'pagos_url' => route('pagos.create'),
+            'app_name' => config('app.name', 'ITO'),
+        ];
+    }
+
+    /**
+     * Texto plano para vista previa del mail.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function formatMailResumenTexto(array $payload): string
+    {
         $lines = [
-            'ITO — Resumen semanal',
-            'Semana: '.$inicio.' al '.$fin,
+            ($payload['app_name'] ?? 'ITO').' — Resumen diario',
+            'Fecha: '.($payload['fecha_corta'] ?? ''),
+            '',
+            $payload['saludo'] ?? '',
             '',
         ];
 
-        $saludo = trim($data['saludo'] ?? '');
-        if ($saludo !== '') {
-            $lines[] = preg_replace('/hoy:?/i', 'esta semana:', $saludo);
-            $lines[] = '';
-        }
-
-        if (! empty($data['todo_ok'])) {
-            $lines[] = 'Todo al día: no hay asistencias atrasadas ni cuotas del mes sin registrar en el panel.';
+        if (! empty($payload['todo_ok'])) {
+            $lines[] = 'Todo al día: no hay asistencias atrasadas ni cuotas del mes sin registrar.';
         } else {
-            foreach ($data['mensajes'] ?? [] as $mensaje) {
-                if (($mensaje['tipo'] ?? '') === 'ok') {
-                    continue;
+            if (! empty($payload['asistencias'])) {
+                $lines[] = 'ASISTENCIAS ('.($payload['resumen']['asistencias'] ?? 0).')';
+                foreach ($payload['asistencias'] as $item) {
+                    $lines[] = '- '.($item['texto'] ?? '');
                 }
-                $linea = '- '.($mensaje['texto'] ?? '');
-                if (! empty($mensaje['accion_url'])) {
-                    $linea .= "\n  ".$mensaje['accion_url'];
+                $lines[] = '';
+            }
+            if (! empty($payload['cuotas'])) {
+                $lines[] = 'CUOTAS ('.($payload['resumen']['cuotas'] ?? 0).')';
+                foreach ($payload['cuotas'] as $item) {
+                    $lines[] = '- '.($item['texto'] ?? '');
                 }
-                $lines[] = $linea;
                 $lines[] = '';
             }
         }
 
-        $lines[] = 'Panel: '.url('/dashboard');
+        $lines[] = 'Panel: '.($payload['panel_url'] ?? url('/dashboard'));
 
         return implode("\n", $lines);
     }
@@ -126,15 +168,18 @@ class RecordatorioChatbotService
     /**
      * @return array{saludo: string, mensajes: array<int, array<string, mixed>>, resumen: array<string, int>, todo_ok: bool}
      */
-    private function buildInterno(User $user): array
+    private function buildInterno(User $user, ?int $maxAsistencias = null, ?int $maxCuotasEjemplos = null): array
     {
+        $maxAsist = $maxAsistencias ?? self::MAX_ASISTENCIAS;
+        $maxCuotas = $maxCuotasEjemplos ?? self::MAX_CUOTAS_EJEMPLOS;
+
         $mensajes = [];
         $asistencias = collect();
         $cuotasTotal = 0;
 
         if ($this->puedeVerAsistencias($user)) {
             $asistencias = $this->pendientesAsistencia($user);
-            foreach ($asistencias->take(self::MAX_ASISTENCIAS) as $row) {
+            foreach ($asistencias->take($maxAsist) as $row) {
                 $mensajes[] = [
                     'tipo' => 'asistencia',
                     'prioridad' => $row['estado'] === 'Pendiente' ? 'alta' : 'media',
@@ -143,7 +188,7 @@ class RecordatorioChatbotService
                     'accion_texto' => 'Cargar asistencia',
                 ];
             }
-            $extraAsist = $asistencias->count() - self::MAX_ASISTENCIAS;
+            $extraAsist = $asistencias->count() - $maxAsist;
             if ($extraAsist > 0) {
                 $mensajes[] = [
                     'tipo' => 'asistencia',
@@ -166,7 +211,7 @@ class RecordatorioChatbotService
                     'accion_url' => route('pagos.create'),
                     'accion_texto' => 'Registrar pago',
                 ];
-                foreach ($cuotas['ejemplos'] as $ej) {
+                foreach ($cuotas['ejemplos']->take($maxCuotas) as $ej) {
                     $mensajes[] = [
                         'tipo' => 'cuota',
                         'prioridad' => $ej['vencida'] ? 'alta' : 'baja',
@@ -175,7 +220,7 @@ class RecordatorioChatbotService
                         'accion_texto' => 'Ir a pagos',
                     ];
                 }
-                $extraCuotas = $cuotasTotal - $cuotas['ejemplos']->count();
+                $extraCuotas = $cuotasTotal - min($cuotas['ejemplos']->count(), $maxCuotas);
                 if ($extraCuotas > 0) {
                     $mensajes[] = [
                         'tipo' => 'cuota',

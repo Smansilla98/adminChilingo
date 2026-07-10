@@ -31,7 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
             ->onOneServer();
 
         $schedule->command('mail:resumen-admin')
-            ->weeklyOn(1, '09:00')
+            ->weekdays()
+            ->at('10:00')
             ->timezone(config('app.timezone'))
             ->withoutOverlapping()
             ->onOneServer();

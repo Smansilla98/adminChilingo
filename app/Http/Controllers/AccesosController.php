@@ -43,6 +43,7 @@ class AccesosController extends Controller
         'admin.ordenes_compra' => ['Administración', 'Órdenes de compra'],
         'admin.gastos' => ['Administración', 'Gastos'],
         'admin.shows' => ['Administración', 'Shows'],
+        'admin.disenos' => ['Administración', 'Diseño'],
     ];
 
     public function index(Request $request)

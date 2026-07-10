@@ -13,8 +13,8 @@
     <div class="card-body p-0">
         <div class="p-3 border-bottom">
             <p class="small text-muted mb-2">
-                Marcá los golpes en la rejilla (cada casilla es un semicorcheo). Abajo ves la partitura generada.
-                Podés usar esto junto con el PDF o la imagen de arriba.
+                Marcá los golpes en la rejilla (cada casilla es un semicorcheo). Cada clic avanza:
+                I normal → D normal → I acento → D acento → apagado. Abajo ves la partitura generada.
             </p>
             <div class="form-check mb-0">
                 <input class="form-check-input" type="checkbox" name="quitar_partitura_vexflow" value="1" id="quitar_partitura_vexflow" data-partitura-remove {{ old('quitar_partitura_vexflow') ? 'checked' : '' }}>
@@ -40,6 +40,8 @@
             </div>
 
             <p class="small text-muted mb-2">Tambores: @foreach(ProgramaRitmoMedios::VIDEOS_BASE as $label){{ $label }}@if(!$loop->last), @endif @endforeach.</p>
+
+            <div class="programa-partitura-repeats-wrap mb-2" data-partitura-repeats></div>
 
             <div class="programa-partitura-grid-wrap mb-3" data-partitura-grid></div>
 

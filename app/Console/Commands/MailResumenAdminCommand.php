@@ -11,7 +11,7 @@ class MailResumenAdminCommand extends Command
                             {--to= : Email destino (override)}
                             {--dry-run : Mostrar vista previa sin enviar}';
 
-    protected $description = 'Envía por email el resumen semanal de pendientes (asistencias y cuotas) a administradores';
+    protected $description = 'Envía por email el resumen diario de pendientes (asistencias y cuotas) a administradores';
 
     public function handle(MailResumenAdminService $servicio): int
     {

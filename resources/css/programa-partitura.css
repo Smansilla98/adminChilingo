@@ -1,53 +1,85 @@
 .programa-partitura-editor {
-  border: 1px solid var(--border, #dee2e6);
+  border: 1px solid var(--line, #3a2e24);
   border-radius: 12px;
   padding: 1rem;
-  background: color-mix(in srgb, var(--accent, #ffc107) 4%, var(--s1, #fff));
+  background: color-mix(in srgb, var(--brass, #d1a054) 6%, var(--surface-2, #1d160f));
 }
 
 .programa-partitura-grid-wrap {
   overflow-x: auto;
   max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .programa-partitura-grid th,
 .programa-partitura-grid td {
   vertical-align: middle;
+  padding: 0.1rem !important;
 }
 
 .programa-partitura-grid-beat {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  color: var(--muted, #6c757d);
-  min-width: 1.25rem;
-  padding: 0.15rem !important;
+  color: var(--muted, #a89478);
+  min-width: 1.1rem;
 }
 
 .programa-partitura-grid-downbeat {
-  border-left: 2px solid color-mix(in srgb, var(--accent, #ffc107) 50%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--brass, #d1a054) 55%, transparent);
 }
 
 .programa-partitura-cell {
-  display: block;
-  width: 1.35rem;
-  height: 1.35rem;
-  min-width: 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
   padding: 0;
-  border: 1px solid var(--border, #ced4da);
+  border: 1px solid var(--line, #3a2e24);
   border-radius: 4px;
-  background: var(--s1, #fff);
+  background: var(--surface, #14100c);
+  color: transparent;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 9px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
 .programa-partitura-cell:hover {
-  border-color: var(--accent, #ffc107);
+  border-color: var(--brass, #d1a054);
 }
 
 .programa-partitura-cell.is-on {
-  background: color-mix(in srgb, var(--accent, #ffc107) 75%, #fff);
-  border-color: color-mix(in srgb, var(--accent, #ffc107) 90%, #000);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  background: color-mix(in srgb, var(--brick, #c1432b) 55%, var(--surface, #14100c));
+  border-color: var(--brick, #c1432b);
+  color: var(--skin, #f3e9d8);
+}
+
+.programa-partitura-cell.hand-d.is-on {
+  background: color-mix(in srgb, var(--verdigris, #4a9a86) 50%, var(--surface, #14100c));
+  border-color: var(--verdigris, #4a9a86);
+}
+
+.programa-partitura-cell.is-accent.is-on {
+  border-width: 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brass, #d1a054) 70%, transparent);
+}
+
+.programa-partitura-cell.is-accent.is-on::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--brass, #d1a054);
+  top: 2px;
+  right: 2px;
+}
+
+.programa-partitura-cell {
+  position: relative;
 }
 
 .programa-partitura-preview {
@@ -56,9 +88,27 @@
   padding: 0.5rem;
   background: #fff;
   border-radius: 8px;
-  border: 1px solid var(--border, #dee2e6);
+  border: 1px solid var(--line, #3a2e24);
 }
 
 .programa-partitura-preview svg {
   max-width: none;
+}
+
+.programa-partitura-repeats select {
+  font-size: 11px;
+}
+
+@media (max-width: 576px) {
+  .programa-partitura-cell {
+    width: 1.25rem;
+    height: 1.25rem;
+    min-width: 1.25rem;
+    font-size: 8px;
+  }
+
+  .programa-partitura-grid-beat {
+    font-size: 8px;
+    min-width: 0.9rem;
+  }
 }

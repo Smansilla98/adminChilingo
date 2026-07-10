@@ -44,17 +44,15 @@ class MailResumenAdminService
             ];
         }
 
-        $inicio = now()->startOfWeek()->format('d/m');
-        $fin = now()->endOfWeek()->format('d/m');
-        $subject = 'ITO — Resumen semanal ('.$inicio.' al '.$fin.')';
+        $payload = $this->recordatorios->buildMailPayload($fallbackAdmin);
+        $subject = ($payload['app_name'] ?? 'ITO').' — Resumen diario · '.($payload['fecha_corta'] ?? now()->format('d/m/Y'));
 
         $enviados = 0;
         $errores = 0;
         $detalles = [];
 
         foreach ($destinatarios as $email) {
-            $data = $this->recordatorios->build($fallbackAdmin);
-            $body = $this->recordatorios->formatMailResumenSemanal($data);
+            $preview = $this->recordatorios->formatMailResumenTexto($payload);
 
             if ($dryRun) {
                 $enviados++;
@@ -62,13 +60,14 @@ class MailResumenAdminService
                     'email' => $email,
                     'success' => true,
                     'preview_subject' => $subject,
-                    'preview' => $body,
+                    'preview' => $preview,
                 ];
+
                 continue;
             }
 
             try {
-                Mail::to($email)->send(new ResumenSemanalAdminMail($subject, $body));
+                Mail::to($email)->send(new ResumenSemanalAdminMail($subject, $payload));
                 $enviados++;
                 $detalles[] = ['email' => $email, 'success' => true];
             } catch (\Throwable $e) {

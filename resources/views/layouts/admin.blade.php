@@ -2,14 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'ITO - Sistema de gestión')</title>
 
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=2">
 
+    @stack('vite')
     @stack('styles')
 </head>
 <body>
@@ -17,7 +19,7 @@
 @php
     $sideUserName = auth()->user()->name ?: auth()->user()->username ?: 'Usuario';
     $sideUserInitials = collect(preg_split('/\s+/', trim($sideUserName)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('') ?: 'U';
-    $sideUserRole = 'Administrador';
+    $sideUserRole = auth()->user()->isAdmin() ? 'Administrador' : 'Profesor';
 @endphp
 <div class="shell shell--maxton" id="appShell">
     <button type="button" class="nav-backdrop" id="navBackdrop" aria-label="Cerrar menú"></button>
@@ -34,26 +36,7 @@
         </div>
 
         <nav class="side-nav" aria-label="Navegación principal">
-            <a class="side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}" title="Inicio">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" fill="currentColor"/></svg>
-                <span class="side-link-text">Inicio</span>
-            </a>
-            <a class="side-link {{ request()->routeIs('alumnos.*') ? 'active' : '' }}" href="{{ route('alumnos.index') }}" title="Alumnos">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h7v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/></svg>
-                <span class="side-link-text">Alumnos</span>
-            </a>
-            <a class="side-link {{ request()->routeIs('calendario.*') ? 'active' : '' }}" href="{{ route('calendario.index') }}" title="Calendario">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z" fill="currentColor"/></svg>
-                <span class="side-link-text">Calendario</span>
-            </a>
-            <a class="side-link {{ request()->routeIs('cuotas.*') ? 'active' : '' }}" href="{{ route('cuotas.index') }}" title="Cuotas">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm1 17.93c-2.83.48-5.62-.9-6.78-3.45l1.74-.99A4.99 4.99 0 0 0 13 16.9V13h-2v-2h2V8.82c-1.16.41-2 1.51-2 2.82H9c0-2.76 2.24-5 5-5v2c-1.66 0-3 1.34-3 3v2h4v2h-2v3.93z" fill="currentColor"/></svg>
-                <span class="side-link-text">Cuotas</span>
-            </a>
-            <a class="side-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}" href="{{ route('reportes.index') }}" title="Reportes">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17h3v-7H3v7zm5 0h3V7H8v10zm5 0h3v-4h-3v4zm5 0h3V3h-3v14z" fill="currentColor"/></svg>
-                <span class="side-link-text">Reportes</span>
-            </a>
+            @include('layouts.partials.sidebar-nav')
         </nav>
 
         <div class="sidebar-foot">
@@ -97,11 +80,9 @@
                     </div>
                 </div>
             </div>
-            <div class="topbar-actions">
-                <a href="{{ route('alumnos.create') }}" class="btn btn-pill">+ Alumno</a>
-                <a href="{{ route('bloques.create') }}" class="btn btn-pill">+ Bloque</a>
-                <a href="{{ route('pagos.create') }}" class="btn btn-pill btn-pill-wide">Registrar pago</a>
-            </div>
+            @if(auth()->user()->isAdmin())
+                @include('layouts.partials.admin-topbar-actions')
+            @endif
         </header>
 
         <section class="content content--maxton">
@@ -143,6 +124,21 @@
     document.querySelectorAll('[data-open-nav]').forEach(function (el) { el.addEventListener('click', openNav); });
     backdrop.addEventListener('click', closeNav);
     sidebar?.querySelectorAll('a.side-link').forEach(function (a) { a.addEventListener('click', closeNav); });
+    document.querySelectorAll('.nav-group-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const group = btn.closest('.nav-group');
+            if (!group) return;
+            const wasOpen = group.classList.contains('open');
+            document.querySelectorAll('.nav-group.open').forEach(function (g) {
+                g.classList.remove('open');
+                g.querySelector('.nav-group-btn')?.setAttribute('aria-expanded', 'false');
+            });
+            if (!wasOpen) {
+                group.classList.add('open');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeNav(); });
 })();
 </script>

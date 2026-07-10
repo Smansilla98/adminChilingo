@@ -26,7 +26,7 @@ use App\Http\Controllers\AccesosController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
 use App\Http\Controllers\RecordatorioMailController;
-use App\Http\Controllers\ComprobanteCuotaAlumnoPublicController;
+use App\Http\Controllers\DisenoController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoGestionController;
 use App\Http\Controllers\ProfesorPagoCuotaController;
 use App\Models\Bloque;
@@ -105,6 +105,8 @@ Route::middleware(['auth'])->group(function () {
 
         // Shows (próximos shows, bloques o convocatoria abierta)
         Route::resource('shows', ShowController::class);
+
+        Route::resource('disenos', DisenoController::class)->middleware('modulo:admin.disenos');
 
         // Sedes
         Route::resource('sedes', SedeController::class);

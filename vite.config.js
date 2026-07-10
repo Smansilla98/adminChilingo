@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/programa-partitura.js',
+                'resources/js/diseno-canvas.js',
             ],
             refresh: true,
         }),
