@@ -1,7 +1,21 @@
 import '../css/diseno-canvas.css';
-import { Canvas, Rect, Circle, Textbox, Image as FabricImage } from 'fabric';
+import { Canvas, Rect, Circle, Textbox, Line, Image as FabricImage } from 'fabric';
 
-const BRAND_COLORS = ['#c1432b', '#d1a054', '#4a9a86', '#f3e9d8', '#1d160f', '#9c8ad1'];
+const BRAND_COLORS = [
+    { hex: '#c1432b', name: 'Ladrillo' },
+    { hex: '#d1a054', name: 'Latón' },
+    { hex: '#4a9a86', name: 'Verdigris' },
+    { hex: '#f3e9d8', name: 'Crema' },
+    { hex: '#1d160f', name: 'Madera' },
+    { hex: '#9c8ad1', name: 'Violeta' },
+];
+
+const TEMPLATES = [
+    { formato: 'flyer_feed', w: 1080, h: 1350, label: 'Flyer feed' },
+    { formato: 'historia', w: 1080, h: 1920, label: 'Historia' },
+    { formato: 'afiche_a4', w: 1240, h: 1748, label: 'Afiche A4' },
+    { formato: 'banner_web', w: 1200, h: 628, label: 'Banner web' },
+];
 
 function initDisenoEditor() {
     const root = document.getElementById('disenoApp');
@@ -9,20 +23,57 @@ function initDisenoEditor() {
     const canvasEl = document.getElementById('designCanvas');
     if (!root || !form || !canvasEl) return;
 
-    let activeColor = BRAND_COLORS[0];
+    let activeColor = BRAND_COLORS[0].hex;
+    let userZoom = 100;
+    let fitScale = 1;
     let template = {
         w: parseInt(root.dataset.ancho, 10) || 1080,
         h: parseInt(root.dataset.alto, 10) || 1350,
         formato: root.dataset.formato || 'flyer_feed',
     };
 
-    const canvas = new Canvas(canvasEl, { backgroundColor: '#f3e9d8', preserveObjectStacking: true });
+    const history = [];
+    let historyStep = -1;
+    let historyLock = false;
+
+    const canvas = new Canvas(canvasEl, {
+        backgroundColor: '#f3e9d8',
+        preserveObjectStacking: true,
+        selection: true,
+    });
+
+    function effectiveZoom() {
+        return fitScale * (userZoom / 100);
+    }
+
+    function applyZoom() {
+        const z = effectiveZoom();
+        canvas.setDimensions({ width: template.w * z, height: template.h * z });
+        canvas.setZoom(z);
+        canvas.requestRenderAll();
+        const label = document.getElementById('disenoZoomLabel');
+        if (label) label.textContent = `${userZoom}%`;
+        const range = document.getElementById('disenoZoomRange');
+        if (range) range.value = String(userZoom);
+    }
+
+    function computeFitScale() {
+        const stage = document.getElementById('disenoStageInner');
+        if (!stage) return 1;
+        const pad = 64;
+        const maxW = stage.clientWidth - pad;
+        const maxH = stage.clientHeight - pad;
+        return Math.min(maxW / template.w, maxH / template.h, 1);
+    }
 
     function fitCanvas() {
-        const maxW = Math.min(560, window.innerWidth - 560);
-        const scale = Math.min(maxW / template.w, 620 / template.h, 1);
-        canvas.setDimensions({ width: template.w * scale, height: template.h * scale });
-        canvas.setZoom(scale);
+        fitScale = computeFitScale();
+        applyZoom();
+    }
+
+    function updateDocSize() {
+        const el = document.getElementById('disenoDocSize');
+        if (el) el.textContent = `${template.w}×${template.h}`;
     }
 
     function syncHidden() {
@@ -34,8 +85,60 @@ function initDisenoEditor() {
         document.getElementById('disenoPreviewBase64').value = canvas.toDataURL({
             format: 'png',
             quality: 1,
-            multiplier: mult,
+            multiplier: mult > 0 ? mult : 1,
         });
+    }
+
+    function pushHistory() {
+        if (historyLock) return;
+        const snap = JSON.stringify(canvas.toJSON());
+        if (history[historyStep] === snap) return;
+        historyStep++;
+        history.splice(historyStep);
+        history.push(snap);
+        if (history.length > 40) {
+            history.shift();
+            historyStep--;
+        }
+    }
+
+    function loadHistory(step) {
+        if (step < 0 || step >= history.length) return;
+        historyLock = true;
+        canvas.loadFromJSON(history[step], () => {
+            canvas.requestRenderAll();
+            historyLock = false;
+            refreshProps();
+            syncHidden();
+        });
+    }
+
+    function undo() {
+        if (historyStep <= 0) return;
+        historyStep--;
+        loadHistory(historyStep);
+    }
+
+    function redo() {
+        if (historyStep >= history.length - 1) return;
+        historyStep++;
+        loadHistory(historyStep);
+    }
+
+    function layerIcon(obj) {
+        if (obj.type === 'textbox') return 'bi-type';
+        if (obj.type === 'image') return 'bi-image';
+        if (obj.type === 'circle') return 'bi-circle';
+        if (obj.type === 'line') return 'bi-dash-lg';
+        return 'bi-square';
+    }
+
+    function layerLabel(obj) {
+        if (obj.type === 'textbox') return (obj.text || 'Texto').slice(0, 24);
+        if (obj.type === 'image') return 'Imagen';
+        if (obj.type === 'circle') return 'Círculo';
+        if (obj.type === 'line') return 'Línea';
+        return 'Rectángulo';
     }
 
     function refreshLayers() {
@@ -43,14 +146,16 @@ function initDisenoEditor() {
         const objs = canvas.getObjects().slice().reverse();
         const active = canvas.getActiveObject();
         if (!objs.length) {
-            list.innerHTML = '<p class="diseno-hint">Todavía no agregaste elementos.</p>';
+            list.innerHTML = '<p class="diseno-hint">Sin capas todavía.</p>';
             return;
         }
         list.innerHTML = objs.map((o) => {
             const idx = canvas.getObjects().indexOf(o);
             const sel = o === active ? 'selected' : '';
-            const label = o.type === 'textbox' ? (o.text || 'Texto').slice(0, 22) : (o.type === 'circle' ? 'Círculo' : (o.type === 'image' ? 'Imagen' : 'Rectángulo'));
-            return `<button type="button" class="diseno-layer-item ${sel}" data-idx="${idx}">${label}</button>`;
+            return `<button type="button" class="diseno-layer-item ${sel}" data-idx="${idx}">
+                <i class="bi ${layerIcon(o)}"></i>
+                <span>${layerLabel(o)}</span>
+            </button>`;
         }).join('');
         list.querySelectorAll('.diseno-layer-item').forEach((el) => {
             el.addEventListener('click', () => {
@@ -66,23 +171,153 @@ function initDisenoEditor() {
         const panel = document.getElementById('disenoPropsPanel');
         const obj = canvas.getActiveObject();
         if (!obj) {
-            panel.innerHTML = '<h4>Propiedades</h4><p class="diseno-hint">Seleccioná un elemento para editarlo.</p>';
+            panel.innerHTML = '<h3 class="diseno-drawer-title">Propiedades</h3><p class="diseno-hint">Seleccioná un elemento del lienzo.</p>';
             return;
         }
         const isText = obj.type === 'textbox';
+        const fill = typeof obj.fill === 'string' ? obj.fill : activeColor;
+        const opacity = Math.round((obj.opacity ?? 1) * 100);
+        const angle = Math.round(obj.angle ?? 0);
         panel.innerHTML = `
-            <h4>Propiedades</h4>
-            ${isText ? `<label class="diseno-field"><span>Texto</span><input type="text" id="propText" value="${(obj.text || '').replace(/"/g, '&quot;')}"></label>` : ''}
+            <h3 class="diseno-drawer-title">Propiedades</h3>
+            ${isText ? `<label class="diseno-field"><span>Texto</span><input type="text" id="propText" value="${escapeAttr(obj.text || '')}"></label>` : ''}
             <div class="diseno-field-row">
                 <label class="diseno-field"><span>X</span><input type="number" id="propX" value="${Math.round(obj.left)}"></label>
                 <label class="diseno-field"><span>Y</span><input type="number" id="propY" value="${Math.round(obj.top)}"></label>
             </div>
-            ${isText ? `<label class="diseno-field"><span>Tamaño</span><input type="number" id="propSize" value="${Math.round(obj.fontSize)}"></label>` : ''}
+            <div class="diseno-field-row">
+                <label class="diseno-field"><span>Ancho</span><input type="number" id="propW" value="${Math.round(obj.getScaledWidth?.() || obj.width || 0)}"></label>
+                <label class="diseno-field"><span>Alto</span><input type="number" id="propH" value="${Math.round(obj.getScaledHeight?.() || obj.height || obj.radius * 2 || 0)}"></label>
+            </div>
+            ${isText ? `<label class="diseno-field"><span>Tamaño fuente</span><input type="number" id="propSize" value="${Math.round(obj.fontSize)}"></label>` : ''}
+            <label class="diseno-field"><span>Color relleno</span><input type="color" id="propFill" value="${toHex(fill)}"></label>
+            <label class="diseno-field"><span>Opacidad (${opacity}%)</span><input type="range" id="propOpacity" min="0" max="100" value="${opacity}"></label>
+            <label class="diseno-field"><span>Rotación (${angle}°)</span><input type="range" id="propAngle" min="0" max="360" value="${angle}"></label>
         `;
-        document.getElementById('propX')?.addEventListener('input', (e) => { obj.set('left', parseFloat(e.target.value) || 0); canvas.requestRenderAll(); });
-        document.getElementById('propY')?.addEventListener('input', (e) => { obj.set('top', parseFloat(e.target.value) || 0); canvas.requestRenderAll(); });
-        document.getElementById('propText')?.addEventListener('input', (e) => { obj.set('text', e.target.value); canvas.requestRenderAll(); refreshLayers(); });
-        document.getElementById('propSize')?.addEventListener('input', (e) => { obj.set('fontSize', parseFloat(e.target.value) || 10); canvas.requestRenderAll(); });
+        bindProp('propX', (v) => { obj.set('left', v); });
+        bindProp('propY', (v) => { obj.set('top', v); });
+        bindProp('propText', (v) => { obj.set('text', v); refreshLayers(); });
+        bindProp('propSize', (v) => { obj.set('fontSize', v); });
+        bindProp('propFill', (v) => { obj.set('fill', v); });
+        document.getElementById('propOpacity')?.addEventListener('input', (e) => {
+            obj.set('opacity', parseInt(e.target.value, 10) / 100);
+            canvas.requestRenderAll();
+        });
+        document.getElementById('propAngle')?.addEventListener('input', (e) => {
+            obj.set('angle', parseInt(e.target.value, 10));
+            canvas.requestRenderAll();
+        });
+        document.getElementById('propW')?.addEventListener('change', (e) => {
+            const w = parseFloat(e.target.value) || 1;
+            if (obj.type === 'circle') {
+                obj.set({ radius: w / 2, scaleX: 1, scaleY: 1 });
+            } else {
+                obj.set({ scaleX: w / (obj.width || 1) });
+            }
+            canvas.requestRenderAll();
+        });
+        document.getElementById('propH')?.addEventListener('change', (e) => {
+            const h = parseFloat(e.target.value) || 1;
+            if (obj.type !== 'circle') {
+                obj.set({ scaleY: h / (obj.height || 1) });
+            }
+            canvas.requestRenderAll();
+        });
+    }
+
+    function bindProp(id, fn) {
+        document.getElementById(id)?.addEventListener('input', (e) => {
+            fn(id === 'propText' ? e.target.value : parseFloat(e.target.value) || 0);
+            canvas.requestRenderAll();
+        });
+    }
+
+    function escapeAttr(s) {
+        return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    function toHex(color) {
+        if (typeof color === 'string' && color.startsWith('#')) {
+            return color.length === 7 ? color : '#c1432b';
+        }
+        return '#c1432b';
+    }
+
+    function addText(text, fontSize, fontWeight) {
+        const t = new Textbox(text, {
+            left: template.w / 2 - 180,
+            top: template.h / 2 - 30,
+            width: 360,
+            fontFamily: 'Inter, sans-serif',
+            fontSize,
+            fontWeight: fontWeight || '600',
+            fill: activeColor,
+        });
+        canvas.add(t);
+        canvas.setActiveObject(t);
+        canvas.requestRenderAll();
+        pushHistory();
+    }
+
+    function addImageFromDataUrl(dataUrl) {
+        FabricImage.fromURL(dataUrl).then((img) => {
+            const maxSide = Math.min(template.w, template.h) * 0.55;
+            const scale = Math.min(maxSide / (img.width || 1), maxSide / (img.height || 1), 1);
+            img.set({
+                left: template.w / 2 - (img.width * scale) / 2,
+                top: template.h / 2 - (img.height * scale) / 2,
+                scaleX: scale,
+                scaleY: scale,
+            });
+            canvas.add(img);
+            canvas.setActiveObject(img);
+            canvas.requestRenderAll();
+            pushHistory();
+        });
+    }
+
+    function handleFiles(files) {
+        Array.from(files || []).forEach((file) => {
+            if (!file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => addImageFromDataUrl(ev.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function setPanel(name) {
+        document.querySelectorAll('.diseno-rail-btn').forEach((b) => {
+            b.classList.toggle('active', b.dataset.panel === name);
+        });
+        document.querySelectorAll('.diseno-drawer-panel').forEach((p) => {
+            p.classList.toggle('d-none', p.dataset.drawer !== name);
+        });
+        const drawer = document.getElementById('disenoDrawer');
+        if (drawer && window.innerWidth <= 1100) {
+            drawer.classList.add('open');
+        }
+    }
+
+    function markTemplateActive() {
+        document.querySelectorAll('.diseno-template-card').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.formato === template.formato);
+        });
+    }
+
+    function applyTemplate(fmt, w, h, clear = true) {
+        if (clear && canvas.getObjects().length > 0) {
+            if (!confirm('Cambiar plantilla vacía el diseño actual. ¿Continuar?')) return;
+        }
+        template = { w, h, formato: fmt };
+        if (clear) {
+            canvas.clear();
+            canvas.backgroundColor = '#f3e9d8';
+        }
+        markTemplateActive();
+        updateDocSize();
+        fitCanvas();
+        pushHistory();
+        refreshLayers();
     }
 
     function loadInitial() {
@@ -90,90 +325,196 @@ function initDisenoEditor() {
         if (raw && raw !== 'null') {
             try {
                 const data = JSON.parse(raw);
-                canvas.loadFromJSON(data, () => { canvas.requestRenderAll(); fitCanvas(); refreshLayers(); });
+                canvas.loadFromJSON(data, () => {
+                    canvas.requestRenderAll();
+                    fitCanvas();
+                    pushHistory();
+                    refreshLayers();
+                });
+                markTemplateActive();
+                updateDocSize();
                 return;
-            } catch (e) { /* seed */ }
+            } catch (e) { /* nuevo */ }
         }
+        markTemplateActive();
+        updateDocSize();
         fitCanvas();
+        pushHistory();
         refreshLayers();
     }
 
+    // Paleta
     const palette = document.getElementById('disenoPalette');
-    palette.innerHTML = BRAND_COLORS.map((c, i) => `<button type="button" class="diseno-swatch ${i === 0 ? 'active' : ''}" style="background:${c}" data-color="${c}" aria-label="Color ${c}"></button>`).join('');
-    palette.querySelectorAll('.diseno-swatch').forEach((sw) => {
-        sw.addEventListener('click', () => {
-            palette.querySelectorAll('.diseno-swatch').forEach((s) => s.classList.remove('active'));
-            sw.classList.add('active');
-            activeColor = sw.dataset.color;
-            const obj = canvas.getActiveObject();
-            if (obj) { obj.set('fill', activeColor); canvas.requestRenderAll(); refreshProps(); }
+    if (palette) {
+        palette.innerHTML = BRAND_COLORS.map((c, i) =>
+            `<button type="button" class="diseno-swatch ${i === 0 ? 'active' : ''}" style="background:${c.hex}" data-color="${c.hex}" title="${c.name}"></button>`
+        ).join('');
+        palette.querySelectorAll('.diseno-swatch').forEach((sw) => {
+            sw.addEventListener('click', () => {
+                palette.querySelectorAll('.diseno-swatch').forEach((s) => s.classList.remove('active'));
+                sw.classList.add('active');
+                activeColor = sw.dataset.color;
+                const obj = canvas.getActiveObject();
+                if (obj) {
+                    obj.set('fill', activeColor);
+                    canvas.requestRenderAll();
+                    refreshProps();
+                    pushHistory();
+                }
+            });
         });
+    }
+
+    // Rail panels
+    document.querySelectorAll('.diseno-rail-btn').forEach((btn) => {
+        btn.addEventListener('click', () => setPanel(btn.dataset.panel));
     });
 
-    document.querySelectorAll('.diseno-template-item').forEach((btn) => {
-        if (btn.dataset.formato === template.formato) btn.classList.add('active');
+    // Templates
+    document.querySelectorAll('.diseno-template-card').forEach((btn) => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.diseno-template-item').forEach((b) => b.classList.remove('active'));
-            btn.classList.add('active');
-            template = { w: parseInt(btn.dataset.w, 10), h: parseInt(btn.dataset.h, 10), formato: btn.dataset.formato };
-            canvas.clear();
-            canvas.backgroundColor = '#f3e9d8';
-            fitCanvas();
-            refreshLayers();
+            applyTemplate(btn.dataset.formato, parseInt(btn.dataset.w, 10), parseInt(btn.dataset.h, 10));
         });
     });
 
-    document.querySelector('[data-action="text"]')?.addEventListener('click', () => {
-        const t = new Textbox('Nuevo texto', { left: template.w / 2 - 150, top: template.h / 2, width: 300, fontFamily: 'Inter, sans-serif', fontSize: 40, fill: activeColor });
-        canvas.add(t); canvas.setActiveObject(t); canvas.requestRenderAll();
+    // Actions
+    const actions = {
+        'text-heading': () => addText('Título', 64, '700'),
+        'text-sub': () => addText('Subtítulo', 36, '600'),
+        'text-body': () => addText('Escribí tu texto aquí', 22, '400'),
+        text: () => addText('Nuevo texto', 40, '600'),
+        rect: () => {
+            const r = new Rect({
+                left: template.w / 2 - 100,
+                top: template.h / 2 - 70,
+                width: 200,
+                height: 140,
+                fill: activeColor,
+                rx: 10,
+                ry: 10,
+            });
+            canvas.add(r);
+            canvas.setActiveObject(r);
+            canvas.requestRenderAll();
+            pushHistory();
+        },
+        circle: () => {
+            const c = new Circle({
+                left: template.w / 2 - 80,
+                top: template.h / 2 - 80,
+                radius: 80,
+                fill: activeColor,
+            });
+            canvas.add(c);
+            canvas.setActiveObject(c);
+            canvas.requestRenderAll();
+            pushHistory();
+        },
+        line: () => {
+            const ln = new Line([template.w / 2 - 120, template.h / 2, template.w / 2 + 120, template.h / 2], {
+                stroke: activeColor,
+                strokeWidth: 6,
+                strokeLineCap: 'round',
+            });
+            canvas.add(ln);
+            canvas.setActiveObject(ln);
+            canvas.requestRenderAll();
+            pushHistory();
+        },
+        delete: () => {
+            const obj = canvas.getActiveObject();
+            if (obj) {
+                canvas.remove(obj);
+                canvas.discardActiveObject();
+                canvas.requestRenderAll();
+                pushHistory();
+            }
+        },
+        duplicate: () => {
+            const obj = canvas.getActiveObject();
+            if (!obj) return;
+            obj.clone().then((cloned) => {
+                cloned.set({ left: (obj.left || 0) + 24, top: (obj.top || 0) + 24 });
+                canvas.add(cloned);
+                canvas.setActiveObject(cloned);
+                canvas.requestRenderAll();
+                pushHistory();
+            });
+        },
+        front: () => {
+            const obj = canvas.getActiveObject();
+            if (obj) { canvas.bringObjectToFront(obj); canvas.requestRenderAll(); pushHistory(); }
+        },
+        back: () => {
+            const obj = canvas.getActiveObject();
+            if (obj) { canvas.sendObjectToBack(obj); canvas.requestRenderAll(); pushHistory(); }
+        },
+    };
+
+    document.querySelectorAll('[data-action]').forEach((el) => {
+        el.addEventListener('click', () => {
+            const fn = actions[el.dataset.action];
+            if (fn) fn();
+        });
     });
-    document.querySelector('[data-action="rect"]')?.addEventListener('click', () => {
-        const r = new Rect({ left: template.w / 2 - 100, top: template.h / 2 - 70, width: 200, height: 140, fill: activeColor, rx: 10, ry: 10 });
-        canvas.add(r); canvas.setActiveObject(r); canvas.requestRenderAll();
+
+    // Upload / dropzone
+    const imgInput = document.getElementById('disenoImgInput');
+    const dropzone = document.getElementById('disenoDropzone');
+    imgInput?.addEventListener('change', (e) => handleFiles(e.target.files));
+    dropzone?.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone?.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        handleFiles(e.dataTransfer?.files);
     });
-    document.querySelector('[data-action="circle"]')?.addEventListener('click', () => {
-        const c = new Circle({ left: template.w / 2 - 80, top: template.h / 2 - 80, radius: 80, fill: activeColor });
-        canvas.add(c); canvas.setActiveObject(c); canvas.requestRenderAll();
+
+    // Zoom
+    document.getElementById('disenoZoomRange')?.addEventListener('input', (e) => {
+        userZoom = parseInt(e.target.value, 10);
+        applyZoom();
     });
-    document.querySelector('[data-action="delete"]')?.addEventListener('click', () => {
-        const obj = canvas.getActiveObject();
-        if (obj) { canvas.remove(obj); canvas.discardActiveObject(); canvas.requestRenderAll(); }
+    document.getElementById('disenoZoomFit')?.addEventListener('click', () => {
+        userZoom = 100;
+        fitCanvas();
     });
-    document.getElementById('disenoUndoBtn')?.addEventListener('click', () => {
-        const objs = canvas.getObjects();
-        if (objs.length) { canvas.remove(objs[objs.length - 1]); canvas.requestRenderAll(); }
-    });
+
+    // Toolbar buttons
+    document.getElementById('disenoUndoBtn')?.addEventListener('click', undo);
+    document.getElementById('disenoRedoBtn')?.addEventListener('click', redo);
     document.getElementById('disenoExportBtn')?.addEventListener('click', () => {
         const mult = template.w / canvas.getWidth();
         const a = document.createElement('a');
-        a.href = canvas.toDataURL({ format: 'png', quality: 1, multiplier: mult });
-        a.download = 'diseno-ito.png';
+        a.href = canvas.toDataURL({ format: 'png', quality: 1, multiplier: mult > 0 ? mult : 1 });
+        a.download = (document.querySelector('.diseno-doc-title')?.value || 'diseno-ito').replace(/\s+/g, '-') + '.png';
         a.click();
     });
-    document.getElementById('disenoImgInput')?.addEventListener('change', (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (f) => {
-            FabricImage.fromURL(f.target.result).then((img) => {
-                img.scaleToWidth(300);
-                img.set({ left: template.w / 2 - 150, top: template.h / 2 - 150 });
-                canvas.add(img); canvas.setActiveObject(img); canvas.requestRenderAll();
-            });
-        };
-        reader.readAsDataURL(file);
-    });
-    document.querySelector('[data-action="image"]')?.addEventListener('click', () => document.getElementById('disenoImgInput')?.click());
 
+    // Canvas events
     canvas.on('selection:created', refreshProps);
     canvas.on('selection:updated', refreshProps);
     canvas.on('selection:cleared', refreshProps);
-    canvas.on('object:modified', refreshLayers);
-    canvas.on('object:added', refreshLayers);
-    canvas.on('object:removed', refreshLayers);
+    canvas.on('object:modified', () => { pushHistory(); syncHidden(); });
+    canvas.on('object:added', () => { refreshLayers(); syncHidden(); });
+    canvas.on('object:removed', () => { refreshLayers(); syncHidden(); });
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+        if (e.target.matches('input, textarea, select')) return;
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            e.preventDefault();
+            actions.delete();
+        }
+        if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+        if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+        if (e.ctrlKey && e.key === 'd') { e.preventDefault(); actions.duplicate(); }
+    });
 
     form.addEventListener('submit', () => syncHidden());
     window.addEventListener('resize', fitCanvas);
+
+    setPanel('select');
     loadInitial();
 }
 

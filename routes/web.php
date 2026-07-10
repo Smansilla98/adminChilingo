@@ -62,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Programa oficial — accesible para todos; edición solo admin
     Route::get('/programa', [ProgramaController::class, 'index'])->middleware('modulo:programa')->name('programa.index');
+    Route::get('/programa/partituras', [ProgramaController::class, 'partiturasIndex'])->middleware('modulo:programa')->name('programa.partituras.index');
     Route::get('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->middleware('modulo:programa')->name('programa.toque.show');
     Route::get('/programa/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->middleware('modulo:programa')->name('programa.toque.archivo');
 
@@ -85,6 +86,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/programa/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
         Route::match(['put', 'post'], '/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])->name('programa.toque.update');
+        Route::get('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'editPartitura'])->name('programa.toque.partitura.edit');
+        Route::post('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'updatePartitura'])->name('programa.toque.partitura.update');
+        Route::get('/programa/toque/{programaRitmo:slug}/compositor', [ProgramaController::class, 'editCompositor'])->name('programa.toque.compositor.edit');
+        Route::post('/programa/toque/{programaRitmo:slug}/compositor', [ProgramaController::class, 'updateCompositor'])->name('programa.toque.compositor.update');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
 

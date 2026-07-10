@@ -1,81 +1,141 @@
 .programa-partitura-editor {
-  border: 1px solid var(--line, #3a2e24);
+  border: 1px solid color-mix(in srgb, var(--brass, #d1a054) 35%, var(--line, #3a2e24));
   border-radius: 12px;
   padding: 1rem;
-  background: color-mix(in srgb, var(--brass, #d1a054) 6%, var(--surface-2, #1d160f));
+  background: color-mix(in srgb, var(--brass, #d1a054) 5%, var(--surface-2, #1d160f));
 }
 
 .programa-partitura-grid-wrap {
   overflow-x: auto;
   max-width: 100%;
   -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  border: 1px solid var(--line, #3a2e24);
+}
+
+.programa-partitura-grid {
+  margin-bottom: 0;
+  background: var(--surface, #14100c);
 }
 
 .programa-partitura-grid th,
 .programa-partitura-grid td {
   vertical-align: middle;
-  padding: 0.1rem !important;
+  padding: 0.12rem !important;
+  border-color: color-mix(in srgb, var(--line, #3a2e24) 80%, transparent) !important;
+}
+
+.programa-partitura-grid thead th {
+  background: var(--surface-2, #1d160f);
+  color: var(--muted, #b6a488);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.programa-partitura-grid tbody th {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--skin, #f3e9d8);
+  background: var(--surface-2, #1d160f);
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
 }
 
 .programa-partitura-grid-beat {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--muted, #a89478);
-  min-width: 1.1rem;
+  min-width: 1.15rem;
 }
 
 .programa-partitura-grid-downbeat {
-  border-left: 2px solid color-mix(in srgb, var(--brass, #d1a054) 55%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--brass, #d1a054) 65%, transparent) !important;
 }
+
+.programa-partitura-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  font-size: 11px;
+  color: var(--muted, #b6a488);
+  margin-bottom: 0.75rem;
+}
+
+.programa-partitura-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.programa-partitura-legend i {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--line, #3a2e24);
+}
+
+.programa-partitura-legend .lg-on { background: var(--brass, #d1a054); }
+.programa-partitura-legend .lg-d { background: color-mix(in srgb, var(--verdigris, #4a9a86) 55%, var(--brass, #d1a054)); }
+.programa-partitura-legend .lg-accent { border-width: 2px; box-shadow: inset 0 0 0 1px var(--brass, #d1a054); }
 
 .programa-partitura-cell {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  min-width: 1.5rem;
+  width: 1.55rem;
+  height: 1.55rem;
+  min-width: 1.55rem;
   padding: 0;
-  border: 1px solid var(--line, #3a2e24);
+  border: 1px solid color-mix(in srgb, var(--line, #3a2e24) 90%, #000);
   border-radius: 4px;
-  background: var(--surface, #14100c);
+  background: var(--surface-3, #261c13);
   color: transparent;
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.08s;
 }
 
 .programa-partitura-cell:hover {
   border-color: var(--brass, #d1a054);
+  transform: scale(1.05);
+}
+
+.programa-partitura-cell:focus-visible {
+  outline: 2px solid var(--brass, #d1a054);
+  outline-offset: 1px;
 }
 
 .programa-partitura-cell.is-on {
-  background: color-mix(in srgb, var(--brick, #c1432b) 55%, var(--surface, #14100c));
-  border-color: var(--brick, #c1432b);
-  color: var(--skin, #f3e9d8);
+  background: var(--brass, #d1a054);
+  border-color: color-mix(in srgb, var(--brass, #d1a054) 70%, #000);
+  color: var(--ink, #14100c);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.12);
 }
 
 .programa-partitura-cell.hand-d.is-on {
-  background: color-mix(in srgb, var(--verdigris, #4a9a86) 50%, var(--surface, #14100c));
+  background: color-mix(in srgb, var(--verdigris, #4a9a86) 45%, var(--brass, #d1a054));
   border-color: var(--verdigris, #4a9a86);
 }
 
 .programa-partitura-cell.is-accent.is-on {
   border-width: 2px;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brass, #d1a054) 70%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brick, #c1432b) 45%, transparent);
 }
 
 .programa-partitura-cell.is-accent.is-on::after {
   content: '';
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: var(--brass, #d1a054);
-  top: 2px;
-  right: 2px;
+  background: var(--brick, #c1432b);
+  top: 1px;
+  right: 1px;
 }
 
 .programa-partitura-cell {
@@ -83,12 +143,12 @@
 }
 
 .programa-partitura-preview {
-  min-height: 120px;
+  min-height: 130px;
   overflow-x: auto;
-  padding: 0.5rem;
+  padding: 0.75rem;
   background: #fff;
   border-radius: 8px;
-  border: 1px solid var(--line, #3a2e24);
+  border: 1px solid color-mix(in srgb, var(--brass, #d1a054) 25%, var(--line, #3a2e24));
 }
 
 .programa-partitura-preview svg {
@@ -97,18 +157,28 @@
 
 .programa-partitura-repeats select {
   font-size: 11px;
+  background: var(--surface-2, #1d160f);
+  border-color: var(--line, #3a2e24);
+  color: var(--skin, #f3e9d8);
 }
 
 @media (max-width: 576px) {
   .programa-partitura-cell {
-    width: 1.25rem;
-    height: 1.25rem;
-    min-width: 1.25rem;
+    width: 1.3rem;
+    height: 1.3rem;
+    min-width: 1.3rem;
     font-size: 8px;
   }
 
   .programa-partitura-grid-beat {
     font-size: 8px;
-    min-width: 0.9rem;
+    min-width: 0.95rem;
+  }
+
+  .programa-partitura-grid tbody th {
+    font-size: 10px;
+    max-width: 4.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

@@ -52,4 +52,14 @@ return [
         ))),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Flat.io — editor de partituras embebido
+    |--------------------------------------------------------------------------
+    | En localhost funciona sin App ID. En producción: https://flat.io/developers/apps
+    */
+    'flat' => [
+        'embed_app_id' => env('FLAT_EMBED_APP_ID', ''),
+    ],
+
 ];

@@ -16,13 +16,18 @@ class DisenoController extends Controller
         return view('disenos.index', compact('disenos'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('disenos.form', ['diseno' => new Diseno([
-            'formato' => 'flyer_feed',
-            'ancho' => 1080,
-            'alto' => 1350,
-        ])]);
+        $presets = [
+            'flyer_feed' => ['formato' => 'flyer_feed', 'ancho' => 1080, 'alto' => 1350],
+            'historia' => ['formato' => 'historia', 'ancho' => 1080, 'alto' => 1920],
+            'afiche_a4' => ['formato' => 'afiche_a4', 'ancho' => 1240, 'alto' => 1748],
+            'banner_web' => ['formato' => 'banner_web', 'ancho' => 1200, 'alto' => 628],
+        ];
+        $fmt = $request->query('formato', 'flyer_feed');
+        $data = $presets[$fmt] ?? $presets['flyer_feed'];
+
+        return view('disenos.form', ['diseno' => new Diseno($data)]);
     }
 
     public function store(Request $request)

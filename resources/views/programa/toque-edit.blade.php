@@ -114,7 +114,7 @@
         </div>
     </div>
 
-    @include('programa.partials.medios-edit')
+    @include('programa.partials.medios-edit', ['programaRitmo' => $programaRitmo])
 
     <button type="submit" class="btn btn-primary">Guardar</button>
     <a href="{{ route('programa.toque.show', $programaRitmo) }}" class="btn btn-secondary">Cancelar</a>

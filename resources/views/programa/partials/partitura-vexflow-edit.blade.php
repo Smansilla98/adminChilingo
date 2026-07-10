@@ -6,16 +6,12 @@
     $vexJson = $vex ? json_encode($vex, JSON_UNESCAPED_UNICODE) : '';
 @endphp
 
-<div class="card mb-3 border-warning">
-    <div class="card-header">
-        <i class="bi bi-grid-3x3-gap"></i> Crear partitura en el sistema (VexFlow)
-    </div>
-    <div class="card-body p-0">
-        <div class="p-3 border-bottom">
-            <p class="small text-muted mb-2">
-                Marcá los golpes en la rejilla (cada casilla es un semicorcheo). Cada clic avanza:
-                I normal → D normal → I acento → D acento → apagado. Abajo ves la partitura generada.
-            </p>
+<div class="border-0">
+    <div class="p-3 border-bottom bg-light-subtle">
+        <p class="small text-muted mb-2">
+            <strong>Opcional:</strong> armá una partitura nueva desde cero en la rejilla.
+            Para el libro escaneado usá la carga de PDF/imagen de arriba.
+        </p>
             <div class="form-check mb-0">
                 <input class="form-check-input" type="checkbox" name="quitar_partitura_vexflow" value="1" id="quitar_partitura_vexflow" data-partitura-remove {{ old('quitar_partitura_vexflow') ? 'checked' : '' }}>
                 <label class="form-check-label" for="quitar_partitura_vexflow">Quitar partitura digital al guardar</label>
@@ -43,10 +39,16 @@
 
             <div class="programa-partitura-repeats-wrap mb-2" data-partitura-repeats></div>
 
+            <div class="programa-partitura-legend" aria-hidden="true">
+                <span><i class="lg-on"></i> I / D activo</span>
+                <span><i class="lg-d"></i> Mano derecha</span>
+                <span><i class="lg-accent"></i> Acento abierto</span>
+                <span>Clic: I → D → I acento → D acento → off</span>
+            </div>
+
             <div class="programa-partitura-grid-wrap mb-3" data-partitura-grid></div>
 
             <div class="small fw-semibold mb-1">Vista previa</div>
             <div data-partitura-preview class="programa-partitura-preview"></div>
         </div>
-    </div>
 </div>

@@ -48,11 +48,18 @@
         'contenido' => [
             'label' => 'Contenido',
             'accent' => 'contenido',
-            'patterns' => ['programa.*', 'disenos.*'],
+            'patterns' => ['programa.index', 'programa.seccion.*', 'disenos.*'],
             'links' => array_filter([
-                auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.*'] : null,
-                auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Partituras', 'pattern' => 'programa.*', 'fragment' => '#partituras'] : null,
+                auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
                 auth()->user()->isAdmin() && auth()->user()->tieneAccesoModulo('admin.disenos') ? ['route' => 'disenos.index', 'label' => 'Diseño', 'pattern' => 'disenos.*', 'badge' => 'nuevo'] : null,
+            ]),
+        ],
+        'partituras' => [
+            'label' => 'Partituras y recursos',
+            'accent' => 'partituras',
+            'patterns' => ['programa.partituras.*', 'programa.toque.partitura.*', 'programa.toque.compositor.*', 'programa.toque.edit', 'programa.toque.update'],
+            'links' => array_filter([
+                auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Catálogo por toque', 'pattern' => 'programa.partituras.*'] : null,
             ]),
         ],
         'config' => [
@@ -82,7 +89,8 @@
         auth()->user()->tieneAccesoModulo('profesor.mis_alumnos') ? ['route' => 'profesor.alumnos', 'label' => 'Mis alumnos', 'pattern' => 'profesor.alumnos*'] : null,
         auth()->user()->tieneAccesoModulo('profesor.pagos_cuotas') ? ['route' => 'profesor.pagos-cuotas.index', 'label' => 'Pagos de cuotas', 'pattern' => 'profesor.pagos-cuotas.*'] : null,
         auth()->user()->tieneAccesoModulo('comprobantes') ? ['route' => 'comprobantes-cuota-alumnos.index', 'label' => 'Comprobantes', 'pattern' => 'comprobantes-cuota-alumnos.*'] : null,
-        auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.*'] : null,
+        auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
+        auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
         auth()->user()->tieneAccesoModulo('calendario') ? ['route' => 'calendario.index', 'label' => 'Calendario', 'pattern' => 'calendario.*'] : null,
         auth()->user()->tieneAccesoModulo('ayuda') ? ['route' => 'ayuda', 'label' => 'Ayuda', 'pattern' => 'ayuda'] : null,
     ]);

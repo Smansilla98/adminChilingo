@@ -34,7 +34,9 @@
                 @endif
             </div>
             @if(auth()->user()?->isAdmin())
-            <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i> Editar página del toque</a>
+            <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-sm btn-primary me-1"><i class="bi bi-music-note-beamed"></i> Compositor</a>
+            <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-warning me-1"><i class="bi bi-cloud-upload"></i> Partitura</a>
+            <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Editar página</a>
             @endif
         </div>
         @if($programaRitmo->resumen)
@@ -126,5 +128,5 @@
 @endpush
 
 @push('vite')
-@vite(['resources/js/programa-partitura.js'])
+@vite(['resources/css/programa-compositor.css', 'resources/js/programa-partitura.js', 'resources/js/programa-compositor.js'])
 @endpush

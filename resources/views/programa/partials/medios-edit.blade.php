@@ -9,32 +9,81 @@
     if ($recursos === []) {
         $recursos = [['tipo' => 'enlace', 'titulo' => '', 'url' => '', 'contenido' => '', 'path' => null, 'nombre' => null]];
     }
-    $partitura = $m['partitura'] ?? null;
+    $tieneVex = ! empty($m['partitura_vexflow']['hits']);
+    $tieneFlat = ! empty($m['partitura_flat']['musicxml']);
 @endphp
 
-<div class="card mb-3">
-    <div class="card-header">Videos, partitura y archivos del toque</div>
+<div class="card mb-3" id="partitura-recursos">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span>Videos, partitura y archivos del toque</span>
+        @if(isset($programaRitmo))
+            <div class="d-flex flex-wrap gap-1">
+                <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-music-note-beamed"></i> Compositor digital
+                </a>
+                <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-warning">
+                    <i class="bi bi-cloud-upload"></i> Subir PDF/imagen
+                </a>
+            </div>
+        @endif
+    </div>
     <div class="card-body">
-        <p class="small text-muted mb-4">Lo que cargues acá lo verán en la página del toque: partitura, videos por tambor, ensamble y otros archivos. Podés ir sumando de a poco.</p>
-
-        <h3 class="h6 mb-2">Partitura (archivo)</h3>
-        <p class="small text-muted mb-3">PDF o imagen opcional. También podés armar la partitura en la rejilla de abajo.</p>
-        @if(!empty($partitura['path']))
-        <div class="alert alert-secondary py-2 small d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-            <span><i class="bi bi-file-earmark-pdf"></i> {{ $partitura['nombre'] ?? 'Archivo cargado' }}</span>
-            <div class="form-check mb-0">
-                <input class="form-check-input" type="checkbox" name="quitar_partitura" value="1" id="quitar_partitura">
-                <label class="form-check-label" for="quitar_partitura">Quitar partitura actual</label>
+        <div class="card border-warning mb-4">
+            <div class="card-header bg-transparent">
+                <h3 class="h6 mb-0"><i class="bi bi-file-earmark-music"></i> Partitura (recomendado)</h3>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    Subí el PDF o la imagen de la página del toque (por ejemplo, del libro «Toques Chilinga»).
+                    Es la forma más simple y fiel al material original.
+                </p>
+                @include('programa.partials.partitura-upload', [
+                    'medios' => $m,
+                    'programaRitmo' => $programaRitmo ?? null,
+                    'inputId' => 'partitura_archivo_edit',
+                    'dropzoneId' => 'partituraDropzoneEdit',
+                    'previewId' => 'partituraUploadPreviewEdit',
+                ])
             </div>
         </div>
-        @endif
-        <div class="mb-4">
-            <label class="form-label">{{ !empty($partitura['path']) ? 'Reemplazar partitura' : 'Subir partitura' }}</label>
-            <input type="file" name="partitura_archivo" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp">
-            <div class="form-text">PDF o imagen, hasta 20 MB.</div>
+
+        <div class="card border-primary mb-4">
+            <div class="card-header bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <h3 class="h6 mb-0"><i class="bi bi-music-note-beamed"></i> Compositor digital (Flat)</h3>
+                @if($tieneFlat)
+                    <span class="badge bg-success">Con partitura</span>
+                @endif
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    Creá o editá partituras con un editor profesional similar a
+                    <a href="https://flat.io/es" target="_blank" rel="noopener">Flat.io</a>:
+                    pentagrama, reproducción, instrumentos y exportación a MusicXML.
+                </p>
+                @if(isset($programaRitmo))
+                    <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil-square"></i>
+                        {{ $tieneFlat ? 'Abrir compositor' : 'Crear partitura digital' }}
+                    </a>
+                @endif
+            </div>
         </div>
 
-        @include('programa.partials.partitura-vexflow-edit', ['medios' => $m])
+        <div class="accordion mb-4" id="accordionVexflow">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVexflow" aria-expanded="false">
+                        <i class="bi bi-grid-3x3-gap me-2"></i> Rejilla VexFlow (avanzado)
+                        @if($tieneVex)<span class="badge bg-success ms-2">Con datos</span>@endif
+                    </button>
+                </h2>
+                <div id="collapseVexflow" class="accordion-collapse collapse" data-bs-parent="#accordionVexflow">
+                    <div class="accordion-body p-0">
+                        @include('programa.partials.partitura-vexflow-edit', ['medios' => $m])
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <hr>
         <h3 class="h6 mb-2">Videos de bases (por tambor)</h3>
@@ -132,3 +181,40 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    const input = document.querySelector('#partitura_archivo_edit');
+    const dropzone = document.getElementById('partituraDropzoneEdit');
+    const previewWrap = document.getElementById('partituraUploadPreviewEditNuevo');
+    const previewContent = document.getElementById('partituraUploadPreviewEditNuevoContent');
+    if (!input || !dropzone) return;
+
+    function showPreview(file) {
+        if (!file || !previewWrap || !previewContent) return;
+        previewWrap.classList.remove('d-none');
+        const url = URL.createObjectURL(file);
+        if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+            previewContent.innerHTML = '<iframe src="' + url + '#view=FitH" class="partitura-upload-preview-pdf" style="width:100%;height:min(400px,50vh);border:none"></iframe>';
+        } else if (file.type.startsWith('image/')) {
+            previewContent.innerHTML = '<img src="' + url + '" alt="Vista previa" style="width:100%;height:auto">';
+        }
+    }
+
+    input.addEventListener('change', function () {
+        if (input.files && input.files[0]) showPreview(input.files[0]);
+    });
+    dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', function () { dropzone.classList.remove('dragover'); });
+    dropzone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer?.files?.length) {
+            input.files = e.dataTransfer.files;
+            showPreview(e.dataTransfer.files[0]);
+        }
+    });
+})();
+</script>
+@endpush

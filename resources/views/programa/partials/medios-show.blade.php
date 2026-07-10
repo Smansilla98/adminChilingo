@@ -6,8 +6,6 @@
 
 @if($tieneMedios)
 <section class="programa-medios mb-3">
-    @include('programa.partials.partitura-vexflow-show', ['medios' => $m, 'programaRitmo' => $programaRitmo])
-
     @if(!empty($m['partitura']['path']))
     @php
         $partituraUrl = route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'partitura']);
@@ -51,6 +49,10 @@
         </div>
     </div>
     @endif
+
+    @include('programa.partials.partitura-flat-show', ['medios' => $m, 'programaRitmo' => $programaRitmo])
+
+    @include('programa.partials.partitura-vexflow-show', ['medios' => $m, 'programaRitmo' => $programaRitmo])
 
     @php
         $basesConUrl = collect($m['videos_base'] ?? [])->filter(fn ($v) => !empty($v['url']));

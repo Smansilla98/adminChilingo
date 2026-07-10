@@ -46,6 +46,7 @@ class ProgramaRitmoMedios
 
         return [
             'partitura' => null,
+            'partitura_flat' => null,
             'partitura_vexflow' => null,
             'videos_base' => $bases,
             'videos_grupo' => $grupo,
@@ -73,6 +74,7 @@ class ProgramaRitmoMedios
         }
 
         $out['partitura_vexflow'] = self::normalizarPartituraVexflow($medios['partitura_vexflow'] ?? null);
+        $out['partitura_flat'] = self::normalizarPartituraFlat($medios['partitura_flat'] ?? null);
 
         if (isset($medios['videos_base']) && is_array($medios['videos_base'])) {
             foreach (array_keys(self::VIDEOS_BASE) as $k) {
@@ -130,6 +132,28 @@ class ProgramaRitmoMedios
     }
 
     /**
+     * @return array{musicxml: string, updated_at: string|null}|null
+     */
+    public static function normalizarPartituraFlat(mixed $raw): ?array
+    {
+        if (! is_array($raw)) {
+            return null;
+        }
+
+        $xml = trim((string) ($raw['musicxml'] ?? ''));
+        if ($xml === '' || (! str_contains($xml, '<score-partwise') && ! str_contains($xml, '<score-timewise'))) {
+            return null;
+        }
+
+        $updatedAt = $raw['updated_at'] ?? null;
+
+        return [
+            'musicxml' => $xml,
+            'updated_at' => is_string($updatedAt) && $updatedAt !== '' ? $updatedAt : null,
+        ];
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     public static function normalizarPartituraVexflow(mixed $raw): ?array
@@ -166,14 +190,16 @@ class ProgramaRitmoMedios
                 if (! is_array($cell)) {
                     continue;
                 }
-                foreach ($cell as $n) {
-                    $n = (int) $n;
-                    if ($n >= 0 && $n < $beats) {
-                        $hits[$id][$m][] = $n;
+                $seen = [];
+                foreach ($cell as $item) {
+                    $hit = self::normalizarGolpePartitura($item, $beats);
+                    if ($hit === null || isset($seen[$hit['beat']])) {
+                        continue;
                     }
+                    $seen[$hit['beat']] = true;
+                    $hits[$id][$m][] = $hit;
                 }
-                $hits[$id][$m] = array_values(array_unique($hits[$id][$m]));
-                sort($hits[$id][$m]);
+                usort($hits[$id][$m], fn ($a, $b) => $a['beat'] <=> $b['beat']);
             }
         }
 
@@ -192,13 +218,58 @@ class ProgramaRitmoMedios
         }
 
         $time = ($raw['timeSignature'] ?? '4/4') === '2/4' ? '2/4' : '4/4';
+        $repeats = [];
+        if (isset($raw['repeats']) && is_array($raw['repeats'])) {
+            for ($m = 0; $m < $measureCount; $m++) {
+                $r = $raw['repeats'][$m] ?? null;
+                $repeats[$m] = [
+                    'begin' => is_array($r) && ! empty($r['begin']),
+                    'end' => is_array($r) && ! empty($r['end']),
+                ];
+            }
+        } else {
+            for ($m = 0; $m < $measureCount; $m++) {
+                $repeats[$m] = ['begin' => false, 'end' => false];
+            }
+        }
 
         return [
-            'version' => 1,
+            'version' => (int) ($raw['version'] ?? 2),
             'timeSignature' => $time,
             'beats' => $beats,
             'measureCount' => $measureCount,
             'hits' => $hits,
+            'repeats' => $repeats,
+        ];
+    }
+
+    /**
+     * @return array{beat: int, hand: string, type: string}|null
+     */
+    private static function normalizarGolpePartitura(mixed $item, int $beats): ?array
+    {
+        if (is_int($item) || (is_string($item) && ctype_digit($item))) {
+            $beat = (int) $item;
+            if ($beat < 0 || $beat >= $beats) {
+                return null;
+            }
+
+            return ['beat' => $beat, 'hand' => 'I', 'type' => 'normal'];
+        }
+
+        if (! is_array($item)) {
+            return null;
+        }
+
+        $beat = (int) ($item['beat'] ?? -1);
+        if ($beat < 0 || $beat >= $beats) {
+            return null;
+        }
+
+        return [
+            'beat' => $beat,
+            'hand' => ($item['hand'] ?? 'I') === 'D' ? 'D' : 'I',
+            'type' => ($item['type'] ?? 'normal') === 'accent' ? 'accent' : 'normal',
         ];
     }
 
@@ -248,6 +319,9 @@ class ProgramaRitmoMedios
             return true;
         }
         if (! empty($medios['partitura_vexflow']['hits'])) {
+            return true;
+        }
+        if (! empty($medios['partitura_flat']['musicxml'])) {
             return true;
         }
         foreach ($medios['videos_base'] ?? [] as $v) {

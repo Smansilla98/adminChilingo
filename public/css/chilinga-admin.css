@@ -1651,6 +1651,7 @@ body.shell-nav-open {
 .nav-group[data-accent="economico"] .nav-group-dot { background: var(--verdigris); }
 .nav-group[data-accent="inventario"] .nav-group-dot { background: var(--purple); }
 .nav-group[data-accent="contenido"] .nav-group-dot { background: var(--brick); }
+.nav-group[data-accent="partituras"] .nav-group-dot { background: var(--accent2); }
 .nav-group[data-accent="config"] .nav-group-dot,
 .nav-group[data-accent="profesor"] .nav-group-dot { background: var(--muted-2); }
 .nav-group-chev { width: 12px; height: 12px; margin-left: auto; opacity: 0.6; transition: transform 0.18s ease; }
@@ -1802,4 +1803,36 @@ body.shell-nav-open {
 .cupo-bar i { display: block; height: 100%; background: var(--verdigris); }
 .cupo-bar.warn i { background: var(--brass); }
 .cupo-bar.full i { background: var(--brick); }
+
+/* Dashboard clásico: tipografía sans (sin Fraunces en métricas y paneles) */
+.content--maxton .stat-value,
+.content--maxton .stat-kicker,
+.content--maxton .panel-h-title,
+.content--maxton .prof-name,
+.content--maxton .cuota-name,
+.content--maxton .asist-title {
+  font-family: var(--font-body);
+}
+
+.partituras-toques-table .partitura-estado {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.partituras-toques-table .partitura-estado.ok { color: var(--verdigris); }
+.partituras-toques-table .partitura-estado.pend { color: var(--muted-2); opacity: 0.65; }
+
+/* Carga de partitura (PDF / imagen) */
+.partitura-dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 28px 20px; border: 2px dashed var(--border);
+  border-radius: 14px; background: color-mix(in srgb, var(--accent2) 6%, var(--s2));
+  color: var(--muted); text-align: center; cursor: pointer; transition: border-color .15s;
+}
+.partitura-dropzone:hover, .partitura-dropzone.dragover {
+  border-color: var(--accent2); color: var(--text);
+}
+.partitura-dropzone i { font-size: 2rem; color: var(--accent2); }
+.partitura-dropzone strong { color: var(--text); }
+.partitura-upload-preview-box { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
+.partitura-upload-preview-pdf { width: 100%; height: min(50vh, 420px); border: none; }
 

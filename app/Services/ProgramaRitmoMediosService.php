@@ -31,6 +31,19 @@ class ProgramaRitmoMediosService
             }
         }
 
+        if ($request->boolean('quitar_partitura_flat')) {
+            $medios['partitura_flat'] = null;
+        } else {
+            $xml = $request->input('partitura_flat_musicxml');
+            if (is_string($xml) && trim($xml) !== '') {
+                $normalizada = ProgramaRitmoMedios::normalizarPartituraFlat(['musicxml' => $xml]);
+                if ($normalizada) {
+                    $normalizada['updated_at'] = now()->toIso8601String();
+                    $medios['partitura_flat'] = $normalizada;
+                }
+            }
+        }
+
         if ($request->boolean('quitar_partitura')) {
             $medios['partitura'] = null;
         } elseif ($request->hasFile('partitura_archivo')) {
@@ -70,6 +83,70 @@ class ProgramaRitmoMediosService
         $pathsDespues = $this->pathsEnMedios($medios);
         foreach (array_diff($pathsAntes, $pathsDespues) as $orphan) {
             $this->borrarArchivo($orphan);
+        }
+
+        return $medios;
+    }
+
+    /**
+     * Solo actualiza el archivo de partitura (PDF o imagen) del toque.
+     *
+     * @return array<string, mixed>
+     */
+    public function actualizarSoloPartitura(Request $request, ProgramaRitmo $ritmo): array
+    {
+        $medios = ProgramaRitmoMedios::normalizar($ritmo->medios);
+        $baseDir = 'programa-ritmos/'.$ritmo->id;
+        $pathAnterior = $medios['partitura']['path'] ?? null;
+
+        if ($request->boolean('quitar_partitura')) {
+            $medios['partitura'] = null;
+            if ($pathAnterior) {
+                $this->borrarArchivo($pathAnterior);
+            }
+
+            return $medios;
+        }
+
+        if ($request->hasFile('partitura_archivo')) {
+            $file = $request->file('partitura_archivo');
+            $nuevoPath = $this->guardarArchivo($file, $baseDir.'/partitura');
+            $medios['partitura'] = [
+                'path' => $nuevoPath,
+                'nombre' => $file->getClientOriginalName(),
+            ];
+            if ($pathAnterior && $pathAnterior !== $nuevoPath) {
+                $this->borrarArchivo($pathAnterior);
+            }
+        }
+
+        return $medios;
+    }
+
+    /**
+     * Solo actualiza la partitura digital (Flat / MusicXML) del toque.
+     *
+     * @return array<string, mixed>
+     */
+    public function actualizarSoloCompositor(Request $request, ProgramaRitmo $ritmo): array
+    {
+        $medios = ProgramaRitmoMedios::normalizar($ritmo->medios);
+
+        if ($request->boolean('quitar_partitura_flat')) {
+            $medios['partitura_flat'] = null;
+
+            return $medios;
+        }
+
+        $xml = $request->input('partitura_flat_musicxml');
+        if (! is_string($xml) || trim($xml) === '') {
+            return $medios;
+        }
+
+        $normalizada = ProgramaRitmoMedios::normalizarPartituraFlat(['musicxml' => $xml]);
+        if ($normalizada) {
+            $normalizada['updated_at'] = now()->toIso8601String();
+            $medios['partitura_flat'] = $normalizada;
         }
 
         return $medios;

@@ -65,6 +65,150 @@ class ProgramaController extends Controller
         ));
     }
 
+    /**
+     * Catálogo de toques con estado de partituras y recursos multimedia.
+     */
+    public function partiturasIndex(Request $request)
+    {
+        $años = ProgramaRitmo::años();
+        $porAño = collect();
+        $estadoPrograma = 'ok';
+        $busqueda = trim((string) $request->query('q', ''));
+        $pendientes = (int) $request->query('pendientes', 0) === 1;
+
+        if (! Schema::hasTable('programa_ritmos')) {
+            $estadoPrograma = 'sin_tabla';
+
+            return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes'));
+        }
+
+        try {
+            $this->asegurarDatosBase();
+
+            $q = ProgramaRitmo::query()->orderBy('año')->orderBy('orden');
+            if (Schema::hasColumn('programa_ritmos', 'publicado') && ! auth()->user()?->isAdmin()) {
+                $q->where('publicado', true);
+            }
+            if ($busqueda !== '') {
+                $q->where(function ($sub) use ($busqueda) {
+                    $sub->where('nombre', 'like', '%'.$busqueda.'%')
+                        ->orWhere('autor', 'like', '%'.$busqueda.'%');
+                });
+            }
+            $ritmos = $q->get()->map(function (ProgramaRitmo $r) {
+                $m = $r->mediosNormalizados();
+                $tieneArchivo = ! empty($m['partitura']['path']);
+                $videosBase = collect($m['videos_base'] ?? [])->filter(fn ($v) => ! empty($v['url']))->count();
+                $videosGrupo = collect($m['videos_grupo'] ?? [])->filter(fn ($v) => ! empty($v['url']))->count();
+                $r->resumen_medios = [
+                    'partitura' => $tieneArchivo,
+                    'partitura_nombre' => $m['partitura']['nombre'] ?? null,
+                    'digital' => ! empty($m['partitura_flat']['musicxml']) || ! empty($m['partitura_vexflow']['hits']),
+                    'flat' => ! empty($m['partitura_flat']['musicxml']),
+                    'videos' => $videosBase + $videosGrupo,
+                    'cortes' => count($m['cortes'] ?? []),
+                    'recursos' => count($m['recursos'] ?? []),
+                ];
+
+                return $r;
+            });
+            if ($pendientes) {
+                $ritmos = $ritmos->filter(fn (ProgramaRitmo $r) => ! ($r->resumen_medios['partitura'] ?? false));
+            }
+            $porAño = $ritmos->groupBy(fn (ProgramaRitmo $r) => (int) $r->año);
+            if ($ritmos->isEmpty()) {
+                $estadoPrograma = 'vacio';
+            }
+        } catch (QueryException $e) {
+            report($e);
+            $estadoPrograma = 'error';
+        }
+
+        return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes'));
+    }
+
+    public function editPartitura(ProgramaRitmo $programaRitmo)
+    {
+        $this->authorizeAdmin();
+
+        $medios = $programaRitmo->mediosNormalizados();
+        $años = ProgramaRitmo::años();
+
+        return view('programa.partitura-edit', compact('programaRitmo', 'medios', 'años'));
+    }
+
+    public function updatePartitura(Request $request, ProgramaRitmo $programaRitmo)
+    {
+        $this->authorizeAdmin();
+
+        $request->validate([
+            'quitar_partitura' => 'nullable|boolean',
+            'partitura_archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:20480',
+        ]);
+
+        if (! $request->boolean('quitar_partitura') && ! $request->hasFile('partitura_archivo')) {
+            $actual = $programaRitmo->mediosNormalizados();
+            if (empty($actual['partitura']['path'])) {
+                return back()->withErrors(['partitura_archivo' => 'Elegí un PDF o una imagen para subir.'])->withInput();
+            }
+        }
+
+        if (Schema::hasColumn('programa_ritmos', 'medios')) {
+            $programaRitmo->update([
+                'medios' => app(ProgramaRitmoMediosService::class)->actualizarSoloPartitura($request, $programaRitmo),
+            ]);
+        }
+
+        return redirect()
+            ->route('programa.partituras.index')
+            ->with('success', 'Partitura de «'.$programaRitmo->nombre.'» guardada.');
+    }
+
+    public function editCompositor(ProgramaRitmo $programaRitmo)
+    {
+        $this->authorizeAdmin();
+
+        $medios = $programaRitmo->mediosNormalizados();
+        $flatAppId = (string) config('services.flat.embed_app_id', '');
+
+        return view('programa.compositor-edit', compact('programaRitmo', 'medios', 'flatAppId'));
+    }
+
+    public function updateCompositor(Request $request, ProgramaRitmo $programaRitmo)
+    {
+        $this->authorizeAdmin();
+
+        $request->validate([
+            'quitar_partitura_flat' => 'nullable|boolean',
+            'partitura_flat_musicxml' => 'nullable|string|max:500000',
+        ]);
+
+        if (! $request->boolean('quitar_partitura_flat')) {
+            $xml = trim((string) $request->input('partitura_flat_musicxml', ''));
+            $actual = $programaRitmo->mediosNormalizados();
+            if ($xml === '' && empty($actual['partitura_flat']['musicxml'])) {
+                return back()->withErrors([
+                    'partitura_flat_musicxml' => 'La partitura está vacía. Escribí al menos una nota antes de guardar.',
+                ]);
+            }
+            if ($xml !== '' && ProgramaRitmoMedios::normalizarPartituraFlat(['musicxml' => $xml]) === null) {
+                return back()->withErrors([
+                    'partitura_flat_musicxml' => 'El formato MusicXML no es válido.',
+                ]);
+            }
+        }
+
+        if (Schema::hasColumn('programa_ritmos', 'medios')) {
+            $programaRitmo->update([
+                'medios' => app(ProgramaRitmoMediosService::class)->actualizarSoloCompositor($request, $programaRitmo),
+            ]);
+        }
+
+        return redirect()
+            ->route('programa.toque.show', $programaRitmo)
+            ->with('success', 'Partitura digital de «'.$programaRitmo->nombre.'» guardada.');
+    }
+
     public function showToque(ProgramaRitmo $programaRitmo)
     {
         if (Schema::hasColumn('programa_ritmos', 'publicado')
