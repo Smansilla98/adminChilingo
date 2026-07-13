@@ -1,6 +1,6 @@
 @php
     $vex = $medios['partitura_vexflow'] ?? null;
-    $tieneVex = is_array($vex) && !empty($vex['hits']);
+    $tieneVex = ! empty($medios['partitura_vexflow']['sections']) || ! empty($medios['partitura_vexflow']['hits']);
 @endphp
 
 @if($tieneVex)

@@ -6,12 +6,18 @@ class ProgramaRitmoMedios
 {
     /** @var array<string, string> */
     public const VIDEOS_BASE = [
-        'repique' => 'Repique',
+        'surdo_grave' => 'Surdo Grave',
+        'surdo_agudo' => 'Surdo Agudo',
+        'surdo_medio' => 'Surdo Medio',
         'redoblante' => 'Redoblante',
         'timbal' => 'Timbal',
-        'medio' => 'Medio',
-        'fondo_grave' => 'Fondo grave',
-        'fondo_agudo' => 'Fondo agudo',
+        'repique' => 'Repique',
+    ];
+
+    /** @var array<string, string> */
+    public const INSTRUMENTOS_OPCIONALES = [
+        'agogo' => 'Agogó',
+        'palmas' => 'Palmas',
     ];
 
     /** @var array<string, string> */
@@ -79,6 +85,11 @@ class ProgramaRitmoMedios
         if (isset($medios['videos_base']) && is_array($medios['videos_base'])) {
             foreach (array_keys(self::VIDEOS_BASE) as $k) {
                 $out['videos_base'][$k]['url'] = self::limpiarUrl($medios['videos_base'][$k]['url'] ?? null);
+            }
+            foreach (['medio' => 'surdo_medio', 'fondo_grave' => 'surdo_grave', 'fondo_agudo' => 'surdo_agudo'] as $legacy => $nuevo) {
+                if (empty($out['videos_base'][$nuevo]['url']) && ! empty($medios['videos_base'][$legacy]['url'])) {
+                    $out['videos_base'][$nuevo]['url'] = self::limpiarUrl($medios['videos_base'][$legacy]['url']);
+                }
             }
         }
 
@@ -158,28 +169,134 @@ class ProgramaRitmoMedios
      */
     public static function normalizarPartituraVexflow(mixed $raw): ?array
     {
-        if (! is_array($raw) || empty($raw['hits']) || ! is_array($raw['hits'])) {
+        if (! is_array($raw)) {
             return null;
         }
 
+        $version = (int) ($raw['version'] ?? 2);
+        if ($version >= 3 && isset($raw['sections']) && is_array($raw['sections'])) {
+            return self::normalizarPartituraVexflowV3($raw);
+        }
+
+        if (! empty($raw['hits']) && is_array($raw['hits'])) {
+            return self::migrarPartituraV2aV3($raw);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $raw
+     * @return array<string, mixed>|null
+     */
+    private static function normalizarPartituraVexflowV3(array $raw): ?array
+    {
+        $beats = 16;
+        $baseIds = array_keys(self::VIDEOS_BASE);
+        $optional = [];
+        if (isset($raw['optionalInstruments']) && is_array($raw['optionalInstruments'])) {
+            foreach ($raw['optionalInstruments'] as $id) {
+                $id = self::migrarIdInstrumento((string) $id);
+                if (array_key_exists($id, self::INSTRUMENTOS_OPCIONALES)) {
+                    $optional[] = $id;
+                }
+            }
+        }
+        $drumIds = array_merge($baseIds, $optional);
+        $sections = [];
+
+        foreach ($raw['sections'] as $si => $sec) {
+            if (! is_array($sec)) {
+                continue;
+            }
+            $measureCount = min(8, max(1, (int) ($sec['measureCount'] ?? 1)));
+            $hits = [];
+            foreach ($drumIds as $id) {
+                $hits[$id] = [];
+                for ($m = 0; $m < $measureCount; $m++) {
+                    $hits[$id][$m] = [];
+                }
+            }
+            if (isset($sec['hits']) && is_array($sec['hits'])) {
+                foreach ($sec['hits'] as $rawId => $row) {
+                    $id = self::migrarIdInstrumento((string) $rawId);
+                    if (! isset($hits[$id]) || ! is_array($row)) {
+                        continue;
+                    }
+                    if ($row !== [] && (! isset($row[0]) || ! is_array($row[0]))) {
+                        $row = [$row];
+                    }
+                    for ($m = 0; $m < $measureCount; $m++) {
+                        $cell = $row[$m] ?? [];
+                        if (! is_array($cell)) {
+                            continue;
+                        }
+                        $seen = [];
+                        foreach ($cell as $item) {
+                            $hit = self::normalizarGolpeCuadernillo($item, $beats);
+                            if ($hit === null || isset($seen[$hit['beat']])) {
+                                continue;
+                            }
+                            $seen[$hit['beat']] = true;
+                            $hits[$id][$m][] = $hit;
+                        }
+                        usort($hits[$id][$m], fn ($a, $b) => $a['beat'] <=> $b['beat']);
+                    }
+                }
+            }
+            $repeats = [];
+            for ($m = 0; $m < $measureCount; $m++) {
+                $r = $sec['repeats'][$m] ?? null;
+                $repeats[$m] = [
+                    'begin' => is_array($r) && ! empty($r['begin']),
+                    'end' => is_array($r) && ! empty($r['end']),
+                ];
+            }
+            $sections[] = [
+                'name' => trim((string) ($sec['name'] ?? '')) ?: 'Sección '.($si + 1),
+                'measureCount' => $measureCount,
+                'repeatX' => min(8, max(1, (int) ($sec['repeatX'] ?? 1))),
+                'hits' => $hits,
+                'repeats' => $repeats,
+            ];
+        }
+
+        if ($sections === []) {
+            return null;
+        }
+
+        if (! self::partituraV3TieneGolpes($sections)) {
+            return null;
+        }
+
+        return [
+            'version' => 3,
+            'timeSignature' => ($raw['timeSignature'] ?? '4/4') === '2/4' ? '2/4' : '4/4',
+            'beats' => $beats,
+            'optionalInstruments' => array_values(array_unique($optional)),
+            'sections' => $sections,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $raw
+     * @return array<string, mixed>|null
+     */
+    private static function migrarPartituraV2aV3(array $raw): ?array
+    {
         $measureCount = min(4, max(1, (int) ($raw['measureCount'] ?? 1)));
         $beats = 16;
-        $drumIds = array_keys(self::VIDEOS_BASE);
+        $baseIds = array_keys(self::VIDEOS_BASE);
         $hits = [];
-
-        foreach ($drumIds as $id) {
+        foreach ($baseIds as $id) {
             $hits[$id] = [];
             for ($m = 0; $m < $measureCount; $m++) {
                 $hits[$id][$m] = [];
             }
         }
-
-        foreach ($drumIds as $id) {
-            if (! isset($raw['hits'][$id])) {
-                continue;
-            }
-            $row = $raw['hits'][$id];
-            if (! is_array($row)) {
+        foreach ($raw['hits'] as $rawId => $row) {
+            $id = self::migrarIdInstrumento((string) $rawId);
+            if (! isset($hits[$id]) || ! is_array($row)) {
                 continue;
             }
             if ($row !== [] && (! isset($row[0]) || ! is_array($row[0]))) {
@@ -192,7 +309,7 @@ class ProgramaRitmoMedios
                 }
                 $seen = [];
                 foreach ($cell as $item) {
-                    $hit = self::normalizarGolpePartitura($item, $beats);
+                    $hit = self::normalizarGolpeCuadernillo($item, $beats);
                     if ($hit === null || isset($seen[$hit['beat']])) {
                         continue;
                     }
@@ -202,48 +319,96 @@ class ProgramaRitmoMedios
                 usort($hits[$id][$m], fn ($a, $b) => $a['beat'] <=> $b['beat']);
             }
         }
-
-        $tieneGolpes = false;
-        foreach ($hits as $rows) {
-            foreach ($rows as $cell) {
-                if ($cell !== []) {
-                    $tieneGolpes = true;
-                    break 2;
-                }
-            }
+        $repeats = [];
+        for ($m = 0; $m < $measureCount; $m++) {
+            $r = $raw['repeats'][$m] ?? null;
+            $repeats[$m] = [
+                'begin' => is_array($r) && ! empty($r['begin']),
+                'end' => is_array($r) && ! empty($r['end']),
+            ];
         }
-
-        if (! $tieneGolpes) {
+        $sections = [[
+            'name' => 'Toque',
+            'measureCount' => $measureCount,
+            'repeatX' => 1,
+            'hits' => $hits,
+            'repeats' => $repeats,
+        ]];
+        if (! self::partituraV3TieneGolpes($sections)) {
             return null;
         }
 
-        $time = ($raw['timeSignature'] ?? '4/4') === '2/4' ? '2/4' : '4/4';
-        $repeats = [];
-        if (isset($raw['repeats']) && is_array($raw['repeats'])) {
-            for ($m = 0; $m < $measureCount; $m++) {
-                $r = $raw['repeats'][$m] ?? null;
-                $repeats[$m] = [
-                    'begin' => is_array($r) && ! empty($r['begin']),
-                    'end' => is_array($r) && ! empty($r['end']),
-                ];
-            }
-        } else {
-            for ($m = 0; $m < $measureCount; $m++) {
-                $repeats[$m] = ['begin' => false, 'end' => false];
-            }
-        }
-
         return [
-            'version' => (int) ($raw['version'] ?? 2),
-            'timeSignature' => $time,
+            'version' => 3,
+            'timeSignature' => ($raw['timeSignature'] ?? '4/4') === '2/4' ? '2/4' : '4/4',
             'beats' => $beats,
-            'measureCount' => $measureCount,
-            'hits' => $hits,
-            'repeats' => $repeats,
+            'optionalInstruments' => [],
+            'sections' => $sections,
         ];
     }
 
     /**
+     * @param  array<int, array<string, mixed>>  $sections
+     */
+    private static function partituraV3TieneGolpes(array $sections): bool
+    {
+        foreach ($sections as $sec) {
+            foreach ($sec['hits'] ?? [] as $rows) {
+                foreach ($rows as $cell) {
+                    if ($cell !== []) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+  private static function migrarIdInstrumento(string $id): string
+    {
+        return match ($id) {
+            'medio', 'fondo_medio' => 'surdo_medio',
+            'fondo_grave' => 'surdo_grave',
+            'fondo_agudo' => 'surdo_agudo',
+            default => $id,
+        };
+    }
+
+    /**
+     * @return array{beat: int, stroke: string}|null
+     */
+    private static function normalizarGolpeCuadernillo(mixed $item, int $beats): ?array
+    {
+        if (is_int($item) || (is_string($item) && ctype_digit($item))) {
+            $beat = (int) $item;
+            if ($beat < 0 || $beat >= $beats) {
+                return null;
+            }
+
+            return ['beat' => $beat, 'stroke' => 'nota'];
+        }
+
+        if (! is_array($item)) {
+            return null;
+        }
+
+        $beat = (int) ($item['beat'] ?? -1);
+        if ($beat < 0 || $beat >= $beats) {
+            return null;
+        }
+
+        if (! empty($item['stroke']) && is_string($item['stroke'])) {
+            return ['beat' => $beat, 'stroke' => $item['stroke']];
+        }
+
+        $stroke = ($item['type'] ?? 'normal') === 'accent' ? 'acentuado' : 'nota';
+
+        return ['beat' => $beat, 'stroke' => $stroke];
+    }
+
+    /**
+     * @deprecated Usar normalizarGolpeCuadernillo
      * @return array{beat: int, hand: string, type: string}|null
      */
     private static function normalizarGolpePartitura(mixed $item, int $beats): ?array
@@ -318,7 +483,7 @@ class ProgramaRitmoMedios
         if (! empty($medios['partitura']['path'])) {
             return true;
         }
-        if (! empty($medios['partitura_vexflow']['hits'])) {
+        if (! empty($medios['partitura_vexflow']['sections']) || ! empty($medios['partitura_vexflow']['hits'])) {
             return true;
         }
         if (! empty($medios['partitura_flat']['musicxml'])) {

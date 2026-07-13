@@ -77,6 +77,47 @@
   border: 1px solid var(--line, #3a2e24);
 }
 
+.programa-partitura-cell.stroke-chapa {
+  color: var(--brick, #c1432b);
+  font-weight: 800;
+}
+
+.programa-partitura-cell.stroke-accent {
+  color: var(--verdigris, #4a9a86);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.programa-partitura-cell.stroke-open {
+  color: var(--brass, #d1a054);
+  font-size: 14px;
+}
+
+.programa-partitura-cell.stroke-palma {
+  color: var(--purple, #9c8ad1);
+  font-weight: 800;
+}
+
+.programa-partitura-sec-head {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--brass, #d1a054);
+  padding-top: 0.5rem;
+}
+
+.programa-partitura-score {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.programa-partitura-section-tabs .btn {
+  font-size: 12px;
+}
+
+.programa-partitura-drum-label {
+  min-width: 7.5rem;
+}
+
 .programa-partitura-legend .lg-on { background: var(--brass, #d1a054); }
 .programa-partitura-legend .lg-d { background: color-mix(in srgb, var(--verdigris, #4a9a86) 55%, var(--brass, #d1a054)); }
 .programa-partitura-legend .lg-accent { border-width: 2px; box-shadow: inset 0 0 0 1px var(--brass, #d1a054); }

@@ -1,54 +1,133 @@
 /**
- * Partitura de percusión (La Chilinga) — editor en rejilla + render VexFlow 4.
+ * Partitura de percusión — Cuadernillo de Toques (La Chilinga)
+ * VexFlow 4 · formato v3 (secciones + golpes por instrumento)
  */
-import { Factory, GhostNote, Annotation, BarlineType } from 'vexflow';
+import { Factory, GhostNote, Articulation, BarlineType } from 'vexflow';
+
+/** @typedef {{ beat: number, stroke: string }} Hit */
 
 export const CHILINGA_DRUMS = [
-    { id: 'repique', label: 'Repique', vexKey: 'c/5/x2' },
-    { id: 'redoblante', label: 'Redoblante', vexKey: 'f/4' },
-    { id: 'timbal', label: 'Timbal', vexKey: 'd/4/x2' },
-    { id: 'medio', label: 'Medio', vexKey: 'e/5/x2' },
-    { id: 'fondo_grave', label: 'Fondo grave', vexKey: 'a/4', stem: -1 },
-    { id: 'fondo_agudo', label: 'Fondo agudo', vexKey: 'g/4', stem: -1 },
+    { id: 'surdo_grave', label: 'Surdo Grave', pitch: 'f/3', stem: -1 },
+    { id: 'surdo_agudo', label: 'Surdo Agudo', pitch: 'a/3', stem: -1 },
+    { id: 'surdo_medio', label: 'Surdo Medio', pitch: 'c/4', stem: -1 },
+    { id: 'redoblante', label: 'Redoblante', pitch: 'f/4' },
+    { id: 'timbal', label: 'Timbal', pitch: 'g/5' },
+    { id: 'repique', label: 'Repique', pitch: 'c/5' },
 ];
 
-const DEFAULT_HAND = 'I';
-const DEFAULT_TYPE = 'normal';
+export const OPTIONAL_DRUMS = [
+    { id: 'agogo', label: 'Agogó', pitch: 'e/5' },
+    { id: 'palmas', label: 'Palmas', pitch: 'b/4' },
+];
 
-const DEFAULT_STATE = {
-    version: 2,
-    timeSignature: '4/4',
-    beats: 16,
-    measureCount: 1,
-    hits: {},
-    repeats: [],
+/** @type {Record<string, string[]>} */
+export const STROKES_BY_DRUM = {
+    surdo_grave: ['nota', 'chapa', 'tapado'],
+    surdo_agudo: ['nota', 'chapa', 'tapado'],
+    surdo_medio: ['nota', 'chapa', 'tapado'],
+    redoblante: ['nota', 'acentuado', 'chapa'],
+    timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo'],
+    repique: ['nota', 'acentuado', 'chapa', 'agudo'],
+    agogo: ['nota'],
+    palmas: ['nota'],
 };
 
-function emptyRepeats(measureCount) {
-    return Array.from({ length: measureCount }, () => ({ begin: false, end: false }));
+/** @type {Record<string, string>} */
+export const STROKE_LABELS = {
+    nota: 'Nota',
+    chapa: 'Chapa',
+    tapado: 'Tapado',
+    acentuado: 'Acento',
+    abierto: 'Abierto',
+    slap: 'Slap',
+    palma: 'Palma',
+    presionado: 'Pres.',
+    dedo: 'Dedo',
+    agudo: 'Agudo',
+};
+
+/** @type {Record<string, string>} */
+const STROKE_SHORT = {
+    nota: '•',
+    chapa: '×',
+    tapado: '—',
+    acentuado: '>',
+    abierto: '○',
+    slap: '⊗',
+    palma: '◇',
+    presionado: '=',
+    dedo: '×',
+    agudo: '△',
+};
+
+const BEATS = 16;
+const ID_ALIASES = {
+    medio: 'surdo_medio',
+    fondo_grave: 'surdo_grave',
+    fondo_agudo: 'surdo_agudo',
+};
+
+function migrateDrumId(id) {
+    return ID_ALIASES[id] || id;
 }
 
-function emptyHits(measureCount) {
+function drumById(id) {
+    const mid = migrateDrumId(id);
+    return CHILINGA_DRUMS.find((d) => d.id === mid) || OPTIONAL_DRUMS.find((d) => d.id === mid);
+}
+
+function emptyHits(measureCount, drumIds) {
+    /** @type {Record<string, Hit[][]>} */
     const hits = {};
-    CHILINGA_DRUMS.forEach((d) => {
-        hits[d.id] = [];
+    drumIds.forEach((id) => {
+        hits[id] = [];
         for (let m = 0; m < measureCount; m++) {
-            hits[d.id][m] = [];
+            hits[id][m] = [];
         }
     });
     return hits;
 }
 
-function normalizeHit(raw) {
+function emptySection(name = '', measureCount = 1) {
+    const drumIds = CHILINGA_DRUMS.map((d) => d.id);
+    return {
+        name,
+        measureCount,
+        repeatX: 1,
+        repeats: Array.from({ length: measureCount }, () => ({ begin: false, end: false })),
+        hits: emptyHits(measureCount, drumIds),
+    };
+}
+
+function defaultState() {
+    return {
+        version: 3,
+        timeSignature: '4/4',
+        beats: BEATS,
+        optionalInstruments: [],
+        sections: [emptySection('Toque', 1)],
+    };
+}
+
+/**
+ * @param {unknown} raw
+ */
+function normalizeHit(raw, beats) {
     if (typeof raw === 'number' && Number.isInteger(raw)) {
-        return { beat: raw, hand: DEFAULT_HAND, type: DEFAULT_TYPE };
+        return { beat: raw, stroke: 'nota' };
     }
     if (!raw || typeof raw !== 'object') return null;
+
     const beat = parseInt(raw.beat, 10);
-    if (!Number.isInteger(beat)) return null;
-    const hand = raw.hand === 'D' ? 'D' : DEFAULT_HAND;
-    const type = raw.type === 'accent' ? 'accent' : DEFAULT_TYPE;
-    return { beat, hand, type };
+    if (!Number.isInteger(beat) || beat < 0 || beat >= beats) return null;
+
+    if (raw.stroke && typeof raw.stroke === 'string') {
+        return { beat, stroke: raw.stroke };
+    }
+
+    // Migración v2: mano + tipo
+    if (raw.type === 'accent') return { beat, stroke: 'acentuado' };
+    return { beat, stroke: 'nota' };
 }
 
 function normalizeHitList(list, beats) {
@@ -56,8 +135,8 @@ function normalizeHitList(list, beats) {
     const out = [];
     const seen = new Set();
     list.forEach((item) => {
-        const hit = normalizeHit(item);
-        if (!hit || hit.beat < 0 || hit.beat >= beats || seen.has(hit.beat)) return;
+        const hit = normalizeHit(item, beats);
+        if (!hit || seen.has(hit.beat)) return;
         seen.add(hit.beat);
         out.push(hit);
     });
@@ -65,82 +144,159 @@ function normalizeHitList(list, beats) {
     return out;
 }
 
-export function normalizeScore(raw) {
-    if (!raw || typeof raw !== 'object') {
-        return { ...DEFAULT_STATE, hits: emptyHits(1), repeats: emptyRepeats(1) };
-    }
+function migrateV2ToV3(raw) {
     const measureCount = Math.min(4, Math.max(1, parseInt(raw.measureCount, 10) || 1));
-    const beats = 16;
-    const hits = emptyHits(measureCount);
+    const section = emptySection('Toque', measureCount);
     const src = raw.hits && typeof raw.hits === 'object' ? raw.hits : {};
 
-    CHILINGA_DRUMS.forEach((d) => {
-        const row = src[d.id];
-        if (!row) return;
-        if (Array.isArray(row) && row.length && !Array.isArray(row[0])) {
-            hits[d.id][0] = normalizeHitList(row, beats);
-            return;
-        }
-        if (Array.isArray(row)) {
-            for (let m = 0; m < measureCount; m++) {
-                hits[d.id][m] = normalizeHitList(row[m], beats);
-            }
+    Object.keys(src).forEach((oldId) => {
+        const id = migrateDrumId(oldId);
+        if (!section.hits[id]) return;
+        const row = src[oldId];
+        if (!Array.isArray(row)) return;
+        const rows = row.length && !Array.isArray(row[0]) ? [row] : row;
+        for (let m = 0; m < measureCount; m++) {
+            section.hits[id][m] = normalizeHitList(rows[m] ?? [], BEATS);
         }
     });
 
-    let repeats = emptyRepeats(measureCount);
     if (Array.isArray(raw.repeats)) {
         for (let m = 0; m < measureCount; m++) {
             const r = raw.repeats[m];
             if (r && typeof r === 'object') {
-                repeats[m] = { begin: !!r.begin, end: !!r.end };
+                section.repeats[m] = { begin: !!r.begin, end: !!r.end };
             }
         }
     }
 
     return {
-        version: 2,
+        version: 3,
         timeSignature: raw.timeSignature === '2/4' ? '2/4' : '4/4',
-        beats,
-        measureCount,
-        hits,
-        repeats,
+        beats: BEATS,
+        optionalInstruments: [],
+        sections: [section],
     };
 }
 
-function findHit(data, drumId, measure, beat) {
-    return (data.hits[drumId]?.[measure] || []).find((h) => h.beat === beat) || null;
-}
-
-function drumVexKey(drum, hit) {
-    if (hit.type !== 'accent') return drum.vexKey;
-    const parts = drum.vexKey.split('/');
-    if (parts.length >= 2) {
-        return `${parts[0]}/${parts[1]}/d`;
+/**
+ * @param {unknown} raw
+ */
+export function normalizeScore(raw) {
+    if (!raw || typeof raw !== 'object') {
+        return defaultState();
     }
-    return drum.vexKey;
+
+    const version = parseInt(raw.version, 10) || 2;
+    if (version < 3 || !Array.isArray(raw.sections)) {
+        if (raw.hits) return migrateV2ToV3(raw);
+        return defaultState();
+    }
+
+    const optional = Array.isArray(raw.optionalInstruments)
+        ? raw.optionalInstruments.map(migrateDrumId).filter((id) => OPTIONAL_DRUMS.some((d) => d.id === id))
+        : [];
+
+    const drumIds = [...CHILINGA_DRUMS.map((d) => d.id), ...optional];
+    const sections = raw.sections.map((sec, si) => {
+        const measureCount = Math.min(8, Math.max(1, parseInt(sec.measureCount, 10) || 1));
+        const hits = emptyHits(measureCount, drumIds);
+        const srcHits = sec.hits && typeof sec.hits === 'object' ? sec.hits : {};
+
+        drumIds.forEach((id) => {
+            const row = srcHits[id];
+            if (!Array.isArray(row)) return;
+            const rows = row.length && !Array.isArray(row[0]) ? [row] : row;
+            for (let m = 0; m < measureCount; m++) {
+                hits[id][m] = normalizeHitList(rows[m] ?? [], BEATS);
+            }
+        });
+
+        const repeats = Array.from({ length: measureCount }, (_, m) => {
+            const r = sec.repeats?.[m];
+            return r && typeof r === 'object'
+                ? { begin: !!r.begin, end: !!r.end }
+                : { begin: false, end: false };
+        });
+
+        return {
+            name: typeof sec.name === 'string' ? sec.name : `Sección ${si + 1}`,
+            measureCount,
+            repeatX: Math.min(8, Math.max(1, parseInt(sec.repeatX, 10) || 1)),
+            repeats,
+            hits,
+        };
+    });
+
+    if (!sections.length) sections.push(emptySection('Toque', 1));
+
+    return {
+        version: 3,
+        timeSignature: raw.timeSignature === '2/4' ? '2/4' : '4/4',
+        beats: BEATS,
+        optionalInstruments: optional,
+        sections,
+    };
 }
 
-function handLabelAtBeat(data, measure, beat) {
-    const hands = new Set();
-    CHILINGA_DRUMS.forEach((drum) => {
-        const hit = findHit(data, drum.id, measure, beat);
-        if (hit) hands.add(hit.hand);
-    });
-    if (!hands.size) return '';
-    if (hands.size === 1) return [...hands][0];
-    return 'I/D';
+function activeDrums(state) {
+    const opt = state.optionalInstruments || [];
+    return [
+        ...CHILINGA_DRUMS,
+        ...OPTIONAL_DRUMS.filter((d) => opt.includes(d.id)),
+    ];
+}
+
+function findHit(section, drumId, measure, beat) {
+    return (section.hits[drumId]?.[measure] || []).find((h) => h.beat === beat) || null;
+}
+
+function strokeToKey(drum, stroke) {
+    const base = drum.pitch;
+    switch (stroke) {
+        case 'chapa':
+        case 'dedo':
+            return `${base}/x`;
+        case 'agudo':
+            return `${base}/tu`;
+        case 'slap':
+            return `${base}/ci`;
+        case 'palma':
+            return `${base}/d`;
+        case 'abierto':
+        case 'nota':
+        case 'tapado':
+        case 'presionado':
+        case 'acentuado':
+        default:
+            return base;
+    }
+}
+
+/** Posiciones VexFlow: 3 = arriba, 4 = abajo (según pág. 2 Nomenclatura del cuadernillo). */
+function applyStrokeModifiers(note, stroke) {
+    if (stroke === 'acentuado') {
+        note.addModifier(new Articulation('a>').setPosition(4));
+    } else if (stroke === 'tapado') {
+        note.addModifier(new Articulation('a-').setPosition(3));
+    } else if (stroke === 'presionado') {
+        note.addModifier(new Articulation('a-').setPosition(4));
+    }
+}
+
+function sectionHasHits(section, drums) {
+    return drums.some((d) =>
+        (section.hits[d.id] || []).some((arr) => arr && arr.length > 0)
+    );
 }
 
 /**
- * @param {HTMLElement} container — se vacía y se crea un div hijo para VexFlow
+ * @param {HTMLElement} container
  */
 export function renderPartituraVexflow(container, rawData) {
     if (!container) return false;
     const data = normalizeScore(rawData);
-    const hasAny = CHILINGA_DRUMS.some((d) =>
-        (data.hits[d.id] || []).some((arr) => arr && arr.length > 0)
-    );
+    const drums = activeDrums(data);
+    const hasAny = data.sections.some((sec) => sectionHasHits(sec, drums));
     if (!hasAny) {
         container.innerHTML = '<p class="text-muted small mb-0">Sin golpes cargados en la rejilla.</p>';
         return false;
@@ -148,118 +304,163 @@ export function renderPartituraVexflow(container, rawData) {
 
     const renderId = 'vf-' + Math.random().toString(36).slice(2, 10);
     container.innerHTML = '';
-    const mount = document.createElement('div');
-    mount.id = renderId;
-    mount.setAttribute('role', 'img');
-    mount.setAttribute('aria-label', 'Partitura de percusión');
-    container.appendChild(mount);
+    container.className = 'programa-partitura-score';
 
-    const measureCount = data.measureCount;
-    const beats = data.beats;
-    const staveWidth = beats * 18 + 60;
-    const width = 20 + measureCount * (staveWidth + 16);
-    const height = 220;
+    data.sections.forEach((section, si) => {
+        if (!sectionHasHits(section, drums)) return;
 
-    const vf = new Factory({ renderer: { elementId: renderId, width, height } });
-    const ctx = vf.getContext();
-    let x = 12;
+        const head = document.createElement('div');
+        head.className = 'programa-partitura-sec-head small fw-semibold text-muted mb-1 mt-2';
+        head.textContent = section.name + (section.repeatX > 1 ? ` ×${section.repeatX}` : '');
+        container.appendChild(head);
 
-    for (let m = 0; m < measureCount; m++) {
-        const stave = vf.Stave({ x, y: 30, width: staveWidth });
-        if (m === 0) {
-            stave.addClef('percussion').addTimeSignature(data.timeSignature);
-        }
-        const rep = data.repeats[m] || { begin: false, end: false };
-        if (rep.begin) stave.setBegBarType(BarlineType.REPEAT_BEGIN);
-        if (rep.end) stave.setEndBarType(BarlineType.REPEAT_END);
-        stave.setContext(ctx);
+        const mountId = `${renderId}-s${si}`;
+        const mount = document.createElement('div');
+        mount.id = mountId;
+        mount.setAttribute('role', 'img');
+        mount.setAttribute('aria-label', `Sección ${section.name}`);
+        container.appendChild(mount);
 
-        const tickables = [];
-        for (let b = 0; b < beats; b++) {
-            const keys = [];
-            let needsDown = false;
-            CHILINGA_DRUMS.forEach((drum) => {
-                const hit = findHit(data, drum.id, m, b);
-                if (hit) {
-                    keys.push(drumVexKey(drum, hit));
-                    if (drum.stem === -1) needsDown = true;
-                }
-            });
-            if (keys.length > 0) {
-                const note = vf.StaveNote({ keys, duration: '16', auto_stem: true });
-                if (needsDown && keys.length === 1) {
-                    note.setStemDirection(-1);
-                }
-                const label = handLabelAtBeat(data, m, b);
-                if (label) {
-                    const ann = new Annotation(label);
-                    ann.setVerticalJustification(Annotation.VerticalJustify.BOTTOM);
-                    note.addModifier(ann);
-                }
-                tickables.push(note);
-            } else {
-                tickables.push(new GhostNote({ duration: '16' }));
+        const beats = data.beats;
+        const staveWidth = beats * 16 + 56;
+        const staveHeight = 58;
+        const labelWidth = 108;
+        const width = labelWidth + section.measureCount * (staveWidth + 12) + 40;
+        const activeRows = drums.filter((drum) => {
+            for (let m = 0; m < section.measureCount; m++) {
+                if ((section.hits[drum.id]?.[m] || []).length) return true;
             }
-        }
+            return false;
+        });
+        const height = Math.max(80, activeRows.length * staveHeight + 24);
 
-        const voice = vf.Voice({ time: data.timeSignature });
-        voice.setStrict(false);
-        voice.addTickables(tickables);
-        vf.Formatter().joinVoices([voice]).formatToStave([voice], stave);
-        stave.draw();
-        voice.draw(ctx, stave);
-        x += staveWidth + 16;
-    }
+        const vf = new Factory({ renderer: { elementId: mountId, width, height } });
+        const ctx = vf.getContext();
+        let y = 12;
+
+        activeRows.forEach((drum, di) => {
+            let x = labelWidth;
+            ctx.setFont('Inter', 9, '500');
+            ctx.setFillStyle('#84745c');
+            ctx.fillText(drum.label, 4, y + staveHeight / 2 + 4);
+
+            for (let m = 0; m < section.measureCount; m++) {
+                const stave = vf.Stave({ x, y, width: staveWidth });
+                if (di === 0 && m === 0 && si === 0) {
+                    stave.addClef('percussion').addTimeSignature(data.timeSignature);
+                }
+                const rep = section.repeats[m] || { begin: false, end: false };
+                if (rep.begin) stave.setBegBarType(BarlineType.REPEAT_BEGIN);
+                if (rep.end) stave.setEndBarType(BarlineType.REPEAT_END);
+                stave.setContext(ctx);
+
+                const tickables = [];
+                for (let b = 0; b < beats; b++) {
+                    const hit = findHit(section, drum.id, m, b);
+                    if (hit) {
+                        const note = vf.StaveNote({
+                            keys: [strokeToKey(drum, hit.stroke)],
+                            duration: '16',
+                            auto_stem: true,
+                        });
+                        if (drum.stem === -1) note.setStemDirection(-1);
+                        applyStrokeModifiers(note, hit.stroke);
+                        tickables.push(note);
+                    } else {
+                        tickables.push(new GhostNote({ duration: '16' }));
+                    }
+                }
+
+                const voice = vf.Voice({ time: data.timeSignature });
+                voice.setStrict(false);
+                voice.addTickables(tickables);
+                vf.Formatter().joinVoices([voice]).formatToStave([voice], stave);
+                stave.draw();
+                voice.draw(ctx, stave);
+                x += staveWidth + 8;
+            }
+            y += staveHeight;
+        });
+    });
 
     return true;
 }
 
 function exportState(state) {
-    return {
-        version: 2,
-        timeSignature: state.timeSignature,
-        beats: state.beats,
-        measureCount: state.measureCount,
-        hits: state.hits,
-        repeats: state.repeats,
-    };
-}
-
-const CELL_CYCLE = [
-    null,
-    { hand: 'I', type: 'normal' },
-    { hand: 'D', type: 'normal' },
-    { hand: 'I', type: 'accent' },
-    { hand: 'D', type: 'accent' },
-];
-
-function cellState(hit) {
-    if (!hit) return 0;
-    const idx = CELL_CYCLE.findIndex(
-        (s) => s && s.hand === hit.hand && s.type === hit.type
-    );
-    return idx >= 0 ? idx : 1;
-}
-
-function applyCellVisual(btn, hit) {
-    btn.classList.remove('is-on', 'is-accent', 'hand-d');
-    btn.textContent = '';
-    if (!hit) {
-        btn.setAttribute('aria-pressed', 'false');
-        btn.setAttribute('aria-label', btn.dataset.baseLabel);
-        return;
-    }
-    btn.classList.add('is-on');
-    if (hit.type === 'accent') btn.classList.add('is-accent');
-    if (hit.hand === 'D') btn.classList.add('hand-d');
-    btn.textContent = hit.hand;
-    btn.setAttribute('aria-pressed', 'true');
-    const tipo = hit.type === 'accent' ? 'acento abierto' : 'normal';
-    btn.setAttribute('aria-label', `${btn.dataset.baseLabel}, mano ${hit.hand}, golpe ${tipo}`);
+    return JSON.parse(JSON.stringify(state));
 }
 
 /**
- * Editor admin: rejilla clickeable + vista previa.
+ * Transcripción simplificada de «Toque de Chilinga» (Cuadernillo pág. 3).
+ * Referencia: Toques_chilinga_compressed.pdf — Nomenclatura pág. 2, Equivalencias pág. 1.
+ */
+function demoToqueChilinga() {
+    const llamada = emptySection('Llamada inicial y final', 2);
+    llamada.repeatX = 1;
+    // Patrón sincopado de llamada (corcheas y semicorcheas — compás 1)
+    llamada.hits.repique[0] = [
+        { beat: 0, stroke: 'nota' }, { beat: 2, stroke: 'nota' }, { beat: 3, stroke: 'chapa' },
+        { beat: 6, stroke: 'nota' }, { beat: 8, stroke: 'chapa' }, { beat: 10, stroke: 'nota' },
+        { beat: 12, stroke: 'nota' }, { beat: 14, stroke: 'chapa' },
+    ];
+    llamada.hits.redoblante[0] = [
+        { beat: 1, stroke: 'acentuado' }, { beat: 4, stroke: 'nota' }, { beat: 7, stroke: 'nota' },
+        { beat: 9, stroke: 'acentuado' }, { beat: 13, stroke: 'nota' },
+    ];
+    llamada.hits.surdo_grave[0] = [{ beat: 0, stroke: 'nota' }, { beat: 8, stroke: 'nota' }];
+    llamada.hits.surdo_agudo[0] = [{ beat: 4, stroke: 'nota' }, { beat: 12, stroke: 'nota' }];
+
+    const toque = emptySection('Toque', 1);
+    toque.repeatX = 1;
+    // Surdo Grave: negras en 1 y 3
+    toque.hits.surdo_grave[0] = [{ beat: 0, stroke: 'nota' }, { beat: 8, stroke: 'nota' }];
+    // Surdo Agudo: negras en 2 y 4
+    toque.hits.surdo_agudo[0] = [{ beat: 4, stroke: 'nota' }, { beat: 12, stroke: 'nota' }];
+    // Surdo Medio: dos semicorcheas + corchea en 1 y 3
+    toque.hits.surdo_medio[0] = [
+        { beat: 0, stroke: 'nota' }, { beat: 1, stroke: 'nota' }, { beat: 2, stroke: 'nota' },
+        { beat: 8, stroke: 'nota' }, { beat: 9, stroke: 'nota' }, { beat: 10, stroke: 'nota' },
+    ];
+    // Redoblante y Repique: corcheas, acento en tiempos fuertes
+    const corcheasAcento = [0, 4, 8, 12];
+    const corcheas = [0, 2, 4, 6, 8, 10, 12, 14];
+    toque.hits.redoblante[0] = corcheas.map((b) => ({
+        beat: b,
+        stroke: corcheasAcento.includes(b) ? 'acentuado' : 'nota',
+    }));
+    toque.hits.repique[0] = corcheas.map((b) => ({
+        beat: b,
+        stroke: corcheasAcento.includes(b) ? 'acentuado' : 'nota',
+    }));
+    // Timbal: dos semicorcheas + silencio de corchea (×4 por compás)
+    toque.hits.timbal[0] = [
+        { beat: 0, stroke: 'abierto' }, { beat: 1, stroke: 'abierto' },
+        { beat: 4, stroke: 'abierto' }, { beat: 5, stroke: 'abierto' },
+        { beat: 8, stroke: 'abierto' }, { beat: 9, stroke: 'abierto' },
+        { beat: 12, stroke: 'abierto' }, { beat: 13, stroke: 'abierto' },
+    ];
+
+    const intermedia = emptySection('Llamada intermedia', 1);
+    intermedia.repeatX = 4;
+    // Semicorcheas + corchea tras silencio de corchea
+    intermedia.hits.repique[0] = [2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15].map((b) => ({ beat: b, stroke: 'nota' }));
+    intermedia.hits.redoblante[0] = [2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15].map((b) => ({ beat: b, stroke: 'nota' }));
+    // Surdos: silencio de negra + dos corcheas
+    intermedia.hits.surdo_grave[0] = [{ beat: 4, stroke: 'nota' }, { beat: 6, stroke: 'nota' }];
+    intermedia.hits.surdo_agudo[0] = [{ beat: 4, stroke: 'nota' }, { beat: 6, stroke: 'nota' }];
+    intermedia.hits.surdo_medio[0] = [{ beat: 4, stroke: 'nota' }, { beat: 6, stroke: 'nota' }];
+
+    return {
+        version: 3,
+        timeSignature: '4/4',
+        beats: BEATS,
+        optionalInstruments: [],
+        sections: [llamada, toque, intermedia],
+    };
+}
+
+/**
+ * Editor admin: secciones + rejilla + vista previa.
  */
 export function initPartituraEditor(root) {
     if (!root) return;
@@ -267,21 +468,22 @@ export function initPartituraEditor(root) {
     const dataEl = root.querySelector('[data-partitura-initial]');
     const hidden = root.querySelector('[data-partitura-input]');
     const gridWrap = root.querySelector('[data-partitura-grid]');
-    const repeatWrap = root.querySelector('[data-partitura-repeats]');
+    const sectionsWrap = root.querySelector('[data-partitura-sections]');
     const preview = root.querySelector('[data-partitura-preview]');
-    const measureSelect = root.querySelector('[data-partitura-measures]');
+    const optionalWrap = root.querySelector('[data-partitura-optional]');
     const clearBtn = root.querySelector('[data-partitura-clear]');
     const demoBtn = root.querySelector('[data-partitura-demo]');
+    const addSectionBtn = root.querySelector('[data-partitura-add-section]');
     const removeCheck = root.querySelector('[data-partitura-remove]');
 
     let state = normalizeScore(null);
     if (dataEl && dataEl.textContent.trim()) {
         try {
             state = normalizeScore(JSON.parse(dataEl.textContent));
-        } catch (e) {
-            /* ignore */
-        }
+        } catch (e) { /* ignore */ }
     }
+
+    let activeSection = 0;
 
     function syncHidden() {
         if (hidden) {
@@ -289,74 +491,229 @@ export function initPartituraEditor(root) {
         }
     }
 
-    function buildRepeats() {
-        if (!repeatWrap) return;
-        repeatWrap.innerHTML = '';
-        const mc = state.measureCount;
-        const row = document.createElement('div');
-        row.className = 'programa-partitura-repeats d-flex flex-wrap gap-2 mb-2';
-        for (let m = 0; m < mc; m++) {
-            const rep = state.repeats[m] || { begin: false, end: false };
-            const wrap = document.createElement('label');
-            wrap.className = 'small d-flex align-items-center gap-1';
-            const sel = document.createElement('select');
-            sel.className = 'form-select form-select-sm w-auto';
-            sel.setAttribute('aria-label', 'Repetición compás ' + (m + 1));
-            sel.dataset.measure = String(m);
-            [
-                ['', 'Sin repetición'],
-                ['begin', 'Inicio ⟲'],
-                ['end', 'Fin ⟲'],
-                ['both', 'Inicio y fin ⟲'],
-            ].forEach(([val, label]) => {
-                const opt = document.createElement('option');
-                opt.value = val;
-                opt.textContent = 'C' + (m + 1) + ': ' + label;
-                sel.appendChild(opt);
-            });
-            if (rep.begin && rep.end) sel.value = 'both';
-            else if (rep.begin) sel.value = 'begin';
-            else if (rep.end) sel.value = 'end';
-            else sel.value = '';
-            sel.addEventListener('change', () => {
-                const mid = parseInt(sel.dataset.measure, 10);
-                const v = sel.value;
-                state.repeats[mid] = {
-                    begin: v === 'begin' || v === 'both',
-                    end: v === 'end' || v === 'both',
-                };
+    function cycleStroke(drumId, current) {
+        const options = [null, ...(STROKES_BY_DRUM[drumId] || ['nota'])];
+        const idx = current
+            ? options.findIndex((s) => s === current.stroke)
+            : 0;
+        const next = options[(idx + 1) % options.length];
+        return next ? { stroke: next } : null;
+    }
+
+    function applyCellVisual(btn, hit, drumId) {
+        btn.classList.remove('is-on', 'stroke-chapa', 'stroke-accent', 'stroke-open');
+        btn.textContent = '';
+        if (!hit) {
+            btn.setAttribute('aria-pressed', 'false');
+            btn.setAttribute('aria-label', btn.dataset.baseLabel);
+            return;
+        }
+        btn.classList.add('is-on');
+        if (['chapa', 'dedo'].includes(hit.stroke)) btn.classList.add('stroke-chapa');
+        if (hit.stroke === 'acentuado' || hit.stroke === 'agudo') btn.classList.add('stroke-accent');
+        if (['abierto', 'slap'].includes(hit.stroke)) btn.classList.add('stroke-open');
+        if (hit.stroke === 'palma') btn.classList.add('stroke-palma');
+        btn.textContent = STROKE_SHORT[hit.stroke] || '•';
+        btn.setAttribute('aria-pressed', 'true');
+        btn.setAttribute('aria-label', `${btn.dataset.baseLabel}, ${STROKE_LABELS[hit.stroke] || hit.stroke}`);
+    }
+
+    function buildOptionalToggles() {
+        if (!optionalWrap) return;
+        optionalWrap.innerHTML = '';
+        OPTIONAL_DRUMS.forEach((d) => {
+            const lbl = document.createElement('label');
+            lbl.className = 'form-check form-check-inline small';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'form-check-input';
+            cb.checked = state.optionalInstruments.includes(d.id);
+            cb.addEventListener('change', () => {
+                if (cb.checked) {
+                    if (!state.optionalInstruments.includes(d.id)) {
+                        state.optionalInstruments.push(d.id);
+                    }
+                } else {
+                    state.optionalInstruments = state.optionalInstruments.filter((x) => x !== d.id);
+                }
+                state.sections.forEach((sec) => {
+                    if (!sec.hits[d.id]) {
+                        sec.hits[d.id] = Array.from({ length: sec.measureCount }, () => []);
+                    }
+                });
+                buildGrid();
                 syncHidden();
                 renderPartituraVexflow(preview, state);
             });
-            wrap.appendChild(sel);
-            row.appendChild(wrap);
+            lbl.appendChild(cb);
+            lbl.appendChild(document.createTextNode(' ' + d.label));
+            optionalWrap.appendChild(lbl);
+        });
+    }
+
+    function buildSectionsPanel() {
+        if (!sectionsWrap) return;
+        sectionsWrap.innerHTML = '';
+
+        const tabs = document.createElement('div');
+        tabs.className = 'programa-partitura-section-tabs d-flex flex-wrap gap-1 mb-2';
+        state.sections.forEach((sec, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-sm ' + (i === activeSection ? 'btn-warning' : 'btn-outline-secondary');
+            btn.textContent = sec.name || `Sección ${i + 1}`;
+            btn.addEventListener('click', () => {
+                activeSection = i;
+                buildSectionsPanel();
+                buildGrid();
+            });
+            tabs.appendChild(btn);
+        });
+        sectionsWrap.appendChild(tabs);
+
+        const sec = state.sections[activeSection];
+        if (!sec) return;
+
+        const controls = document.createElement('div');
+        controls.className = 'row g-2 align-items-end mb-2';
+
+        const nameCol = document.createElement('div');
+        nameCol.className = 'col-md-4';
+        nameCol.innerHTML = '<label class="form-label small mb-0">Nombre</label>';
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'form-control form-control-sm';
+        nameInput.value = sec.name;
+        nameInput.placeholder = 'Ej. Llamada inicial, Toque, Variación…';
+        nameInput.addEventListener('input', () => {
+            sec.name = nameInput.value;
+            syncHidden();
+            buildSectionsPanel();
+        });
+        nameCol.appendChild(nameInput);
+
+        const measCol = document.createElement('div');
+        measCol.className = 'col-auto';
+        measCol.innerHTML = '<label class="form-label small mb-0">Compases</label>';
+        const measSel = document.createElement('select');
+        measSel.className = 'form-select form-select-sm';
+        [1, 2, 3, 4].forEach((n) => {
+            const o = document.createElement('option');
+            o.value = String(n);
+            o.textContent = String(n);
+            if (n === sec.measureCount) o.selected = true;
+            measSel.appendChild(o);
+        });
+        measSel.addEventListener('change', () => {
+            const mc = parseInt(measSel.value, 10);
+            const drums = activeDrums(state);
+            const next = emptyHits(mc, drums.map((d) => d.id));
+            drums.forEach((d) => {
+                for (let m = 0; m < mc; m++) {
+                    next[d.id][m] = sec.hits[d.id]?.[m]?.map((h) => ({ ...h })) || [];
+                }
+            });
+            sec.measureCount = mc;
+            sec.hits = next;
+            sec.repeats = Array.from({ length: mc }, (_, m) => sec.repeats[m] || { begin: false, end: false });
+            buildGrid();
+            syncHidden();
+            renderPartituraVexflow(preview, state);
+        });
+        measCol.appendChild(measSel);
+
+        const repCol = document.createElement('div');
+        repCol.className = 'col-auto';
+        repCol.innerHTML = '<label class="form-label small mb-0">Repetir</label>';
+        const repSel = document.createElement('select');
+        repSel.className = 'form-select form-select-sm';
+        [1, 2, 3, 4, 8].forEach((n) => {
+            const o = document.createElement('option');
+            o.value = String(n);
+            o.textContent = n === 1 ? '×1' : `×${n}`;
+            if (n === sec.repeatX) o.selected = true;
+            repSel.appendChild(o);
+        });
+        repSel.addEventListener('change', () => {
+            sec.repeatX = parseInt(repSel.value, 10);
+            syncHidden();
+        });
+        repCol.appendChild(repSel);
+
+        const delCol = document.createElement('div');
+        delCol.className = 'col-auto';
+        if (state.sections.length > 1) {
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'btn btn-sm btn-outline-danger';
+            delBtn.textContent = 'Quitar sección';
+            delBtn.addEventListener('click', () => {
+                state.sections.splice(activeSection, 1);
+                activeSection = Math.max(0, activeSection - 1);
+                buildSectionsPanel();
+                buildGrid();
+                syncHidden();
+                renderPartituraVexflow(preview, state);
+            });
+            delCol.appendChild(delBtn);
         }
-        repeatWrap.appendChild(row);
+
+        controls.append(nameCol, measCol, repCol, delCol);
+        sectionsWrap.appendChild(controls);
+
+        const repRow = document.createElement('div');
+        repRow.className = 'd-flex flex-wrap gap-2 mb-2';
+        for (let m = 0; m < sec.measureCount; m++) {
+            const sel = document.createElement('select');
+            sel.className = 'form-select form-select-sm w-auto';
+            sel.setAttribute('aria-label', `Repetición compás ${m + 1}`);
+            [['', 'Sin ⟲'], ['begin', 'Inicio ⟲'], ['end', 'Fin ⟲'], ['both', 'Inicio y fin ⟲']].forEach(([v, l]) => {
+                const o = document.createElement('option');
+                o.value = v;
+                o.textContent = `C${m + 1}: ${l}`;
+                sel.appendChild(o);
+            });
+            const r = sec.repeats[m] || { begin: false, end: false };
+            if (r.begin && r.end) sel.value = 'both';
+            else if (r.begin) sel.value = 'begin';
+            else if (r.end) sel.value = 'end';
+            sel.addEventListener('change', () => {
+                const v = sel.value;
+                sec.repeats[m] = { begin: v === 'begin' || v === 'both', end: v === 'end' || v === 'both' };
+                syncHidden();
+                renderPartituraVexflow(preview, state);
+            });
+            repRow.appendChild(sel);
+        }
+        sectionsWrap.appendChild(repRow);
     }
 
     function buildGrid() {
         if (!gridWrap) return;
         gridWrap.innerHTML = '';
-        const beats = state.beats;
-        const mc = state.measureCount;
+        const sec = state.sections[activeSection];
+        if (!sec) return;
 
+        const beats = state.beats;
+        const drums = activeDrums(state);
         const table = document.createElement('table');
         table.className = 'table table-sm table-bordered programa-partitura-grid mb-0';
 
         const thead = document.createElement('thead');
         const hr = document.createElement('tr');
         const th0 = document.createElement('th');
-        th0.textContent = 'Tambor';
+        th0.textContent = 'Instrumento';
         th0.scope = 'col';
         hr.appendChild(th0);
-        for (let m = 0; m < mc; m++) {
+        for (let m = 0; m < sec.measureCount; m++) {
             for (let b = 0; b < beats; b++) {
                 const th = document.createElement('th');
                 th.className = 'text-center programa-partitura-grid-beat';
                 th.scope = 'col';
-                th.title = 'Compás ' + (m + 1) + ', pulso ' + (b + 1);
-                if (b % 4 === 0) th.classList.add('programa-partitura-grid-downbeat');
-                th.textContent = b % 4 === 0 ? String(m + 1) + '.' + (Math.floor(b / 4) + 1) : '';
+                if (b % 4 === 0) {
+                    th.classList.add('programa-partitura-grid-downbeat');
+                    th.textContent = `${m + 1}.${Math.floor(b / 4) + 1}`;
+                }
                 hr.appendChild(th);
             }
         }
@@ -364,45 +721,40 @@ export function initPartituraEditor(root) {
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
-        CHILINGA_DRUMS.forEach((drum) => {
+        drums.forEach((drum) => {
             const tr = document.createElement('tr');
             const label = document.createElement('th');
             label.scope = 'row';
             label.textContent = drum.label;
+            label.className = 'programa-partitura-drum-label';
             tr.appendChild(label);
 
-            for (let m = 0; m < mc; m++) {
+            for (let m = 0; m < sec.measureCount; m++) {
                 for (let b = 0; b < beats; b++) {
                     const td = document.createElement('td');
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'programa-partitura-cell';
-                    const baseLabel = drum.label + ', compás ' + (m + 1) + ', posición ' + (b + 1);
+                    const baseLabel = `${drum.label}, compás ${m + 1}, pulso ${b + 1}`;
                     btn.dataset.baseLabel = baseLabel;
                     btn.dataset.drum = drum.id;
                     btn.dataset.measure = String(m);
                     btn.dataset.beat = String(b);
-                    const hit = findHit(state, drum.id, m, b);
-                    applyCellVisual(btn, hit);
+                    const hit = findHit(sec, drum.id, m, b);
+                    applyCellVisual(btn, hit, drum.id);
                     btn.addEventListener('click', () => {
                         const mid = parseInt(btn.dataset.measure, 10);
                         const beat = parseInt(btn.dataset.beat, 10);
-                        const list = state.hits[drum.id][mid];
+                        const list = sec.hits[drum.id][mid];
                         const idx = list.findIndex((h) => h.beat === beat);
-                        let next;
-                        if (idx < 0) {
-                            next = CELL_CYCLE[1];
-                        } else {
-                            const cur = cellState(list[idx]);
-                            const nxt = (cur + 1) % CELL_CYCLE.length;
-                            next = CELL_CYCLE[nxt];
-                        }
+                        const cur = idx >= 0 ? list[idx] : null;
+                        const next = cycleStroke(drum.id, cur);
                         if (idx >= 0) list.splice(idx, 1);
                         if (next) {
-                            list.push({ beat, hand: next.hand, type: next.type });
+                            list.push({ beat, stroke: next.stroke });
                             list.sort((a, b) => a.beat - b.beat);
                         }
-                        applyCellVisual(btn, next ? list.find((h) => h.beat === beat) : null);
+                        applyCellVisual(btn, next ? list.find((h) => h.beat === beat) : null, drum.id);
                         syncHidden();
                         renderPartituraVexflow(preview, state);
                     });
@@ -416,43 +768,24 @@ export function initPartituraEditor(root) {
         gridWrap.appendChild(table);
     }
 
-    function resizeMeasures(count) {
-        const mc = Math.min(4, Math.max(1, count));
-        const next = emptyHits(mc);
-        CHILINGA_DRUMS.forEach((d) => {
-            for (let m = 0; m < mc; m++) {
-                next[d.id][m] = state.hits[d.id]?.[m]
-                    ? state.hits[d.id][m].map((h) => ({ ...h }))
-                    : [];
-            }
-        });
-        const nextRepeats = emptyRepeats(mc);
-        for (let m = 0; m < mc; m++) {
-            nextRepeats[m] = state.repeats[m]
-                ? { ...state.repeats[m] }
-                : { begin: false, end: false };
-        }
-        state.measureCount = mc;
-        state.hits = next;
-        state.repeats = nextRepeats;
-        buildRepeats();
-        buildGrid();
-        syncHidden();
-        renderPartituraVexflow(preview, state);
-    }
-
-    if (measureSelect) {
-        measureSelect.value = String(state.measureCount);
-        measureSelect.addEventListener('change', () => {
-            resizeMeasures(parseInt(measureSelect.value, 10));
+    if (addSectionBtn) {
+        addSectionBtn.addEventListener('click', () => {
+            state.sections.push(emptySection('', 1));
+            activeSection = state.sections.length - 1;
+            buildSectionsPanel();
+            buildGrid();
+            syncHidden();
+            renderPartituraVexflow(preview, state);
         });
     }
 
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
-            state.hits = emptyHits(state.measureCount);
-            state.repeats = emptyRepeats(state.measureCount);
-            buildRepeats();
+            const sec = state.sections[activeSection];
+            if (!sec) return;
+            const drums = activeDrums(state);
+            sec.hits = emptyHits(sec.measureCount, drums.map((d) => d.id));
+            sec.repeats = Array.from({ length: sec.measureCount }, () => ({ begin: false, end: false }));
             buildGrid();
             syncHidden();
             renderPartituraVexflow(preview, state);
@@ -461,44 +794,22 @@ export function initPartituraEditor(root) {
 
     if (demoBtn) {
         demoBtn.addEventListener('click', () => {
-            state = normalizeScore({
-                measureCount: 1,
-                hits: {
-                    repique: [[
-                        { beat: 0, hand: 'I', type: 'normal' },
-                        { beat: 4, hand: 'D', type: 'normal' },
-                        { beat: 8, hand: 'I', type: 'accent' },
-                        { beat: 12, hand: 'D', type: 'normal' },
-                    ]],
-                    redoblante: [[
-                        { beat: 2, hand: 'D', type: 'normal' },
-                        { beat: 6, hand: 'I', type: 'normal' },
-                        { beat: 10, hand: 'D', type: 'accent' },
-                        { beat: 14, hand: 'I', type: 'normal' },
-                    ]],
-                    fondo_grave: [[{ beat: 0, hand: 'I', type: 'normal' }, { beat: 8, hand: 'D', type: 'normal' }]],
-                    fondo_agudo: [[{ beat: 4, hand: 'I', type: 'normal' }, { beat: 12, hand: 'D', type: 'accent' }]],
-                },
-                repeats: [{ begin: true, end: true }],
-            });
-            if (measureSelect) measureSelect.value = '1';
-            buildRepeats();
+            state = demoToqueChilinga();
+            activeSection = 0;
+            buildOptionalToggles();
+            buildSectionsPanel();
             buildGrid();
             syncHidden();
             renderPartituraVexflow(preview, state);
         });
     }
 
-    if (removeCheck) {
-        removeCheck.addEventListener('change', syncHidden);
-    }
-
+    if (removeCheck) removeCheck.addEventListener('change', syncHidden);
     const form = root.closest('form');
-    if (form) {
-        form.addEventListener('submit', syncHidden);
-    }
+    if (form) form.addEventListener('submit', syncHidden);
 
-    buildRepeats();
+    buildOptionalToggles();
+    buildSectionsPanel();
     buildGrid();
     syncHidden();
     renderPartituraVexflow(preview, state);

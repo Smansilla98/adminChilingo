@@ -4,321 +4,275 @@
 @section('page-title', 'Panel Administrador')
 
 @section('content')
-<div class="stat-strip">
-    <div class="stat-card c-orange">
-        <div class="stat-kicker">Alumnos activos</div>
-        <div class="stat-value">{{ $alumnosActivos ?? 0 }}</div>
-        <div class="stat-sub">+{{ $alumnosNuevosMes ?? 0 }} este mes</div>
-        <div class="stat-line"></div>
-    </div>
-    <div class="stat-card c-blue">
-        <div class="stat-kicker">Bloques activos</div>
-        <div class="stat-value">{{ $bloquesActivos ?? 0 }}</div>
-        <div class="stat-sub">{{ $sedesActivasEnBloques ?? 0 }} sedes</div>
-        <div class="stat-line"></div>
-    </div>
-    <div class="stat-card c-green">
-        <div class="stat-kicker">Cuotas abonadas</div>
-        <div class="stat-value">{{ $cuotasAbonadas ?? 0 }}</div>
-        <div class="stat-sub">{{ ($pctAbonadas ?? 0) }}% del total</div>
-        <div class="stat-line"></div>
-    </div>
-    <div class="stat-card c-amber">
-        <div class="stat-kicker">Cuotas pendientes</div>
-        <div class="stat-value">{{ $cuotasPendientes ?? 0 }}</div>
-        <div class="stat-sub">{{ ($pctPendientes ?? 0) }}% del total</div>
-        <div class="stat-line"></div>
-    </div>
-</div>
+@php
+    $nombreSaludo = trim($adminNombre ?? '') ?: 'equipo';
+    $primerNombre = explode(' ', $nombreSaludo)[0];
+@endphp
 
-<div class="panel mod-panel" id="listados-modulos">
-    <div class="panel-h">
-        <div class="panel-h-title">Accesos a cada sección</div>
-        <span class="muted small">Acceso directo al índice (listado) de cada sección.</span>
+<div class="dash-hero">
+    <div>
+        <div class="dash-hero-eyebrow">Pulso del mes</div>
+        <div class="dash-hero-title">
+            {{ $sedesActivasEnBloques ?? 0 }} sedes activas,
+            <em>{{ number_format($asistenciasMes ?? 0, 0, ',', '.') }}</em> asistencias registradas este mes.
+        </div>
     </div>
-    <div class="panel-b">
-        <div class="index-mod-grid d-flex flex-wrap gap-2">
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('programa.index') }}">Programa</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('programa.partituras.index') }}">Partituras y recursos</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('calendario.index') }}">Calendario</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('comprobantes-cuota-alumnos.index') }}">Comprobantes cuota</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('alumnos.index') }}">Alumnos</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesores.index') }}">Profesores</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('sedes.index') }}">Sedes</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('bloques.index') }}">Bloques</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('eventos.index') }}">Eventos</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('asistencias.index') }}">Asistencias</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('shows.index') }}">Shows</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('cuotas.index') }}">Cuotas</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('pagos.index') }}">Pagos</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('facturacion-mensual.index') }}">Facturación mensual</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('inventarios.index') }}">Inventarios</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('plan-compras.index') }}">Plan de compras</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('ordenes-compra.index') }}">Órdenes de compra</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('gastos.index') }}">Gastos</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('reportes.index') }}">Reportes</a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ route('reportes.profesores') }}">Listado por profesor</a>
+    <div class="text-end">
+        <div class="small text-uppercase text-muted mb-2" style="letter-spacing:.08em;">Actividad — últimos 16 días</div>
+        <div class="pulse-strip" aria-hidden="true">
+            @for($i = 0; $i < 16; $i++)
+                <i class="{{ in_array($i % 4, [0, 2]) ? 'on' : '' }}{{ $i % 7 === 3 ? ' accent' : '' }}"></i>
+            @endfor
         </div>
     </div>
 </div>
 
-<div class="panel mod-panel" id="modulos">
-    <div class="panel-h">
-        <div class="panel-h-title">Quién puede ver qué</div>
+<div class="dash-metrics">
+    <div class="dash-metric" style="--metric-accent:var(--brass);--metric-soft:var(--brass-soft)">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="dash-metric-icon"><i class="bi bi-people" aria-hidden="true"></i></div>
+            @if(($alumnosNuevosMes ?? 0) > 0)
+                <span class="small text-success font-monospace">+{{ $alumnosNuevosMes }}</span>
+            @endif
+        </div>
+        <div class="dash-metric-value">{{ $alumnosActivos ?? 0 }}</div>
+        <div class="dash-metric-label">Alumnos activos</div>
     </div>
-    <div class="panel-b mod-nav-wrap">
-        <div class="mod-nav">
-            <div class="mod-col">
-                <div class="mod-col-title">General</div>
-                <div class="mod-links">
-                    <a href="{{ route('programa.index') }}">Programa oficial</a>
-                    <a href="{{ route('programa.partituras.index') }}">Partituras y recursos</a>
-                    <a href="{{ route('calendario.index') }}">Calendario</a>
-                    <a href="{{ route('comprobantes-cuota-alumnos.index') }}">Comprobantes de cuota (alumnos)</a>
-                    <a href="{{ route('comprobante-cuota-public.create') }}" target="_blank" rel="noopener">Formulario público de comprobante</a>
-                </div>
+    <div class="dash-metric" style="--metric-accent:var(--verdigris);--metric-soft:var(--verdigris-soft)">
+        <div class="dash-metric-icon mb-2"><i class="bi bi-currency-dollar" aria-hidden="true"></i></div>
+        <div class="dash-metric-value">${{ number_format($cobradoMes ?? 0, 0, ',', '.') }}</div>
+        <div class="dash-metric-label">Cobrado este mes</div>
+    </div>
+    <div class="dash-metric" style="--metric-accent:var(--brick);--metric-soft:var(--brick-soft)">
+        <div class="dash-metric-icon mb-2"><i class="bi bi-calendar-event" aria-hidden="true"></i></div>
+        <div class="dash-metric-value">{{ $proximosEventosCount ?? 0 }}</div>
+        <div class="dash-metric-label">Próximos eventos</div>
+    </div>
+    <div class="dash-metric" style="--metric-accent:var(--purple);--metric-soft:rgba(156,138,209,.16)">
+        <div class="dash-metric-icon mb-2"><i class="bi bi-inbox" aria-hidden="true"></i></div>
+        <div class="dash-metric-value">{{ $comprobantesPendientesCount ?? 0 }}</div>
+        <div class="dash-metric-label">Comprobantes sin revisar</div>
+    </div>
+</div>
+
+<div class="dash-widgets">
+    <div class="dash-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <div class="dash-card-title">Ingresos y gastos</div>
+                <div class="small text-muted">Últimos 6 meses</div>
             </div>
-            <div class="mod-col">
-                <div class="mod-col-title">Personas y sedes</div>
-                <div class="mod-links">
-                    <a href="{{ route('alumnos.index') }}">Alumnos</a>
-                    <a href="{{ route('alumnos.create') }}">Nuevo alumno</a>
-                    <a href="{{ route('alumnos.import.form') }}">Importar alumnos</a>
-                    <a href="{{ route('alumnos.export') }}">Exportar alumnos (Excel)</a>
-                    <a href="{{ route('profesores.index') }}">Profesores</a>
-                    <a href="{{ route('sedes.index') }}">Sedes</a>
-                </div>
+        </div>
+        <div style="height:220px;">
+            <canvas id="dashChartFinanzas" aria-label="Gráfico de ingresos y gastos"></canvas>
+        </div>
+    </div>
+    <div class="dash-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <div class="dash-card-title">Alumnos por sede</div>
+                <div class="small text-muted">Activos hoy</div>
             </div>
-            <div class="mod-col">
-                <div class="mod-col-title">Bloques y clases</div>
-                <div class="mod-links">
-                    <a href="{{ route('bloques.index') }}">Bloques</a>
-                    <a href="{{ route('bloques.create') }}">Nuevo bloque</a>
-                    <a href="{{ route('eventos.index') }}">Eventos</a>
-                    <a href="{{ route('asistencias.index') }}">Asistencias</a>
-                    <a href="{{ route('asistencias.create') }}">Registrar asistencia</a>
-                    <a href="{{ route('shows.index') }}">Shows</a>
-                </div>
-            </div>
-            <div class="mod-col">
-                <div class="mod-col-title">Cuotas y pagos</div>
-                <div class="mod-links">
-                    <a href="{{ route('cuotas.index') }}">Cuotas</a>
-                    <a href="{{ route('pagos.index') }}">Pagos</a>
-                    <a href="{{ route('pagos.create') }}">Registrar pago</a>
-                    <a href="{{ route('facturacion-mensual.index') }}">Facturación mensual</a>
-                </div>
-            </div>
-            <div class="mod-col">
-                <div class="mod-col-title">Inventario y compras</div>
-                <div class="mod-links">
-                    <a href="{{ route('inventarios.index') }}">Inventarios</a>
-                    <a href="{{ route('plan-compras.index') }}">Plan de compras</a>
-                    <a href="{{ route('ordenes-compra.index') }}">Órdenes de compra</a>
-                    <a href="{{ route('gastos.index') }}">Gastos</a>
-                </div>
-            </div>
-            <div class="mod-col">
-                <div class="mod-col-title">Reportes</div>
-                <div class="mod-links">
-                    <a href="{{ route('reportes.index') }}">Reportes</a>
-                    <a href="{{ route('reportes.profesores') }}">Alumnos por profesor</a>
-                </div>
-            </div>
+        </div>
+        <div style="height:220px;">
+            <canvas id="dashChartSedes" aria-label="Gráfico de alumnos por sede"></canvas>
         </div>
     </div>
 </div>
 
-<div class="dash-grid">
-    <div class="col-main">
-        <div class="panel">
-            <div class="panel-h">
-                <div class="panel-h-title">Alumnos y bloques por profesor</div>
-                <a class="panel-h-link" href="{{ url('/reportes/profesores') }}">ver todo →</a>
-            </div>
-            <div class="panel-b">
-                <div class="prof-list">
-                    @forelse(($profBase ?? collect()) as $p)
-                        @php
-                            $bar = ($maxAlumnosProfesor ?? 1) > 0 ? round((($p->alumnos_count ?? 0) / ($maxAlumnosProfesor ?? 1)) * 100) : 0;
-                            $barClass = match ($p->avatar_class ?? 'av-orange') {
-                                'av-blue' => 'bar-blue',
-                                'av-green' => 'bar-green',
-                                'av-purple' => 'bar-purple',
-                                'av-amber' => 'bar-amber',
-                                default => 'bar-orange',
-                            };
-                        @endphp
-                        <div class="prof-row">
-                            <div class="prof-avatar {{ $p->avatar_class ?? 'av-orange' }}">{{ $p->initials ?: 'P' }}</div>
-                            <div>
-                                <div class="prof-name">{{ $p->nombre }}</div>
-                                <div class="prof-meta">{{ $p->sedes_str ?: '—' }}</div>
-                            </div>
-                            <div class="prof-kpi">
-                                <div class="n">{{ $p->alumnos_count ?? 0 }}</div>
-                                <div class="l">alumnos</div>
-                            </div>
-                            <div class="prof-kpi">
-                                <div class="n">{{ $p->bloques_count ?? 0 }}</div>
-                                <div class="l">bloques</div>
-                            </div>
-                            <div class="prof-bar-wrap" aria-hidden="true">
-                                <div class="prof-bar {{ $barClass }}" style="--w: {{ $bar }}%"></div>
-                            </div>
+<div class="dash-widgets">
+    <div class="dash-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="dash-card-title">Próximos eventos</div>
+            <a href="{{ route('eventos.index') }}" class="small text-muted">Ver todos →</a>
+        </div>
+        <div>
+            @forelse(($proximosEventos ?? collect()) as $ev)
+                <div class="dash-list-item">
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="fw-semibold text-truncate">{{ $ev->titulo ?? $ev->nombre ?? 'Evento' }}</div>
+                        <div class="small text-muted">
+                            {{ $ev->fecha?->locale('es')->translatedFormat('d M Y') ?? '—' }}
+                            @if(!empty($ev->lugar)) · {{ $ev->lugar }} @endif
                         </div>
-                    @empty
-                        <div class="muted">Sin datos de profesores.</div>
-                    @endforelse
+                    </div>
+                    <span class="dash-badge pend">Próximo</span>
                 </div>
-            </div>
-        </div>
-
-        <div class="panel" style="margin-top: 14px;">
-            <div class="panel-h">
-                <div class="panel-h-title">Asistencias — bloques de esta semana</div>
-                <a class="panel-h-link" href="{{ route('asistencias.create') }}">registrar →</a>
-            </div>
-            <div class="panel-b">
-                <div class="asist-grid">
-                    @forelse(($bloquesSemanales ?? collect())->take(6) as $row)
-                        @php
-                            $b = $row['bloque'];
-                            $h = $row['horario'];
-                            $pct = (int) ($row['pct'] ?? 0);
-                            $barColor = match ($row['estado'] ?? '') {
-                                'Tomada' => 'var(--green)',
-                                'Incompleta' => 'var(--accent2)',
-                                'Próxima' => 'var(--s3)',
-                                default => 'var(--accent)',
-                            };
-                            $fechaClaseCard = $row['fecha_clase'] ?? null;
-                            $urlAsist = route('asistencias.create', array_filter([
-                                'bloque_id' => $b->id ?? null,
-                                'fecha' => $fechaClaseCard ? $fechaClaseCard->format('Y-m-d') : null,
-                            ]));
-                        @endphp
-                        <a class="asist-card" href="{{ $urlAsist }}">
-                            <div class="asist-top">
-                                <div class="asist-sede">{{ $row['sede']?->nombre ?? '—' }}</div>
-                                <div class="{{ $row['badge_class'] }}">{{ $row['estado'] }}</div>
-                            </div>
-                            <div class="asist-title">{{ $row['profesor']?->nombre ?? '—' }}</div>
-                            <div class="asist-sub">
-                                {{ $h?->nombre_dia ?? '—' }} {{ $h?->hora_inicio ? \Carbon\Carbon::parse($h->hora_inicio)->format('H:i') : '' }} hs ·
-                                {{ $b?->nombre ?? 'Bloque' }}
-                                @if($fechaClaseCard)
-                                · clase {{ $fechaClaseCard->format('d/m') }}
-                                @endif
-                            </div>
-                            <div class="asist-bar" aria-hidden="true">
-                                <span style="--w: {{ $pct }}%; --bar: {{ $barColor }}"></span>
-                            </div>
-                            <div class="asist-foot">
-                                <span>Presentes</span>
-                                <span>{{ $row['presentes'] ?? 0 }}/{{ $row['total_alumnos'] ?? 0 }}</span>
-                            </div>
-                        </a>
-                    @empty
-                        <div class="muted">No hay horarios/bloques para mostrar.</div>
-                    @endforelse
-                </div>
-            </div>
+            @empty
+                <p class="text-muted small mb-0 py-2">No hay eventos próximos.</p>
+            @endforelse
         </div>
     </div>
-
-    <aside class="col-side">
-        <div class="panel">
-            <div class="panel-h">
-                <div class="panel-h-title">Cobros pendientes</div>
-            </div>
-            <div class="panel-b">
-                <div class="cuota-list">
-                    @forelse(($cuotasPendientesList ?? collect()) as $c)
-                        <div class="cuota-row">
-                            <div class="cuota-dot {{ $c['dot_class'] ?? '' }}"></div>
-                            <div>
-                                <div class="cuota-name">{{ $c['alumno'] }}</div>
-                                <div class="cuota-meta">{{ $c['sede'] }} · {{ $c['cuota_nombre'] ?? $c['mes_label'] }}</div>
-                            </div>
-                            <div class="cuota-monto">${{ number_format($c['monto'] ?? 0, 0, ',', '.') }}</div>
-                        </div>
-                    @empty
-                        <div class="muted">No hay cuotas pendientes para mostrar.</div>
-                    @endforelse
+    <div class="dash-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="dash-card-title">Comprobantes sin revisar</div>
+            <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="small text-muted">Ir al listado →</a>
+        </div>
+        <div>
+            @forelse(($comprobantesPendientesList ?? collect()) as $comp)
+                <div class="dash-list-item">
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="fw-semibold text-truncate">{{ $comp->alumno?->nombre_apellido ?? 'Alumno' }}</div>
+                        <div class="small text-muted">{{ $comp->created_at?->diffForHumans() ?? '' }}</div>
+                    </div>
+                    <span class="dash-badge alert">Pendiente</span>
                 </div>
-            </div>
+            @empty
+                <p class="text-muted small mb-0 py-2">No hay comprobantes pendientes.</p>
+            @endforelse
         </div>
-
-        <div class="panel">
-            <div class="panel-h">
-                <div class="panel-h-title">Recaudación — últimas semanas</div>
-            </div>
-            <div class="chart-wrap">
-                <canvas id="recaudacionChart" height="130"></canvas>
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-h">
-                <div class="panel-h-title">Acciones rápidas</div>
-            </div>
-            <div class="panel-b">
-                <div class="qa-grid">
-                    <a class="qa-btn" href="{{ route('alumnos.create') }}">
-                        <span class="qa-ic"><i class="bi bi-person-plus"></i></span>
-                        Nuevo alumno
-                    </a>
-                    <a class="qa-btn" href="{{ route('asistencias.create') }}">
-                        <span class="qa-ic"><i class="bi bi-check2-square"></i></span>
-                        Tomar asistencia
-                    </a>
-                    <a class="qa-btn" href="{{ route('pagos.create') }}">
-                        <span class="qa-ic"><i class="bi bi-receipt"></i></span>
-                        Registrar pago
-                    </a>
-                    <a class="qa-btn" href="{{ route('reportes.index') }}">
-                        <span class="qa-ic"><i class="bi bi-bar-chart"></i></span>
-                        Ver reportes
-                    </a>
-                </div>
-            </div>
-        </div>
-    </aside>
+    </div>
 </div>
+
+<div class="dash-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <div class="dash-card-title">Bloques — cupo</div>
+            <div class="small text-muted">Ocupación por bloque activo</div>
+        </div>
+        <a href="{{ route('bloques.index') }}" class="small text-muted">Ver bloques →</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Bloque</th>
+                    <th>Sede</th>
+                    <th>Profesor</th>
+                    <th>Cupo</th>
+                    <th class="text-end">Alumnos</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse(($bloquesCupo ?? collect()) as $bloque)
+                    @php
+                        $activos = (int) ($bloque->alumnos_activos_count ?? 0);
+                        $cupo = max(1, (int) ($bloque->cupo_maximo ?? $bloque->cupo ?? 30));
+                        $pct = min(100, round(($activos / $cupo) * 100));
+                        $barClass = $pct >= 100 ? 'full' : ($pct >= 75 ? 'warn' : '');
+                    @endphp
+                    <tr>
+                        <td class="fw-semibold">{{ $bloque->nombre }}</td>
+                        <td class="text-muted">{{ $bloque->sede?->nombre ?? '—' }}</td>
+                        <td class="text-muted">{{ $bloque->profesor?->nombre ?? '—' }}</td>
+                        <td>
+                            <span class="cupo-bar {{ $barClass }}" aria-hidden="true"><i style="width:{{ $pct }}%"></i></span>
+                            <span class="small font-monospace">{{ $pct }}%</span>
+                        </td>
+                        <td class="text-end font-monospace">{{ $activos }}/{{ $cupo }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5" class="text-muted">Sin bloques activos.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="dash-widgets">
+    <div class="dash-card">
+        <div class="dash-card-title mb-3">Acciones rápidas</div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('alumnos.create') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-person-plus"></i> Alumno</a>
+            <a href="{{ route('bloques.create') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-collection"></i> Bloque</a>
+            <a href="{{ route('pagos.create') }}" class="btn btn-sm btn-primary"><i class="bi bi-receipt"></i> Registrar pago</a>
+            <a href="{{ route('asistencias.create') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-check2-square"></i> Asistencia</a>
+            <a href="{{ route('programa.partituras.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-music-note-beamed"></i> Partituras</a>
+        </div>
+    </div>
+    <div class="dash-card">
+        <div class="dash-card-title mb-3">Recaudación semanal</div>
+        <div style="height:160px;">
+            <canvas id="recaudacionChart" aria-label="Recaudación últimas semanas"></canvas>
+        </div>
+    </div>
+</div>
+@endsection
 
 @push('scripts')
 <script>
-    (function () {
-        const el = document.getElementById('recaudacionChart');
-        if (!el) return;
-        const values = JSON.parse('{!! json_encode(array_values(($recaudacion ?? collect([0,0,0,0,0,0]))->toArray())) !!}');
-        const css = getComputedStyle(document.documentElement);
-        const s3 = css.getPropertyValue('--s3').trim() || '#2a2927';
-        const accent = css.getPropertyValue('--accent').trim() || '#e85d2b';
-        new Chart(el.getContext('2d'), {
+(function () {
+    const css = getComputedStyle(document.documentElement);
+    const skin = css.getPropertyValue('--skin').trim() || '#f3e9d8';
+    const muted = css.getPropertyValue('--muted-2').trim() || 'rgba(255,255,255,.45)';
+    const line = 'rgba(243,233,216,0.08)';
+    const brick = css.getPropertyValue('--brick').trim() || '#c1432b';
+    const verdigris = css.getPropertyValue('--verdigris').trim() || '#4a9a86';
+    const brass = css.getPropertyValue('--brass').trim() || '#d1a054';
+    const s3 = css.getPropertyValue('--surface-3').trim() || '#332619';
+
+    const chartDefaults = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: muted } } },
+        scales: {
+            x: { ticks: { color: muted }, grid: { color: line } },
+            y: { ticks: { color: muted }, grid: { color: line } },
+        },
+    };
+
+    const fin = document.getElementById('dashChartFinanzas');
+    if (fin) {
+        new Chart(fin.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($chartLabels ?? []) !!},
+                datasets: [
+                    {
+                        label: 'Ingresos',
+                        data: {!! json_encode($chartIngresos ?? []) !!},
+                        backgroundColor: verdigris,
+                        borderRadius: 6,
+                    },
+                    {
+                        label: 'Gastos',
+                        data: {!! json_encode($chartGastos ?? []) !!},
+                        backgroundColor: brick,
+                        borderRadius: 6,
+                    },
+                ],
+            },
+            options: chartDefaults,
+        });
+    }
+
+    const sedes = document.getElementById('dashChartSedes');
+    if (sedes) {
+        const sedeData = {!! json_encode(($alumnosPorSedeChart ?? collect())->values()) !!};
+        new Chart(sedes.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: sedeData.map((r) => r.nombre),
+                datasets: [{
+                    data: sedeData.map((r) => r.total),
+                    backgroundColor: [brass, verdigris, brick, '#9c8ad1', '#5b9ef0', s3],
+                    borderWidth: 0,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { color: muted, boxWidth: 10 } } },
+            },
+        });
+    }
+
+    const rec = document.getElementById('recaudacionChart');
+    if (rec) {
+        const values = {!! json_encode(array_values(($recaudacion ?? collect([0,0,0,0,0,0]))->toArray())) !!};
+        new Chart(rec.getContext('2d'), {
             type: 'bar',
             data: {
                 labels: ['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6'],
                 datasets: [{
                     data: values,
-                    backgroundColor: [s3, s3, s3, 'rgba(232,93,43,0.35)', 'rgba(232,93,43,0.55)', accent],
-                    borderColor: 'rgba(255,255,255,0.10)',
-                    borderWidth: 1,
+                    backgroundColor: [s3, s3, s3, 'rgba(193,67,43,.35)', 'rgba(193,67,43,.55)', brick],
                     borderRadius: 8,
-                }]
+                }],
             },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false }, tooltip: { enabled: true } },
-                scales: {
-                    x: { ticks: { color: 'rgba(255,255,255,0.45)' }, grid: { color: 'rgba(255,255,255,0.06)' } },
-                    y: { ticks: { color: 'rgba(255,255,255,0.45)' }, grid: { color: 'rgba(255,255,255,0.06)' } }
-                }
-            }
+            options: { ...chartDefaults, plugins: { legend: { display: false } } },
         });
-    })();
+    }
+})();
 </script>
 @endpush
-@endsection
-

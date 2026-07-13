@@ -48,18 +48,15 @@
         'contenido' => [
             'label' => 'Contenido',
             'accent' => 'contenido',
-            'patterns' => ['programa.index', 'programa.seccion.*', 'disenos.*'],
+            'patterns' => [
+                'programa.index', 'programa.seccion.*', 'programa.partituras.*',
+                'programa.toque.partitura.*', 'programa.toque.compositor.*',
+                'programa.toque.edit', 'programa.toque.update', 'disenos.*',
+            ],
             'links' => array_filter([
                 auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
+                auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
                 auth()->user()->isAdmin() && auth()->user()->tieneAccesoModulo('admin.disenos') ? ['route' => 'disenos.index', 'label' => 'Diseño', 'pattern' => 'disenos.*', 'badge' => 'nuevo'] : null,
-            ]),
-        ],
-        'partituras' => [
-            'label' => 'Partituras y recursos',
-            'accent' => 'partituras',
-            'patterns' => ['programa.partituras.*', 'programa.toque.partitura.*', 'programa.toque.compositor.*', 'programa.toque.edit', 'programa.toque.update'],
-            'links' => array_filter([
-                auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Catálogo por toque', 'pattern' => 'programa.partituras.*'] : null,
             ]),
         ],
         'config' => [

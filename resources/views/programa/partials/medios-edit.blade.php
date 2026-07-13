@@ -9,7 +9,7 @@
     if ($recursos === []) {
         $recursos = [['tipo' => 'enlace', 'titulo' => '', 'url' => '', 'contenido' => '', 'path' => null, 'nombre' => null]];
     }
-    $tieneVex = ! empty($m['partitura_vexflow']['hits']);
+    $tieneVex = ! empty($m['partitura_vexflow']['sections']) || ! empty($m['partitura_vexflow']['hits']);
     $tieneFlat = ! empty($m['partitura_flat']['musicxml']);
 @endphp
 

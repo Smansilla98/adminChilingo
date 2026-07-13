@@ -103,7 +103,7 @@ class ProgramaController extends Controller
                 $r->resumen_medios = [
                     'partitura' => $tieneArchivo,
                     'partitura_nombre' => $m['partitura']['nombre'] ?? null,
-                    'digital' => ! empty($m['partitura_flat']['musicxml']) || ! empty($m['partitura_vexflow']['hits']),
+                    'digital' => ! empty($m['partitura_flat']['musicxml']) || ! empty($m['partitura_vexflow']['sections']) || ! empty($m['partitura_vexflow']['hits']),
                     'flat' => ! empty($m['partitura_flat']['musicxml']),
                     'videos' => $videosBase + $videosGrupo,
                     'cortes' => count($m['cortes'] ?? []),
