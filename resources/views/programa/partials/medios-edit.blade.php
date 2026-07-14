@@ -9,8 +9,7 @@
     if ($recursos === []) {
         $recursos = [['tipo' => 'enlace', 'titulo' => '', 'url' => '', 'contenido' => '', 'path' => null, 'nombre' => null]];
     }
-    $tieneVex = ! empty($m['partitura_vexflow']['sections']) || ! empty($m['partitura_vexflow']['hits']);
-    $tieneFlat = ! empty($m['partitura_flat']['musicxml']);
+    $tieneVex = ! empty($m['partitura_vexflow']['hits']) || ! empty($m['partitura_vexflow']['sections']);
 @endphp
 
 <div class="card mb-3" id="partitura-recursos">
@@ -49,39 +48,22 @@
 
         <div class="card border-primary mb-4">
             <div class="card-header bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <h3 class="h6 mb-0"><i class="bi bi-music-note-beamed"></i> Compositor digital (Flat)</h3>
-                @if($tieneFlat)
+                <h3 class="h6 mb-0"><i class="bi bi-music-note-beamed"></i> Compositor digital (VexFlow)</h3>
+                @if($tieneVex)
                     <span class="badge bg-success">Con partitura</span>
                 @endif
             </div>
             <div class="card-body">
                 <p class="small text-muted mb-3">
-                    Creá o editá partituras con un editor profesional similar a
-                    <a href="https://flat.io/es" target="_blank" rel="noopener">Flat.io</a>:
-                    pentagrama, reproducción, instrumentos y exportación a MusicXML.
+                    Creá o editá partituras con la nomenclatura del <em>Cuadernillo de Toques</em>
+                    (secciones, instrumentos y tipos de golpe). Editor 100&nbsp;% local, sin servicios externos.
                 </p>
                 @if(isset($programaRitmo))
                     <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-primary btn-sm">
                         <i class="bi bi-pencil-square"></i>
-                        {{ $tieneFlat ? 'Abrir compositor' : 'Crear partitura digital' }}
+                        {{ $tieneVex ? 'Abrir compositor' : 'Crear partitura digital' }}
                     </a>
                 @endif
-            </div>
-        </div>
-
-        <div class="accordion mb-4" id="accordionVexflow">
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVexflow" aria-expanded="false">
-                        <i class="bi bi-grid-3x3-gap me-2"></i> Rejilla VexFlow (avanzado)
-                        @if($tieneVex)<span class="badge bg-success ms-2">Con datos</span>@endif
-                    </button>
-                </h2>
-                <div id="collapseVexflow" class="accordion-collapse collapse" data-bs-parent="#accordionVexflow">
-                    <div class="accordion-body p-0">
-                        @include('programa.partials.partitura-vexflow-edit', ['medios' => $m])
-                    </div>
-                </div>
             </div>
         </div>
 

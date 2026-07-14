@@ -11,7 +11,6 @@ export default defineConfig({
                 'resources/css/programa-compositor.css',
                 'resources/js/app.js',
                 'resources/js/programa-partitura.js',
-                'resources/js/programa-compositor.js',
                 'resources/js/diseno-canvas.js',
             ],
             refresh: true,

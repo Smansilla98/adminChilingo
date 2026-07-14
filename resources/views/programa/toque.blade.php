@@ -128,5 +128,5 @@
 @endpush
 
 @push('vite')
-@vite(['resources/css/programa-compositor.css', 'resources/js/programa-partitura.js', 'resources/js/programa-compositor.js'])
+@vite(['resources/js/programa-partitura.js'])
 @endpush

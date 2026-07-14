@@ -9,7 +9,7 @@
         <h2 class="h4 mb-1">Partituras por toque</h2>
         <p class="text-muted mb-0">
             Subí el PDF o la foto de cada toque (una página del libro «Toques Chilinga»)
-            o creá partituras nuevas con el <strong>Compositor digital</strong> (estilo Flat.io).
+            o creá partituras nuevas con el <strong>Compositor digital</strong> (VexFlow · Cuadernillo).
         </p>
     </div>
     <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary btn-sm">Programa completo</a>
@@ -19,7 +19,7 @@
     <i class="bi bi-info-circle"></i>
     <strong>Formato del libro:</strong> las partituras del PDF son imágenes escaneadas.
     Exportá o fotografiá la página del toque y subila con <strong>«Subir partitura»</strong>.
-    Para crear partituras nuevas usá <strong>«Compositor»</strong> (editor tipo Flat.io).
+    Para crear partituras nuevas usá <strong>«Compositor»</strong> (editor local del cuadernillo).
 </div>
 
 <form method="GET" class="row g-2 align-items-end mb-4">
@@ -107,7 +107,7 @@
                                             @if(auth()->user()->isAdmin())
                                                 <a href="{{ route('programa.toque.compositor.edit', $toque) }}" class="btn btn-sm btn-primary">
                                                     <i class="bi bi-music-note-beamed"></i>
-                                                    {{ ($rm['flat'] ?? false) ? 'Compositor' : 'Crear digital' }}
+                                                    {{ ($rm['digital'] ?? false) ? 'Compositor' : 'Crear digital' }}
                                                 </a>
                                                 <a href="{{ route('programa.toque.partitura.edit', $toque) }}" class="btn btn-sm btn-warning">
                                                     <i class="bi bi-cloud-upload"></i>

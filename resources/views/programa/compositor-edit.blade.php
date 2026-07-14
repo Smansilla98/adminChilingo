@@ -3,17 +3,16 @@
 @section('title', 'Compositor: '.$programaRitmo->nombre)
 
 @push('vite')
-@vite(['resources/css/programa-compositor.css', 'resources/js/programa-compositor.js'])
+@vite(['resources/css/programa-compositor.css', 'resources/js/programa-partitura.js'])
 @endpush
 
 @section('content')
 @php
-    $flat = $medios['partitura_flat'] ?? null;
-    $tieneFlat = ! empty($flat['musicxml']);
-    $embedHost = request()->getHost();
-    $esLocalEmbed = in_array($embedHost, ['localhost', '127.0.0.1'], true)
-        || str_ends_with($embedHost, '.localhost')
-        || str_ends_with($embedHost, '.test');
+    $vex = old('partitura_vexflow_json')
+        ? json_decode(old('partitura_vexflow_json'), true)
+        : ($medios['partitura_vexflow'] ?? null);
+    $tieneVex = ! empty($vex['sections']) || ! empty($vex['hits']);
+    $vexJson = $vex ? json_encode($vex, JSON_UNESCAPED_UNICODE) : '';
 @endphp
 
 <form method="POST"
@@ -51,59 +50,55 @@
         </div>
     @endif
 
-    @if(!$esLocalEmbed)
-        <div class="compositor-alert compositor-alert-warning compositor-setup-alert">
-            <div class="compositor-setup-title">
-                <i class="bi bi-exclamation-triangle"></i>
-                Configuración requerida para producción (Flat.io)
-            </div>
-            <p class="mb-2">
-                Si ves <strong>«Invalid embed referer»</strong>, el dominio actual no está autorizado en tu app de Flat.
-            </p>
-            <ol class="compositor-setup-steps mb-2">
-                <li>Entrá a <a href="https://flat.io/developers/apps" target="_blank" rel="noopener">flat.io/developers/apps</a> y abrí tu app (o creá una nueva).</li>
-                <li>En <strong>Embed → Settings → Authorized domains</strong>, agregá exactamente:
-                    <code class="compositor-setup-domain">{{ $embedHost }}</code>
-                    (sin <code>https://</code> ni barra final).
-                </li>
-                <li>Copiá el <strong>App ID</strong> de esa misma página y definilo en Railway como variable <code>FLAT_EMBED_APP_ID</code>.</li>
-                <li>Redeploy o reiniciá el servicio y recargá esta página.</li>
-            </ol>
-            @if($flatAppId === '')
-                <p class="mb-0 text-danger"><strong>Falta <code>FLAT_EMBED_APP_ID</code></strong> en las variables de entorno del servidor.</p>
-            @else
-                <p class="mb-0 text-muted">App ID configurado. Si el error persiste, revisá que el dominio autorizado coincida con <code>{{ $embedHost }}</code>.</p>
-            @endif
-        </div>
-    @endif
+    <div class="compositor-body compositor-body--scroll">
+        <div class="compositor-editor-pane programa-partitura-editor" data-partitura-editor>
+            <script type="application/json" data-partitura-initial>@json($vex)</script>
+            <input type="hidden" name="partitura_vexflow_json" value="{{ old('partitura_vexflow_json', $vexJson) }}" data-partitura-input>
 
-    <div class="compositor-body"
-         id="compositorApp"
-         data-app-id="{{ $flatAppId }}"
-         data-user-id="{{ auth()->id() }}"
-         data-host="{{ $embedHost }}"
-         data-mode="edit">
-        @if($tieneFlat)
-            <script type="application/json" id="compositorInitialXml">@json($flat['musicxml'])</script>
-        @endif
-        <div id="flatEmbedContainer" class="compositor-embed"></div>
-        <div class="compositor-loading" id="compositorLoading">
-            <div class="compositor-spinner"></div>
-            <span>Cargando editor…</span>
+            <div class="compositor-toolbar">
+                <button type="button" class="compositor-btn compositor-btn-ghost" data-partitura-add-section>
+                    <i class="bi bi-plus-lg"></i> Sección
+                </button>
+                <button type="button" class="compositor-btn compositor-btn-ghost" data-partitura-demo>
+                    Ejemplo (Toque de Chilinga)
+                </button>
+                <button type="button" class="compositor-btn compositor-btn-ghost" data-partitura-clear>
+                    Limpiar sección
+                </button>
+            </div>
+
+            <div class="mb-3" data-partitura-sections></div>
+
+            <p class="compositor-hint">Instrumentos opcionales (ej. Iyesá: Agogó, Palmas)</p>
+            <div class="mb-3" data-partitura-optional></div>
+
+            <div class="programa-partitura-legend" aria-hidden="true">
+                <span><i class="lg-on"></i> Golpe activo</span>
+                <span>× Chapa / dedo</span>
+                <span>&gt; Acento</span>
+                <span>◇ Palma</span>
+                <span>○ Slap</span>
+                <span>△ Agudo</span>
+                <span>— Tapado / presionado</span>
+                <span>Clic: vacío → golpes del instrumento</span>
+            </div>
+
+            <div class="programa-partitura-grid-wrap mb-3" data-partitura-grid></div>
+
+            <div class="compositor-preview-label">Vista previa (pentagramas por instrumento)</div>
+            <div data-partitura-preview class="programa-partitura-preview"></div>
         </div>
     </div>
 
     <footer class="compositor-statusbar">
-        <span>Editor de notación <a href="https://flat.io/es" target="_blank" rel="noopener">Flat</a></span>
-        @if($tieneFlat && ! empty($flat['updated_at']))
-            <span class="compositor-status-meta">Última edición: {{ \Carbon\Carbon::parse($flat['updated_at'])->diffForHumans() }}</span>
+        <span>Editor local VexFlow · nomenclatura del Cuadernillo de Toques</span>
+        @if($tieneVex)
+            <span class="compositor-status-meta">Hay partitura digital guardada</span>
         @endif
         <label class="compositor-status-check">
-            <input type="checkbox" name="quitar_partitura_flat" value="1" @checked(old('quitar_partitura_flat'))>
+            <input type="checkbox" name="quitar_partitura_vexflow" value="1" data-partitura-remove @checked(old('quitar_partitura_vexflow'))>
             Quitar partitura digital al guardar
         </label>
     </footer>
-
-    <input type="hidden" name="partitura_flat_musicxml" id="partitura_flat_musicxml" value="">
 </form>
 @endsection

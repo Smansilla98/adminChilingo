@@ -31,19 +31,6 @@ class ProgramaRitmoMediosService
             }
         }
 
-        if ($request->boolean('quitar_partitura_flat')) {
-            $medios['partitura_flat'] = null;
-        } else {
-            $xml = $request->input('partitura_flat_musicxml');
-            if (is_string($xml) && trim($xml) !== '') {
-                $normalizada = ProgramaRitmoMedios::normalizarPartituraFlat(['musicxml' => $xml]);
-                if ($normalizada) {
-                    $normalizada['updated_at'] = now()->toIso8601String();
-                    $medios['partitura_flat'] = $normalizada;
-                }
-            }
-        }
-
         if ($request->boolean('quitar_partitura')) {
             $medios['partitura'] = null;
         } elseif ($request->hasFile('partitura_archivo')) {
@@ -124,7 +111,7 @@ class ProgramaRitmoMediosService
     }
 
     /**
-     * Solo actualiza la partitura digital (Flat / MusicXML) del toque.
+     * Solo actualiza la partitura digital (VexFlow / cuadernillo) del toque.
      *
      * @return array<string, mixed>
      */
@@ -132,21 +119,19 @@ class ProgramaRitmoMediosService
     {
         $medios = ProgramaRitmoMedios::normalizar($ritmo->medios);
 
-        if ($request->boolean('quitar_partitura_flat')) {
-            $medios['partitura_flat'] = null;
+        // Limpiar restos de Flat.io si existían
+        $medios['partitura_flat'] = null;
+
+        if ($request->boolean('quitar_partitura_vexflow')) {
+            $medios['partitura_vexflow'] = null;
 
             return $medios;
         }
 
-        $xml = $request->input('partitura_flat_musicxml');
-        if (! is_string($xml) || trim($xml) === '') {
-            return $medios;
-        }
-
-        $normalizada = ProgramaRitmoMedios::normalizarPartituraFlat(['musicxml' => $xml]);
-        if ($normalizada) {
-            $normalizada['updated_at'] = now()->toIso8601String();
-            $medios['partitura_flat'] = $normalizada;
+        $json = $request->input('partitura_vexflow_json');
+        if (is_string($json) && trim($json) !== '') {
+            $decoded = json_decode($json, true);
+            $medios['partitura_vexflow'] = ProgramaRitmoMedios::normalizarPartituraVexflow($decoded);
         }
 
         return $medios;

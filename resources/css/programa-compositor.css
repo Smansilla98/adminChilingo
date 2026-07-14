@@ -1,16 +1,16 @@
-/* ITO Compositor — estilo Flat.io (claro, pantalla completa) */
+/* ITO Compositor — editor local (VexFlow / Cuadernillo) */
 
 :root {
-  --cp-bg: #f4f5f7;
-  --cp-surface: #ffffff;
-  --cp-border: #e2e5ea;
-  --cp-text: #1a1d23;
-  --cp-muted: #6b7280;
-  --cp-accent: #5b4cdb;
-  --cp-accent-hover: #4a3bc9;
+  --cp-bg: #14100c;
+  --cp-surface: #1d160f;
+  --cp-surface-2: #261c13;
+  --cp-border: rgba(243, 233, 216, 0.09);
+  --cp-text: #f3e9d8;
+  --cp-muted: #b6a488;
+  --cp-accent: #c1432b;
+  --cp-accent-hover: #a83a25;
+  --cp-brass: #d1a054;
   --cp-danger: #dc3545;
-  --cp-warning-bg: #fff8e6;
-  --cp-warning-text: #856404;
   --cp-menubar-h: 52px;
   --cp-status-h: 36px;
 }
@@ -42,7 +42,6 @@
   padding: 0 16px;
   gap: 12px;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .compositor-menubar-left,
@@ -65,7 +64,7 @@
 }
 
 .compositor-logo i {
-  color: var(--cp-accent);
+  color: var(--cp-brass);
   font-size: 20px;
 }
 
@@ -98,16 +97,18 @@
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
+  background: transparent;
+  color: var(--cp-text);
 }
 
 .compositor-btn-ghost {
-  background: var(--cp-surface);
+  background: var(--cp-surface-2);
   border-color: var(--cp-border);
   color: var(--cp-text);
 }
 
 .compositor-btn-ghost:hover {
-  background: var(--cp-bg);
+  border-color: var(--cp-brass);
   color: var(--cp-text);
 }
 
@@ -122,11 +123,6 @@
   color: #fff;
 }
 
-.compositor-btn-primary:disabled {
-  opacity: 0.65;
-  cursor: wait;
-}
-
 .compositor-alert {
   padding: 10px 16px;
   font-size: 13px;
@@ -134,90 +130,49 @@
 }
 
 .compositor-alert-danger {
-  background: #fde8ea;
-  color: var(--cp-danger);
-}
-
-.compositor-alert-warning {
-  background: var(--cp-warning-bg);
-  color: var(--cp-warning-text);
-}
-
-.compositor-alert a {
-  color: inherit;
-  font-weight: 600;
-}
-
-.compositor-setup-alert {
-  line-height: 1.45;
-}
-
-.compositor-setup-title {
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.compositor-setup-steps {
-  padding-left: 1.25rem;
-  margin-bottom: 0;
-}
-
-.compositor-setup-domain {
-  display: inline-block;
-  margin-top: 4px;
-  padding: 2px 8px;
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 4px;
-  font-weight: 600;
+  background: rgba(220, 53, 69, 0.15);
+  color: #f5a8b0;
 }
 
 .compositor-body {
   flex: 1;
   min-height: 0;
   position: relative;
-  background: var(--cp-surface);
+  background: var(--cp-bg);
 }
 
-.compositor-embed {
-  position: absolute;
-  inset: 0;
+.compositor-body--scroll {
+  overflow: auto;
 }
 
-.compositor-embed iframe {
-  border: none;
+.compositor-editor-pane {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  border: none !important;
+  background: transparent !important;
 }
 
-.compositor-loading {
-  position: absolute;
-  inset: 0;
+.compositor-toolbar {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: var(--cp-surface);
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.compositor-hint {
+  font-size: 12px;
   color: var(--cp-muted);
-  font-size: 14px;
-  z-index: 2;
-  transition: opacity 0.2s;
+  margin-bottom: 8px;
 }
 
-.compositor-loading.is-hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.compositor-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--cp-border);
-  border-top-color: var(--cp-accent);
-  border-radius: 50%;
-  animation: compositor-spin 0.8s linear infinite;
-}
-
-@keyframes compositor-spin {
-  to { transform: rotate(360deg); }
+.compositor-preview-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cp-brass);
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .compositor-statusbar {
@@ -234,11 +189,6 @@
   flex-shrink: 0;
 }
 
-.compositor-statusbar a {
-  color: var(--cp-accent);
-  text-decoration: none;
-}
-
 .compositor-status-meta {
   margin-left: auto;
 }
@@ -250,37 +200,6 @@
   margin: 0;
   cursor: pointer;
   white-space: nowrap;
-}
-
-/* Visor en página de toque */
-.programa-flat-viewer-wrap {
-  position: relative;
-  min-height: 320px;
-  background: #fafbfc;
-}
-
-.programa-flat-viewer {
-  min-height: 320px;
-  height: min(70vh, 560px);
-}
-
-.programa-flat-viewer iframe {
-  border: none;
-  width: 100%;
-  height: 100%;
-}
-
-.programa-flat-viewer-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fafbfc;
-}
-
-.programa-flat-viewer-wrap.is-ready .programa-flat-viewer-loading {
-  display: none;
 }
 
 @media (max-width: 768px) {

@@ -100,7 +100,7 @@
         <div class="card">
             <div class="card-body small text-muted">
                 <p class="mb-2"><i class="bi bi-lightbulb text-warning"></i> <strong>Tip:</strong> En muchos lectores PDF podés «Imprimir → Guardar como PDF» eligiendo solo la página del toque.</p>
-                <p class="mb-0">Para partituras nuevas usá el <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}">Compositor digital</a> (estilo Flat.io). La rejilla VexFlow queda como opción avanzada.</p>
+                <p class="mb-0">Para partituras nuevas usá el <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}">Compositor digital</a> (nomenclatura del cuadernillo). La misma rejilla también está en la edición avanzada del toque.</p>
             </div>
         </div>
     </div>
