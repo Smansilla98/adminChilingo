@@ -16,14 +16,6 @@
                 <h2 class="h4 mb-1"><i class="bi bi-music-note-list text-warning"></i> Programa oficial La Chilinga</h2>
                 <p class="text-muted mb-0 small">Ritmos prácticos y teóricos · Toques por año · Material de cada toque</p>
             </div>
-            <button
-                type="button"
-                class="btn btn-outline-warning btn-sm align-self-start"
-                data-bs-toggle="modal"
-                data-bs-target="#modalLecturaPartitura"
-            >
-                <i class="bi bi-book"></i> Cómo leer partituras
-            </button>
             @if(auth()->user()?->isAdmin())
             <span class="badge bg-secondary align-self-start">Edición disponible en cada toque y sección</span>
             @endif
@@ -126,22 +118,6 @@
 
 @endif
 
-<div class="modal fade" id="modalLecturaPartitura" tabindex="-1" aria-labelledby="modalLecturaPartituraLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title h5" id="modalLecturaPartituraLabel">Cómo leer las partituras</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body p-0">
-                @include('programa.partials.partitura-lectura', ['collapseId' => 'partituraLecturaModal', 'bare' => true])
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('styles')
