@@ -85,7 +85,7 @@
                             @endif
                         </td>
                         <td>{{ $item->marca ?? '—' }} @if($item->modelo) / {{ $item->modelo }} @endif</td>
-                        <td>{{ \\App\\Models\\InventarioItem::ESTADOS[$item->estado] ?? $item->estado }}</td>
+                        <td>{{ \App\Models\InventarioItem::ESTADOS[$item->estado] ?? $item->estado }}</td>
                         <td class="text-end">
                             <a href="{{ route('inventarios.show', $item) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
                             <a href="{{ route('inventarios.edit', $item) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>

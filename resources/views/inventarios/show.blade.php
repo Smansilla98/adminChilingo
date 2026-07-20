@@ -47,7 +47,7 @@
             </div>
             <div class="col-md-4">
                 <div class="text-muted small">Estado</div>
-                <div class="fw-semibold">{{ \\App\\Models\\InventarioItem::ESTADOS[$item->estado] ?? $item->estado }}</div>
+                <div class="fw-semibold">{{ \App\Models\InventarioItem::ESTADOS[$item->estado] ?? $item->estado }}</div>
             </div>
 
             <div class="col-12"><hr class="my-1"></div>
