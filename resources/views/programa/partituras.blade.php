@@ -9,7 +9,7 @@
         <h2 class="h4 mb-1">Partituras por toque</h2>
         <p class="text-muted mb-0">
             Subí el PDF o la foto de cada toque (una página del libro «Toques Chilinga»)
-            o creá partituras nuevas con el <strong>Compositor digital</strong> (VexFlow · Cuadernillo).
+            o creá partituras nuevas con el <strong>Compositor Session</strong> (estilo Ableton).
         </p>
     </div>
     <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary btn-sm">Programa completo</a>

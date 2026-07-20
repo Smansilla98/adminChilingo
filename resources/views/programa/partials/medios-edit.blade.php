@@ -55,8 +55,8 @@
             </div>
             <div class="card-body">
                 <p class="small text-muted mb-3">
-                    Creá o editá partituras con la nomenclatura del <em>Cuadernillo de Toques</em>
-                    (secciones, instrumentos y tipos de golpe). Editor 100&nbsp;% local, sin servicios externos.
+                    Creá o editá partituras en <strong>Session View</strong> (estilo Ableton):
+                    tracks por instrumento, escenas del toque y clips arrastrables desde la biblioteca.
                 </p>
                 @if(isset($programaRitmo))
                     <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-primary btn-sm">

@@ -196,6 +196,79 @@
   max-width: none;
 }
 
+/* Mapa didáctico en ficha del toque (tema claro Bootstrap) */
+.programa-didactic-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.programa-didactic-viewer .daw-map-scene {
+  background: #f8f5f0;
+  border: 1px solid color-mix(in srgb, var(--brass, #d1a054) 28%, #ddd);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+}
+
+.programa-didactic-viewer .daw-map-scene-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #2a2118;
+}
+
+.programa-didactic-viewer .daw-map-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.programa-didactic-viewer .daw-map-drum {
+  width: 7.5rem;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #5c5348;
+  border-left: 3px solid var(--clip-color, #888);
+  padding-left: 0.4rem;
+}
+
+.programa-didactic-viewer .daw-map-steps {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(16, minmax(8px, 1fr));
+  gap: 2px;
+}
+
+.programa-didactic-viewer .daw-map-step {
+  height: 12px;
+  border-radius: 2px;
+  background: #e8e2d8;
+}
+
+.programa-didactic-viewer .daw-map-step.is-on.stroke-nota { background: #ff764b; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-chapa { background: #e0b23a; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-tapado { background: #8a8278; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-acentuado { background: #e86a3c; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-abierto { background: #5b9ef0; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-slap { background: #9c8ad1; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-palma { background: #b6a488; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-presionado { background: #4a9a86; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-dedo { background: #c1432b; }
+.programa-didactic-viewer .daw-map-step.is-on.stroke-agudo { background: #d1a054; }
+
+.programa-didactic-viewer .daw-clip-hint {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.programa-staff-details summary {
+  cursor: pointer;
+  user-select: none;
+}
+
 .programa-partitura-repeats select {
   font-size: 11px;
   background: var(--surface-2, #1d160f);
