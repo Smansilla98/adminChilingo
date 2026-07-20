@@ -22,10 +22,43 @@
                 <i class="bi bi-palette-fill"></i>
                 <span>ITO Diseño</span>
             </a>
-            <nav class="diseno-menu" aria-label="Menú del editor">
-                <button type="button" class="diseno-menu-item" data-menu="archivo">Archivo</button>
-                <button type="button" class="diseno-menu-item" data-menu="editar">Editar</button>
-                <button type="button" class="diseno-menu-item" data-menu="vista">Vista</button>
+            <nav class="diseno-menu" aria-label="Menú del editor" id="disenoMenuBar">
+                <div class="diseno-menu-group">
+                    <button type="button" class="diseno-menu-item" data-menu-toggle="archivo" aria-expanded="false" aria-haspopup="true">Archivo</button>
+                    <div class="diseno-menu-drop" data-menu-panel="archivo" hidden>
+                        <button type="button" class="diseno-menu-option" data-menu-action="save"><i class="bi bi-cloud-check"></i> Guardar</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="export"><i class="bi bi-download"></i> Exportar PNG</button>
+                        <hr class="diseno-menu-sep">
+                        <a href="{{ route('disenos.create') }}" class="diseno-menu-option"><i class="bi bi-file-earmark-plus"></i> Diseño nuevo</a>
+                        <a href="{{ route('disenos.index') }}" class="diseno-menu-option"><i class="bi bi-folder2-open"></i> Abrir diseños…</a>
+                    </div>
+                </div>
+                <div class="diseno-menu-group">
+                    <button type="button" class="diseno-menu-item" data-menu-toggle="editar" aria-expanded="false" aria-haspopup="true">Editar</button>
+                    <div class="diseno-menu-drop" data-menu-panel="editar" hidden>
+                        <button type="button" class="diseno-menu-option" data-menu-action="undo"><i class="bi bi-arrow-counterclockwise"></i> Deshacer <span class="diseno-menu-kbd">Ctrl+Z</span></button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="redo"><i class="bi bi-arrow-clockwise"></i> Rehacer <span class="diseno-menu-kbd">Ctrl+Y</span></button>
+                        <hr class="diseno-menu-sep">
+                        <button type="button" class="diseno-menu-option" data-menu-action="duplicate"><i class="bi bi-copy"></i> Duplicar <span class="diseno-menu-kbd">Ctrl+D</span></button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="delete"><i class="bi bi-trash"></i> Eliminar <span class="diseno-menu-kbd">Supr</span></button>
+                        <hr class="diseno-menu-sep">
+                        <button type="button" class="diseno-menu-option" data-menu-action="front"><i class="bi bi-layer-forward"></i> Traer al frente</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="back"><i class="bi bi-layer-backward"></i> Enviar atrás</button>
+                    </div>
+                </div>
+                <div class="diseno-menu-group">
+                    <button type="button" class="diseno-menu-item" data-menu-toggle="vista" aria-expanded="false" aria-haspopup="true">Vista</button>
+                    <div class="diseno-menu-drop" data-menu-panel="vista" hidden>
+                        <button type="button" class="diseno-menu-option" data-menu-action="zoom-in"><i class="bi bi-zoom-in"></i> Acercar</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="zoom-out"><i class="bi bi-zoom-out"></i> Alejar</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="zoom-fit"><i class="bi bi-arrows-fullscreen"></i> Ajustar a pantalla</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="zoom-100"><i class="bi bi-aspect-ratio"></i> Zoom 100%</button>
+                        <hr class="diseno-menu-sep">
+                        <button type="button" class="diseno-menu-option" data-menu-action="panel-plantillas"><i class="bi bi-layout-wtf"></i> Plantillas</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="panel-elementos"><i class="bi bi-bounding-box"></i> Elementos</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="panel-marca"><i class="bi bi-droplet-half"></i> Paleta de marca</button>
+                    </div>
+                </div>
             </nav>
             <input type="text"
                    name="titulo"

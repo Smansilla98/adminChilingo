@@ -512,13 +512,87 @@ function initDisenoEditor() {
 
     document.getElementById('disenoUndoBtn')?.addEventListener('click', undo);
     document.getElementById('disenoRedoBtn')?.addEventListener('click', redo);
-    document.getElementById('disenoExportBtn')?.addEventListener('click', () => {
+
+    function exportPng() {
         const cw = canvas.getWidth() || 1;
         const mult = template.w / cw;
         const a = document.createElement('a');
         a.href = canvas.toDataURL({ format: 'png', quality: 1, multiplier: mult > 0 ? mult : 1 });
         a.download = (document.querySelector('.diseno-doc-title')?.value || 'diseno-ito').replace(/\s+/g, '-') + '.png';
         a.click();
+    }
+
+    document.getElementById('disenoExportBtn')?.addEventListener('click', exportPng);
+
+    function closeMenus() {
+        document.querySelectorAll('[data-menu-panel]').forEach((p) => { p.hidden = true; });
+        document.querySelectorAll('[data-menu-toggle]').forEach((b) => {
+            b.classList.remove('is-open');
+            b.setAttribute('aria-expanded', 'false');
+        });
+    }
+
+    document.querySelectorAll('[data-menu-toggle]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const name = btn.dataset.menuToggle;
+            const panel = document.querySelector(`[data-menu-panel="${name}"]`);
+            const wasOpen = panel && !panel.hidden;
+            closeMenus();
+            if (panel && !wasOpen) {
+                panel.hidden = false;
+                btn.classList.add('is-open');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-menu-action]').forEach((el) => {
+        el.addEventListener('click', (e) => {
+            e.preventDefault();
+            const act = el.dataset.menuAction;
+            closeMenus();
+            if (act === 'save') {
+                syncHidden();
+                form.requestSubmit();
+                return;
+            }
+            if (act === 'export') { exportPng(); return; }
+            if (act === 'undo') { undo(); return; }
+            if (act === 'redo') { redo(); return; }
+            if (act === 'duplicate') { actions.duplicate(); return; }
+            if (act === 'delete') { actions.delete(); return; }
+            if (act === 'front') { actions.front(); return; }
+            if (act === 'back') { actions.back(); return; }
+            if (act === 'zoom-in') {
+                userZoom = Math.min(200, userZoom + 15);
+                applyZoom();
+                return;
+            }
+            if (act === 'zoom-out') {
+                userZoom = Math.max(15, userZoom - 15);
+                applyZoom();
+                return;
+            }
+            if (act === 'zoom-fit') {
+                userZoom = 100;
+                fitCanvas();
+                return;
+            }
+            if (act === 'zoom-100') {
+                fitScale = 1;
+                userZoom = 100;
+                applyZoom();
+                return;
+            }
+            if (act?.startsWith('panel-')) {
+                setPanel(act.replace('panel-', ''));
+            }
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#disenoMenuBar')) closeMenus();
     });
 
     canvas.on('selection:created', refreshProps);
@@ -529,6 +603,7 @@ function initDisenoEditor() {
     canvas.on('object:removed', () => { refreshLayers(); syncHidden(); });
 
     document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMenus();
         if (e.target.matches('input, textarea, select')) return;
         if (e.key === 'Delete' || e.key === 'Backspace') {
             e.preventDefault();
