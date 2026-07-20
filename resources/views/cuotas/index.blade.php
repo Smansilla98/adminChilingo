@@ -4,72 +4,73 @@
 @section('page-title', 'Cuotas')
 
 @section('content')
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Cuotas</h5>
-        <a href="{{ route('cuotas.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Nueva cuota</a>
-    </div>
-    <div class="card-body">
-        <form method="GET" class="mb-3">
-            <div class="row g-2 align-items-end">
-                <div class="col-md-2">
-                    <label class="form-label small">Año</label>
-                    <input type="number" name="año" class="form-control" placeholder="Año" value="{{ request('año') }}" min="2020" max="2030">
-                </div>
-                @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'))
-                <div class="col-md-2">
-                    <label class="form-label small">Para quién</label>
+@php $hasAlcance = \Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'); @endphp
+
+<x-ito.list-page title="Cuotas" subtitle="Definición de cuotas por período">
+    <x-slot:actions>
+        <a href="{{ route('cuotas.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nueva cuota</a>
+    </x-slot:actions>
+
+    <x-slot:toolbar>
+        <form method="GET" class="ito-toolbar-filters w-100 d-flex flex-wrap align-items-end gap-2">
+            <div class="ito-field">
+                <label>Año</label>
+                <input type="number" name="año" class="form-control" placeholder="Año" value="{{ request('año') }}" min="2020" max="2030">
+            </div>
+            @if($hasAlcance)
+                <div class="ito-field">
+                    <label>Para quién</label>
                     <select name="alcance" class="form-select">
                         <option value="">Todos</option>
-                        <option value="general" {{ request('alcance') === 'general' ? 'selected' : '' }}>General</option>
-                        <option value="sede" {{ request('alcance') === 'sede' ? 'selected' : '' }}>Por sede</option>
-                        <option value="bloque" {{ request('alcance') === 'bloque' ? 'selected' : '' }}>Por bloque</option>
+                        <option value="general" @selected(request('alcance') === 'general')>General</option>
+                        <option value="sede" @selected(request('alcance') === 'sede')>Por sede</option>
+                        <option value="bloque" @selected(request('alcance') === 'bloque')>Por bloque</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small">Sede (cuota)</label>
+                <div class="ito-field">
+                    <label>Sede (cuota)</label>
                     <select name="sede_id" class="form-select">
                         <option value="">Todas</option>
                         @foreach($sedes ?? [] as $s)
-                        <option value="{{ $s->id }}" {{ (string) request('sede_id') === (string) $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
+                            <option value="{{ $s->id }}" @selected((string) request('sede_id') === (string) $s->id)>{{ $s->nombre }}</option>
                         @endforeach
                     </select>
                 </div>
-                @endif
-                <div class="col-md-3">
-                    <label class="form-label small">Bloque</label>
-                    <select name="bloque_id" class="form-select">
-                        <option value="">Todos</option>
-                        @foreach($bloques ?? [] as $b)
-                        <option value="{{ $b->id }}" {{ request('bloque_id') == $b->id ? 'selected' : '' }}>{{ $b->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2"><button type="submit" class="btn btn-primary">Filtrar</button></div>
+            @endif
+            <div class="ito-field">
+                <label>Bloque</label>
+                <select name="bloque_id" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach($bloques ?? [] as $b)
+                        <option value="{{ $b->id }}" @selected(request('bloque_id') == $b->id)>{{ $b->nombre }}</option>
+                    @endforeach
+                </select>
             </div>
+            <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
         </form>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'))
-                        <th>Para quién</th>
-                        <th>Sede</th>
-                        @endif
-                        <th>Bloque</th>
-                        <th>Año</th>
-                        <th>Mes</th>
-                        <th>Monto</th>
-                        <th>Activo</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($cuotas as $c)
-                    <tr>
-                        <td>{{ $c->nombre }}</td>
-                        @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'))
+    </x-slot:toolbar>
+
+    <table class="ito-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                @if($hasAlcance)
+                    <th>Para quién</th>
+                    <th>Sede</th>
+                @endif
+                <th>Bloque</th>
+                <th>Año</th>
+                <th>Mes</th>
+                <th>Monto</th>
+                <th>Activo</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($cuotas as $c)
+                <tr>
+                    <td class="fw-semibold">{{ $c->nombre }}</td>
+                    @if($hasAlcance)
                         <td>
                             @if(($c->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_GENERAL)
                                 General
@@ -80,29 +81,37 @@
                             @endif
                         </td>
                         <td>{{ $c->sede?->nombre ?? ($c->bloque?->sede?->nombre ?? '—') }}</td>
-                        @endif
-                        <td>{{ $c->bloque?->nombre ?? '—' }}</td>
-                        <td>{{ $c->año }}</td>
-                        <td>{{ $c->nombre_mes ?? '-' }}</td>
-                        <td>$ {{ number_format($c->monto, 2, ',', '.') }}</td>
-                        <td>{{ $c->activo ? 'Sí' : 'No' }}</td>
-                        <td>
-                            <a href="{{ route('cuotas.show', $c) }}" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-                            <a href="{{ route('cuotas.edit', $c) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                            <form action="{{ route('cuotas.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar cuota?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="{{ \Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance') ? 10 : 7 }}" class="text-center">No hay cuotas. <a href="{{ route('cuotas.create') }}">Crear una</a></td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        {{ $cuotas->withQueryString()->links() }}
-    </div>
-</div>
+                    @endif
+                    <td>{{ $c->bloque?->nombre ?? '—' }}</td>
+                    <td class="ito-mono">{{ $c->año }}</td>
+                    <td>{{ $c->nombre_mes ?? '—' }}</td>
+                    <td class="ito-mono">$ {{ number_format($c->monto, 2, ',', '.') }}</td>
+                    <td>
+                        <x-ito.status :tone="$c->activo ? 'success' : 'neutral'" :label="$c->activo ? 'Sí' : 'No'" />
+                    </td>
+                    <td>
+                        <x-ito.actions :id="'cuota-'.$c->id">
+                            <li><a class="dropdown-item" href="{{ route('cuotas.show', $c) }}"><i class="bi bi-eye"></i> Ver</a></li>
+                            <li><a class="dropdown-item" href="{{ route('cuotas.edit', $c) }}"><i class="bi bi-pencil"></i> Editar</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="{{ route('cuotas.destroy', $c) }}" method="POST" onsubmit="return confirm('¿Eliminar cuota?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash"></i> Eliminar</button>
+                                </form>
+                            </li>
+                        </x-ito.actions>
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="{{ $hasAlcance ? 9 : 7 }}" class="ito-empty">No hay cuotas. <a href="{{ route('cuotas.create') }}">Crear una</a></td></tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <x-slot:footer>
+        <div class="ito-footer-meta">@if(method_exists($cuotas, 'total')){{ $cuotas->total() }} registros@endif</div>
+        {{ $cuotas->withQueryString()->links('pagination::bootstrap-5') }}
+    </x-slot:footer>
+</x-ito.list-page>
 @endsection

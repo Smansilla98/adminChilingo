@@ -8,7 +8,7 @@
     <div class="col-12">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
             <div>
-                <h1 class="text-dark mb-0 mb-md-2" style="font-weight: 700; font-size: 1.75rem;">
+                <h1 class="ito-page-title mb-0 mb-md-2">
                     <i class="bi bi-calendar-event"></i> Calendario de Eventos
                 </h1>
                 <p class="text-muted small mb-0 mt-1">Las clases fijas salen de los horarios de cada bloque. Para cambiarlos: <em>Bloques → Editar</em> y sumá día y hora.</p>
@@ -18,7 +18,7 @@
                 <a href="{{ route('eventos.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Nuevo </span>Evento
                 </a>
-                <a href="{{ route('shows.create') }}" class="btn btn-outline-primary">
+                <a href="{{ route('shows.create') }}" class="btn btn-secondary">
                     <i class="bi bi-mic"></i> <span class="d-none d-sm-inline">Nuevo </span>Show
                 </a>
             </div>

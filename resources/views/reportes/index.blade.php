@@ -4,6 +4,7 @@
 @section('page-title', 'Reportes')
 
 @section('content')
+<div class="reportes-wrap">
 <ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item">
         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#rep-alumnos" type="button" role="tab">
@@ -358,5 +359,5 @@
         </div>
     </div>
 </div>
+</div>
 @endsection
-

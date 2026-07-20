@@ -4,16 +4,19 @@
 @section('page-title', 'Asistencias')
 
 @section('content')
-<div class="card">
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <h5 class="mb-0">@if(!empty($vistaLista))Historial de asistencias@elseMatriz de asistencias (tipo Excel)@endif</h5>
-        <div class="d-flex flex-wrap gap-2">
+<div class="ito-page">
+    <div class="ito-page-head">
+        <div>
+            <h1 class="ito-page-title">@if(!empty($vistaLista))Historial de asistencias@else Matriz de asistencias@endif</h1>
+            <p class="ito-page-sub">Control de presencia por bloque</p>
+        </div>
+        <div class="ito-page-actions">
             @if(empty($vistaLista))
-            <a href="{{ route('asistencias.create') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('asistencias.create') }}" class="btn btn-secondary btn-sm">
                 <i class="bi bi-calendar-plus"></i> Cargar un día
             </a>
             @endif
-            <a href="{{ route('asistencias.index', array_merge(request()->except('vista'), ['vista' => 'lista'])) }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ route('asistencias.index', array_merge(request()->except('vista'), ['vista' => 'lista'])) }}" class="btn btn-secondary btn-sm">
                 <i class="bi bi-list-ul"></i> Vista lista
             </a>
             @if(!empty($vistaLista))
@@ -23,26 +26,25 @@
             @endif
         </div>
     </div>
-    <div class="card-body">
+    <div class="ito-card">
+    <div class="p-3">
         @if(!empty($vistaLista))
-        <form method="GET" class="mb-3">
+        <form method="GET" class="ito-toolbar-filters d-flex flex-wrap align-items-end gap-2 mb-3">
             <input type="hidden" name="vista" value="lista">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <select name="bloque_id" class="form-select">
-                        <option value="">Todos los bloques</option>
-                        @foreach($bloques as $b)
-                        <option value="{{ $b->id }}" {{ request('bloque_id') == $b->id ? 'selected' : '' }}>{{ $b->nombre }} ({{ $b->sede->nombre ?? '' }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <input type="date" name="fecha" class="form-control" value="{{ request('fecha') }}">
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-                </div>
+            <div class="ito-field">
+                <label>Bloque</label>
+                <select name="bloque_id" class="form-select">
+                    <option value="">Todos los bloques</option>
+                    @foreach($bloques as $b)
+                    <option value="{{ $b->id }}" @selected(request('bloque_id') == $b->id)>{{ $b->nombre }} ({{ $b->sede->nombre ?? '' }})</option>
+                    @endforeach
+                </select>
             </div>
+            <div class="ito-field">
+                <label>Fecha</label>
+                <input type="date" name="fecha" class="form-control" value="{{ request('fecha') }}">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
         </form>
         @include('asistencias.index-lista')
         @else
@@ -163,6 +165,7 @@
         <div class="alert alert-secondary mb-0">Elegí bloque y mes, luego tocá <strong>Ver matriz</strong>.</div>
         @endif
         @endif
+    </div>
     </div>
 </div>
 @endsection
