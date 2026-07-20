@@ -37,6 +37,8 @@ function initDisenoEditor() {
     let historyLock = false;
 
     const canvas = new Canvas(canvasEl, {
+        width: template.w,
+        height: template.h,
         backgroundColor: '#f3e9d8',
         preserveObjectStacking: true,
         selection: true,
@@ -47,7 +49,7 @@ function initDisenoEditor() {
     }
 
     function applyZoom() {
-        const z = effectiveZoom();
+        const z = Math.max(0.05, effectiveZoom());
         canvas.setDimensions({ width: template.w * z, height: template.h * z });
         canvas.setZoom(z);
         canvas.requestRenderAll();
@@ -63,6 +65,7 @@ function initDisenoEditor() {
         const pad = 64;
         const maxW = stage.clientWidth - pad;
         const maxH = stage.clientHeight - pad;
+        if (maxW < 40 || maxH < 40) return fitScale > 0 ? fitScale : 0.25;
         return Math.min(maxW / template.w, maxH / template.h, 1);
     }
 
@@ -81,7 +84,8 @@ function initDisenoEditor() {
         document.getElementById('disenoAncho').value = String(template.w);
         document.getElementById('disenoAlto').value = String(template.h);
         document.getElementById('disenoCanvasJson').value = JSON.stringify(canvas.toJSON());
-        const mult = template.w / canvas.getWidth();
+        const cw = canvas.getWidth() || 1;
+        const mult = template.w / cw;
         document.getElementById('disenoPreviewBase64').value = canvas.toDataURL({
             format: 'png',
             quality: 1,
@@ -105,12 +109,14 @@ function initDisenoEditor() {
     function loadHistory(step) {
         if (step < 0 || step >= history.length) return;
         historyLock = true;
-        canvas.loadFromJSON(history[step], () => {
-            canvas.requestRenderAll();
-            historyLock = false;
-            refreshProps();
-            syncHidden();
-        });
+        canvas.loadFromJSON(history[step])
+            .then(() => {
+                canvas.requestRenderAll();
+                refreshProps();
+                syncHidden();
+            })
+            .catch((err) => console.error('ITO Diseño: no se pudo restaurar historial', err))
+            .finally(() => { historyLock = false; });
     }
 
     function undo() {
@@ -143,6 +149,7 @@ function initDisenoEditor() {
 
     function refreshLayers() {
         const list = document.getElementById('disenoLayerList');
+        if (!list) return;
         const objs = canvas.getObjects().slice().reverse();
         const active = canvas.getActiveObject();
         if (!objs.length) {
@@ -160,8 +167,10 @@ function initDisenoEditor() {
         list.querySelectorAll('.diseno-layer-item').forEach((el) => {
             el.addEventListener('click', () => {
                 const obj = canvas.getObjects()[parseInt(el.dataset.idx, 10)];
+                if (!obj) return;
                 canvas.setActiveObject(obj);
                 canvas.requestRenderAll();
+                refreshProps();
             });
         });
     }
@@ -169,6 +178,7 @@ function initDisenoEditor() {
     function refreshProps() {
         refreshLayers();
         const panel = document.getElementById('disenoPropsPanel');
+        if (!panel) return;
         const obj = canvas.getActiveObject();
         if (!obj) {
             panel.innerHTML = '<h3 class="diseno-drawer-title">Propiedades</h3><p class="diseno-hint">Seleccioná un elemento del lienzo.</p>';
@@ -257,6 +267,7 @@ function initDisenoEditor() {
         canvas.setActiveObject(t);
         canvas.requestRenderAll();
         pushHistory();
+        refreshProps();
     }
 
     function addImageFromDataUrl(dataUrl) {
@@ -273,7 +284,8 @@ function initDisenoEditor() {
             canvas.setActiveObject(img);
             canvas.requestRenderAll();
             pushHistory();
-        });
+            refreshProps();
+        }).catch((err) => console.error('ITO Diseño: no se pudo cargar la imagen', err));
     }
 
     function handleFiles(files) {
@@ -312,38 +324,55 @@ function initDisenoEditor() {
         if (clear) {
             canvas.clear();
             canvas.backgroundColor = '#f3e9d8';
+            canvas.requestRenderAll();
         }
         markTemplateActive();
         updateDocSize();
         fitCanvas();
         pushHistory();
         refreshLayers();
+        syncHidden();
+    }
+
+    function readInitialJson() {
+        const script = document.getElementById('disenoInitialJson');
+        if (script?.textContent?.trim()) {
+            try { return JSON.parse(script.textContent); } catch (e) { /* */ }
+        }
+        const raw = root.dataset.canvasJson;
+        if (raw && raw !== 'null' && raw !== '') {
+            try { return JSON.parse(raw); } catch (e) { /* */ }
+        }
+        return null;
     }
 
     function loadInitial() {
-        const raw = root.dataset.canvasJson;
-        if (raw && raw !== 'null') {
-            try {
-                const data = JSON.parse(raw);
-                canvas.loadFromJSON(data, () => {
+        const data = readInitialJson();
+        markTemplateActive();
+        updateDocSize();
+        if (data && (data.objects?.length || data.background || data.backgroundColor)) {
+            canvas.loadFromJSON(data)
+                .then(() => {
+                    if (!canvas.backgroundColor) canvas.backgroundColor = '#f3e9d8';
                     canvas.requestRenderAll();
                     fitCanvas();
                     pushHistory();
                     refreshLayers();
+                    syncHidden();
+                })
+                .catch((err) => {
+                    console.error('ITO Diseño: no se pudo cargar el lienzo', err);
+                    fitCanvas();
+                    pushHistory();
+                    refreshLayers();
                 });
-                markTemplateActive();
-                updateDocSize();
-                return;
-            } catch (e) { /* nuevo */ }
+            return;
         }
-        markTemplateActive();
-        updateDocSize();
         fitCanvas();
         pushHistory();
         refreshLayers();
     }
 
-    // Paleta
     const palette = document.getElementById('disenoPalette');
     if (palette) {
         palette.innerHTML = BRAND_COLORS.map((c, i) =>
@@ -365,19 +394,16 @@ function initDisenoEditor() {
         });
     }
 
-    // Rail panels
     document.querySelectorAll('.diseno-rail-btn').forEach((btn) => {
         btn.addEventListener('click', () => setPanel(btn.dataset.panel));
     });
 
-    // Templates
     document.querySelectorAll('.diseno-template-card').forEach((btn) => {
         btn.addEventListener('click', () => {
             applyTemplate(btn.dataset.formato, parseInt(btn.dataset.w, 10), parseInt(btn.dataset.h, 10));
         });
     });
 
-    // Actions
     const actions = {
         'text-heading': () => addText('Título', 64, '700'),
         'text-sub': () => addText('Subtítulo', 36, '600'),
@@ -397,6 +423,7 @@ function initDisenoEditor() {
             canvas.setActiveObject(r);
             canvas.requestRenderAll();
             pushHistory();
+            refreshProps();
         },
         circle: () => {
             const c = new Circle({
@@ -409,6 +436,7 @@ function initDisenoEditor() {
             canvas.setActiveObject(c);
             canvas.requestRenderAll();
             pushHistory();
+            refreshProps();
         },
         line: () => {
             const ln = new Line([template.w / 2 - 120, template.h / 2, template.w / 2 + 120, template.h / 2], {
@@ -420,6 +448,7 @@ function initDisenoEditor() {
             canvas.setActiveObject(ln);
             canvas.requestRenderAll();
             pushHistory();
+            refreshProps();
         },
         delete: () => {
             const obj = canvas.getActiveObject();
@@ -428,6 +457,7 @@ function initDisenoEditor() {
                 canvas.discardActiveObject();
                 canvas.requestRenderAll();
                 pushHistory();
+                refreshProps();
             }
         },
         duplicate: () => {
@@ -439,26 +469,27 @@ function initDisenoEditor() {
                 canvas.setActiveObject(cloned);
                 canvas.requestRenderAll();
                 pushHistory();
+                refreshProps();
             });
         },
         front: () => {
             const obj = canvas.getActiveObject();
-            if (obj) { canvas.bringObjectToFront(obj); canvas.requestRenderAll(); pushHistory(); }
+            if (obj) { canvas.bringObjectToFront(obj); canvas.requestRenderAll(); pushHistory(); refreshLayers(); }
         },
         back: () => {
             const obj = canvas.getActiveObject();
-            if (obj) { canvas.sendObjectToBack(obj); canvas.requestRenderAll(); pushHistory(); }
+            if (obj) { canvas.sendObjectToBack(obj); canvas.requestRenderAll(); pushHistory(); refreshLayers(); }
         },
     };
 
     document.querySelectorAll('[data-action]').forEach((el) => {
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+            e.preventDefault();
             const fn = actions[el.dataset.action];
             if (fn) fn();
         });
     });
 
-    // Upload / dropzone
     const imgInput = document.getElementById('disenoImgInput');
     const dropzone = document.getElementById('disenoDropzone');
     imgInput?.addEventListener('change', (e) => handleFiles(e.target.files));
@@ -470,7 +501,6 @@ function initDisenoEditor() {
         handleFiles(e.dataTransfer?.files);
     });
 
-    // Zoom
     document.getElementById('disenoZoomRange')?.addEventListener('input', (e) => {
         userZoom = parseInt(e.target.value, 10);
         applyZoom();
@@ -480,18 +510,17 @@ function initDisenoEditor() {
         fitCanvas();
     });
 
-    // Toolbar buttons
     document.getElementById('disenoUndoBtn')?.addEventListener('click', undo);
     document.getElementById('disenoRedoBtn')?.addEventListener('click', redo);
     document.getElementById('disenoExportBtn')?.addEventListener('click', () => {
-        const mult = template.w / canvas.getWidth();
+        const cw = canvas.getWidth() || 1;
+        const mult = template.w / cw;
         const a = document.createElement('a');
         a.href = canvas.toDataURL({ format: 'png', quality: 1, multiplier: mult > 0 ? mult : 1 });
         a.download = (document.querySelector('.diseno-doc-title')?.value || 'diseno-ito').replace(/\s+/g, '-') + '.png';
         a.click();
     });
 
-    // Canvas events
     canvas.on('selection:created', refreshProps);
     canvas.on('selection:updated', refreshProps);
     canvas.on('selection:cleared', refreshProps);
@@ -499,7 +528,6 @@ function initDisenoEditor() {
     canvas.on('object:added', () => { refreshLayers(); syncHidden(); });
     canvas.on('object:removed', () => { refreshLayers(); syncHidden(); });
 
-    // Keyboard
     document.addEventListener('keydown', (e) => {
         if (e.target.matches('input, textarea, select')) return;
         if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -516,6 +544,16 @@ function initDisenoEditor() {
 
     setPanel('select');
     loadInitial();
+    requestAnimationFrame(() => {
+        fitCanvas();
+        setTimeout(fitCanvas, 120);
+    });
 }
 
-document.addEventListener('DOMContentLoaded', initDisenoEditor);
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        initDisenoEditor();
+    } catch (err) {
+        console.error('ITO Diseño: error al iniciar el editor', err);
+    }
+});

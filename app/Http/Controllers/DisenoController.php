@@ -42,6 +42,11 @@ class DisenoController extends Controller
         return redirect()->route('disenos.index')->with('success', 'Diseño guardado.');
     }
 
+    public function show(Diseno $diseno)
+    {
+        return redirect()->route('disenos.edit', $diseno);
+    }
+
     public function edit(Diseno $diseno)
     {
         return view('disenos.form', compact('diseno'));

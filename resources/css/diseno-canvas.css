@@ -212,6 +212,12 @@
   margin: 0 0 12px;
 }
 
+/* Utilidad local (este layout no carga Bootstrap) */
+.d-none,
+.is-hidden {
+  display: none !important;
+}
+
 .diseno-quick-actions {
   display: flex;
   flex-wrap: wrap;
@@ -382,6 +388,12 @@
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
   background: #f3e9d8;
   line-height: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.diseno-canvas-frame .canvas-container {
+  margin: 0 auto;
 }
 
 .diseno-statusbar {

@@ -84,9 +84,6 @@
                 </div>
             </div>
 
-            @if(auth()->user()->isAdmin())
-                @include('layouts.partials.admin-topbar-actions')
-            @endif
         </header>
 
         <section class="content content--maxton">

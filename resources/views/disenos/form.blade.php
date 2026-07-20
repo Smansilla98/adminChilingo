@@ -52,10 +52,10 @@
     </header>
 
     <div class="diseno-body" id="disenoApp"
-         data-canvas-json='@json($diseno->canvas_json)'
          data-ancho="{{ old('ancho', $diseno->ancho) }}"
          data-alto="{{ old('alto', $diseno->alto) }}"
          data-formato="{{ old('formato', $diseno->formato) }}">
+        <script type="application/json" id="disenoInitialJson">@json($diseno->canvas_json)</script>
 
         <aside class="diseno-rail" aria-label="Herramientas">
             <button type="button" class="diseno-rail-btn active" data-panel="select" title="Seleccionar">
