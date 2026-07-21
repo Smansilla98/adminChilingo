@@ -57,7 +57,10 @@
     </table>
 
     <x-slot:footer>
-        <div class="ito-footer-meta">@if(method_exists($sedes, 'total')){{ $sedes->total() }} registros@endif</div>
+        <div class="ito-footer-meta">@if(method_exists($sedes, 'total'))
+            {{ $sedes->total() }} registros
+        @endif
+        </div>
         {{ $sedes->links('pagination::bootstrap-5') }}
     </x-slot:footer>
 </x-ito.list-page>

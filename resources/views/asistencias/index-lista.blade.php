@@ -51,6 +51,9 @@
 </div>
 
 <div class="ito-footer mt-0 border-0 bg-transparent px-0">
-    <div class="ito-footer-meta">@if(method_exists($asistencias, 'total')){{ $asistencias->total() }} registros@endif</div>
+    <div class="ito-footer-meta">@if(method_exists($asistencias, 'total'))
+            {{ $asistencias->total() }} registros
+        @endif
+        </div>
     {{ $asistencias->withQueryString()->links('pagination::bootstrap-5') }}
 </div>

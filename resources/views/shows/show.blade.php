@@ -5,7 +5,12 @@
 
 @section('content')
 <div class="card shadow-sm">
-    <div class="card-header py-3">{{ $show->fecha->format('d/m/Y') }} @if($show->hora_inicio) {{ $show->hora_inicio->format('H:i') }} @endif</div>
+    <div class="card-header py-3">
+        {{ $show->fecha->format('d/m/Y') }}
+        @if($show->hora_inicio)
+            {{ $show->hora_inicio->format('H:i') }}
+        @endif
+    </div>
     <div class="card-body">
         <dl class="row mb-0">
             <dt class="col-sm-3">Lugar</dt>
