@@ -36,7 +36,7 @@
                             <li><a class="dropdown-item" href="{{ route('profesores.edit', $profesor) }}"><i class="bi bi-pencil"></i> Editar</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form action="{{ route('profesores.destroy', $profesor) }}" method="POST" onsubmit="return confirm('¿Eliminar este profesor?')">
+                                <form action="{{ route('profesores.destroy', $profesor) }}" method="POST" data-confirm="¿Eliminar este profesor?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash"></i> Eliminar</button>
                                 </form>

@@ -28,7 +28,12 @@
             </div>
         @endisset
 
-        <div class="ito-table-wrap">
+        <p class="ito-table-hint" role="note">
+            <i class="bi bi-arrows-expand" aria-hidden="true"></i>
+            En pantallas chicas podés deslizar la tabla horizontalmente. La primera columna queda fija.
+        </p>
+
+        <div class="ito-table-wrap" tabindex="0" role="region" aria-label="{{ $title ? 'Tabla: '.$title : 'Tabla de datos' }}">
             {{ $slot }}
         </div>
 

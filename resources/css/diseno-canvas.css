@@ -738,3 +738,12 @@
   .diseno-doc-size { display: none; }
   .diseno-menubar-right .diseno-btn span { display: none; }
 }
+
+.diseno-status-hint {
+  margin-right: auto;
+  font-size: 11px;
+  color: var(--ds-muted);
+}
+@media (max-width: 900px) {
+  .diseno-status-hint { display: none; }
+}

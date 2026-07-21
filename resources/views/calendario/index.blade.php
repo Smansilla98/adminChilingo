@@ -34,6 +34,11 @@
                 <h5 class="mb-0">
                     {{ $startDate->locale('es')->translatedFormat('F Y') }}
                 </h5>
+                <div class="asist-legend mt-2 mb-0" aria-label="Leyenda del calendario">
+                    <span><i class="asist-badge-j" aria-hidden="true">E</i> Evento</span>
+                    <span><i class="asist-badge-p" aria-hidden="true">T</i> Taller / bloque</span>
+                    <span><i class="asist-badge-i" aria-hidden="true">S</i> Show</span>
+                </div>
             </div>
             <div class="btn-group w-100 w-md-auto">
                 <a href="{{ route('calendario.index', ['year' => $prevMonth->year, 'month' => $prevMonth->month]) }}"
@@ -85,18 +90,16 @@
                                     @foreach($dayEvents as $item)
                                         @if($item['type'] === 'evento')
                                             @php $evento = $item['data']; @endphp
-                                            <div class="event-item event-evento"
-                                                 onclick="window.location.href='{{ route('eventos.show', $evento) }}'"
-                                                 role="button"
-                                                 tabindex="0"
-                                                 title="{{ $evento->titulo }} - {{ $evento->fecha->format('d/m/Y') }}{{ $evento->hora_inicio ? ' ' . $evento->hora_inicio->format('H:i') . 'hs' : '' }}">
+                                            <a class="event-item event-evento"
+                                                 href="{{ route('eventos.show', $evento) }}"
+                                                 aria-label="Evento: {{ $evento->titulo }}{{ $evento->hora_inicio ? ', '.$evento->hora_inicio->format('H:i').' hs' : '' }}">
                                                 <small class="event-text">
                                                     @if($evento->hora_inicio)
                                                         <span class="event-time">{{ $evento->hora_inicio->format('H:i') }}hs</span>
                                                     @endif
                                                     <span class="event-name">{{ \Illuminate\Support\Str::limit($evento->titulo, 15) }}</span>
                                                 </small>
-                                            </div>
+                                            </a>
                                         @elseif($item['type'] === 'bloque_taller')
                                             @php
                                                 $bd = $item['data'];
@@ -109,32 +112,28 @@
                                                 $tFin = $hFin ? (\Carbon\Carbon::parse($hFin)->format('H:i')) : '';
                                                 $tipT = ($bloqueT->sede?->nombre ? $bloqueT->sede->nombre.' · ' : '').($horT->nombre_dia ?? '');
                                             @endphp
-                                            <div class="event-item event-taller"
-                                                 onclick="window.location.href='{{ $urlT }}'"
-                                                 role="button"
-                                                 tabindex="0"
-                                                 title="Taller fijo: {{ $bloqueT->nombre }} · {{ $tIni }}–{{ $tFin }}hs · {{ $tipT }}">
+                                            <a class="event-item event-taller"
+                                                 href="{{ $urlT }}"
+                                                 aria-label="Taller: {{ $bloqueT->nombre }}{{ $tIni ? ', '.$tIni.' hs' : '' }}">
                                                 <small class="event-text">
                                                     @if($tIni)
                                                         <span class="event-time">{{ $tIni }}hs</span>
                                                     @endif
                                                     <span class="event-name">{{ \Illuminate\Support\Str::limit($bloqueT->nombre, 16) }}</span>
                                                 </small>
-                                            </div>
+                                            </a>
                                         @elseif($item['type'] === 'show')
                                             @php $show = $item['data']; @endphp
-                                            <div class="event-item event-show"
-                                                 onclick="window.location.href='{{ route('shows.show', $show) }}'"
-                                                 role="button"
-                                                 tabindex="0"
-                                                 title="{{ $show->titulo }} - {{ $show->fecha->format('d/m/Y') }}{{ $show->hora_inicio ? ' ' . $show->hora_inicio->format('H:i') . 'hs' : '' }}">
+                                            <a class="event-item event-show"
+                                                 href="{{ route('shows.show', $show) }}"
+                                                 aria-label="Show: {{ $show->titulo }}{{ $show->hora_inicio ? ', '.$show->hora_inicio->format('H:i').' hs' : '' }}">
                                                 <small class="event-text">
                                                     @if($show->hora_inicio)
                                                         <span class="event-time">{{ $show->hora_inicio->format('H:i') }}hs</span>
                                                     @endif
                                                     <span class="event-name">{{ \Illuminate\Support\Str::limit($show->titulo, 12) }}</span>
                                                 </small>
-                                            </div>
+                                            </a>
                                         @endif
                                     @endforeach
                                 </div>
@@ -312,6 +311,9 @@
     width: 100%;
     box-sizing: border-box;
     transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    border-left: 3px solid var(--accent, #3e7bfa);
 }
 
 @media (min-width: 768px) {

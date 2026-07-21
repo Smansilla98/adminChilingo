@@ -7,7 +7,13 @@
 <div class="ito-page">
     <div class="ito-page-head">
         <div>
-            <h1 class="ito-page-title">@if(!empty($vistaLista))Historial de asistencias@else Matriz de asistencias@endif</h1>
+            <h1 class="ito-page-title">
+                @if(!empty($vistaLista))
+                    Historial de asistencias
+                @else
+                    Matriz de asistencias
+                @endif
+            </h1>
             <p class="ito-page-sub">Control de presencia por bloque</p>
         </div>
         <div class="ito-page-actions">
@@ -48,10 +54,16 @@
         </form>
         @include('asistencias.index-lista')
         @else
-        <p class="text-muted small mb-3">
+        <p class="text-muted small mb-2">
             Elegí <strong>bloque</strong> y <strong>mes</strong>. Cada columna es un día de clase.
-            <span class="badge asist-badge-p">P</span> vino · <span class="badge asist-badge-t">T</span> tarde · <span class="badge asist-badge-j">J</span> justificó · <span class="badge asist-badge-i">I</span> faltó sin avisar.
         </p>
+        <div class="asist-legend" aria-label="Leyenda de asistencia">
+            <span><i class="asist-badge-p" aria-hidden="true">P</i> Presente</span>
+            <span><i class="asist-badge-t" aria-hidden="true">T</i> Tarde</span>
+            <span><i class="asist-badge-j" aria-hidden="true">J</i> Justificado</span>
+            <span><i class="asist-badge-i" aria-hidden="true">I</i> Ausente sin aviso</span>
+            <span><i style="background:var(--s3);color:var(--muted);border:1px solid var(--border)">—</i> Sin marcar</span>
+        </div>
 
         <form method="GET" class="mb-3">
             <div class="row g-3 align-items-end">
@@ -88,8 +100,12 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
             <div>
                 <strong>{{ $bloque->nombre }}</strong>
-                @if($bloque->sede)<span class="text-muted"> · {{ $bloque->sede->nombre }}</span>@endif
-                @if($bloque->profesor)<span class="text-muted"> · Profe: {{ $bloque->profesor->nombre }}</span>@endif
+                @if($bloque->sede)
+                    <span class="text-muted"> · {{ $bloque->sede->nombre }}</span>
+                @endif
+                @if($bloque->profesor)
+                    <span class="text-muted"> · Profe: {{ $bloque->profesor->nombre }}</span>
+                @endif
             </div>
         </div>
 
@@ -131,13 +147,21 @@
                                 $cellClass = match($letra) { 'P' => 'asist-cell-p', 'T' => 'asist-cell-t', 'J' => 'asist-cell-j', 'I' => 'asist-cell-i', default => '' };
                             @endphp
                             <td class="text-center p-1 {{ $cellClass }}">
-                                <label class="visually-hidden">{{ $alumno->nombre_apellido }} {{ $ymd }}</label>
-                                <select name="cells[{{ $alumno->id }}][{{ $ymd }}]" class="form-select form-select-sm asistencia-cell-select" aria-label="{{ $alumno->nombre_apellido }} {{ $ymd }}">
+                                <label class="visually-hidden" for="asist-{{ $alumno->id }}-{{ $f->format('Ymd') }}">
+                                    {{ $alumno->nombre_apellido }}, {{ $f->format('d/m/Y') }}
+                                </label>
+                                <select
+                                    id="asist-{{ $alumno->id }}-{{ $f->format('Ymd') }}"
+                                    name="cells[{{ $alumno->id }}][{{ $ymd }}]"
+                                    class="form-select form-select-sm asistencia-cell-select"
+                                    data-letra="{{ $letra ?: '—' }}"
+                                    aria-label="{{ $alumno->nombre_apellido }}, {{ $f->translatedFormat('l d/m') }}: {{ $letra ? (['P'=>'Presente','T'=>'Tarde','J'=>'Justificado','I'=>'Ausente'][$letra] ?? $letra) : 'Sin marcar' }}"
+                                >
                                     <option value="" {{ $tipo === null || $tipo === '' ? 'selected' : '' }}>—</option>
-                                    <option value="presente" {{ $tipo === 'presente' ? 'selected' : '' }}>P</option>
-                                    <option value="tarde" {{ $tipo === 'tarde' ? 'selected' : '' }}>T</option>
-                                    <option value="ausencia_justificada" {{ in_array($tipo, ['ausencia_justificada', 'justificado'], true) ? 'selected' : '' }}>J</option>
-                                    <option value="ausencia_injustificada" {{ in_array($tipo, ['ausencia_injustificada', 'ausente'], true) ? 'selected' : '' }}>I</option>
+                                    <option value="presente" {{ $tipo === 'presente' ? 'selected' : '' }}>P · Presente</option>
+                                    <option value="tarde" {{ $tipo === 'tarde' ? 'selected' : '' }}>T · Tarde</option>
+                                    <option value="ausencia_justificada" {{ in_array($tipo, ['ausencia_justificada', 'justificado'], true) ? 'selected' : '' }}>J · Justificado</option>
+                                    <option value="ausencia_injustificada" {{ in_array($tipo, ['ausencia_injustificada', 'ausente'], true) ? 'selected' : '' }}>I · Ausente</option>
                                 </select>
                             </td>
                             @endforeach

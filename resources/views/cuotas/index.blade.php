@@ -95,7 +95,7 @@
                             <li><a class="dropdown-item" href="{{ route('cuotas.edit', $c) }}"><i class="bi bi-pencil"></i> Editar</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form action="{{ route('cuotas.destroy', $c) }}" method="POST" onsubmit="return confirm('¿Eliminar cuota?')">
+                                <form action="{{ route('cuotas.destroy', $c) }}" method="POST" data-confirm="¿Eliminar cuota?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash"></i> Eliminar</button>
                                 </form>

@@ -114,7 +114,7 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form action="{{ route('alumnos.destroy', $alumno) }}" method="POST" onsubmit="return confirm('¿Eliminar este alumno?')">
+                                    <form action="{{ route('alumnos.destroy', $alumno) }}" method="POST" data-confirm="¿Eliminar este alumno?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">

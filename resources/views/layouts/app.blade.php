@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=5">
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=6">
 
     @stack('vite')
     @stack('styles')
@@ -18,6 +18,8 @@
     @endauth
 </head>
 <body>
+<a class="ito-skip" href="#contenido-principal">Ir al contenido</a>
+<div id="itoA11yLive" class="ito-sr-only" aria-live="polite" aria-atomic="true"></div>
 @auth
 @php
     $sideUserName = auth()->user()->name ?: auth()->user()->username ?: 'Usuario';
@@ -54,6 +56,27 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-dark side-user-menu shadow-lg" aria-labelledby="sideUserMenuBtn">
                     <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 ito-pref-btn"
+                                data-ito-pref="ito-a11y-lg"
+                                data-on-msg="Texto grande activado"
+                                data-off-msg="Texto grande desactivado"
+                                aria-pressed="false">
+                            <i class="bi bi-fonts" aria-hidden="true"></i>
+                            Texto grande
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 ito-pref-btn"
+                                data-ito-pref="ito-a11y-hc"
+                                data-on-msg="Alto contraste activado"
+                                data-off-msg="Alto contraste desactivado"
+                                aria-pressed="false">
+                            <i class="bi bi-circle-half" aria-hidden="true"></i>
+                            Alto contraste
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
                         <form method="POST" action="{{ route('logout') }}" class="m-0">
                             @csrf
                             <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2">
@@ -86,7 +109,7 @@
 
         </header>
 
-        <section class="content content--maxton">
+        <section class="content content--maxton" id="contenido-principal" tabindex="-1">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -117,6 +140,19 @@
     @include('layouts.partials.recordatorio-chatbot')
 </div>
 @endauth
+
+<div id="itoConfirmModal" class="ito-confirm" hidden role="dialog" aria-modal="true" aria-labelledby="itoConfirmTitle" aria-describedby="itoConfirmMessage">
+    <div class="ito-confirm-backdrop" tabindex="-1"></div>
+    <div class="ito-confirm-dialog">
+        <button type="button" class="ito-confirm-close" id="itoConfirmClose" aria-label="Cerrar">&times;</button>
+        <h2 id="itoConfirmTitle">Confirmar acción</h2>
+        <p id="itoConfirmMessage">¿Estás seguro?</p>
+        <div class="ito-confirm-actions">
+            <button type="button" class="btn btn-secondary" id="itoConfirmCancel">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="itoConfirmOk">Sí, continuar</button>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -164,6 +200,7 @@
 @auth
 <script src="{{ asset('js/recordatorio-chatbot.js') }}?v=3"></script>
 @endauth
+<script src="{{ asset('js/ito-a11y.js') }}?v=1"></script>
 @stack('scripts')
 </body>
 </html>

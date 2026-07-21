@@ -33,7 +33,7 @@
                             <li><a class="dropdown-item" href="{{ route('asistencias.edit', $a) }}"><i class="bi bi-pencil"></i> Editar</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form action="{{ route('asistencias.destroy', $a) }}" method="POST" onsubmit="return confirm('¿Eliminar registro?')">
+                                <form action="{{ route('asistencias.destroy', $a) }}" method="POST" data-confirm="¿Eliminar registro?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash"></i> Eliminar</button>
                                 </form>

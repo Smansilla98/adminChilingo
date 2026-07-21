@@ -197,10 +197,11 @@
                 </div>
             </div>
             <footer class="diseno-statusbar">
+                <span class="diseno-status-hint" title="Atajos de teclado">Ctrl+Z deshacer · Ctrl+Y rehacer · Ctrl+D duplicar · Supr borrar</span>
                 <span id="disenoZoomLabel">100%</span>
-                <input type="range" id="disenoZoomRange" min="15" max="200" value="100" aria-label="Zoom">
-                <button type="button" class="diseno-btn diseno-btn-ghost diseno-btn-sm" id="disenoZoomFit" title="Ajustar a pantalla">
-                    <i class="bi bi-arrows-fullscreen"></i>
+                <input type="range" id="disenoZoomRange" min="15" max="200" value="100" aria-label="Zoom del lienzo">
+                <button type="button" class="diseno-btn diseno-btn-ghost diseno-btn-sm" id="disenoZoomFit" title="Ajustar a pantalla" aria-label="Ajustar lienzo a la pantalla">
+                    <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
                 </button>
             </footer>
         </main>

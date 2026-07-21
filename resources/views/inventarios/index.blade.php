@@ -95,7 +95,12 @@
                             1 u
                         @endif
                     </td>
-                    <td>{{ $item->marca ?? '—' }}@if($item->modelo) / {{ $item->modelo }}@endif</td>
+                    <td>
+                        {{ $item->marca ?? '—' }}
+                        @if($item->modelo)
+                            / {{ $item->modelo }}
+                        @endif
+                    </td>
                     <td>
                         <x-ito.status :tone="$estadoTone" :label="$estadoLabel" />
                     </td>
@@ -105,7 +110,7 @@
                             <li><a class="dropdown-item" href="{{ route('inventarios.edit', $item) }}"><i class="bi bi-pencil"></i> Editar</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form action="{{ route('inventarios.destroy', $item) }}" method="POST" onsubmit="return confirm('¿Eliminar ítem?')">
+                                <form action="{{ route('inventarios.destroy', $item) }}" method="POST" data-confirm="¿Eliminar ítem?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash"></i> Eliminar</button>
                                 </form>

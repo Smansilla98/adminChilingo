@@ -93,7 +93,10 @@
     ]);
 @endphp
 
-<a class="side-link side-link--top {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}" title="Inicio">
+<a class="side-link side-link--top {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+   href="{{ route('dashboard') }}"
+   title="Inicio"
+   @if(request()->routeIs('dashboard')) aria-current="page" @endif>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l9-8 9 8M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
     <span class="side-link-text">Inicio</span>
 </a>
@@ -113,7 +116,10 @@
                             $href = route($link['route']).($link['fragment'] ?? '');
                             $isActive = request()->routeIs($link['pattern']);
                         @endphp
-                        <a class="side-link side-link--nested {{ $isActive ? 'active' : '' }}" href="{{ $href }}" title="{{ $link['label'] }}">
+                        <a class="side-link side-link--nested {{ $isActive ? 'active' : '' }}"
+                           href="{{ $href }}"
+                           title="{{ $link['label'] }}"
+                           @if($isActive) aria-current="page" @endif>
                             <span class="side-link-text">{{ $link['label'] }}</span>
                             @if(!empty($link['badge']))
                                 <span class="side-link-badge">{{ $link['badge'] }}</span>
@@ -133,7 +139,10 @@
         </button>
         <div class="nav-group-links">
             @foreach($profesorLinks as $link)
-                <a class="side-link side-link--nested {{ request()->routeIs($link['pattern']) ? 'active' : '' }}" href="{{ route($link['route']) }}" title="{{ $link['label'] }}">
+                <a class="side-link side-link--nested {{ request()->routeIs($link['pattern']) ? 'active' : '' }}"
+                   href="{{ route($link['route']) }}"
+                   title="{{ $link['label'] }}"
+                   @if(request()->routeIs($link['pattern'])) aria-current="page" @endif>
                     <span class="side-link-text">{{ $link['label'] }}</span>
                 </a>
             @endforeach

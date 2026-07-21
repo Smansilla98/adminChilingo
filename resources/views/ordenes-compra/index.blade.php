@@ -75,7 +75,7 @@
                             <li><a class="dropdown-item" href="{{ route('ordenes-compra.edit', $o) }}"><i class="bi bi-pencil"></i> Editar</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form action="{{ route('ordenes-compra.destroy', $o) }}" method="POST" onsubmit="return confirm('¿Eliminar esta orden?')">
+                                <form action="{{ route('ordenes-compra.destroy', $o) }}" method="POST" data-confirm="¿Eliminar esta orden?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash"></i> Eliminar</button>
                                 </form>

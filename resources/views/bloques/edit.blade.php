@@ -88,7 +88,7 @@
                     <td>{{ \Carbon\Carbon::parse($h->hora_inicio)->format('H:i') }}</td>
                     <td>{{ \Carbon\Carbon::parse($h->hora_fin)->format('H:i') }}</td>
                     <td>
-                        <form action="{{ route('bloque-horarios.destroy', $h) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Quitar este horario?')">
+                        <form action="{{ route('bloque-horarios.destroy', $h) }}" method="POST" class="d-inline" data-confirm="¿Quitar este horario?">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
