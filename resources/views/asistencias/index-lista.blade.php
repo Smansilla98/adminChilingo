@@ -15,6 +15,7 @@
                     $tone = match (true) {
                         in_array($a->tipo_asistencia, ['presente', 'tarde'], true) => 'success',
                         in_array($a->tipo_asistencia, ['ausencia_justificada', 'justificado'], true) => 'info',
+                        in_array($a->tipo_asistencia, ['feriado', 'sin_clases'], true) => 'warning',
                         default => 'neutral',
                     };
                 @endphp

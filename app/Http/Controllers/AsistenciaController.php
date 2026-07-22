@@ -15,9 +15,7 @@ class AsistenciaController extends Controller
     /** Tipos de asistencia para formularios (solo los 4 del Excel, sin legacy) */
     protected function getTiposAsistencia(): array
     {
-        $todos = Asistencia::TIPOS_ASISTENCIA;
-
-        return array_diff_key($todos, array_flip(['ausente', 'justificado']));
+        return Asistencia::tiposEditables();
     }
 
     /**
@@ -160,7 +158,7 @@ class AsistenciaController extends Controller
             'año' => 'required|integer|min:2000|max:2100',
             'cells' => 'nullable|array',
             'cells.*' => 'array',
-            'cells.*.*' => 'nullable|string|in:presente,tarde,ausencia_justificada,ausencia_injustificada',
+            'cells.*.*' => Asistencia::reglaValidacionTipo(),
         ]);
 
         $bloque = Bloque::with('horarios')->findOrFail($validated['bloque_id']);
@@ -211,7 +209,7 @@ class AsistenciaController extends Controller
                         ],
                         [
                             'tipo_asistencia' => $tipo,
-                            'presente' => in_array($tipo, ['presente', 'tarde'], true),
+                            'presente' => Asistencia::esPresente($tipo),
                         ]
                     );
                 }
@@ -277,7 +275,7 @@ class AsistenciaController extends Controller
             'asistencias' => 'required|array',
             'asistencias.*.alumno_id' => 'required|exists:alumnos,id',
             'asistencias.*.presente' => 'boolean',
-            'asistencias.*.tipo_asistencia' => 'nullable|string|in:presente,tarde,ausencia_justificada,ausencia_injustificada',
+            'asistencias.*.tipo_asistencia' => Asistencia::reglaValidacionTipo(),
         ]);
 
         /** @var \App\Models\User|null $userStore */
@@ -303,7 +301,7 @@ class AsistenciaController extends Controller
                 ],
                 [
                     'tipo_asistencia' => $tipo,
-                    'presente' => in_array($tipo, ['presente', 'tarde']),
+                    'presente' => Asistencia::esPresente($tipo),
                 ]
             );
         }
@@ -344,12 +342,12 @@ class AsistenciaController extends Controller
     {
         $validated = $request->validate([
             'presente' => 'boolean',
-            'tipo_asistencia' => 'nullable|string|in:presente,tarde,ausencia_justificada,ausencia_injustificada',
+            'tipo_asistencia' => Asistencia::reglaValidacionTipo(),
         ]);
 
         if (isset($validated['tipo_asistencia'])) {
             $asistencia->tipo_asistencia = $validated['tipo_asistencia'];
-            $asistencia->presente = in_array($validated['tipo_asistencia'], ['presente', 'tarde']);
+            $asistencia->presente = Asistencia::esPresente($validated['tipo_asistencia']);
             $asistencia->save();
         } else {
             $asistencia->update($validated);

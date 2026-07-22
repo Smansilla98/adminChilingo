@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Asistencia extends Model
 {
-    /** Tipos de asistencia (igual que hoja "Tipos de asistencia" del Excel Chilinga 2025) */
-    /** Leyenda tipo Excel: P / T / J / I */
+    /** Leyenda tipo Excel: P / T / J / I / F / S */
     public static function letraTipo(?string $tipo): string
     {
         return match ($tipo) {
@@ -16,19 +15,39 @@ class Asistencia extends Model
             'tarde' => 'T',
             'ausencia_justificada', 'justificado' => 'J',
             'ausencia_injustificada', 'ausente' => 'I',
+            'feriado' => 'F',
+            'sin_clases' => 'S',
             default => '',
         };
     }
 
     public const TIPOS_ASISTENCIA = [
-        'presente'              => 'Presente',
-        'tarde'                 => 'Tarde',
-        'ausencia_justificada'  => 'Ausencia justificada',
-        'ausencia_injustificada'=> 'Ausencia injustificada',
+        'presente' => 'Presente',
+        'tarde' => 'Tarde',
+        'ausencia_justificada' => 'Ausencia justificada',
+        'ausencia_injustificada' => 'Ausencia injustificada',
+        'feriado' => 'Feriado',
+        'sin_clases' => 'Sin clases',
         // Legacy (datos ya guardados)
-        'ausente'               => 'Ausencia injustificada',
-        'justificado'           => 'Ausencia justificada',
+        'ausente' => 'Ausencia injustificada',
+        'justificado' => 'Ausencia justificada',
     ];
+
+    /** Tipos que se pueden elegir en formularios / matriz (sin aliases legacy). */
+    public static function tiposEditables(): array
+    {
+        return array_diff_key(self::TIPOS_ASISTENCIA, array_flip(['ausente', 'justificado']));
+    }
+
+    public static function reglaValidacionTipo(): string
+    {
+        return 'nullable|string|in:'.implode(',', array_keys(self::tiposEditables()));
+    }
+
+    public static function esPresente(?string $tipo): bool
+    {
+        return in_array($tipo, ['presente', 'tarde'], true);
+    }
 
     protected $fillable = [
         'alumno_id',
@@ -47,22 +66,16 @@ class Asistencia extends Model
     {
         static::saving(function (Asistencia $asistencia) {
             if ($asistencia->isDirty('tipo_asistencia')) {
-                $asistencia->presente = ($asistencia->tipo_asistencia === 'presente' || $asistencia->tipo_asistencia === 'tarde');
+                $asistencia->presente = self::esPresente($asistencia->tipo_asistencia);
             }
         });
     }
 
-    /**
-     * Relación con alumno
-     */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
     }
 
-    /**
-     * Relación con bloque
-     */
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);
