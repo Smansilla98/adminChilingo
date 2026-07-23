@@ -1,0 +1,505 @@
+{
+  "version": 3,
+  "timeSignature": "4/4",
+  "beats": 16,
+  "optionalInstruments": [],
+  "sections": [
+    {
+      "name": "Solo",
+      "measureCount": 8,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "timbal": [
+          [
+            {
+              "beat": 1,
+              "stroke": "slap"
+            },
+            {
+              "beat": 2,
+              "stroke": "slap"
+            },
+            {
+              "beat": 3,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "slap"
+            },
+            {
+              "beat": 5,
+              "stroke": "slap"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 7,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 9,
+              "stroke": "slap"
+            },
+            {
+              "beat": 10,
+              "stroke": "slap"
+            },
+            {
+              "beat": 11,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 12,
+              "stroke": "slap"
+            },
+            {
+              "beat": 13,
+              "stroke": "slap"
+            },
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 15,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 1,
+              "stroke": "slap"
+            },
+            {
+              "beat": 2,
+              "stroke": "slap"
+            },
+            {
+              "beat": 3,
+              "stroke": "slap"
+            },
+            {
+              "beat": 5,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 7,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 9,
+              "stroke": "slap"
+            },
+            {
+              "beat": 10,
+              "stroke": "slap"
+            },
+            {
+              "beat": 11,
+              "stroke": "slap"
+            },
+            {
+              "beat": 13,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 15,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 1,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 3,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "slap"
+            },
+            {
+              "beat": 5,
+              "stroke": "slap"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 7,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 8,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 9,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "slap"
+            },
+            {
+              "beat": 11,
+              "stroke": "slap"
+            },
+            {
+              "beat": 12,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 13,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 15,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 3,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 5,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "slap"
+            },
+            {
+              "beat": 7,
+              "stroke": "slap"
+            },
+            {
+              "beat": 9,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 11,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 13,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 3,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 5,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "slap"
+            },
+            {
+              "beat": 7,
+              "stroke": "slap"
+            },
+            {
+              "beat": 9,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 11,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 13,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 3,
+              "stroke": "slap"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 5,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "slap"
+            },
+            {
+              "beat": 7,
+              "stroke": "slap"
+            },
+            {
+              "beat": 8,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 9,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "slap"
+            },
+            {
+              "beat": 11,
+              "stroke": "slap"
+            },
+            {
+              "beat": 13,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 3,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 5,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "slap"
+            },
+            {
+              "beat": 7,
+              "stroke": "slap"
+            },
+            {
+              "beat": 12,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 15,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 3,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 5,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "slap"
+            },
+            {
+              "beat": 7,
+              "stroke": "slap"
+            },
+            {
+              "beat": 10,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 11,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 15,
+              "stroke": "abierto"
+            }
+          ]
+        ],
+        "repique": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ]
+      }
+    }
+  ]
+}

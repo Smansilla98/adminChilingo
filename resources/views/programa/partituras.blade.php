@@ -12,7 +12,18 @@
             o creá partituras nuevas con el <strong>Compositor Session</strong> (estilo Ableton).
         </p>
     </div>
-    <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary btn-sm">Programa completo</a>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        @if(auth()->user()?->isAdmin())
+        <form action="{{ route('programa.partituras.importar-cuadernillo') }}" method="POST" class="d-inline"
+              data-confirm="¿Cargar las 26 partituras del Cuadernillo en la base? Sobrescribe la partitura digital de los toques que ya la tengan.">
+            @csrf
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-journal-arrow-down"></i> Cargar cuadernillo a la BD
+            </button>
+        </form>
+        @endif
+        <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary btn-sm">Programa completo</a>
+    </div>
 </div>
 
 <div class="alert alert-warning py-2 small mb-4">
@@ -20,6 +31,9 @@
     <strong>Formato del libro:</strong> las partituras del PDF son imágenes escaneadas.
     Exportá o fotografiá la página del toque y subila con <strong>«Subir partitura»</strong>.
     Para crear partituras nuevas usá <strong>«Compositor»</strong> (editor local del cuadernillo).
+    @if(auth()->user()?->isAdmin())
+        Como admin podés usar <strong>«Cargar cuadernillo a la BD»</strong> para importar las notaciones digitales ya transcritas (sin artisan).
+    @endif
 </div>
 
 <form method="GET" class="row g-2 align-items-end mb-4">
@@ -45,6 +59,9 @@
 
 @if(session('success'))
     <div class="alert alert-success py-2">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="alert alert-danger py-2">{{ session('error') }}</div>
 @endif
 
 @if($estadoPrograma === 'sin_tabla')

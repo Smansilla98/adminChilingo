@@ -90,6 +90,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'updatePartitura'])->name('programa.toque.partitura.update');
         Route::get('/programa/toque/{programaRitmo:slug}/compositor', [ProgramaController::class, 'editCompositor'])->name('programa.toque.compositor.edit');
         Route::post('/programa/toque/{programaRitmo:slug}/compositor', [ProgramaController::class, 'updateCompositor'])->name('programa.toque.compositor.update');
+        Route::post('/programa/partituras/cargar-cuadernillo', [ProgramaController::class, 'importarCuadernillo'])->name('programa.partituras.importar-cuadernillo');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
 

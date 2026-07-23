@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProgramaRitmo;
 use App\Models\ProgramaSeccion;
+use App\Services\PartiturasCuadernilloImporter;
 use App\Services\ProgramaRitmoMediosService;
 use App\Support\ProgramaRitmoMedios;
 use Database\Seeders\ProgramaRitmosSeeder;
@@ -399,6 +400,51 @@ class ProgramaController extends Controller
         return redirect()
             ->route('programa.index', ['seccion' => $programaSeccion->slug])
             ->with('success', 'Sección del programa actualizada.');
+    }
+
+    /**
+     * Carga en la BD las partituras digitales del Cuadernillo (JSON → partitura_vexflow).
+     * Equivalente a: php artisan db:seed --class=PartiturasCuadernilloSeeder
+     */
+    public function importarCuadernillo(Request $request, PartiturasCuadernilloImporter $importer)
+    {
+        $this->authorizeAdmin();
+
+        if (! Schema::hasTable('programa_ritmos')) {
+            return redirect()
+                ->route('programa.partituras.index')
+                ->with('error', 'La tabla de ritmos no existe. Corré las migraciones primero.');
+        }
+
+        $this->asegurarDatosBase();
+
+        try {
+            $result = $importer->importar();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()
+                ->route('programa.partituras.index')
+                ->with('error', 'Error al cargar el cuadernillo: '.$e->getMessage());
+        }
+
+        $msg = "Cuadernillo cargado: {$result['ok']} partituras ok";
+        if ($result['created'] > 0) {
+            $msg .= ", {$result['created']} toques nuevos";
+        }
+        if ($result['fail'] > 0) {
+            $msg .= ", {$result['fail']} con error";
+        }
+        $msg .= '.';
+
+        $redirect = redirect()->route('programa.partituras.index');
+        if ($result['ok'] > 0) {
+            $redirect->with('success', $msg);
+        } else {
+            $redirect->with('error', $msg.( $result['messages'][0] ?? '' ? ' '.$result['messages'][0] : ''));
+        }
+
+        return $redirect;
     }
 
     private function asegurarDatosBase(): void

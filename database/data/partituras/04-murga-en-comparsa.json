@@ -1,0 +1,483 @@
+{
+  "version": 3,
+  "timeSignature": "4/4",
+  "beats": 16,
+  "optionalInstruments": [],
+  "sections": [
+    {
+      "name": "Llamada inicial e intermedia",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_agudo": [
+          [
+            {
+              "beat": 3,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 3,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_medio": [
+          [
+            {
+              "beat": 5,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 5,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "redoblante": [
+          [
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "timbal": [
+          [
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            }
+          ]
+        ],
+        "repique": [
+          [
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Toque",
+      "measureCount": 1,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_agudo": [
+          [
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 11,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_medio": [
+          [
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "redoblante": [
+          [
+            {
+              "beat": 0,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 6,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 7,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 10,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 11,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            },
+            {
+              "beat": 15,
+              "stroke": "acentuado"
+            }
+          ]
+        ],
+        "timbal": [
+          [
+            {
+              "beat": 2,
+              "stroke": "palma"
+            },
+            {
+              "beat": 3,
+              "stroke": "palma"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 7,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "palma"
+            },
+            {
+              "beat": 11,
+              "stroke": "palma"
+            },
+            {
+              "beat": 14,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 15,
+              "stroke": "abierto"
+            }
+          ]
+        ],
+        "repique": [
+          [
+            {
+              "beat": 0,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 6,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 7,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 10,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 11,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            },
+            {
+              "beat": 15,
+              "stroke": "acentuado"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Variación sobre toque",
+      "measureCount": 4,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "redoblante": [
+          [],
+          [],
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          [],
+          [],
+          []
+        ],
+        "repique": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}

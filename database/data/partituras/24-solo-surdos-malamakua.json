@@ -1,0 +1,1599 @@
+{
+  "version": 3,
+  "timeSignature": "4/4",
+  "beats": 16,
+  "optionalInstruments": [],
+  "sections": [
+    {
+      "name": "Solo de Surdos (6/8)",
+      "measureCount": 8,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "Solo de Surdos (6/8) cont.",
+      "measureCount": 6,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          [],
+          [],
+          [],
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "Acompañamiento de Surdos (4/4)",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [
+            {
+              "beat": 0,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_agudo": [
+          [
+            {
+              "beat": 0,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_medio": [
+          [
+            {
+              "beat": 0,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "chapa"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "redoblante": [
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          []
+        ]
+      }
+    },
+    {
+      "name": "Entrada al acompañamiento",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          []
+        ],
+        "redoblante": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "timbal": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "repique": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Acompañamiento (Red/Tim/Rep 6/8)",
+      "measureCount": 4,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          [],
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          [],
+          [],
+          []
+        ],
+        "redoblante": [
+          [
+            {
+              "beat": 0,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "acentuado"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "timbal": [
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 8,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 8,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 8,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 8,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "abierto"
+            }
+          ]
+        ],
+        "repique": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 9,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 9,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 9,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 9,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Después de repetición de Surdos (4/4)",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_agudo": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_medio": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "redoblante": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "timbal": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "repique": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Llamada Final (Todos)",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_agudo": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "surdo_medio": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "redoblante": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ]
+        ],
+        "timbal": [
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 2,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 8,
+              "stroke": "abierto"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 4,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 6,
+              "stroke": "abierto"
+            },
+            {
+              "beat": 10,
+              "stroke": "abierto"
+            }
+          ]
+        ],
+        "repique": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}

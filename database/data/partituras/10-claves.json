@@ -1,0 +1,734 @@
+{
+  "version": 3,
+  "timeSignature": "4/4",
+  "beats": 16,
+  "optionalInstruments": [
+    "palmas"
+  ],
+  "sections": [
+    {
+      "name": "Clave de Son",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Son 2-3",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Son (1 Compás)",
+      "measureCount": 1,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          []
+        ],
+        "surdo_agudo": [
+          []
+        ],
+        "surdo_medio": [
+          []
+        ],
+        "redoblante": [
+          []
+        ],
+        "timbal": [
+          []
+        ],
+        "repique": [
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Son 2-3 (1 Compás)",
+      "measureCount": 1,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          []
+        ],
+        "surdo_agudo": [
+          []
+        ],
+        "surdo_medio": [
+          []
+        ],
+        "redoblante": [
+          []
+        ],
+        "timbal": [
+          []
+        ],
+        "repique": [
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 11,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Rumba",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Rumba 2-3",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Rumba (1 Compás)",
+      "measureCount": 1,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          []
+        ],
+        "surdo_agudo": [
+          []
+        ],
+        "surdo_medio": [
+          []
+        ],
+        "redoblante": [
+          []
+        ],
+        "timbal": [
+          []
+        ],
+        "repique": [
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Rumba 2-3 (1 Compás)",
+      "measureCount": 1,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          []
+        ],
+        "surdo_agudo": [
+          []
+        ],
+        "surdo_medio": [
+          []
+        ],
+        "redoblante": [
+          []
+        ],
+        "timbal": [
+          []
+        ],
+        "repique": [
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 13,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Samba",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Samba 2-3",
+      "measureCount": 2,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        },
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          [],
+          []
+        ],
+        "surdo_agudo": [
+          [],
+          []
+        ],
+        "surdo_medio": [
+          [],
+          []
+        ],
+        "redoblante": [
+          [],
+          []
+        ],
+        "timbal": [
+          [],
+          []
+        ],
+        "repique": [
+          [],
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 4,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            }
+          ],
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 12,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Samba (1 Compás)",
+      "measureCount": 1,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          []
+        ],
+        "surdo_agudo": [
+          []
+        ],
+        "surdo_medio": [
+          []
+        ],
+        "redoblante": [
+          []
+        ],
+        "timbal": [
+          []
+        ],
+        "repique": [
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 0,
+              "stroke": "nota"
+            },
+            {
+              "beat": 3,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 10,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Clave de Samba 2-3 (1 Compás)",
+      "measureCount": 1,
+      "repeatX": 1,
+      "repeats": [
+        {
+          "begin": false,
+          "end": false
+        }
+      ],
+      "hits": {
+        "surdo_grave": [
+          []
+        ],
+        "surdo_agudo": [
+          []
+        ],
+        "surdo_medio": [
+          []
+        ],
+        "redoblante": [
+          []
+        ],
+        "timbal": [
+          []
+        ],
+        "repique": [
+          []
+        ],
+        "palmas": [
+          [
+            {
+              "beat": 2,
+              "stroke": "nota"
+            },
+            {
+              "beat": 6,
+              "stroke": "nota"
+            },
+            {
+              "beat": 8,
+              "stroke": "nota"
+            },
+            {
+              "beat": 11,
+              "stroke": "nota"
+            },
+            {
+              "beat": 14,
+              "stroke": "nota"
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}
