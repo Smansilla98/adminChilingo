@@ -113,7 +113,11 @@ class ProgramaController extends Controller
                 return $r;
             });
             if ($pendientes) {
-                $ritmos = $ritmos->filter(fn (ProgramaRitmo $r) => ! ($r->resumen_medios['partitura'] ?? false));
+                $ritmos = $ritmos->filter(function (ProgramaRitmo $r) {
+                    $rm = $r->resumen_medios ?? [];
+
+                    return empty($rm['partitura']) && empty($rm['digital']);
+                });
             }
             $porAño = $ritmos->groupBy(fn (ProgramaRitmo $r) => (int) $r->año);
             if ($ritmos->isEmpty()) {
