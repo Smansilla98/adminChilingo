@@ -113,11 +113,7 @@ class ProgramaController extends Controller
                 return $r;
             });
             if ($pendientes) {
-                $ritmos = $ritmos->filter(function (ProgramaRitmo $r) {
-                    $rm = $r->resumen_medios ?? [];
-
-                    return empty($rm['partitura']) && empty($rm['digital']);
-                });
+                $ritmos = $ritmos->filter(fn (ProgramaRitmo $r) => empty(($r->resumen_medios ?? [])['partitura']));
             }
             $porAño = $ritmos->groupBy(fn (ProgramaRitmo $r) => (int) $r->año);
             if ($ritmos->isEmpty()) {
@@ -432,7 +428,7 @@ class ProgramaController extends Controller
                 ->with('error', 'Error al cargar el cuadernillo: '.$e->getMessage());
         }
 
-        $msg = "Cuadernillo cargado: {$result['ok']} partituras ok";
+        $msg = "PDFs del cuadernillo: {$result['ok']} toques actualizados";
         if ($result['created'] > 0) {
             $msg .= ", {$result['created']} toques nuevos";
         }
@@ -445,7 +441,8 @@ class ProgramaController extends Controller
         if ($result['ok'] > 0) {
             $redirect->with('success', $msg);
         } else {
-            $redirect->with('error', $msg.( $result['messages'][0] ?? '' ? ' '.$result['messages'][0] : ''));
+            $extra = $result['messages'][0] ?? '';
+            $redirect->with('error', trim($msg.' '.$extra));
         }
 
         return $redirect;

@@ -15,10 +15,10 @@
     <div class="d-flex flex-wrap gap-2 align-items-center">
         @if(auth()->user()?->isAdmin())
         <form action="{{ route('programa.partituras.importar-cuadernillo') }}" method="POST" class="d-inline"
-              data-confirm="¿Cargar las 26 partituras del Cuadernillo en la base? Sobrescribe la partitura digital de los toques que ya la tengan.">
+              data-confirm="¿Asignar a cada toque su PDF del Cuadernillo de Toques? Reemplaza el archivo de partitura actual.">
             @csrf
             <button type="submit" class="btn btn-primary btn-sm">
-                <i class="bi bi-journal-arrow-down"></i> Cargar cuadernillo a la BD
+                <i class="bi bi-file-earmark-pdf"></i> Cargar PDFs del cuadernillo
             </button>
         </form>
         @endif
@@ -29,18 +29,17 @@
 <div class="alert alert-warning py-2 small mb-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
     <div>
         <i class="bi bi-info-circle"></i>
-        <strong>Archivo</strong> = PDF/foto del libro.
-        <strong>Digital</strong> = mapa de golpes en el compositor (cuadernillo).
+        Cada toque muestra la <strong>partitura en PDF</strong> tomada del Cuadernillo de Toques (La Chilinga).
         @if(auth()->user()?->isAdmin())
-            Si dice «Sin digital», cargá el cuadernillo con el botón.
+            Si dice «Sin partitura», usá <strong>Cargar PDFs del cuadernillo</strong>.
         @endif
     </div>
     @if(auth()->user()?->isAdmin())
     <form action="{{ route('programa.partituras.importar-cuadernillo') }}" method="POST" class="m-0"
-          data-confirm="¿Cargar las 26 partituras del Cuadernillo en la base? Sobrescribe la partitura digital de los toques que ya la tengan.">
+          data-confirm="¿Asignar a cada toque su PDF del Cuadernillo de Toques? Reemplaza el archivo de partitura actual.">
         @csrf
         <button type="submit" class="btn btn-primary btn-sm">
-            <i class="bi bi-journal-arrow-down"></i> Cargar cuadernillo a la BD
+            <i class="bi bi-file-earmark-pdf"></i> Cargar PDFs del cuadernillo
         </button>
     </form>
     @endif
@@ -56,7 +55,7 @@
         <div class="form-check mb-2">
             <input class="form-check-input" type="checkbox" name="pendientes" value="1" id="soloPendientes"
                 @checked($pendientes ?? false) onchange="this.form.submit()">
-            <label class="form-check-label small" for="soloPendientes">Solo sin digital ni archivo</label>
+                                            <label class="form-check-label small" for="soloPendientes">Solo sin partitura PDF</label>
         </div>
     </div>
     <div class="col-auto">
@@ -95,7 +94,7 @@
                             <thead>
                                 <tr>
                                     <th>Toque</th>
-                                    <th>Estado</th>
+                                    <th>Partitura PDF</th>
                                     <th class="text-center">Videos</th>
                                     <th class="text-end">Acción</th>
                                 </tr>
@@ -111,23 +110,14 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <div class="d-flex flex-column gap-1">
-                                                @if($rm['digital'] ?? false)
-                                                    <span class="badge bg-info-subtle text-info">
-                                                        <i class="bi bi-music-note-beamed"></i> Digital cargada
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-secondary-subtle text-muted">Sin digital</span>
-                                                @endif
-                                                @if($rm['partitura'] ?? false)
-                                                    <span class="badge bg-success-subtle text-success" title="Archivo PDF/imagen">
-                                                        <i class="bi bi-file-earmark-check"></i>
-                                                        {{ Str::limit($rm['partitura_nombre'] ?? 'Archivo', 24) }}
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-secondary-subtle text-muted" title="PDF o foto del libro">Sin archivo</span>
-                                                @endif
-                                            </div>
+                                            @if($rm['partitura'] ?? false)
+                                                <span class="badge bg-success-subtle text-success">
+                                                    <i class="bi bi-file-earmark-pdf"></i>
+                                                    {{ Str::limit($rm['partitura_nombre'] ?? 'PDF cargado', 36) }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary-subtle text-muted">Sin partitura</span>
+                                            @endif
                                         </td>
                                         <td class="text-center">
                                             @if(($rm['videos'] ?? 0) > 0)
@@ -138,16 +128,14 @@
                                         </td>
                                         <td class="text-end text-nowrap">
                                             @if(auth()->user()->isAdmin())
-                                                <a href="{{ route('programa.toque.compositor.edit', $toque) }}" class="btn btn-sm btn-primary">
-                                                    <i class="bi bi-music-note-beamed"></i>
-                                                    {{ ($rm['digital'] ?? false) ? 'Compositor' : 'Crear digital' }}
-                                                </a>
                                                 <a href="{{ route('programa.toque.partitura.edit', $toque) }}" class="btn btn-sm btn-warning">
                                                     <i class="bi bi-cloud-upload"></i>
-                                                    {{ ($rm['partitura'] ?? false) ? 'Cambiar' : 'Subir partitura' }}
+                                                    {{ ($rm['partitura'] ?? false) ? 'Cambiar PDF' : 'Subir PDF' }}
                                                 </a>
                                             @endif
-                                            <a href="{{ route('programa.toque.show', $toque) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+                                            <a href="{{ route('programa.toque.show', $toque) }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach

@@ -3,22 +3,49 @@
     "file": "01-toque-de-chilinga.json",
     "pdf_nombre": "Toque de Chilinga",
     "pdf_pagina": 3,
-    "match": { "año": 1, "orden": 1, "nombre": "Ritmo Chilinga" },
-    "accion": "existente"
+    "match": {
+      "año": 1,
+      "orden": 1,
+      "nombre": "Ritmo Chilinga"
+    },
+    "accion": "existente",
+    "pdf_file": "01-toque-de-chilinga.pdf",
+    "pdf_pages": [
+      6,
+      6
+    ]
   },
   {
     "file": "02-marcha-camion.json",
     "pdf_nombre": "Marcha Camión",
     "pdf_pagina": 4,
-    "match": { "año": 1, "orden": 3, "nombre": "Marcha Camión" },
-    "accion": "existente"
+    "match": {
+      "año": 1,
+      "orden": 3,
+      "nombre": "Marcha Camión"
+    },
+    "accion": "existente",
+    "pdf_file": "02-marcha-camion.pdf",
+    "pdf_pages": [
+      7,
+      9
+    ]
   },
   {
     "file": "03-ochosi.json",
     "pdf_nombre": "Ochosi",
     "pdf_pagina": 7,
-    "match": { "año": 1, "orden": 2, "nombre": "Ochosi" },
-    "accion": "existente"
+    "match": {
+      "año": 1,
+      "orden": 2,
+      "nombre": "Ochosi"
+    },
+    "accion": "existente",
+    "pdf_file": "03-ochosi.pdf",
+    "pdf_pages": [
+      10,
+      10
+    ]
   },
   {
     "file": "04-murga-en-comparsa.json",
@@ -34,30 +61,62 @@
       "notas": "Cuadernillo de Toques p.8"
     },
     "accion": "nuevo",
-    "nota_match": "No hay equivalente claro (existe Ochosi en Murga / Toque de Comparsa / Rap - Murga)."
+    "nota_match": "No hay equivalente claro (existe Ochosi en Murga / Toque de Comparsa / Rap - Murga).",
+    "pdf_file": "04-murga-en-comparsa.pdf",
+    "pdf_pages": [
+      11,
+      11
+    ]
   },
   {
     "file": "05-toque-de-rap.json",
     "pdf_nombre": "Toque de Rap",
     "pdf_pagina": 9,
-    "match": { "año": 1, "orden": 8, "nombre": "Rap - Murga" },
+    "match": {
+      "año": 1,
+      "orden": 8,
+      "nombre": "Rap - Murga"
+    },
     "accion": "existente",
-    "nota_match": "Nombre del seeder distinto; mismo toque de programa 1° año."
+    "nota_match": "Nombre del seeder distinto; mismo toque de programa 1° año.",
+    "pdf_file": "05-toque-de-rap.pdf",
+    "pdf_pages": [
+      12,
+      13
+    ]
   },
   {
     "file": "06-candombe-argentino.json",
     "pdf_nombre": "Candombe Argentino",
     "pdf_pagina": 11,
-    "match": { "año": 2, "orden": 2, "nombre": "Candombe Argentino" },
-    "accion": "existente"
+    "match": {
+      "año": 2,
+      "orden": 2,
+      "nombre": "Candombe Argentino"
+    },
+    "accion": "existente",
+    "pdf_file": "06-candombe-argentino.pdf",
+    "pdf_pages": [
+      14,
+      14
+    ]
   },
   {
     "file": "07-samba-reggae-tradicional.json",
     "pdf_nombre": "Samba Reggae Tradicional",
     "pdf_pagina": 12,
-    "match": { "año": 1, "orden": 6, "nombre": "Samba Reggae I y II" },
+    "match": {
+      "año": 1,
+      "orden": 6,
+      "nombre": "Samba Reggae I y II"
+    },
     "accion": "existente",
-    "nota_match": "Se asignó la versión Tradicional a Samba Reggae I y II; Contemporáneo va aparte."
+    "nota_match": "Se asignó la versión Tradicional a Samba Reggae I y II; Contemporáneo va aparte.",
+    "pdf_file": "07-samba-reggae-tradicional.pdf",
+    "pdf_pages": [
+      15,
+      16
+    ]
   },
   {
     "file": "08-samba-reggae-contemporaneo.json",
@@ -72,15 +131,29 @@
       "opcional": false,
       "notas": "Cuadernillo de Toques p.14"
     },
-    "accion": "nuevo"
+    "accion": "nuevo",
+    "pdf_file": "08-samba-reggae-contemporaneo.pdf",
+    "pdf_pages": [
+      17,
+      17
+    ]
   },
   {
     "file": "09-iyesa-i-ii-iii.json",
     "pdf_nombre": "Iyesá I, II y III",
     "pdf_pagina": 15,
-    "match": { "año": 1, "orden": 9, "nombre": "Ixesa I" },
+    "match": {
+      "año": 1,
+      "orden": 9,
+      "nombre": "Ixesa I"
+    },
     "accion": "existente",
-    "nota_match": "Partitura completa I–III en Ixesa I (1°). También existe Ixesa I (2°) e Iyesa II (4°) sin esta carga."
+    "nota_match": "Partitura completa I–III en Ixesa I (1°). También existe Ixesa I (2°) e Iyesa II (4°) sin esta carga.",
+    "pdf_file": "09-iyesa-i-ii-iii.pdf",
+    "pdf_pages": [
+      18,
+      22
+    ]
   },
   {
     "file": "10-claves.json",
@@ -95,35 +168,76 @@
       "opcional": false,
       "notas": "Cuadernillo de Toques p.20"
     },
-    "accion": "nuevo"
+    "accion": "nuevo",
+    "pdf_file": "10-claves.pdf",
+    "pdf_pages": [
+      23,
+      23
+    ]
   },
   {
     "file": "11-rumba.json",
     "pdf_nombre": "Rumba",
     "pdf_pagina": 21,
-    "match": { "año": 2, "orden": 7, "nombre": "Ritmo de Rumba" },
-    "accion": "existente"
+    "match": {
+      "año": 2,
+      "orden": 7,
+      "nombre": "Ritmo de Rumba"
+    },
+    "accion": "existente",
+    "pdf_file": "11-rumba.pdf",
+    "pdf_pages": [
+      24,
+      25
+    ]
   },
   {
     "file": "12-chiruda.json",
     "pdf_nombre": "Chiruda",
     "pdf_pagina": 23,
-    "match": { "año": 2, "orden": 5, "nombre": "Chiruda" },
-    "accion": "existente"
+    "match": {
+      "año": 2,
+      "orden": 5,
+      "nombre": "Chiruda"
+    },
+    "accion": "existente",
+    "pdf_file": "12-chiruda.pdf",
+    "pdf_pages": [
+      26,
+      28
+    ]
   },
   {
     "file": "13-sacateca.json",
     "pdf_nombre": "Sacateca",
     "pdf_pagina": 26,
-    "match": { "año": 2, "orden": 4, "nombre": "Sacateca" },
-    "accion": "existente"
+    "match": {
+      "año": 2,
+      "orden": 4,
+      "nombre": "Sacateca"
+    },
+    "accion": "existente",
+    "pdf_file": "13-sacateca.pdf",
+    "pdf_pages": [
+      29,
+      30
+    ]
   },
   {
     "file": "14-buscando-a-coco.json",
     "pdf_nombre": "Buscando a Coco",
     "pdf_pagina": 28,
-    "match": { "año": 3, "orden": 1, "nombre": "Buscando a Coco" },
-    "accion": "existente"
+    "match": {
+      "año": 3,
+      "orden": 1,
+      "nombre": "Buscando a Coco"
+    },
+    "accion": "existente",
+    "pdf_file": "14-buscando-a-coco.pdf",
+    "pdf_pages": [
+      31,
+      33
+    ]
   },
   {
     "file": "15-malambo-en-comparsa.json",
@@ -139,65 +253,142 @@
       "notas": "Cuadernillo de Toques p.31"
     },
     "accion": "nuevo",
-    "nota_match": "Distinto de Toque de Comparsa (2.3)."
+    "nota_match": "Distinto de Toque de Comparsa (2.3).",
+    "pdf_file": "15-malambo-en-comparsa.pdf",
+    "pdf_pages": [
+      34,
+      34
+    ]
   },
   {
     "file": "16-toque-de-marcha.json",
     "pdf_nombre": "Toque de Marcha",
     "pdf_pagina": 32,
-    "match": { "año": 1, "orden": 7, "nombre": "Toque de Marcha" },
-    "accion": "existente"
+    "match": {
+      "año": 1,
+      "orden": 7,
+      "nombre": "Toque de Marcha"
+    },
+    "accion": "existente",
+    "pdf_file": "16-toque-de-marcha.pdf",
+    "pdf_pages": [
+      35,
+      35
+    ]
   },
   {
     "file": "17-chilinga-ii.json",
     "pdf_nombre": "Chilinga II",
     "pdf_pagina": 33,
-    "match": { "año": 5, "orden": 2, "nombre": "Chilinga II" },
+    "match": {
+      "año": 5,
+      "orden": 2,
+      "nombre": "Chilinga II"
+    },
     "accion": "existente",
-    "nota_match": "También existe Chilinga II en 6°; se cargó en 5°."
+    "nota_match": "También existe Chilinga II en 6°; se cargó en 5°.",
+    "pdf_file": "17-chilinga-ii.pdf",
+    "pdf_pages": [
+      36,
+      36
+    ]
   },
   {
     "file": "18-makuta.json",
     "pdf_nombre": "Makuta",
     "pdf_pagina": 34,
-    "match": { "año": 4, "orden": 9, "nombre": "Ritmo de Makuta (Cuba)" },
-    "accion": "existente"
+    "match": {
+      "año": 4,
+      "orden": 9,
+      "nombre": "Ritmo de Makuta (Cuba)"
+    },
+    "accion": "existente",
+    "pdf_file": "18-makuta.pdf",
+    "pdf_pages": [
+      37,
+      37
+    ]
   },
   {
     "file": "19-solo-timbales-buscando-coco.json",
     "pdf_nombre": "Solo de Timbales — Buscando a Coco",
     "pdf_pagina": 35,
-    "match": { "año": 3, "orden": 2, "nombre": "Solo de timbales I" },
-    "accion": "existente"
+    "match": {
+      "año": 3,
+      "orden": 2,
+      "nombre": "Solo de timbales I"
+    },
+    "accion": "existente",
+    "pdf_file": "19-solo-timbales-buscando-coco.pdf",
+    "pdf_pages": [
+      38,
+      38
+    ]
   },
   {
     "file": "20-solo-tambores-chiruda.json",
     "pdf_nombre": "Solo de Tambores — Chiruda",
     "pdf_pagina": 36,
-    "match": { "año": 3, "orden": 4, "nombre": "Solo de redoblantes (Chiruda)" },
-    "accion": "existente"
+    "match": {
+      "año": 3,
+      "orden": 4,
+      "nombre": "Solo de redoblantes (Chiruda)"
+    },
+    "accion": "existente",
+    "pdf_file": "20-solo-tambores-chiruda.pdf",
+    "pdf_pages": [
+      39,
+      39
+    ]
   },
   {
     "file": "21-mongo-kuta.json",
     "pdf_nombre": "Mongo Kutá",
     "pdf_pagina": 37,
-    "match": { "año": 3, "orden": 6, "nombre": "Mongokuta I" },
-    "accion": "existente"
+    "match": {
+      "año": 3,
+      "orden": 6,
+      "nombre": "Mongokuta I"
+    },
+    "accion": "existente",
+    "pdf_file": "21-mongo-kuta.pdf",
+    "pdf_pages": [
+      40,
+      42
+    ]
   },
   {
     "file": "22-la-meta.json",
     "pdf_nombre": "La Meta",
     "pdf_pagina": 40,
-    "match": { "año": 4, "orden": 2, "nombre": "La Meta" },
-    "accion": "existente"
+    "match": {
+      "año": 4,
+      "orden": 2,
+      "nombre": "La Meta"
+    },
+    "accion": "existente",
+    "pdf_file": "22-la-meta.pdf",
+    "pdf_pages": [
+      43,
+      49
+    ]
   },
   {
     "file": "23-malamakua.json",
     "pdf_nombre": "Malamakuá",
     "pdf_pagina": 47,
-    "match": { "año": 3, "orden": 3, "nombre": "Malamakua I" },
+    "match": {
+      "año": 3,
+      "orden": 3,
+      "nombre": "Malamakua I"
+    },
     "accion": "existente",
-    "nota_match": "También existe Malamakua II (5°); se cargó en I."
+    "nota_match": "También existe Malamakua II (5°); se cargó en I.",
+    "pdf_file": "23-malamakua.pdf",
+    "pdf_pages": [
+      50,
+      51
+    ]
   },
   {
     "file": "24-solo-surdos-malamakua.json",
@@ -212,21 +403,44 @@
       "opcional": false,
       "notas": "Cuadernillo de Toques p.49"
     },
-    "accion": "nuevo"
+    "accion": "nuevo",
+    "pdf_file": "24-solo-surdos-malamakua.pdf",
+    "pdf_pages": [
+      52,
+      52
+    ]
   },
   {
     "file": "25-munequitos-i.json",
     "pdf_nombre": "Muñequitos I",
     "pdf_pagina": 50,
-    "match": { "año": 4, "orden": 5, "nombre": "Muñequitos I" },
-    "accion": "existente"
+    "match": {
+      "año": 4,
+      "orden": 5,
+      "nombre": "Muñequitos I"
+    },
+    "accion": "existente",
+    "pdf_file": "25-munequitos-i.pdf",
+    "pdf_pages": [
+      53,
+      57
+    ]
   },
   {
     "file": "26-toque-a-oxosi.json",
     "pdf_nombre": "Toque a Oxosi",
     "pdf_pagina": 55,
-    "match": { "año": 4, "orden": 6, "nombre": "Oxosi II" },
+    "match": {
+      "año": 4,
+      "orden": 6,
+      "nombre": "Oxosi II"
+    },
     "accion": "existente",
-    "nota_match": "Nombre del PDF distinto; se matcheó con Oxosi II del programa."
+    "nota_match": "Nombre del PDF distinto; se matcheó con Oxosi II del programa.",
+    "pdf_file": "26-toque-a-oxosi.pdf",
+    "pdf_pages": [
+      58,
+      61
+    ]
   }
 ]

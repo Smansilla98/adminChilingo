@@ -6,11 +6,11 @@ use App\Services\PartiturasCuadernilloImporter;
 use Illuminate\Database\Seeder;
 
 /**
- * Carga partituras v3 del Cuadernillo de Toques en programa_ritmos.medios.partitura_vexflow.
+ * Asigna los PDF del Cuadernillo de Toques a cada ProgramaRitmo (medios.partitura).
  *
- * Fuente: database/data/partituras/*.json + manifest.json
+ * Fuente: database/data/partituras-pdf/*.pdf + manifest.json
  * Uso: php artisan db:seed --class=PartiturasCuadernilloSeeder
- *      o desde el front (admin): Partituras → «Cargar cuadernillo»
+ *      o desde el front (admin): Partituras → «Cargar PDFs del cuadernillo»
  */
 class PartiturasCuadernilloSeeder extends Seeder
 {
@@ -19,13 +19,9 @@ class PartiturasCuadernilloSeeder extends Seeder
         $result = app(PartiturasCuadernilloImporter::class)->importar();
 
         foreach ($result['messages'] as $msg) {
-            if (str_starts_with($msg, 'Creado:') || str_starts_with($msg, 'Sin match') || str_starts_with($msg, 'Falta') || str_starts_with($msg, 'Partitura')) {
-                $this->command?->warn($msg);
-            } else {
-                $this->command?->line($msg);
-            }
+            $this->command?->line($msg);
         }
 
-        $this->command?->info("Listo: {$result['ok']} cargadas, {$result['fail']} fallidas, {$result['created']} creadas.");
+        $this->command?->info("Listo: {$result['ok']} PDFs asignados, {$result['fail']} fallidas, {$result['created']} toques creados.");
     }
 }

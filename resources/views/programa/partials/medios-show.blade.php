@@ -11,8 +11,10 @@
         $partituraUrl = route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'partitura']);
         $partituraInlineUrl = route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'partitura', 'inline' => 1]);
         $partituraNombre = $m['partitura']['nombre'] ?? '';
-        $partituraEsImagen = (bool) preg_match('/\.(jpe?g|png|webp)$/i', $partituraNombre);
-        $partituraEsPdf = (bool) preg_match('/\.pdf$/i', $partituraNombre);
+        $partituraEsImagen = (bool) preg_match('/\.(jpe?g|png|webp)$/i', $partituraNombre)
+            || (bool) preg_match('/\.(jpe?g|png|webp)$/i', (string) ($m['partitura']['path'] ?? ''));
+        $partituraEsPdf = (bool) preg_match('/\.pdf$/i', $partituraNombre)
+            || (bool) preg_match('/\.pdf$/i', (string) ($m['partitura']['path'] ?? ''));
     @endphp
     <div class="card mb-3">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -49,8 +51,6 @@
         </div>
     </div>
     @endif
-
-    @include('programa.partials.partitura-vexflow-show', ['medios' => $m, 'programaRitmo' => $programaRitmo])
 
     @php
         $basesConUrl = collect($m['videos_base'] ?? [])->filter(fn ($v) => !empty($v['url']));

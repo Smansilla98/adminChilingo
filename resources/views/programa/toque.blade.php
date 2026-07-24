@@ -34,8 +34,7 @@
                 @endif
             </div>
             @if(auth()->user()?->isAdmin())
-            <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-sm btn-primary me-1"><i class="bi bi-music-note-beamed"></i> Compositor</a>
-            <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-warning me-1"><i class="bi bi-cloud-upload"></i> Partitura</a>
+            <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-warning me-1"><i class="bi bi-cloud-upload"></i> Cambiar PDF</a>
             <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Editar página</a>
             @endif
         </div>
