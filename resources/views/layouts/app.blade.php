@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=7">
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=8">
 
     @stack('vite')
     @stack('styles')
@@ -91,23 +91,7 @@
     </aside>
 
     <main class="main main--maxton">
-        <header class="topbar topbar--maxton">
-            <div class="topbar-left">
-                <button type="button" class="btn nav-open-btn d-lg-none" data-open-nav aria-label="Abrir menú lateral">
-                    <i class="bi bi-list fs-4" aria-hidden="true"></i>
-                </button>
-                <div class="topbar-titles">
-                    <div class="top-kicker">BIENVENIDO</div>
-                    <div class="top-title">@yield('page-title', 'Panel')</div>
-                    <div class="top-sub">
-                        <span class="muted">{{ config('app.name', 'ITO') }}</span>
-                        <span class="dot">•</span>
-                        <span class="muted">{{ now()->locale('es')->translatedFormat('F Y') }}</span>
-                    </div>
-                </div>
-            </div>
-
-        </header>
+        @include('layouts.partials.topbar-hub')
 
         <section class="content content--maxton" id="contenido-principal" tabindex="-1">
             @if(session('success'))
@@ -194,6 +178,61 @@
     });
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') closeNav();
+    });
+})();
+</script>
+<script>
+(function () {
+    const wrap = document.querySelector('[data-hub-search]');
+    if (!wrap) return;
+    const input = wrap.querySelector('[data-hub-search-input]');
+    const box = wrap.querySelector('[data-hub-search-results]');
+    const dataEl = wrap.querySelector('[data-hub-search-data]');
+    if (!input || !box || !dataEl) return;
+    let items = [];
+    try { items = JSON.parse(dataEl.textContent || '[]'); } catch (e) { items = []; }
+
+    function render(q) {
+        const query = (q || '').trim().toLowerCase();
+        const hits = !query ? items.slice(0, 8) : items.filter(function (it) {
+            return (it.label || '').toLowerCase().indexOf(query) !== -1;
+        }).slice(0, 10);
+        if (!hits.length) {
+            box.innerHTML = '<div class="topbar-search-empty">Sin resultados</div>';
+            box.hidden = false;
+            return;
+        }
+        box.innerHTML = hits.map(function (it) {
+            return '<a class="topbar-search-item" role="option" href="' + it.href + '">' +
+                '<i class="bi ' + (it.icon || 'bi-box') + '" aria-hidden="true"></i>' +
+                '<span>' + it.label + '</span></a>';
+        }).join('');
+        box.hidden = false;
+    }
+
+    input.addEventListener('focus', function () { render(input.value); });
+    input.addEventListener('input', function () { render(input.value); });
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            box.hidden = true;
+            input.blur();
+        } else if (e.key === 'Enter') {
+            const first = box.querySelector('a.topbar-search-item');
+            if (first) {
+                e.preventDefault();
+                window.location.href = first.getAttribute('href');
+            }
+        }
+    });
+    document.addEventListener('click', function (e) {
+        if (!wrap.contains(e.target)) box.hidden = true;
+    });
+    document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+            e.preventDefault();
+            input.focus();
+            render(input.value);
+        }
     });
 })();
 </script>

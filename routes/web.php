@@ -28,7 +28,10 @@ use App\Http\Controllers\RecordatorioWhatsAppController;
 use App\Http\Controllers\RecordatorioMailController;
 use App\Http\Controllers\DisenoController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoGestionController;
+use App\Http\Controllers\ComprobanteCuotaAlumnoPublicController;
 use App\Http\Controllers\ProfesorPagoCuotaController;
+use App\Http\Controllers\BibliotecaPublicController;
+use App\Http\Controllers\BibliotecaAdminController;
 use App\Models\Bloque;
 
 // Carga pública de comprobante de cuota (sin sesión)
@@ -39,6 +42,14 @@ Route::prefix('pagar-cuota')->middleware('throttle:30,1')->group(function () {
     Route::get('/api/bloques', [ComprobanteCuotaAlumnoPublicController::class, 'apiBloques'])->name('comprobante-cuota-public.api.bloques');
     Route::get('/api/alumnos', [ComprobanteCuotaAlumnoPublicController::class, 'apiAlumnos'])->name('comprobante-cuota-public.api.alumnos');
     Route::get('/api/alumno-otros-bloques', [ComprobanteCuotaAlumnoPublicController::class, 'apiOtrosBloquesAlumno'])->name('comprobante-cuota-public.api.alumno-otros-bloques');
+});
+
+// Biblioteca pública (sin login)
+Route::prefix('biblioteca')->middleware('throttle:60,1')->group(function () {
+    Route::get('/', [BibliotecaPublicController::class, 'index'])->name('biblioteca.index');
+    Route::get('/subir', [BibliotecaPublicController::class, 'create'])->name('biblioteca.create');
+    Route::post('/', [BibliotecaPublicController::class, 'store'])->middleware('throttle:10,1')->name('biblioteca.store');
+    Route::get('/{bibliotecaItem}/archivo', [BibliotecaPublicController::class, 'archivo'])->name('biblioteca.archivo')->whereNumber('bibliotecaItem');
 });
 
 // Rutas públicas
@@ -93,6 +104,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/programa/partituras/cargar-cuadernillo', [ProgramaController::class, 'importarCuadernillo'])->name('programa.partituras.importar-cuadernillo');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
+
+        Route::get('/biblioteca/admin', [BibliotecaAdminController::class, 'index'])->name('biblioteca.admin.index');
+        Route::post('/biblioteca/admin/{bibliotecaItem}/toggle', [BibliotecaAdminController::class, 'toggle'])->name('biblioteca.admin.toggle')->whereNumber('bibliotecaItem');
+        Route::delete('/biblioteca/admin/{bibliotecaItem}', [BibliotecaAdminController::class, 'destroy'])->name('biblioteca.admin.destroy')->whereNumber('bibliotecaItem');
 
         // Alumnos
         Route::get('/alumnos/import', [AlumnoController::class, 'importForm'])->name('alumnos.import.form');

@@ -52,11 +52,13 @@
                 'programa.index', 'programa.seccion.*', 'programa.partituras.*',
                 'programa.toque.partitura.*', 'programa.toque.compositor.*',
                 'programa.toque.edit', 'programa.toque.update', 'disenos.*',
+                'biblioteca.admin.*',
             ],
             'links' => array_filter([
                 auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
                 auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
                 auth()->user()->isAdmin() && auth()->user()->tieneAccesoModulo('admin.disenos') ? ['route' => 'disenos.index', 'label' => 'Diseño', 'pattern' => 'disenos.*', 'badge' => 'nuevo'] : null,
+                auth()->user()->isAdmin() ? ['route' => 'biblioteca.admin.index', 'label' => 'Biblioteca', 'pattern' => 'biblioteca.admin.*'] : null,
             ]),
         ],
         'config' => [

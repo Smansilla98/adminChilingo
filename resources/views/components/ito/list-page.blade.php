@@ -1,11 +1,15 @@
 @props([
     'title' => null,
     'subtitle' => null,
+    'eyebrow' => null,
 ])
-<div {{ $attributes->merge(['class' => 'ito-page']) }}>
+<div {{ $attributes->merge(['class' => 'ito-page hub-page']) }}>
     @if($title || isset($actions))
-        <div class="ito-page-head">
+        <div class="ito-page-head hub-page-head">
             <div>
+                @if($eyebrow || $subtitle)
+                    <p class="hub-eyebrow">{{ $eyebrow ?: 'ITO · Gestión' }}</p>
+                @endif
                 @if($title)
                     <h1 class="ito-page-title">{{ $title }}</h1>
                 @endif
