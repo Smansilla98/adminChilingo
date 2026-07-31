@@ -60,4 +60,10 @@
         {{ $items->links() }}
     </div>
 @endif
+
+@include('biblioteca.partials.modal')
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/biblioteca-modal.js') }}?v=1"></script>
+@endpush

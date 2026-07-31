@@ -1,30 +1,49 @@
 @php
     $href = $item->archivoUrl();
     $tags = $item->tags ?? collect();
+    $esPng = str_contains(strtolower((string) ($item->mime ?? '')), 'png')
+        || str_ends_with(strtolower((string) ($item->nombre_original ?? '')), '.png')
+        || str_ends_with(strtolower((string) ($item->path ?? '')), '.png');
 @endphp
-<article class="biblio-card" data-tipo="{{ $item->tipo }}">
-    <div class="biblio-card-media">
+<article
+    class="biblio-card"
+    data-tipo="{{ $item->tipo }}"
+    data-biblio-open
+    data-biblio-tipo="{{ $item->tipo }}"
+    data-biblio-title="{{ e($item->titulo) }}"
+    data-biblio-desc="{{ e($item->descripcion ?? '') }}"
+    data-biblio-src="{{ $href }}"
+    data-biblio-mime="{{ e($item->mime ?? '') }}"
+    data-biblio-png="{{ $esPng ? '1' : '0' }}"
+    data-biblio-autor="{{ e($item->autor_nombre ?? '') }}"
+    data-biblio-tags="{{ e($tags->map(fn ($t) => '#'.$t->nombre)->implode(' ')) }}"
+    role="button"
+    tabindex="0"
+    aria-label="Ver {{ $item->titulo }}"
+>
+    <div class="biblio-card-media {{ $esPng ? 'is-png' : '' }}">
         @if($item->esImagen() && $href)
-            <a href="{{ $href }}" target="_blank" rel="noopener">
-                <img src="{{ $href }}" alt="{{ $item->titulo }}" loading="lazy">
-            </a>
+            <img src="{{ $href }}" alt="{{ $item->titulo }}" loading="lazy">
         @elseif($item->esVideo() && $href)
-            <video controls preload="metadata" src="{{ $href }}"></video>
+            <div class="biblio-card-video">
+                <video muted playsinline preload="metadata" src="{{ $href }}#t=0.1"></video>
+                <span class="biblio-card-play" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
+            </div>
         @elseif($item->esAudio() && $href)
             <div class="biblio-card-audio">
                 <i class="bi bi-music-note-beamed" aria-hidden="true"></i>
-                <audio controls preload="metadata" src="{{ $href }}"></audio>
+                <span>Audio</span>
             </div>
         @elseif($item->esPdf() && $href)
-            <a class="biblio-card-file" href="{{ $href }}" target="_blank" rel="noopener">
+            <div class="biblio-card-file">
                 <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
-                <span>Ver PDF</span>
-            </a>
+                <span>PDF</span>
+            </div>
         @elseif($item->esEnlace() && $href)
-            <a class="biblio-card-file" href="{{ $href }}" target="_blank" rel="noopener">
+            <div class="biblio-card-file">
                 <i class="bi bi-link-45deg" aria-hidden="true"></i>
-                <span>Abrir enlace</span>
-            </a>
+                <span>Enlace</span>
+            </div>
         @else
             <div class="biblio-card-file">
                 <i class="bi bi-file-earmark" aria-hidden="true"></i>
@@ -41,7 +60,7 @@
         @if($tags->isNotEmpty())
             <div class="biblio-card-tags">
                 @foreach($tags as $t)
-                    <a href="{{ route('biblioteca.index', ['tag' => $t->slug]) }}">#{{ $t->nombre }}</a>
+                    <a href="{{ route('biblioteca.index', ['tag' => $t->slug]) }}" data-biblio-ignore>#{{ $t->nombre }}</a>
                 @endforeach
             </div>
         @endif

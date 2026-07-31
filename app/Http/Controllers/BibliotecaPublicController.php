@@ -96,10 +96,10 @@ class BibliotecaPublicController extends Controller
             'autor_nombre' => 'nullable|string|max:120',
             'hashtags' => 'nullable|string|max:400',
             'url' => 'nullable|url|max:500',
-            'archivo' => 'nullable|file|max:20480|mimes:jpg,jpeg,png,webp,gif,mp4,webm,mp3,wav,ogg,m4a,pdf',
+            'archivo' => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif,mp4,webm,mov,mp3,wav,ogg,m4a,pdf',
         ], [
-            'archivo.max' => 'El archivo no puede superar 20 MB.',
-            'archivo.mimes' => 'Formatos permitidos: imagen, video, audio o PDF.',
+            'archivo.max' => 'El archivo no puede superar 50 MB.',
+            'archivo.mimes' => 'Formatos permitidos: PNG/JPG/WebP, MP4/WebM/MOV, audio o PDF.',
         ]);
 
         if (empty($validated['url']) && ! $request->hasFile('archivo')) {
@@ -115,7 +115,18 @@ class BibliotecaPublicController extends Controller
         if ($request->hasFile('archivo')) {
             $file = $request->file('archivo');
             $ext = strtolower((string) $file->getClientOriginalExtension());
-            $mime = $file->getMimeType();
+            // Preferir extensión real del cliente para no perder .png
+            if ($ext === '' && $file->guessExtension()) {
+                $ext = strtolower((string) $file->guessExtension());
+            }
+            $mime = $file->getMimeType() ?: $file->getClientMimeType();
+            // Algunos browsers mandan application/octet-stream en PNG/MP4
+            if (($mime === 'application/octet-stream' || ! $mime) && $ext === 'png') {
+                $mime = 'image/png';
+            }
+            if (($mime === 'application/octet-stream' || ! $mime) && in_array($ext, ['mp4', 'm4v', 'mov'], true)) {
+                $mime = $ext === 'mov' ? 'video/quicktime' : 'video/mp4';
+            }
             $nombreOriginal = $file->getClientOriginalName();
             $bytes = $file->getSize();
             $filename = (string) Str::uuid().($ext !== '' ? '.'.$ext : '');
@@ -163,9 +174,29 @@ class BibliotecaPublicController extends Controller
         }
 
         $nombre = $bibliotecaItem->nombre_original ?: ('material-'.$bibliotecaItem->id);
+        $mime = $bibliotecaItem->mime;
+        if (! $mime) {
+            $ext = strtolower(pathinfo($bibliotecaItem->path, PATHINFO_EXTENSION));
+            $mime = match ($ext) {
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'webp' => 'image/webp',
+                'gif' => 'image/gif',
+                'mp4', 'm4v' => 'video/mp4',
+                'webm' => 'video/webm',
+                'pdf' => 'application/pdf',
+                default => null,
+            };
+        }
 
-        return Storage::disk('comprobantes')->response($bibliotecaItem->path, $nombre, [
+        $headers = [
             'Content-Disposition' => 'inline; filename="'.addslashes($nombre).'"',
-        ]);
+            'Cache-Control' => 'public, max-age=86400',
+        ];
+        if ($mime) {
+            $headers['Content-Type'] = $mime;
+        }
+
+        return Storage::disk('comprobantes')->response($bibliotecaItem->path, $nombre, $headers);
     }
 }

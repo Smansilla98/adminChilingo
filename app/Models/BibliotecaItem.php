@@ -96,7 +96,7 @@ class BibliotecaItem extends Model
         if (str_starts_with($mime, 'image/') || in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
             return 'imagen';
         }
-        if (str_starts_with($mime, 'video/') || in_array($ext, ['mp4', 'webm', 'mov'], true)) {
+        if (str_starts_with($mime, 'video/') || in_array($ext, ['mp4', 'webm', 'mov', 'm4v'], true)) {
             return 'video';
         }
         if (str_starts_with($mime, 'audio/') || in_array($ext, ['mp3', 'wav', 'ogg', 'm4a'], true)) {

@@ -32,8 +32,8 @@
             </div>
             <div class="mb-3">
                 <label class="form-label" for="archivo">Archivo</label>
-                <input type="file" name="archivo" id="archivo" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mp3,.wav,.ogg,.m4a,.pdf,image/*,video/*,audio/*,application/pdf">
-                <div class="form-text">Imagen, video, audio o PDF · máx. 20 MB</div>
+                <input type="file" name="archivo" id="archivo" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.mp3,.wav,.ogg,.m4a,.pdf,image/png,image/jpeg,image/webp,video/mp4,video/webm,audio/*,application/pdf">
+                <div class="form-text">PNG (con transparencia), JPG, video MP4/WebM, audio o PDF · máx. 50 MB</div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="url">O un enlace</label>
