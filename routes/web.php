@@ -22,6 +22,7 @@ use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\AyudaController;
+use App\Http\Controllers\AparienciaController;
 use App\Http\Controllers\AccesosController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
@@ -70,6 +71,11 @@ Route::middleware(['auth'])->group(function () {
 
     // Ayuda (guía de uso)
     Route::get('/ayuda', [AyudaController::class, 'index'])->middleware('modulo:ayuda')->name('ayuda');
+
+    // Apariencia (preferencia visual por usuario)
+    Route::get('/apariencia', [AparienciaController::class, 'edit'])->name('apariencia.edit');
+    Route::post('/apariencia', [AparienciaController::class, 'update'])->name('apariencia.update');
+    Route::post('/apariencia/restablecer', [AparienciaController::class, 'reset'])->name('apariencia.reset');
 
     // Programa oficial — accesible para todos; edición solo admin
     Route::get('/programa', [ProgramaController::class, 'index'])->middleware('modulo:programa')->name('programa.index');

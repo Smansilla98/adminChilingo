@@ -27,6 +27,7 @@
             ['Moderar biblioteca', 'biblioteca.admin.index', 'bi-shield-check', null],
             ['Diseño', 'disenos.index', 'bi-palette', 'admin.disenos'],
             ['Accesos', 'accesos.index', 'bi-shield-lock', null],
+            ['Apariencia', 'apariencia.edit', 'bi-palette2', null],
             ['Ayuda', 'ayuda', 'bi-question-circle', 'ayuda'],
             ['Mis bloques', 'profesor.bloques', 'bi-collection', 'profesor.mis_bloques'],
             ['Mis alumnos', 'profesor.alumnos', 'bi-people', 'profesor.mis_alumnos'],

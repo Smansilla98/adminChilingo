@@ -64,9 +64,10 @@
         'config' => [
             'label' => 'Configuración',
             'accent' => 'config',
-            'patterns' => ['accesos.*', 'ayuda'],
+            'patterns' => ['accesos.*', 'ayuda', 'apariencia.*'],
             'links' => array_filter([
                 auth()->user()->isAdmin() ? ['route' => 'accesos.index', 'label' => 'Accesos', 'pattern' => 'accesos.*'] : null,
+                ['route' => 'apariencia.edit', 'label' => 'Apariencia', 'pattern' => 'apariencia.*'],
                 auth()->user()->tieneAccesoModulo('ayuda') ? ['route' => 'ayuda', 'label' => 'Ayuda', 'pattern' => 'ayuda'] : null,
             ]),
         ],
@@ -91,6 +92,10 @@
         auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
         auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
         auth()->user()->tieneAccesoModulo('calendario') ? ['route' => 'calendario.index', 'label' => 'Calendario', 'pattern' => 'calendario.*'] : null,
+    ]);
+
+    $configLinksProfesor = array_filter([
+        ['route' => 'apariencia.edit', 'label' => 'Apariencia', 'pattern' => 'apariencia.*'],
         auth()->user()->tieneAccesoModulo('ayuda') ? ['route' => 'ayuda', 'label' => 'Ayuda', 'pattern' => 'ayuda'] : null,
     ]);
 @endphp
@@ -150,4 +155,23 @@
             @endforeach
         </div>
     </div>
+    @if(count($configLinksProfesor) > 0)
+        <div class="nav-group {{ request()->routeIs('apariencia.*', 'ayuda') ? 'open' : '' }}" data-accent="config">
+            <button type="button" class="nav-group-btn" aria-expanded="{{ request()->routeIs('apariencia.*', 'ayuda') ? 'true' : 'false' }}">
+                <span class="nav-group-dot" aria-hidden="true"></span>
+                <span class="nav-group-label">Configuración</span>
+                <svg class="nav-group-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+            </button>
+            <div class="nav-group-links">
+                @foreach($configLinksProfesor as $link)
+                    <a class="side-link side-link--nested {{ request()->routeIs($link['pattern']) ? 'active' : '' }}"
+                       href="{{ route($link['route']) }}"
+                       title="{{ $link['label'] }}"
+                       @if(request()->routeIs($link['pattern'])) aria-current="page" @endif>
+                        <span class="side-link-text">{{ $link['label'] }}</span>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
 @endif

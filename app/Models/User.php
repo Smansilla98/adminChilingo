@@ -41,6 +41,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'modulos_access' => 'array',
+        'apariencia_json' => 'array',
     ];
 
     /**
@@ -54,7 +55,21 @@ class User extends Authenticatable
             // legacy (kept for compatibility)
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'modulos_access' => 'array',
+            'apariencia_json' => 'array',
         ];
+    }
+
+    /**
+     * Preferencia visual del usuario (tokens: accent, font_display, font_body).
+     *
+     * @return array{accent: string, font_display: string, font_body: string}
+     */
+    public function aparienciaTema(): array
+    {
+        return \App\Support\AparienciaTema::normalizar(
+            is_array($this->apariencia_json) ? $this->apariencia_json : null
+        );
     }
 
     /**
