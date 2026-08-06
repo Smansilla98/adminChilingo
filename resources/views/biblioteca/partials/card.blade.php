@@ -4,6 +4,14 @@
     $esPng = str_contains(strtolower((string) ($item->mime ?? '')), 'png')
         || str_ends_with(strtolower((string) ($item->nombre_original ?? '')), '.png')
         || str_ends_with(strtolower((string) ($item->path ?? '')), '.png');
+    $toqueLabel = $item->etiquetaToqueInstrumento();
+    $toqueHref = $item->toque ? route('programa.toque.show', $item->toque) : '';
+    $biblioToqueHref = $item->toque
+        ? route('biblioteca.index', array_filter([
+            'toque' => $item->toque->slug,
+            'instrumento' => $item->instrumento ?: null,
+        ]))
+        : '';
 @endphp
 <article
     class="biblio-card"
@@ -17,6 +25,9 @@
     data-biblio-png="{{ $esPng ? '1' : '0' }}"
     data-biblio-autor="{{ e($item->autor_nombre ?? '') }}"
     data-biblio-tags="{{ e($tags->map(fn ($t) => '#'.$t->nombre)->implode(' ')) }}"
+    data-biblio-toque="{{ e($toqueLabel ?? '') }}"
+    data-biblio-toque-href="{{ e($toqueHref) }}"
+    data-biblio-filter-href="{{ e($biblioToqueHref) }}"
     role="button"
     tabindex="0"
     aria-label="Ver {{ $item->titulo }}"
@@ -54,6 +65,11 @@
     </div>
     <div class="biblio-card-body">
         <h2 class="biblio-card-title">{{ $item->titulo }}</h2>
+        @if($toqueLabel)
+            <a class="biblio-card-toque" href="{{ $biblioToqueHref }}" data-biblio-ignore title="Filtrar por este toque">
+                <i class="bi bi-music-note-list" aria-hidden="true"></i> {{ $toqueLabel }}
+            </a>
+        @endif
         @if($item->descripcion)
             <p class="biblio-card-desc">{{ \Illuminate\Support\Str::limit($item->descripcion, 120) }}</p>
         @endif

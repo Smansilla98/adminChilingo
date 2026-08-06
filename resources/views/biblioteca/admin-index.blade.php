@@ -42,6 +42,7 @@
                     <thead>
                         <tr>
                             <th>Título</th>
+                            <th>Toque</th>
                             <th>Tipo</th>
                             <th>Tags</th>
                             <th>Estado</th>
@@ -56,6 +57,16 @@
                                     <div class="fw-semibold">{{ $item->titulo }}</div>
                                     @if($item->autor_nombre)
                                         <div class="small text-muted">{{ $item->autor_nombre }}</div>
+                                    @endif
+                                </td>
+                                <td class="small">
+                                    @if($item->toque)
+                                        <div>{{ $item->toque->nombre }}</div>
+                                        @if($item->instrumento)
+                                            <div class="text-muted">{{ \App\Models\BibliotecaItem::etiquetaInstrumento($item->instrumento) }}</div>
+                                        @endif
+                                    @else
+                                        <span class="text-muted">—</span>
                                     @endif
                                 </td>
                                 <td>{{ \App\Models\BibliotecaItem::TIPOS[$item->tipo] ?? $item->tipo }}</td>
@@ -88,7 +99,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-muted text-center">Sin aportes todavía.</td></tr>
+                            <tr><td colspan="7" class="text-muted text-center">Sin aportes todavía.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

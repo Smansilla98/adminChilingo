@@ -5,6 +5,8 @@
     const media = modal.querySelector('[data-biblio-media]');
     const titleEl = modal.querySelector('[data-biblio-title]');
     const descEl = modal.querySelector('[data-biblio-desc]');
+    const toqueEl = modal.querySelector('[data-biblio-toque]');
+    const toqueLink = modal.querySelector('[data-biblio-toque-link]');
     const tagsEl = modal.querySelector('[data-biblio-tags]');
     const autorEl = modal.querySelector('[data-biblio-autor]');
     const rawLink = modal.querySelector('[data-biblio-open-raw]');
@@ -30,12 +32,33 @@
         const desc = card.getAttribute('data-biblio-desc') || '';
         const tags = card.getAttribute('data-biblio-tags') || '';
         const autor = card.getAttribute('data-biblio-autor') || '';
+        const toque = card.getAttribute('data-biblio-toque') || '';
+        const toqueHref = card.getAttribute('data-biblio-toque-href') || '';
         const isPng = card.getAttribute('data-biblio-png') === '1';
 
         if (!src) return;
 
         stopMedia();
         titleEl.textContent = title;
+
+        if (toqueEl) {
+            if (toque) {
+                toqueEl.textContent = toque;
+                toqueEl.hidden = false;
+            } else {
+                toqueEl.textContent = '';
+                toqueEl.hidden = true;
+            }
+        }
+
+        if (toqueLink) {
+            if (toqueHref) {
+                toqueLink.href = toqueHref;
+                toqueLink.hidden = false;
+            } else {
+                toqueLink.hidden = true;
+            }
+        }
 
         if (desc) {
             descEl.textContent = desc;

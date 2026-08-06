@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\ProgramaRitmoMedios;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
 
@@ -30,20 +32,72 @@ class BibliotecaItem extends Model
         'autor_nombre',
         'estado',
         'ip',
+        'programa_ritmo_id',
+        'instrumento',
     ];
 
     protected $casts = [
         'bytes' => 'integer',
+        'programa_ritmo_id' => 'integer',
     ];
+
+    /**
+     * Instrumentos / roles asociados a un aporte (mismas claves del programa).
+     *
+     * @return array<string, string>
+     */
+    public static function instrumentosOpciones(): array
+    {
+        return array_merge(
+            ProgramaRitmoMedios::VIDEOS_BASE,
+            ProgramaRitmoMedios::INSTRUMENTOS_OPCIONALES,
+            ProgramaRitmoMedios::VIDEOS_GRUPO,
+        );
+    }
+
+    public static function etiquetaInstrumento(?string $clave): ?string
+    {
+        if ($clave === null || $clave === '') {
+            return null;
+        }
+
+        return self::instrumentosOpciones()[$clave] ?? $clave;
+    }
 
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(BibliotecaTag::class, 'biblioteca_item_tag');
     }
 
+    public function toque(): BelongsTo
+    {
+        return $this->belongsTo(ProgramaRitmo::class, 'programa_ritmo_id');
+    }
+
     public function scopePublicados(Builder $q): Builder
     {
         return $q->where('estado', 'publicado');
+    }
+
+    public function scopeDeToque(Builder $q, int|ProgramaRitmo $toque): Builder
+    {
+        $id = $toque instanceof ProgramaRitmo ? $toque->id : $toque;
+
+        return $q->where('programa_ritmo_id', $id);
+    }
+
+    public function etiquetaToqueInstrumento(): ?string
+    {
+        $partes = [];
+        if ($this->toque) {
+            $partes[] = $this->toque->nombre;
+        }
+        $inst = self::etiquetaInstrumento($this->instrumento);
+        if ($inst) {
+            $partes[] = $inst;
+        }
+
+        return $partes !== [] ? implode(' · ', $partes) : null;
     }
 
     public function esImagen(): bool

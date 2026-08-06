@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BibliotecaItem;
 use App\Models\ProgramaRitmo;
 use App\Models\ProgramaSeccion;
 use App\Services\PartiturasCuadernilloImporter;
@@ -242,7 +243,27 @@ class ProgramaController extends Controller
 
         $medios = $programaRitmo->mediosNormalizados();
 
-        return view('programa.toque', compact('programaRitmo', 'años', 'anterior', 'siguiente', 'objetivosAnio', 'medios'));
+        $bibliotecaItems = collect();
+        if (Schema::hasTable('biblioteca_items')
+            && Schema::hasColumn('biblioteca_items', 'programa_ritmo_id')) {
+            $bibliotecaItems = BibliotecaItem::query()
+                ->publicados()
+                ->deToque($programaRitmo)
+                ->with(['tags', 'toque'])
+                ->latest()
+                ->limit(24)
+                ->get();
+        }
+
+        return view('programa.toque', compact(
+            'programaRitmo',
+            'años',
+            'anterior',
+            'siguiente',
+            'objetivosAnio',
+            'medios',
+            'bibliotecaItems'
+        ));
     }
 
     public function editToque(ProgramaRitmo $programaRitmo)

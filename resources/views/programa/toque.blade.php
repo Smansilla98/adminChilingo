@@ -65,6 +65,38 @@
 
 @include('programa.partials.medios-show', ['programaRitmo' => $programaRitmo, 'medios' => $medios ?? []])
 
+{{-- Material de la comunidad (biblioteca pública asociado a este toque) --}}
+@php $bibliotecaItems = $bibliotecaItems ?? collect(); @endphp
+<section class="card mb-3">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <strong class="small mb-0">Material de la comunidad</strong>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('biblioteca.create', ['toque' => $programaRitmo->slug]) }}" class="btn btn-sm btn-primary">
+                <i class="bi bi-cloud-upload"></i> Subir para este toque
+            </a>
+            <a href="{{ route('biblioteca.index', ['toque' => $programaRitmo->slug]) }}" class="btn btn-sm btn-outline-secondary">
+                Ver en biblioteca
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        @if($bibliotecaItems->isEmpty())
+            <p class="text-muted small mb-0">Todavía no hay aportes asociados a <strong>{{ $programaRitmo->nombre }}</strong>. Podés subir un video, audio o foto y marcarlo con el toque (y el instrumento, si aplica).</p>
+        @else
+            <div class="biblio-toque-grid">
+                @foreach($bibliotecaItems as $item)
+                    @include('biblioteca.partials.card', ['item' => $item])
+                @endforeach
+            </div>
+            @if($bibliotecaItems->count() >= 24)
+                <div class="mt-3">
+                    <a href="{{ route('biblioteca.index', ['toque' => $programaRitmo->slug]) }}" class="small">Ver todos los aportes de este toque →</a>
+                </div>
+            @endif
+        @endif
+    </div>
+</section>
+
 @foreach($secciones as $i => $sec)
 @if(filled($sec['titulo'] ?? null) || filled($sec['contenido'] ?? null))
 <section class="card mb-3 programa-seccion-profund">
@@ -124,7 +156,15 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=3">
+<link rel="stylesheet" href="{{ asset('css/biblioteca.css') }}?v=3">
 @endpush
+
+@if(($bibliotecaItems ?? collect())->isNotEmpty())
+@include('biblioteca.partials.modal')
+@push('scripts')
+<script src="{{ asset('js/biblioteca-modal.js') }}?v=2"></script>
+@endpush
+@endif
 
 @push('vite')
 @vite(['resources/js/programa-partitura.js'])

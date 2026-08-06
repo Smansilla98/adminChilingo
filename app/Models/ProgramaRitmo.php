@@ -51,6 +51,11 @@ class ProgramaRitmo extends Model
         return 'slug';
     }
 
+    public function bibliotecaItems()
+    {
+        return $this->hasMany(BibliotecaItem::class, 'programa_ritmo_id');
+    }
+
     public static function años(): array
     {
         return [

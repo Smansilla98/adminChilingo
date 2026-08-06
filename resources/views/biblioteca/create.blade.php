@@ -3,14 +3,27 @@
 @section('title', 'Subir material')
 
 @section('content')
+@php
+    $años = \App\Models\ProgramaRitmo::años();
+@endphp
 <div class="biblio-hero biblio-hero--compact">
     <div>
         <p class="biblio-eyebrow">Aporte abierto</p>
         <h1>Subir a la biblioteca</h1>
-        <p class="biblio-lead">No necesitás cuenta. Agregá hashtags para que otros lo encuentren (#samba #murga).</p>
+        <p class="biblio-lead">No necesitás cuenta. Asociá el material a un toque del programa (ej. Sacateca · Timbal) para que quede vinculado.</p>
     </div>
     <a href="{{ route('biblioteca.index') }}" class="btn btn-secondary btn-sm">← Volver a explorar</a>
 </div>
+
+@if($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach($errors->all() as $e)
+                <li>{{ $e }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
 <form action="{{ route('biblioteca.store') }}" method="POST" enctype="multipart/form-data" class="biblio-form">
     @csrf
@@ -24,12 +37,44 @@
         <div class="biblio-form-main">
             <div class="mb-3">
                 <label class="form-label" for="titulo">Título *</label>
-                <input type="text" name="titulo" id="titulo" class="form-control" required maxlength="180" value="{{ old('titulo') }}" placeholder="Ej. Ensayo bloque lunes">
+                <input type="text" name="titulo" id="titulo" class="form-control" required maxlength="180" value="{{ old('titulo') }}" placeholder="Ej. Timbal — Sacateca, ensayo">
             </div>
             <div class="mb-3">
                 <label class="form-label" for="descripcion">Descripción</label>
                 <textarea name="descripcion" id="descripcion" class="form-control" rows="3" maxlength="2000" placeholder="Contexto opcional…">{{ old('descripcion') }}</textarea>
             </div>
+
+            <div class="biblio-form-assoc mb-3">
+                <div class="form-label mb-2">Asociación al programa</div>
+                <div class="row g-2">
+                    <div class="col-md-7">
+                        <label class="form-label" for="toque">Toque</label>
+                        <select name="toque" id="toque" class="form-select">
+                            <option value="">Sin asociar a un toque</option>
+                            @foreach($toques->groupBy('año') as $anio => $grupo)
+                                <optgroup label="{{ $años[$anio] ?? ($anio.'° Año') }}">
+                                    @foreach($grupo as $t)
+                                        <option value="{{ $t->slug }}" @selected($toquePre === $t->slug)>
+                                            {{ $t->orden }}. {{ $t->nombre }}
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                        <div class="form-text">Opcional, pero recomendado para encontrar el material después.</div>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" for="instrumento">Instrumento / rol</label>
+                        <select name="instrumento" id="instrumento" class="form-select">
+                            <option value="">Cualquiera / no aplica</option>
+                            @foreach($instrumentos as $clave => $etiqueta)
+                                <option value="{{ $clave }}" @selected($instrumentoPre === $clave)>{{ $etiqueta }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="mb-3">
                 <label class="form-label" for="archivo">Archivo</label>
                 <input type="file" name="archivo" id="archivo" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.mp3,.wav,.ogg,.m4a,.pdf,image/png,image/jpeg,image/webp,video/mp4,video/webm,audio/*,application/pdf">
@@ -43,8 +88,8 @@
         <aside class="biblio-form-side">
             <div class="mb-3">
                 <label class="form-label" for="hashtags">Hashtags</label>
-                <input type="text" name="hashtags" id="hashtags" class="form-control" value="{{ old('hashtags') }}" placeholder="#samba #chilinga #ensayo">
-                <div class="form-text">Separá con espacios. Máx. 12 tags.</div>
+                <input type="text" name="hashtags" id="hashtags" class="form-control" value="{{ old('hashtags') }}" placeholder="#ensayo #show">
+                <div class="form-text">Separá con espacios. Máx. 12 tags. El toque ya se elige arriba.</div>
             </div>
             @if($tagsPopulares->isNotEmpty())
             <div class="mb-3">
@@ -72,16 +117,17 @@
 <script>
 (function () {
     const input = document.getElementById('hashtags');
-    if (!input) return;
-    document.querySelectorAll('[data-tag-suggest]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const tag = btn.getAttribute('data-tag-suggest');
-            const cur = (input.value || '').trim();
-            if (cur.toLowerCase().indexOf(tag.toLowerCase()) !== -1) return;
-            input.value = cur ? (cur + ' ' + tag) : tag;
-            input.focus();
+    if (input) {
+        document.querySelectorAll('[data-tag-suggest]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const tag = btn.getAttribute('data-tag-suggest');
+                const cur = (input.value || '').trim();
+                if (cur.toLowerCase().indexOf(tag.toLowerCase()) !== -1) return;
+                input.value = cur ? (cur + ' ' + tag) : tag;
+                input.focus();
+            });
         });
-    });
+    }
 })();
 </script>
 @endpush

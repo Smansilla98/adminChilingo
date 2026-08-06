@@ -26,11 +26,12 @@ class BibliotecaAdminController extends Controller
         $q = trim((string) $request->query('q', ''));
         $estado = trim((string) $request->query('estado', ''));
 
-        $query = BibliotecaItem::query()->with('tags')->latest();
+        $query = BibliotecaItem::query()->with(['tags', 'toque'])->latest();
         if ($q !== '') {
             $query->where(function ($w) use ($q) {
                 $w->where('titulo', 'like', '%'.$q.'%')
-                    ->orWhere('autor_nombre', 'like', '%'.$q.'%');
+                    ->orWhere('autor_nombre', 'like', '%'.$q.'%')
+                    ->orWhereHas('toque', fn ($t) => $t->where('nombre', 'like', '%'.$q.'%'));
             });
         }
         if (in_array($estado, ['publicado', 'oculto'], true)) {
