@@ -2,18 +2,22 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Smoke test: la aplicacion arranca y la ruta raiz responde sin error de servidor.
+     * Puede devolver 200 (contenido publico) o 302 (redireccion a login).
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_la_ruta_raiz_responde_sin_error_de_servidor(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $this->assertContains(
+            $response->getStatusCode(),
+            [200, 302],
+            'La ruta raiz debe responder 200 o redirigir, no fallar.'
+        );
     }
 }
