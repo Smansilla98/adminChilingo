@@ -35,6 +35,16 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Compilar assets del frontend (Vite)
+        run: |
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+          npm run build
+
       - name: Verificar formato de codigo (Pint)
         run: vendor/bin/pint --test
 
