@@ -1,5 +1,7 @@
 # Sistema de Gestión Administrativa - La Chilinga
 
+[![CI](https://github.com/Smansilla98/adminChilingo/actions/workflows/ci.yml/badge.svg)](https://github.com/Smansilla98/adminChilingo/actions/workflows/ci.yml)
+
 Sistema de gestión administrativa para la escuela de percusión La Chilinga, fundada por Dani Buira.
 
 ## 🚀 Características

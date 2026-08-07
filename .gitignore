@@ -22,3 +22,13 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Nunca commitear entornos ni volcados de variables (auditoria 2026-08)
+.env
+.env.*
+!.env.example
+ENV_*.txt
+*.pem
+*.key
+storage/*.key
+database/data/partituras-pdf/
