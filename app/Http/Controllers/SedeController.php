@@ -11,6 +11,7 @@ class SedeController extends Controller
     public function index()
     {
         $sedes = Sede::orderBy('nombre')->paginate(20);
+
         return view('sedes.index', compact('sedes'));
     }
 
@@ -51,6 +52,7 @@ class SedeController extends Controller
     public function show(Sede $sede)
     {
         $sede->load(['bloques.profesor', 'alumnos', 'eventos']);
+
         return view('sedes.show', compact('sede'));
     }
 
@@ -62,7 +64,7 @@ class SedeController extends Controller
     public function update(Request $request, Sede $sede)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:255|unique:sedes,nombre,' . $sede->id,
+            'nombre' => 'required|string|max:255|unique:sedes,nombre,'.$sede->id,
             'direccion' => 'nullable|string|max:255',
             'tipo_propiedad' => 'nullable|string|in:propia,alquilada,compartida,otro',
             'costo_alquiler_mensual' => 'nullable|numeric|min:0',
@@ -117,6 +119,7 @@ class SedeController extends Controller
                 $allowed[] = 'liquidacion_porc_docente';
             }
         }
+
         return array_intersect_key($validated, array_flip($allowed));
     }
 }

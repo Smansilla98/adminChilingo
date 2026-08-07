@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         $addColumnWithFk = function (string $tableName) {
-            if (!Schema::hasTable($tableName) || Schema::hasColumn($tableName, 'user_id')) {
+            if (! Schema::hasTable($tableName) || Schema::hasColumn($tableName, 'user_id')) {
                 return;
             }
             try {
@@ -21,7 +21,7 @@ return new class extends Migration
                     $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->nullOnDelete();
                 });
             } catch (\Throwable $e) {
-                if (!Schema::hasColumn($tableName, 'user_id')) {
+                if (! Schema::hasColumn($tableName, 'user_id')) {
                     Schema::table($tableName, function (Blueprint $table) {
                         $table->unsignedBigInteger('user_id')->nullable()->after('id');
                     });
@@ -36,10 +36,10 @@ return new class extends Migration
     public function down(): void
     {
         foreach (['profesores', 'alumnos'] as $tableName) {
-            if (!Schema::hasTable($tableName) || !Schema::hasColumn($tableName, 'user_id')) {
+            if (! Schema::hasTable($tableName) || ! Schema::hasColumn($tableName, 'user_id')) {
                 continue;
             }
-            Schema::table($tableName, function (Blueprint $table) use ($tableName) {
+            Schema::table($tableName, function (Blueprint $table) {
                 try {
                     $table->dropForeign(['user_id']);
                 } catch (\Throwable $e) {

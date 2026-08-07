@@ -59,7 +59,7 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
         if ($ext === '' || ! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
             $ext = 'pdf';
         }
-        $name = 'comprobante-alumno-' . $comprobanteCuotaAlumno->id . '.' . $ext;
+        $name = 'comprobante-alumno-'.$comprobanteCuotaAlumno->id.'.'.$ext;
 
         return $disk->response($comprobanteCuotaAlumno->comprobante_path, $name);
     }
@@ -92,4 +92,3 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
         }
     }
 }
-

@@ -29,27 +29,27 @@ return new class extends Migration
         });
         // Sin FK created_by->users: evita "Failed to open the referenced table" en Railway/MySQL.
 
-        if (!Schema::hasTable('orden_compra_items')) {
-        Schema::create('orden_compra_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('orden_compra_id')->constrained('ordenes_compra')->cascadeOnDelete();
+        if (! Schema::hasTable('orden_compra_items')) {
+            Schema::create('orden_compra_items', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('orden_compra_id')->constrained('ordenes_compra')->cascadeOnDelete();
 
-            $table->string('tipo', 30)->nullable(); // instrumento, parche, repuesto, otro
-            $table->string('familia', 50)->nullable(); // repique, surdo medio, etc.
-            $table->string('descripcion'); // libre, con características
+                $table->string('tipo', 30)->nullable(); // instrumento, parche, repuesto, otro
+                $table->string('familia', 50)->nullable(); // repique, surdo medio, etc.
+                $table->string('descripcion'); // libre, con características
 
-            $table->string('marca')->nullable();
-            $table->string('modelo')->nullable();
-            $table->string('medida')->nullable();
+                $table->string('marca')->nullable();
+                $table->string('modelo')->nullable();
+                $table->string('medida')->nullable();
 
-            $table->decimal('cantidad', 10, 2)->default(1);
-            $table->string('unidad', 20)->nullable(); // u, pares, mts, etc.
+                $table->decimal('cantidad', 10, 2)->default(1);
+                $table->string('unidad', 20)->nullable(); // u, pares, mts, etc.
 
-            $table->decimal('precio_estimado', 14, 2)->nullable();
-            $table->decimal('subtotal_estimado', 14, 2)->nullable();
+                $table->decimal('precio_estimado', 14, 2)->nullable();
+                $table->decimal('subtotal_estimado', 14, 2)->nullable();
 
-            $table->timestamps();
-        });
+                $table->timestamps();
+            });
         }
     }
 
@@ -59,4 +59,3 @@ return new class extends Migration
         Schema::dropIfExists('ordenes_compra');
     }
 };
-

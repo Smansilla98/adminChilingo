@@ -60,7 +60,7 @@ class Bloque extends Model
      */
     public function syncProfesorTitularEnPivot(): void
     {
-        if (!\Illuminate\Support\Facades\Schema::hasTable('bloque_profesor')) {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('bloque_profesor')) {
             return;
         }
 

@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('bloques')) {
+        if (! Schema::hasTable('bloques')) {
             return;
         }
         $add = [];
-        if (!Schema::hasColumn('bloques', 'tambores')) {
+        if (! Schema::hasColumn('bloques', 'tambores')) {
             $add[] = 'tambores';
         }
-        if (!Schema::hasColumn('bloques', 'corresponde_a')) {
+        if (! Schema::hasColumn('bloques', 'corresponde_a')) {
             $add[] = 'corresponde_a';
         }
         if (empty($add)) {
@@ -39,11 +39,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasTable('bloques')) {
+        if (! Schema::hasTable('bloques')) {
             return;
         }
         $drop = array_filter(['tambores', 'corresponde_a'], fn ($c) => Schema::hasColumn('bloques', $c));
-        if (!empty($drop)) {
+        if (! empty($drop)) {
             Schema::table('bloques', function (Blueprint $table) use ($drop) {
                 $table->dropColumn($drop);
             });

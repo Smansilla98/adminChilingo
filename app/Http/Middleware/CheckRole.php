@@ -15,13 +15,13 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login');
         }
 
         $user = auth()->user();
-        
-        if ($user->role !== $role && !$user->hasRole($role)) {
+
+        if ($user->role !== $role && ! $user->hasRole($role)) {
             abort(403, 'No tienes permisos para acceder a esta sección.');
         }
 

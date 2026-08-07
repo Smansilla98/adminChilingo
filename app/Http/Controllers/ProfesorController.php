@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Bloque;
 use App\Models\Profesor;
 use App\Models\Sede;
-use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
 class ProfesorController extends Controller
@@ -18,6 +18,7 @@ class ProfesorController extends Controller
         } catch (QueryException $e) {
             $profesores = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
         }
+
         return view('profesores.index', compact('profesores'));
     }
 
@@ -71,7 +72,7 @@ class ProfesorController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|email|unique:profesores,email,' . $profesor->id,
+            'email' => 'nullable|email|unique:profesores,email,'.$profesor->id,
             'activo' => 'boolean',
         ]);
 

@@ -32,8 +32,9 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
+
         return view('auth.login', [
-            'loginUsesEmail' => !$this->hasUsernameColumn(),
+            'loginUsesEmail' => ! $this->hasUsernameColumn(),
         ]);
     }
 
@@ -45,6 +46,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
+
         return view('auth.register', [
             'hasUsernameColumn' => $this->hasUsernameColumn(),
         ]);
@@ -133,7 +135,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
-            if (!$user->hasRole('admin') && !$user->hasRole('profesor')) {
+            if (! $user->hasRole('admin') && ! $user->hasRole('profesor')) {
                 if ($user->role === 'admin') {
                     $user->assignRole('admin');
                 } else {

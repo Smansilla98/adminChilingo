@@ -29,4 +29,3 @@ class RecordatorioMailController extends Controller
         return response()->json($resultado, $resultado['ok'] ? 200 : 422);
     }
 }
-

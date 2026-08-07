@@ -107,4 +107,3 @@ class ProgramaRitmo extends Model
         return false;
     }
 }
-

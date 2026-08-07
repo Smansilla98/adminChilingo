@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('cuotas') && !Schema::hasColumn('cuotas', 'bloque_id')) {
+        if (Schema::hasTable('cuotas') && ! Schema::hasColumn('cuotas', 'bloque_id')) {
             Schema::table('cuotas', function (Blueprint $table) {
                 $table->foreignId('bloque_id')->nullable()->after('id')->constrained('bloques')->nullOnDelete();
             });
         }
 
-        if (!Schema::hasTable('cuota_alumno')) {
+        if (! Schema::hasTable('cuota_alumno')) {
             Schema::create('cuota_alumno', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('cuota_id')->constrained('cuotas')->cascadeOnDelete();

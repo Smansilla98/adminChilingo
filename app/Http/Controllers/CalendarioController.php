@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Evento;
-use App\Models\Show;
 use App\Models\Bloque;
-use App\Models\Sede;
+use App\Models\Evento;
 use App\Models\Profesor;
+use App\Models\Sede;
+use App\Models\Show;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class CalendarioController extends Controller
@@ -143,7 +143,7 @@ class CalendarioController extends Controller
 
             foreach ($eventos as $evento) {
                 $day = $evento->fecha->format('Y-m-d');
-                if (!isset($eventsByDay[$day])) {
+                if (! isset($eventsByDay[$day])) {
                     $eventsByDay[$day] = [];
                 }
                 $eventsByDay[$day][] = ['type' => 'evento', 'data' => $evento];
@@ -161,7 +161,7 @@ class CalendarioController extends Controller
 
             foreach ($shows as $show) {
                 $day = $show->fecha->format('Y-m-d');
-                if (!isset($eventsByDay[$day])) {
+                if (! isset($eventsByDay[$day])) {
                     $eventsByDay[$day] = [];
                 }
                 $eventsByDay[$day][] = ['type' => 'show', 'data' => $show];
@@ -211,7 +211,7 @@ class CalendarioController extends Controller
 
         $listItems = collect();
         foreach ($eventos as $e) {
-            $listItems->push((object)[
+            $listItems->push((object) [
                 'titulo' => $e->titulo,
                 'fecha' => $e->fecha,
                 'hora_inicio' => $e->hora_inicio,
@@ -222,7 +222,7 @@ class CalendarioController extends Controller
             ]);
         }
         foreach ($shows as $s) {
-            $listItems->push((object)[
+            $listItems->push((object) [
                 'titulo' => $s->titulo,
                 'fecha' => $s->fecha,
                 'hora_inicio' => $s->hora_inicio,
@@ -301,10 +301,10 @@ class CalendarioController extends Controller
             }
             foreach ($queryEventos->get() as $evento) {
                 $out[] = [
-                    'id' => 'e-' . $evento->id,
+                    'id' => 'e-'.$evento->id,
                     'title' => $evento->titulo,
-                    'start' => $evento->fecha->format('Y-m-d') . ($evento->hora_inicio ? 'T' . $evento->hora_inicio->format('H:i:s') : ''),
-                    'end' => $evento->fecha->format('Y-m-d') . ($evento->hora_fin ? 'T' . $evento->hora_fin->format('H:i:s') : ''),
+                    'start' => $evento->fecha->format('Y-m-d').($evento->hora_inicio ? 'T'.$evento->hora_inicio->format('H:i:s') : ''),
+                    'end' => $evento->fecha->format('Y-m-d').($evento->hora_fin ? 'T'.$evento->hora_fin->format('H:i:s') : ''),
                     'url' => route('eventos.show', $evento->id),
                     'extendedProps' => ['tipo' => $evento->tipo_evento, 'sede' => $evento->sede?->nombre],
                 ];
@@ -320,13 +320,13 @@ class CalendarioController extends Controller
                 if ($show->convocatoria_abierta) {
                     $title .= ' (abierta)';
                 } elseif ($show->bloques->isNotEmpty()) {
-                    $title .= ' — ' . $show->bloques->pluck('nombre')->take(2)->join(', ');
+                    $title .= ' — '.$show->bloques->pluck('nombre')->take(2)->join(', ');
                 }
                 $out[] = [
-                    'id' => 's-' . $show->id,
+                    'id' => 's-'.$show->id,
                     'title' => $title,
-                    'start' => $show->fecha->format('Y-m-d') . ($show->hora_inicio ? 'T' . $show->hora_inicio->format('H:i:s') : 'T09:00:00'),
-                    'end' => $show->fecha->format('Y-m-d') . ($show->hora_fin ? 'T' . $show->hora_fin->format('H:i:s') : 'T22:00:00'),
+                    'start' => $show->fecha->format('Y-m-d').($show->hora_inicio ? 'T'.$show->hora_inicio->format('H:i:s') : 'T09:00:00'),
+                    'end' => $show->fecha->format('Y-m-d').($show->hora_fin ? 'T'.$show->hora_fin->format('H:i:s') : 'T22:00:00'),
                     'url' => route('shows.show', $show),
                 ];
             }

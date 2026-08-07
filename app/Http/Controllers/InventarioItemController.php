@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Alumno;
 use App\Models\InventarioItem;
 use App\Models\Sede;
-use App\Models\Alumno;
-use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 
 class InventarioItemController extends Controller
 {
@@ -30,10 +30,10 @@ class InventarioItemController extends Controller
             if ($request->filled('q')) {
                 $q = trim((string) $request->q);
                 $query->where(function ($sub) use ($q) {
-                    $sub->where('nombre', 'like', '%' . $q . '%')
-                        ->orWhere('codigo', 'like', '%' . $q . '%')
-                        ->orWhere('marca', 'like', '%' . $q . '%')
-                        ->orWhere('modelo', 'like', '%' . $q . '%');
+                    $sub->where('nombre', 'like', '%'.$q.'%')
+                        ->orWhere('codigo', 'like', '%'.$q.'%')
+                        ->orWhere('marca', 'like', '%'.$q.'%')
+                        ->orWhere('modelo', 'like', '%'.$q.'%');
                 });
             }
 
@@ -73,12 +73,14 @@ class InventarioItemController extends Controller
     {
         $validated = $this->validateItem($request);
         InventarioItem::create($validated);
+
         return redirect()->route('inventarios.index')->with('success', 'Item de inventario creado.');
     }
 
     public function show(InventarioItem $inventario)
     {
         $inventario->load(['sede', 'alumno']);
+
         return view('inventarios.show', ['item' => $inventario]);
     }
 
@@ -105,12 +107,14 @@ class InventarioItemController extends Controller
     {
         $validated = $this->validateItem($request, $inventario->id);
         $inventario->update($validated);
+
         return redirect()->route('inventarios.index')->with('success', 'Item actualizado.');
     }
 
     public function destroy(InventarioItem $inventario)
     {
         $inventario->delete();
+
         return redirect()->route('inventarios.index')->with('success', 'Item eliminado.');
     }
 
@@ -152,7 +156,7 @@ class InventarioItemController extends Controller
             $validated['alumno_id'] = null;
         }
 
-        if (!$validated['es_consumible']) {
+        if (! $validated['es_consumible']) {
             $validated['cantidad'] = 1;
             $validated['unidad'] = $validated['unidad'] ?: 'u';
         }
@@ -160,4 +164,3 @@ class InventarioItemController extends Controller
         return $validated;
     }
 }
-

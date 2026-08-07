@@ -22,4 +22,3 @@ class CheckModuloAccess
         return $next($request);
     }
 }
-

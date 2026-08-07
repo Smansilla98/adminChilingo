@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('username', 80)->nullable()->after('id');
         });
         User::all()->each(function (User $user) {
-            $user->username = $user->email ?? ('user_' . $user->id);
+            $user->username = $user->email ?? ('user_'.$user->id);
             $user->save();
         });
         Schema::table('users', function (Blueprint $table) {
@@ -33,7 +33,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasColumn('users', 'username')) {
+        if (! Schema::hasColumn('users', 'username')) {
             return;
         }
         Schema::table('users', function (Blueprint $table) {

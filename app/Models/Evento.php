@@ -66,7 +66,7 @@ class Evento extends Model
     public function scopeProximos($query)
     {
         return $query->where('fecha', '>=', now()->toDateString())
-                     ->orderBy('fecha', 'asc')
-                     ->orderBy('hora_inicio', 'asc');
+            ->orderBy('fecha', 'asc')
+            ->orderBy('hora_inicio', 'asc');
     }
 }

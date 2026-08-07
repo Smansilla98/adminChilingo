@@ -365,7 +365,7 @@ class ProgramaRitmoMedios
         return false;
     }
 
-  private static function migrarIdInstrumento(string $id): string
+    private static function migrarIdInstrumento(string $id): string
     {
         return match ($id) {
             'medio', 'fondo_medio' => 'surdo_medio',
@@ -409,6 +409,7 @@ class ProgramaRitmoMedios
 
     /**
      * @deprecated Usar normalizarGolpeCuadernillo
+     *
      * @return array{beat: int, hand: string, type: string}|null
      */
     private static function normalizarGolpePartitura(mixed $item, int $beats): ?array

@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 
 class UsersSeeder extends Seeder
 {
@@ -24,7 +23,7 @@ class UsersSeeder extends Seeder
             ]
         );
 
-        if (!$admin->hasRole('admin')) {
+        if (! $admin->hasRole('admin')) {
             $admin->assignRole('admin');
         }
 
@@ -38,7 +37,7 @@ class UsersSeeder extends Seeder
             ]
         );
 
-        if (!$profesor->hasRole('profesor')) {
+        if (! $profesor->hasRole('profesor')) {
             $profesor->assignRole('profesor');
         }
     }

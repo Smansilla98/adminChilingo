@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bloque;
 use App\Models\Gasto;
 use App\Models\Sede;
-use App\Models\Bloque;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
 
 class GastoController extends Controller
 {
@@ -67,6 +67,7 @@ class GastoController extends Controller
                 // mantener collect()
             }
         }
+
         return view('gastos.create', compact('sedes', 'bloques'));
     }
 
@@ -76,7 +77,7 @@ class GastoController extends Controller
             'sede_id' => 'nullable|exists:sedes,id',
             'bloque_id' => 'nullable|exists:bloques,id',
             'fecha' => 'required|date',
-            'tipo' => 'required|string|in:' . implode(',', array_keys(Gasto::TIPOS)),
+            'tipo' => 'required|string|in:'.implode(',', array_keys(Gasto::TIPOS)),
             'subtipo' => 'nullable|string|max:40',
             'descripcion' => 'nullable|string|max:255',
             'monto' => 'required|numeric|min:0',
@@ -85,12 +86,14 @@ class GastoController extends Controller
         ]);
         $validated['created_by'] = auth()->id();
         Gasto::create($validated);
+
         return redirect()->route('gastos.index')->with('success', 'Gasto registrado.');
     }
 
     public function show(Gasto $gasto)
     {
         $gasto->load(['sede', 'bloque', 'creador']);
+
         return view('gastos.show', compact('gasto'));
     }
 
@@ -112,6 +115,7 @@ class GastoController extends Controller
                 // mantener collect()
             }
         }
+
         return view('gastos.edit', compact('gasto', 'sedes', 'bloques'));
     }
 
@@ -121,7 +125,7 @@ class GastoController extends Controller
             'sede_id' => 'nullable|exists:sedes,id',
             'bloque_id' => 'nullable|exists:bloques,id',
             'fecha' => 'required|date',
-            'tipo' => 'required|string|in:' . implode(',', array_keys(Gasto::TIPOS)),
+            'tipo' => 'required|string|in:'.implode(',', array_keys(Gasto::TIPOS)),
             'subtipo' => 'nullable|string|max:40',
             'descripcion' => 'nullable|string|max:255',
             'monto' => 'required|numeric|min:0',
@@ -129,12 +133,14 @@ class GastoController extends Controller
             'notas' => 'nullable|string',
         ]);
         $gasto->update($validated);
+
         return redirect()->route('gastos.index')->with('success', 'Gasto actualizado.');
     }
 
     public function destroy(Gasto $gasto)
     {
         $gasto->delete();
+
         return redirect()->route('gastos.index')->with('success', 'Gasto eliminado.');
     }
 }

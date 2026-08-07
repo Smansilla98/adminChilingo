@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('sedes') || Schema::hasColumn('sedes', 'coordinador_id')) {
+        if (! Schema::hasTable('sedes') || Schema::hasColumn('sedes', 'coordinador_id')) {
             return;
         }
         try {
@@ -27,7 +27,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasTable('sedes') || !Schema::hasColumn('sedes', 'coordinador_id')) {
+        if (! Schema::hasTable('sedes') || ! Schema::hasColumn('sedes', 'coordinador_id')) {
             return;
         }
         Schema::table('sedes', function (Blueprint $table) {

@@ -86,7 +86,7 @@ class PartiturasCuadernilloImporter
 
             $pages = $item['pdf_pages'] ?? null;
             $pageLabel = is_array($pages) && count($pages) === 2
-                ? ( $pages[0] === $pages[1] ? 'p.'.$this->cuadernilloPage($pages[0]) : 'p.'.$this->cuadernilloPage($pages[0]).'–'.$this->cuadernilloPage($pages[1]) )
+                ? ($pages[0] === $pages[1] ? 'p.'.$this->cuadernilloPage($pages[0]) : 'p.'.$this->cuadernilloPage($pages[0]).'–'.$this->cuadernilloPage($pages[1]))
                 : null;
 
             $medios['partitura'] = [

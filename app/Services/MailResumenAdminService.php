@@ -121,4 +121,3 @@ class MailResumenAdminService
             ->first(fn (User $u) => $u->isAdmin());
     }
 }
-

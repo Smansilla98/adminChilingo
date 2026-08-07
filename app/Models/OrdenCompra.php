@@ -56,4 +56,3 @@ class OrdenCompra extends Model
         return $this->hasMany(OrdenCompraItem::class);
     }
 }
-

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\FacturacionMensual;
 use App\Models\Sede;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
 
 class FacturacionMensualController extends Controller
 {
@@ -51,6 +51,7 @@ class FacturacionMensualController extends Controller
             }
         }
         $meses = FacturacionMensual::nombresMeses();
+
         return view('facturacion-mensual.create', compact('sedes', 'meses'));
     }
 
@@ -69,7 +70,7 @@ class FacturacionMensualController extends Controller
         $existsQuery = FacturacionMensual::query()
             ->where('año', $validated['año'])
             ->where('mes', $validated['mes']);
-        if (!empty($validated['sede_id'])) {
+        if (! empty($validated['sede_id'])) {
             $existsQuery->where('sede_id', $validated['sede_id']);
         } else {
             $existsQuery->whereNull('sede_id');
@@ -80,6 +81,7 @@ class FacturacionMensualController extends Controller
         }
 
         FacturacionMensual::create($validated);
+
         return redirect()->route('facturacion-mensual.index')->with('success', 'Facturación mensual registrada.');
     }
 
@@ -95,6 +97,7 @@ class FacturacionMensualController extends Controller
             }
         }
         $meses = FacturacionMensual::nombresMeses();
+
         return view('facturacion-mensual.edit', compact('facturacionMensual', 'sedes', 'meses'));
     }
 
@@ -107,6 +110,7 @@ class FacturacionMensualController extends Controller
             'notas' => 'nullable|string|max:500',
         ]);
         $facturacionMensual->update($validated);
+
         return redirect()->route('facturacion-mensual.index')->with('success', 'Facturación actualizada.');
     }
 }

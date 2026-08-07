@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Show;
 use App\Models\Bloque;
-use Illuminate\Http\Request;
+use App\Models\Show;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 
 class ShowController extends Controller
 {
@@ -22,6 +22,7 @@ class ShowController extends Controller
         } catch (QueryException $e) {
             $shows = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
         }
+
         return view('shows.index', compact('shows'));
     }
 
@@ -32,6 +33,7 @@ class ShowController extends Controller
         } catch (QueryException $e) {
             $bloques = collect();
         }
+
         return view('shows.create', compact('bloques'));
     }
 
@@ -52,21 +54,23 @@ class ShowController extends Controller
         $show = Show::create([
             'titulo' => $validated['titulo'],
             'fecha' => $validated['fecha'],
-            'hora_inicio' => $validated['hora_inicio'] ? $validated['hora_inicio'] . ':00' : null,
-            'hora_fin' => $validated['hora_fin'] ? $validated['hora_fin'] . ':00' : null,
+            'hora_inicio' => $validated['hora_inicio'] ? $validated['hora_inicio'].':00' : null,
+            'hora_fin' => $validated['hora_fin'] ? $validated['hora_fin'].':00' : null,
             'lugar' => $validated['lugar'] ?? null,
             'descripcion' => $validated['descripcion'] ?? null,
             'convocatoria_abierta' => $validated['convocatoria_abierta'],
         ]);
-        if (!empty($validated['bloque_ids'])) {
+        if (! empty($validated['bloque_ids'])) {
             $show->bloques()->sync($validated['bloque_ids']);
         }
+
         return redirect()->route('shows.index')->with('success', 'Show creado.');
     }
 
     public function show(Show $show)
     {
         $show->load('bloques.sede', 'bloques.profesor');
+
         return view('shows.show', compact('show'));
     }
 
@@ -78,6 +82,7 @@ class ShowController extends Controller
         } catch (QueryException $e) {
             $bloques = collect();
         }
+
         return view('shows.edit', compact('show', 'bloques'));
     }
 
@@ -98,13 +103,14 @@ class ShowController extends Controller
         $show->update([
             'titulo' => $validated['titulo'],
             'fecha' => $validated['fecha'],
-            'hora_inicio' => $validated['hora_inicio'] ? $validated['hora_inicio'] . ':00' : null,
-            'hora_fin' => $validated['hora_fin'] ? $validated['hora_fin'] . ':00' : null,
+            'hora_inicio' => $validated['hora_inicio'] ? $validated['hora_inicio'].':00' : null,
+            'hora_fin' => $validated['hora_fin'] ? $validated['hora_fin'].':00' : null,
             'lugar' => $validated['lugar'] ?? null,
             'descripcion' => $validated['descripcion'] ?? null,
             'convocatoria_abierta' => $validated['convocatoria_abierta'],
         ]);
         $show->bloques()->sync($validated['bloque_ids'] ?? []);
+
         return redirect()->route('shows.index')->with('success', 'Show actualizado.');
     }
 
@@ -112,6 +118,7 @@ class ShowController extends Controller
     {
         $show->bloques()->detach();
         $show->delete();
+
         return redirect()->route('shows.index')->with('success', 'Show eliminado.');
     }
 }

@@ -71,6 +71,7 @@ class BanfieldSeeder extends Seeder
                     ['dni' => $dni],
                     $payload
                 );
+
                 continue;
             }
 
@@ -79,7 +80,7 @@ class BanfieldSeeder extends Seeder
                 ->where('nombre_apellido', $nombre)
                 ->exists();
 
-            if (!$yaExiste) {
+            if (! $yaExiste) {
                 Alumno::create($payload);
             }
         }

@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\OrdenCompra;
 use App\Models\OrdenCompraItem;
 use App\Models\Sede;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
 
 class OrdenCompraController extends Controller
 {
@@ -61,6 +61,7 @@ class OrdenCompraController extends Controller
                 // mantener collect()
             }
         }
+
         return view('ordenes-compra.create', [
             'sedes' => $sedes,
             'motivos' => OrdenCompra::MOTIVOS,
@@ -99,6 +100,7 @@ class OrdenCompraController extends Controller
     public function show(OrdenCompra $ordenes_compra)
     {
         $ordenes_compra->load(['sede', 'creador', 'items']);
+
         return view('ordenes-compra.show', ['orden' => $ordenes_compra]);
     }
 
@@ -113,6 +115,7 @@ class OrdenCompraController extends Controller
                 // mantener collect()
             }
         }
+
         return view('ordenes-compra.edit', [
             'orden' => $ordenes_compra,
             'sedes' => $sedes,
@@ -148,6 +151,7 @@ class OrdenCompraController extends Controller
     public function destroy(OrdenCompra $ordenes_compra)
     {
         $ordenes_compra->delete();
+
         return redirect()->route('ordenes-compra.index')->with('success', 'Orden de compra eliminada.');
     }
 
@@ -155,8 +159,8 @@ class OrdenCompraController extends Controller
     {
         $data = $request->validate([
             'sede_id' => 'required|exists:sedes,id',
-            'motivo' => 'required|in:' . implode(',', array_keys(OrdenCompra::MOTIVOS)),
-            'estado' => 'required|in:' . implode(',', array_keys(OrdenCompra::ESTADOS)),
+            'motivo' => 'required|in:'.implode(',', array_keys(OrdenCompra::MOTIVOS)),
+            'estado' => 'required|in:'.implode(',', array_keys(OrdenCompra::ESTADOS)),
             'fecha_objetivo' => 'nullable|date',
             'justificacion' => 'nullable|string',
         ]);
@@ -215,4 +219,3 @@ class OrdenCompraController extends Controller
         return $items;
     }
 }
-

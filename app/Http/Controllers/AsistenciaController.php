@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Asistencia;
 use App\Models\Bloque;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AsistenciaController extends Controller
 {
@@ -90,7 +90,7 @@ class AsistenciaController extends Controller
         }
 
         $bloqueId = $request->filled('bloque_id') ? (int) $request->bloque_id : null;
-        if (!$bloqueId) {
+        if (! $bloqueId) {
             return view('asistencias.index', [
                 'bloques' => $bloques,
                 'tiposAsistencia' => $tiposAsistencia,
@@ -146,7 +146,7 @@ class AsistenciaController extends Controller
 
     public function matrixUpdate(Request $request)
     {
-        if (!Schema::hasTable('asistencias') || !Schema::hasTable('alumnos') || !Schema::hasTable('bloques')) {
+        if (! Schema::hasTable('asistencias') || ! Schema::hasTable('alumnos') || ! Schema::hasTable('bloques')) {
             return back()->withErrors([
                 'general' => 'Faltan tablas requeridas para registrar asistencias. Ejecutá migraciones y reintentá.',
             ])->withInput();
@@ -185,11 +185,11 @@ class AsistenciaController extends Controller
         try {
             foreach ($cells as $alumnoIdStr => $porFecha) {
                 $alumnoId = (int) $alumnoIdStr;
-                if (!$alumnoIdsPermitidos->has($alumnoId)) {
+                if (! $alumnoIdsPermitidos->has($alumnoId)) {
                     continue;
                 }
                 foreach ($porFecha as $fechaStr => $tipo) {
-                    if (!$fechasPermitidas->has($fechaStr)) {
+                    if (! $fechasPermitidas->has($fechaStr)) {
                         continue;
                     }
                     if ($tipo === null || $tipo === '') {
@@ -198,6 +198,7 @@ class AsistenciaController extends Controller
                             ->where('alumno_id', $alumnoId)
                             ->whereDate('fecha', $fechaStr)
                             ->delete();
+
                         continue;
                     }
 
@@ -263,7 +264,7 @@ class AsistenciaController extends Controller
 
     public function store(Request $request)
     {
-        if (!Schema::hasTable('asistencias') || !Schema::hasTable('alumnos') || !Schema::hasTable('bloques')) {
+        if (! Schema::hasTable('asistencias') || ! Schema::hasTable('alumnos') || ! Schema::hasTable('bloques')) {
             return back()->withErrors([
                 'general' => 'Faltan tablas requeridas para registrar asistencias. Ejecutá migraciones y reintentá.',
             ])->withInput();

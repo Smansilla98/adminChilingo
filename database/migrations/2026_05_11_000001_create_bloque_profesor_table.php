@@ -26,7 +26,7 @@ return new class extends Migration
             $table->unique(['bloque_id', 'profesor_id']);
         });
 
-        if (!Schema::hasTable('bloques') || !Schema::hasColumn('bloques', 'profesor_id')) {
+        if (! Schema::hasTable('bloques') || ! Schema::hasColumn('bloques', 'profesor_id')) {
             return;
         }
 

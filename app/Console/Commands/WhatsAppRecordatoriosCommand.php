@@ -21,8 +21,9 @@ class WhatsAppRecordatoriosCommand extends Command
 
     public function handle(WhatsAppService $whatsapp): int
     {
-        if (!$whatsapp->isConfigured()) {
+        if (! $whatsapp->isConfigured()) {
             $this->error('WhatsApp no configurado. Ver .env (TWILIO_*).');
+
             return self::FAILURE;
         }
 
@@ -30,9 +31,10 @@ class WhatsAppRecordatoriosCommand extends Command
         $sendCuotas = $this->option('cuotas');
         $sendEventos = $this->option('eventos');
 
-        if (!$sendCuotas && !$sendEventos) {
+        if (! $sendCuotas && ! $sendEventos) {
             $this->warn('Indicá al menos uno: --cuotas y/o --eventos');
             $this->line('Ejemplo: php artisan whatsapp:recordatorios --cuotas --eventos');
+
             return self::FAILURE;
         }
 
@@ -53,6 +55,7 @@ class WhatsAppRecordatoriosCommand extends Command
         }
 
         $this->info("Enviados: {$enviados}, Errores: {$errores}");
+
         return $errores > 0 ? self::FAILURE : self::SUCCESS;
     }
 
@@ -66,8 +69,9 @@ class WhatsAppRecordatoriosCommand extends Command
             ->where('mes', (int) date('n'))
             ->first();
 
-        if (!$cuotaActiva) {
+        if (! $cuotaActiva) {
             $this->warn('No hay cuota activa para el mes actual.');
+
             return [0, 0];
         }
 
@@ -78,16 +82,17 @@ class WhatsAppRecordatoriosCommand extends Command
             ->whereNotIn('id', $pagadosIds)
             ->get();
 
-        $this->info('Recordatorio cuota: ' . $alumnosImpagos->count() . ' alumnos sin pago registrado.');
+        $this->info('Recordatorio cuota: '.$alumnosImpagos->count().' alumnos sin pago registrado.');
 
         $enviados = 0;
         $errores = 0;
-        $mensaje = "La Chilinga - Recordatorio: la cuota de {$cuotaActiva->nombre} (\$" . number_format($cuotaActiva->monto, 0, ',', '.') . ") sigue pendiente. Cualquier duda contactanos.";
+        $mensaje = "La Chilinga - Recordatorio: la cuota de {$cuotaActiva->nombre} (\$".number_format($cuotaActiva->monto, 0, ',', '.').') sigue pendiente. Cualquier duda contactanos.';
 
         foreach ($alumnosImpagos as $alumno) {
             if ($dryRun) {
                 $this->line("  [dry-run] {$alumno->nombre} - {$alumno->telefono}");
                 $enviados++;
+
                 continue;
             }
             $result = $whatsapp->send($mensaje, $alumno->telefono);
@@ -95,7 +100,7 @@ class WhatsAppRecordatoriosCommand extends Command
                 $enviados++;
             } else {
                 $errores++;
-                $this->warn("  {$alumno->nombre}: " . ($result['error'] ?? ''));
+                $this->warn("  {$alumno->nombre}: ".($result['error'] ?? ''));
             }
         }
 
@@ -115,18 +120,19 @@ class WhatsAppRecordatoriosCommand extends Command
 
         if ($eventos->isEmpty()) {
             $this->warn("No hay eventos en los próximos {$dias} días.");
+
             return [0, 0];
         }
 
-        $lista = $eventos->map(fn ($e) => $e->fecha->format('d/m') . ' - ' . $e->titulo)->implode("\n");
-        $mensaje = "La Chilinga - Próximos eventos:\n" . $lista . "\n¡Te esperamos!";
+        $lista = $eventos->map(fn ($e) => $e->fecha->format('d/m').' - '.$e->titulo)->implode("\n");
+        $mensaje = "La Chilinga - Próximos eventos:\n".$lista."\n¡Te esperamos!";
 
         $alumnos = Alumno::where('activo', true)
             ->whereNotNull('telefono')
             ->where('telefono', '!=', '')
             ->get();
 
-        $this->info('Aviso eventos: ' . $alumnos->count() . ' alumnos con teléfono.');
+        $this->info('Aviso eventos: '.$alumnos->count().' alumnos con teléfono.');
 
         $enviados = 0;
         $errores = 0;
@@ -134,6 +140,7 @@ class WhatsAppRecordatoriosCommand extends Command
             if ($dryRun) {
                 $this->line("  [dry-run] {$alumno->nombre} - {$alumno->telefono}");
                 $enviados++;
+
                 continue;
             }
             $result = $whatsapp->send($mensaje, $alumno->telefono);
@@ -141,7 +148,7 @@ class WhatsAppRecordatoriosCommand extends Command
                 $enviados++;
             } else {
                 $errores++;
-                $this->warn("  {$alumno->nombre}: " . ($result['error'] ?? ''));
+                $this->warn("  {$alumno->nombre}: ".($result['error'] ?? ''));
             }
         }
 

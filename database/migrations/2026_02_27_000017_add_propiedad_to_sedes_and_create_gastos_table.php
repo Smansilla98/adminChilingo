@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('sedes') && !Schema::hasColumn('sedes', 'tipo_propiedad')) {
+        if (Schema::hasTable('sedes') && ! Schema::hasColumn('sedes', 'tipo_propiedad')) {
             Schema::table('sedes', function (Blueprint $table) {
                 $table->string('tipo_propiedad', 20)->default('alquilada')->after('direccion'); // propia, alquilada, compartida, otro
                 $table->decimal('costo_alquiler_mensual', 12, 2)->nullable()->after('tipo_propiedad');
@@ -50,4 +50,3 @@ return new class extends Migration
         });
     }
 };
-

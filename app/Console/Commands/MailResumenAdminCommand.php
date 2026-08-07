@@ -49,4 +49,3 @@ class MailResumenAdminCommand extends Command
         return ($resultado['errores'] ?? 0) > 0 ? self::FAILURE : self::SUCCESS;
     }
 }
-

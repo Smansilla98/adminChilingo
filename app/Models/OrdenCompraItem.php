@@ -34,4 +34,3 @@ class OrdenCompraItem extends Model
         return $this->belongsTo(OrdenCompra::class, 'orden_compra_id');
     }
 }
-

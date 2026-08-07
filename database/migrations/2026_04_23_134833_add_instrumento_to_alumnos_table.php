@@ -12,12 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('alumnos')) {
+        if (! Schema::hasTable('alumnos')) {
             return;
         }
 
         // 1) Agregar procedencia si no existe
-        if (!Schema::hasColumn('alumnos', 'tambor_procedencia')) {
+        if (! Schema::hasColumn('alumnos', 'tambor_procedencia')) {
             Schema::table('alumnos', function (Blueprint $table) {
                 $table->string('tambor_procedencia')->nullable()->after('instrumento_secundario');
             });
@@ -39,7 +39,7 @@ return new class extends Migration
         }
 
         Schema::table('alumnos', function (Blueprint $table) {
-            if (!Schema::hasColumn('alumnos', 'tipo_tambor')) {
+            if (! Schema::hasColumn('alumnos', 'tipo_tambor')) {
                 $table->string('tipo_tambor')->nullable()->after('tambor_procedencia');
             }
         });
@@ -50,7 +50,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasTable('alumnos')) {
+        if (! Schema::hasTable('alumnos')) {
             return;
         }
 
@@ -62,7 +62,7 @@ return new class extends Migration
         }
 
         Schema::table('alumnos', function (Blueprint $table) {
-            if (!Schema::hasColumn('alumnos', 'tipo_tambor')) {
+            if (! Schema::hasColumn('alumnos', 'tipo_tambor')) {
                 $table->enum('tipo_tambor', ['Sede', 'Propio'])->default('Sede')->after('instrumento_secundario');
             }
         });

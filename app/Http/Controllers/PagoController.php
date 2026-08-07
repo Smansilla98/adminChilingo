@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pago;
-use App\Models\PagoDetalle;
-use App\Models\Cuota;
 use App\Models\Alumno;
 use App\Models\Bloque;
+use App\Models\Cuota;
+use App\Models\Pago;
+use App\Models\PagoDetalle;
 use App\Support\LiquidacionDocente;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 
 class PagoController extends Controller
@@ -29,10 +29,10 @@ class PagoController extends Controller
             try {
                 $query = Pago::with(['detalles.alumno', 'detalles.cuota', 'registradoPor']);
                 if ($request->filled('alumno_id')) {
-                    $query->whereHas('detalles', fn($q) => $q->where('alumno_id', $request->alumno_id));
+                    $query->whereHas('detalles', fn ($q) => $q->where('alumno_id', $request->alumno_id));
                 }
                 if ($request->filled('cuota_id')) {
-                    $query->whereHas('detalles', fn($q) => $q->where('cuota_id', $request->cuota_id));
+                    $query->whereHas('detalles', fn ($q) => $q->where('cuota_id', $request->cuota_id));
                 }
                 if ($request->filled('desde')) {
                     $query->where('fecha_pago', '>=', $request->desde);
@@ -607,12 +607,13 @@ class PagoController extends Controller
     public function show(Pago $pago)
     {
         $pago->load(['detalles.alumno', 'detalles.cuota', 'registradoPor']);
+
         return view('pagos.show', compact('pago'));
     }
 
     public function downloadComprobante(Pago $pago)
     {
-        if (!$pago->comprobante_path) {
+        if (! $pago->comprobante_path) {
             abort(404);
         }
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
@@ -621,7 +622,7 @@ class PagoController extends Controller
         if ($ext === '' || ! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
             $ext = 'pdf';
         }
-        $name = 'comprobante-pago-' . $pago->id . '.' . $ext;
+        $name = 'comprobante-pago-'.$pago->id.'.'.$ext;
 
         return $disk->response($pago->comprobante_path, $name);
     }

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Twilio\Rest\Client;
 use Twilio\Exceptions\TwilioException;
+use Twilio\Rest\Client;
 
 class WhatsAppService
 {
@@ -44,12 +44,13 @@ class WhatsAppService
             return $phone;
         }
         if (preg_match('/^0?9\d{9}$/', $phone)) {
-            return '+54' . preg_replace('/^0/', '', $phone);
+            return '+54'.preg_replace('/^0/', '', $phone);
         }
         if (preg_match('/^\d{10,15}$/', $phone)) {
-            return '+' . $phone;
+            return '+'.$phone;
         }
-        return '+54' . $phone;
+
+        return '+54'.$phone;
     }
 
     /**
@@ -61,7 +62,7 @@ class WhatsAppService
      */
     public function send(string $body, string $to): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return ['success' => false, 'error' => 'WhatsApp no configurado (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM).'];
         }
 
@@ -70,14 +71,15 @@ class WhatsAppService
             return ['success' => false, 'error' => 'Número de destino inválido.'];
         }
 
-        $from = 'whatsapp:' . $this->from;
-        $toWhatsApp = 'whatsapp:' . $toNormalized;
+        $from = 'whatsapp:'.$this->from;
+        $toWhatsApp = 'whatsapp:'.$toNormalized;
 
         try {
             $message = $this->client->messages->create($toWhatsApp, [
                 'from' => $from,
                 'body' => $body,
             ]);
+
             return ['success' => true, 'sid' => $message->sid];
         } catch (TwilioException $e) {
             return ['success' => false, 'error' => $e->getMessage()];

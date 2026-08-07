@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        if (!Schema::hasTable('show_bloque')) {
+        if (! Schema::hasTable('show_bloque')) {
             Schema::create('show_bloque', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('show_id')->constrained('shows')->cascadeOnDelete();

@@ -25,20 +25,21 @@ class ImportChilingaExcelCommand extends Command
     public function handle(): int
     {
         $path = $this->argument('file');
-        if (!is_file($path) || !pathinfo($path, PATHINFO_EXTENSION)) {
-            $this->error('El archivo no existe o no es válido: ' . $path);
+        if (! is_file($path) || ! pathinfo($path, PATHINFO_EXTENSION)) {
+            $this->error('El archivo no existe o no es válido: '.$path);
+
             return self::FAILURE;
         }
 
-        $this->info('Cargando: ' . $path);
+        $this->info('Cargando: '.$path);
         $spreadsheet = IOFactory::load($path);
         $dryRun = $this->option('dry-run');
         if ($dryRun) {
             $this->warn('Modo dry-run: no se escribirá en la base de datos.');
         }
 
-        if (!$dryRun && $this->option('fresh')) {
-            if (!$this->confirm('¿Vaciar alumnos, cuotas, alumno_bloque, bloques, profesores, sedes y volver a importar?')) {
+        if (! $dryRun && $this->option('fresh')) {
+            if (! $this->confirm('¿Vaciar alumnos, cuotas, alumno_bloque, bloques, profesores, sedes y volver a importar?')) {
                 return self::SUCCESS;
             }
             $this->vaciarTablas();
@@ -46,6 +47,7 @@ class ImportChilingaExcelCommand extends Command
 
         if ($dryRun) {
             $this->dryRun($spreadsheet);
+
             return self::SUCCESS;
         }
 
@@ -60,8 +62,9 @@ class ImportChilingaExcelCommand extends Command
             $this->info('Importación completada.');
         } catch (\Throwable $e) {
             DB::rollBack();
-            $this->error('Error: ' . $e->getMessage());
+            $this->error('Error: '.$e->getMessage());
             $this->error($e->getTraceAsString());
+
             return self::FAILURE;
         }
 
@@ -100,18 +103,18 @@ class ImportChilingaExcelCommand extends Command
         $count = 0;
         if ($sheet) {
             for ($r = 2; $r <= $sheet->getHighestRow(); $r++) {
-                $nombre = trim((string) $sheet->getCell('B' . $r)->getValue());
+                $nombre = trim((string) $sheet->getCell('B'.$r)->getValue());
                 if ($nombre !== '') {
                     $count++;
-                    $s = trim((string) $sheet->getCell('G' . $r)->getValue());
+                    $s = trim((string) $sheet->getCell('G'.$r)->getValue());
                     if ($s !== '') {
                         $sedes[$s] = true;
                     }
                 }
             }
         }
-        $this->info('Sedes a crear: ' . implode(', ', array_keys($sedes)) ?: '(una por defecto)');
-        $this->info('Alumnos a importar: ' . $count);
+        $this->info('Sedes a crear: '.implode(', ', array_keys($sedes)) ?: '(una por defecto)');
+        $this->info('Alumnos a importar: '.$count);
         $sheetCuotas = $this->getSheetByName($spreadsheet, 'Cuotas');
         if ($sheetCuotas) {
             $meses = [];
@@ -121,7 +124,7 @@ class ImportChilingaExcelCommand extends Command
                     $meses[] = $m;
                 }
             }
-            $this->info('Cuotas (meses): ' . implode(', ', $meses));
+            $this->info('Cuotas (meses): '.implode(', ', $meses));
         }
         $this->info('Bloque: Trinchera Sur (desde Hoja 4 / RemerasBloque)');
         $this->info('Profesor: desde RemerasBloque (ej. Santi Mansilla)');
@@ -134,33 +137,35 @@ class ImportChilingaExcelCommand extends Command
                 return $sheet;
             }
         }
+
         return null;
     }
 
     private function importSedes(\PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet): array
     {
         $sheet = $this->getSheetByName($spreadsheet, 'Formulario');
-        if (!$sheet) {
+        if (! $sheet) {
             $this->warn('Hoja Formulario no encontrada. Se crea una sede por defecto.');
             $sede = Sede::firstOrCreate(
                 ['nombre' => 'Sede principal'],
                 ['direccion' => '', 'activo' => true]
             );
+
             return ['Sede principal' => $sede->id, 'Propio' => $sede->id];
         }
 
         $sedesMap = [];
         $uniqueSedes = [];
         for ($r = 2; $r <= $sheet->getHighestRow(); $r++) {
-            $val = trim((string) $sheet->getCell('G' . $r)->getValue());
-            if ($val !== '' && $val !== 'Sede' && !isset($uniqueSedes[$val])) {
+            $val = trim((string) $sheet->getCell('G'.$r)->getValue());
+            if ($val !== '' && $val !== 'Sede' && ! isset($uniqueSedes[$val])) {
                 $uniqueSedes[$val] = true;
             }
         }
         if (empty($uniqueSedes)) {
             $uniqueSedes = ['Propio' => true, 'Sede' => true];
         }
-        if (!isset($uniqueSedes['Sede'])) {
+        if (! isset($uniqueSedes['Sede'])) {
             $uniqueSedes['Sede'] = true;
         }
 
@@ -172,7 +177,8 @@ class ImportChilingaExcelCommand extends Command
             $sedesMap[$nombre] = $sede->id;
         }
 
-        $this->info('Sedes: ' . count($sedesMap));
+        $this->info('Sedes: '.count($sedesMap));
+
         return $sedesMap;
     }
 
@@ -193,7 +199,8 @@ class ImportChilingaExcelCommand extends Command
             ['nombre' => $nombreProfesor],
             ['activo' => true]
         );
-        $this->info('Profesor: ' . $profesor->nombre);
+        $this->info('Profesor: '.$profesor->nombre);
+
         return $profesor;
     }
 
@@ -223,31 +230,32 @@ class ImportChilingaExcelCommand extends Command
         );
         $bloque->refresh();
         $bloque->syncProfesorTitularEnPivot();
-        $this->info('Bloque: ' . $bloque->nombre);
+        $this->info('Bloque: '.$bloque->nombre);
+
         return $bloque;
     }
 
     private function importAlumnos(\PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet, array $sedesMap, ?Bloque $bloque): array
     {
         $sheet = $this->getSheetByName($spreadsheet, 'Formulario');
-        if (!$sheet) {
+        if (! $sheet) {
             return [];
         }
 
         $alumnosMap = [];
         $highest = $sheet->getHighestRow();
         for ($r = 2; $r <= $highest; $r++) {
-            $nombre = trim((string) $sheet->getCell('B' . $r)->getValue());
+            $nombre = trim((string) $sheet->getCell('B'.$r)->getValue());
             if ($nombre === '') {
                 continue;
             }
-            $dni = $sheet->getCell('C' . $r)->getValue();
+            $dni = $sheet->getCell('C'.$r)->getValue();
             if (is_numeric($dni)) {
                 $dni = (string) (int) $dni;
             } else {
                 $dni = trim((string) $dni);
             }
-            $fechaNac = $sheet->getCell('D' . $r)->getValue();
+            $fechaNac = $sheet->getCell('D'.$r)->getValue();
             $fechaNacimiento = null;
             if (is_numeric($fechaNac)) {
                 try {
@@ -256,21 +264,21 @@ class ImportChilingaExcelCommand extends Command
                     // ignore
                 }
             }
-            $telefono = $sheet->getCell('E' . $r)->getValue();
+            $telefono = $sheet->getCell('E'.$r)->getValue();
             if (is_numeric($telefono)) {
                 $telefono = (string) $telefono;
             } else {
                 $telefono = trim((string) $telefono) ?: null;
             }
-            $tambor = trim((string) $sheet->getCell('F' . $r)->getValue()) ?: null;
-            $sedeNombre = trim((string) $sheet->getCell('G' . $r)->getValue());
+            $tambor = trim((string) $sheet->getCell('F'.$r)->getValue()) ?: null;
+            $sedeNombre = trim((string) $sheet->getCell('G'.$r)->getValue());
             if ($sedeNombre === '' || $sedeNombre === 'Sede') {
                 $sedeNombre = array_key_first($sedesMap);
             }
             $sedeId = $sedesMap[$sedeNombre] ?? reset($sedesMap);
 
             $alumno = Alumno::firstOrCreate(
-                ['dni' => $dni ?: ('excel-' . $r)],
+                ['dni' => $dni ?: ('excel-'.$r)],
                 [
                     'nombre_apellido' => $nombre,
                     'fecha_nacimiento' => $fechaNacimiento ?? '1990-01-01',
@@ -281,20 +289,21 @@ class ImportChilingaExcelCommand extends Command
                 ]
             );
 
-            if ($bloque && !$alumno->bloques()->where('bloques.id', $bloque->id)->exists()) {
+            if ($bloque && ! $alumno->bloques()->where('bloques.id', $bloque->id)->exists()) {
                 $alumno->bloques()->attach($bloque->id, ['es_principal' => true]);
             }
             $alumnosMap[$r] = $alumno;
         }
 
-        $this->info('Alumnos importados: ' . count($alumnosMap));
+        $this->info('Alumnos importados: '.count($alumnosMap));
+
         return $alumnosMap;
     }
 
     private function importCuotas(\PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet, ?Bloque $bloque): void
     {
         $sheet = $this->getSheetByName($spreadsheet, 'Cuotas');
-        if (!$sheet || !$bloque) {
+        if (! $sheet || ! $bloque) {
             return;
         }
 
@@ -333,6 +342,6 @@ class ImportChilingaExcelCommand extends Command
                 $created++;
             }
         }
-        $this->info('Cuotas creadas/actualizadas: ' . $created);
+        $this->info('Cuotas creadas/actualizadas: '.$created);
     }
 }

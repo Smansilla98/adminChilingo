@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('cuotas') || Schema::hasColumn('cuotas', 'fecha_vencimiento')) {
+        if (! Schema::hasTable('cuotas') || Schema::hasColumn('cuotas', 'fecha_vencimiento')) {
             return;
         }
 
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasTable('cuotas') || !Schema::hasColumn('cuotas', 'fecha_vencimiento')) {
+        if (! Schema::hasTable('cuotas') || ! Schema::hasColumn('cuotas', 'fecha_vencimiento')) {
             return;
         }
 

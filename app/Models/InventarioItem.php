@@ -101,4 +101,3 @@ class InventarioItem extends Model
         return self::PROPIETARIOS[$this->propietario_tipo] ?? $this->propietario_tipo;
     }
 }
-

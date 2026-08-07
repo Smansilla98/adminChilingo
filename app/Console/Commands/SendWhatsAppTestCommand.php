@@ -28,8 +28,9 @@ class SendWhatsAppTestCommand extends Command
         $numero = $this->argument('numero');
         $message = $this->option('message') ?: 'Hola, este es un mensaje de prueba del sistema de gestión La Chilinga. Si lo recibiste, WhatsApp está configurado correctamente.';
 
-        if (!$whatsapp->isConfigured()) {
+        if (! $whatsapp->isConfigured()) {
             $this->error('WhatsApp no está configurado. Definí en .env: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM');
+
             return self::FAILURE;
         }
 
@@ -37,11 +38,13 @@ class SendWhatsAppTestCommand extends Command
         $result = $whatsapp->send($message, $numero);
 
         if ($result['success']) {
-            $this->info('Mensaje enviado correctamente. SID: ' . ($result['sid'] ?? ''));
+            $this->info('Mensaje enviado correctamente. SID: '.($result['sid'] ?? ''));
+
             return self::SUCCESS;
         }
 
-        $this->error('Error: ' . ($result['error'] ?? 'Error desconocido'));
+        $this->error('Error: '.($result['error'] ?? 'Error desconocido'));
+
         return self::FAILURE;
     }
 }

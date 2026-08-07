@@ -15,13 +15,14 @@ class BloqueController extends Controller
         $user = auth()->user();
 
         $query = Bloque::with(['profesor', 'sede'])->orderBy('año')->orderBy('nombre');
-        if ($user && $user->isProfesor() && !$user->isAdmin()) {
+        if ($user && $user->isProfesor() && ! $user->isAdmin()) {
             $prof = $user->profesor;
             $ids = $prof ? $prof->bloqueIdsDondeParticipa()->all() : [];
             $query->whereIn('id', $ids !== [] ? $ids : [0]);
         }
 
         $bloques = $query->paginate(20);
+
         return view('bloques.index', compact('bloques'));
     }
 
@@ -30,6 +31,7 @@ class BloqueController extends Controller
         $profesores = Profesor::where('activo', true)->get();
         $sedes = Sede::where('activo', true)->get();
         $tamboresDisponibles = Bloque::TAMBORES_DISPONIBLES;
+
         return view('bloques.create', compact('profesores', 'sedes', 'tamboresDisponibles'));
     }
 
@@ -60,6 +62,7 @@ class BloqueController extends Controller
     public function show(Bloque $bloque)
     {
         $bloque->load(['profesor', 'profesores', 'sede', 'alumnos', 'eventos']);
+
         return view('bloques.show', compact('bloque'));
     }
 
@@ -69,6 +72,7 @@ class BloqueController extends Controller
         $profesores = Profesor::where('activo', true)->get();
         $sedes = Sede::where('activo', true)->get();
         $tamboresDisponibles = Bloque::TAMBORES_DISPONIBLES;
+
         return view('bloques.edit', compact('bloque', 'profesores', 'sedes', 'tamboresDisponibles'));
     }
 

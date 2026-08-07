@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bloque;
 use App\Models\Evento;
 use App\Models\Profesor;
-use App\Models\Bloque;
 use App\Models\Sede;
-use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 
 class EventoController extends Controller
 {
@@ -21,7 +21,7 @@ class EventoController extends Controller
 
             $query = Evento::with(['sede', 'profesor', 'bloque', 'creador']);
 
-            if ($user && $user->isProfesor() && !$user->isAdmin()) {
+            if ($user && $user->isProfesor() && ! $user->isAdmin()) {
                 $prof = $user->profesor;
                 if ($prof) {
                     $bloqueIds = Bloque::query()
@@ -106,6 +106,7 @@ class EventoController extends Controller
     public function show(Evento $evento)
     {
         $evento->load(['sede', 'profesor', 'bloque', 'creador']);
+
         return view('eventos.show', compact('evento'));
     }
 

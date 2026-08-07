@@ -75,14 +75,14 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         $meses = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         $data = $rows->map(function ($r) use ($meses) {
             $m = (int) $r->mes;
-            $label = ($meses[$m] ?? "Mes {$m}") . ' ' . $r->año;
+            $label = ($meses[$m] ?? "Mes {$m}").' '.$r->año;
 
             return [
                 'año' => (int) $r->año,
                 'mes' => $m,
                 'label' => $label,
             ];
-        })->unique(fn ($x) => $x['año'] . '-' . $x['mes'])->values();
+        })->unique(fn ($x) => $x['año'].'-'.$x['mes'])->values();
 
         return response()->json(['periodos' => $data]);
     }
@@ -295,10 +295,10 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             }
             $cuota = $this->cuotaParaBloqueMes($bid, $año, $mes);
             if (! $cuota) {
-                throw ValidationException::withMessages(['bloque_ids' => 'No hay cuota para el bloque «' . $bloque->nombre . '» en el mes elegido.']);
+                throw ValidationException::withMessages(['bloque_ids' => 'No hay cuota para el bloque «'.$bloque->nombre.'» en el mes elegido.']);
             }
             if (! $cuota->aplicaAAlumno($alumno)) {
-                throw ValidationException::withMessages(['alumno_id' => 'La cuota no aplica a este alumno en el bloque «' . $bloque->nombre . '».']);
+                throw ValidationException::withMessages(['alumno_id' => 'La cuota no aplica a este alumno en el bloque «'.$bloque->nombre.'».']);
             }
             $enBloque = $alumno->bloques()->where('bloques.id', $bid)->exists()
                 || (int) $alumno->bloque_id === (int) $bid;
@@ -327,7 +327,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
             $ext = 'pdf';
         }
-        $path = $upload->storeAs('comprobantes_cuota_alumnos', (string) Str::uuid() . '.' . $ext, 'comprobantes');
+        $path = $upload->storeAs('comprobantes_cuota_alumnos', (string) Str::uuid().'.'.$ext, 'comprobantes');
 
         DB::transaction(function () use ($validated, $alumno, $sedeId, $montoTotal, $path, $itemsData) {
             $c = ComprobanteCuotaAlumno::create([
@@ -370,4 +370,3 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             ->exists();
     }
 }
-

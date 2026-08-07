@@ -106,4 +106,3 @@ class AccesosController extends Controller
             ->with('success', 'Accesos actualizados.');
     }
 }
-

@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AlumnosExport;
 use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\PagoDetalle;
 use App\Models\Profesor;
 use App\Models\Sede;
-use Illuminate\Http\Request;
-use Illuminate\Database\QueryException;
-use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\AlumnosExport;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AlumnoController extends Controller
 {
@@ -48,7 +48,7 @@ class AlumnoController extends Controller
 
             $query = Alumno::with(['bloque', 'bloques', 'sede']);
 
-            if ($user && $user->isProfesor() && !$user->isAdmin()) {
+            if ($user && $user->isProfesor() && ! $user->isAdmin()) {
                 $prof = $user->profesor;
                 if ($prof) {
                     $query->where(function ($sub) use ($prof) {
@@ -78,9 +78,9 @@ class AlumnoController extends Controller
 
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nombre_apellido', 'like', "%{$search}%")
-                      ->orWhere('dni', 'like', "%{$search}%");
+                        ->orWhere('dni', 'like', "%{$search}%");
                 });
             }
 
@@ -141,8 +141,8 @@ class AlumnoController extends Controller
             'telefono' => 'nullable|string|max:20',
             'instrumento_principal' => 'required|string',
             'instrumento_secundario' => 'nullable|string',
-            'tipo_tambor' => 'nullable|string|in:' . implode(',', self::TIPOS_TAMBOR),
-            'tambor_procedencia' => 'nullable|string|in:' . implode(',', self::TAMBOR_PROCEDENCIAS),
+            'tipo_tambor' => 'nullable|string|in:'.implode(',', self::TIPOS_TAMBOR),
+            'tambor_procedencia' => 'nullable|string|in:'.implode(',', self::TAMBOR_PROCEDENCIAS),
             'bloque_ids' => 'nullable|array',
             'bloque_ids.*' => 'exists:bloques,id',
             'bloque_principal_id' => 'nullable|exists:bloques,id',
@@ -219,6 +219,7 @@ class AlumnoController extends Controller
             if ($cuota->alumnos->isEmpty()) {
                 return true;
             }
+
             return $cuota->alumnos->contains('id', $alumno->id);
         })->values();
 
@@ -256,7 +257,7 @@ class AlumnoController extends Controller
 
             return [
                 'cuota' => $cuota,
-                'periodo' => ($cuota->mes ? str_pad((string) $cuota->mes, 2, '0', STR_PAD_LEFT) : '—') . '/' . ($cuota->año ?? '—'),
+                'periodo' => ($cuota->mes ? str_pad((string) $cuota->mes, 2, '0', STR_PAD_LEFT) : '—').'/'.($cuota->año ?? '—'),
                 'monto' => (float) $cuota->monto,
                 'fecha_pago' => $fechaPago,
                 'estado' => $estado,
@@ -296,13 +297,13 @@ class AlumnoController extends Controller
     {
         $validated = $request->validate([
             'nombre_apellido' => 'required|string|max:255',
-            'dni' => 'nullable|string|unique:alumnos,dni,' . $alumno->id . '|max:20',
+            'dni' => 'nullable|string|unique:alumnos,dni,'.$alumno->id.'|max:20',
             'fecha_nacimiento' => 'required|date',
             'telefono' => 'nullable|string|max:20',
             'instrumento_principal' => 'required|string',
             'instrumento_secundario' => 'nullable|string',
-            'tipo_tambor' => 'nullable|string|in:' . implode(',', self::TIPOS_TAMBOR),
-            'tambor_procedencia' => 'nullable|string|in:' . implode(',', self::TAMBOR_PROCEDENCIAS),
+            'tipo_tambor' => 'nullable|string|in:'.implode(',', self::TIPOS_TAMBOR),
+            'tambor_procedencia' => 'nullable|string|in:'.implode(',', self::TAMBOR_PROCEDENCIAS),
             'bloque_ids' => 'nullable|array',
             'bloque_ids.*' => 'exists:bloques,id',
             'bloque_principal_id' => 'nullable|exists:bloques,id',
@@ -341,7 +342,7 @@ class AlumnoController extends Controller
      */
     public function export(Request $request)
     {
-        return Excel::download(new AlumnosExport($request), 'alumnos_' . now()->format('Y-m-d') . '.xlsx');
+        return Excel::download(new AlumnosExport($request), 'alumnos_'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function importForm()
@@ -365,7 +366,7 @@ class AlumnoController extends Controller
         ]);
 
         $file = $request->file('archivo');
-        if (!$file) {
+        if (! $file) {
             throw ValidationException::withMessages(['archivo' => 'Archivo inválido.']);
         }
 
@@ -391,12 +392,13 @@ class AlumnoController extends Controller
                     $row,
                     $indexes,
                     (int) $data['sede_id'],
-                    !empty($data['bloque_id']) ? (int) $data['bloque_id'] : null
+                    ! empty($data['bloque_id']) ? (int) $data['bloque_id'] : null
                 );
 
-                if (!$mapped) {
+                if (! $mapped) {
                     $skipped++;
                     $errors[] = "Línea {$line}: faltan datos obligatorios (nombre y/o fecha de nacimiento).";
+
                     continue;
                 }
 
@@ -405,12 +407,12 @@ class AlumnoController extends Controller
                 /** @var Alumno $alumno */
                 $alumno = Alumno::updateOrCreate($lookup, array_diff_key($mapped, ['dni' => true, '_bloque_attach' => true]));
 
-                if (!empty($mapped['dni'])) {
+                if (! empty($mapped['dni'])) {
                     $alumno->dni = $mapped['dni'];
                     $alumno->save();
                 }
 
-                if (!empty($mapped['_bloque_attach'])) {
+                if (! empty($mapped['_bloque_attach'])) {
                     $alumno->bloques()->syncWithoutDetaching([
                         $mapped['_bloque_attach'] => ['es_principal' => true],
                     ]);
@@ -437,12 +439,13 @@ class AlumnoController extends Controller
     private function readSpreadsheetRows(string $path, string $ext): array
     {
         if (in_array($ext, ['xlsx', 'xls'], true)) {
-            $collection = Excel::toCollection(new class implements ToCollection {
+            $collection = Excel::toCollection(new class implements ToCollection
+            {
                 public function collection(\Illuminate\Support\Collection $rows) {}
             }, $path);
 
             $sheet = $collection->first();
-            if (!$sheet) {
+            if (! $sheet) {
                 return [];
             }
 
@@ -458,10 +461,11 @@ class AlumnoController extends Controller
         $firstLine = fgets($handle);
         if ($firstLine === false) {
             fclose($handle);
+
             return [];
         }
 
-        $delimiter = str_contains($firstLine, ';') && !str_contains($firstLine, ',') ? ';' : ',';
+        $delimiter = str_contains($firstLine, ';') && ! str_contains($firstLine, ',') ? ';' : ',';
         $rows[] = str_getcsv($firstLine, $delimiter);
 
         while (($data = fgetcsv($handle, 0, $delimiter)) !== false) {
@@ -473,7 +477,7 @@ class AlumnoController extends Controller
     }
 
     /**
-     * @param array<int, mixed> $headers
+     * @param  array<int, mixed>  $headers
      * @return array<int, string>
      */
     private function normalizeHeaders(array $headers): array
@@ -482,12 +486,13 @@ class AlumnoController extends Controller
             $h = trim((string) $h);
             $h = Str::lower($h);
             $h = preg_replace('/\s+/', ' ', $h) ?: $h;
+
             return $h;
         }, $headers);
     }
 
     /**
-     * @param array<int, string> $headers
+     * @param  array<int, string>  $headers
      * @return array<string, int>
      */
     private function buildIndexMap(array $headers): array
@@ -498,17 +503,18 @@ class AlumnoController extends Controller
             if ($key === 'tambor' && array_key_exists('tambor', $map)) {
                 $key = 'tambor_1';
             }
-            if (!array_key_exists($key, $map)) {
+            if (! array_key_exists($key, $map)) {
                 $map[$key] = $idx;
             }
         }
+
         return $map;
     }
 
     private function headerKey(string $header): string
     {
         $h = $header;
-        $h = str_replace(['á','é','í','ó','ú','ñ'], ['a','e','i','o','u','n'], $h);
+        $h = str_replace(['á', 'é', 'í', 'ó', 'ú', 'ñ'], ['a', 'e', 'i', 'o', 'u', 'n'], $h);
         $h = preg_replace('/[^a-z0-9 ]/', '', $h) ?: $h;
         $h = trim($h);
 
@@ -542,8 +548,8 @@ class AlumnoController extends Controller
     }
 
     /**
-     * @param array<int, mixed> $row
-     * @param array<string, int> $idx
+     * @param  array<int, mixed>  $row
+     * @param  array<string, int>  $idx
      * @return array<string, mixed>|null
      */
     private function mapAlumnoFromRow(array $row, array $idx, int $sedeId, ?int $bloqueId): ?array
@@ -555,7 +561,7 @@ class AlumnoController extends Controller
 
         $fechaRaw = $this->importCell($row, $idx, 'fecha_nacimiento');
         $fecha = $this->parseFechaNacimiento($fechaRaw);
-        if (!$fecha) {
+        if (! $fecha) {
             return null;
         }
 
@@ -588,14 +594,15 @@ class AlumnoController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $mapped
+     * @param  array<string, mixed>  $mapped
      * @return array<string, mixed>
      */
     private function buildAlumnoLookup(array $mapped): array
     {
-        if (!empty($mapped['dni'])) {
+        if (! empty($mapped['dni'])) {
             return ['dni' => $mapped['dni']];
         }
+
         return [
             'nombre_apellido' => $mapped['nombre_apellido'],
             'sede_id' => $mapped['sede_id'],
@@ -626,7 +633,7 @@ class AlumnoController extends Controller
     }
 
     /**
-     * @param array<int, string> $allowed
+     * @param  array<int, string>  $allowed
      */
     private function normalizeOneOf(string $value, array $allowed): ?string
     {
@@ -639,6 +646,7 @@ class AlumnoController extends Controller
                 return $a;
             }
         }
+
         return null;
     }
 

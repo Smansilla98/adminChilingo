@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Alumno;
+use App\Models\Asistencia;
 use App\Models\Bloque;
 use App\Models\Cuota;
-use App\Models\Asistencia;
 use App\Models\Gasto;
 use App\Models\PagoDetalle;
 use App\Models\Profesor;
 use App\Models\Sede;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ReportesController extends Controller
 {
@@ -64,7 +62,7 @@ class ReportesController extends Controller
         $totalEmitidoPorProfesor = [];
         foreach ($cuotasPeriodo as $cuota) {
             $profesorId = $cuota->bloque?->profesor_id;
-            if (!$profesorId) {
+            if (! $profesorId) {
                 continue;
             }
 
@@ -102,7 +100,7 @@ class ReportesController extends Controller
 
         if ($añosDisponibles->isEmpty()) {
             $añosDisponibles = collect([$año]);
-        } elseif (!$añosDisponibles->contains($año)) {
+        } elseif (! $añosDisponibles->contains($año)) {
             $añosDisponibles->prepend($año);
         }
 
@@ -147,9 +145,10 @@ class ReportesController extends Controller
 
                 $promedios = $rows->map(function ($r) use ($presentesPorBloque) {
                     $meta = $presentesPorBloque->get($r->bloque_id);
-                    if (!$meta || (int) $meta->clases === 0) {
+                    if (! $meta || (int) $meta->clases === 0) {
                         return null;
                     }
+
                     return (float) $meta->presentes / (int) $meta->clases;
                 })->filter();
 
@@ -211,7 +210,7 @@ class ReportesController extends Controller
         $gastosPorSede = [];
         foreach ($gastosBase as $g) {
             $sid = $g->sede_id;
-            if (!isset($gastosPorSede[$sid])) {
+            if (! isset($gastosPorSede[$sid])) {
                 $gastosPorSede[$sid] = [
                     'sueldos' => 0,
                     'alquiler' => 0,
@@ -272,6 +271,7 @@ class ReportesController extends Controller
         foreach ($insumosPorSede as $sedeId => $gastosInsumos) {
             if ($gastosInsumos->count() < 2) {
                 $frecuenciasInsumos[$sedeId] = null;
+
                 continue;
             }
             $diffs = [];
@@ -359,4 +359,3 @@ class ReportesController extends Controller
         return view('reportes.profesores', compact('alumnosPorProfesor'));
     }
 }
-

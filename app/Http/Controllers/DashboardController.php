@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Alumno;
-use App\Models\Profesor;
+use App\Models\Asistencia;
 use App\Models\Bloque;
 use App\Models\BloqueHorario;
+use App\Models\ComprobanteCuotaAlumno;
 use App\Models\Cuota;
+use App\Models\Evento;
+use App\Models\Gasto;
 use App\Models\Pago;
 use App\Models\PagoDetalle;
-use App\Models\Asistencia;
+use App\Models\Profesor;
 use App\Models\Sede;
-use App\Models\Evento;
-use App\Models\ComprobanteCuotaAlumno;
-use App\Models\Gasto;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -27,7 +26,7 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         // Si es profesor, mostrar dashboard limitado
-        if ($user->isProfesor() && !$user->isAdmin()) {
+        if ($user->isProfesor() && ! $user->isAdmin()) {
             return $this->dashboardProfesor();
         }
 
@@ -119,6 +118,7 @@ class DashboardController extends Controller
                         ->join('');
                     $colors = ['av-orange', 'av-blue', 'av-green', 'av-purple', 'av-amber'];
                     $p->avatar_class = $colors[abs(crc32((string) $p->id)) % count($colors)];
+
                     return $p;
                 })
                 ->sortByDesc('alumnos_count')
@@ -210,6 +210,7 @@ class DashboardController extends Controller
             $recaudacion = collect(range(5, 0))->map(function ($i) {
                 $inicio = Carbon::now()->startOfWeek(Carbon::MONDAY)->subWeeks($i);
                 $fin = $inicio->copy()->endOfWeek(Carbon::SUNDAY);
+
                 return (float) Pago::whereBetween('fecha_pago', [$inicio->toDateString(), $fin->toDateString()])->sum('monto_total');
             });
 

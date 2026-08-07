@@ -17,9 +17,10 @@ class BloqueHorarioController extends Controller
         ]);
         $bloque->horarios()->create([
             'dia_semana' => $validated['dia_semana'],
-            'hora_inicio' => $validated['hora_inicio'] . ':00',
-            'hora_fin' => $validated['hora_fin'] . ':00',
+            'hora_inicio' => $validated['hora_inicio'].':00',
+            'hora_fin' => $validated['hora_fin'].':00',
         ]);
+
         return redirect()->route('bloques.edit', $bloque)->with('success', 'Horario agregado.');
     }
 
@@ -27,6 +28,7 @@ class BloqueHorarioController extends Controller
     {
         $bloque = $bloqueHorario->bloque;
         $bloqueHorario->delete();
+
         return redirect()->route('bloques.edit', $bloque)->with('success', 'Horario eliminado.');
     }
 }

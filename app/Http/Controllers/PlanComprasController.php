@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sede;
-use App\Models\InventarioItem;
 
 class PlanComprasController extends Controller
 {
@@ -89,4 +88,3 @@ class PlanComprasController extends Controller
         ]);
     }
 }
-

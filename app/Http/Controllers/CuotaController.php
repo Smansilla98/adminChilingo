@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumno;
-use App\Models\Cuota;
 use App\Models\Bloque;
+use App\Models\Cuota;
 use App\Models\Sede;
-use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 
 class CuotaController extends Controller
 {

@@ -9,4 +9,3 @@ class AyudaController extends Controller
         return view('ayuda.index');
     }
 }
-
