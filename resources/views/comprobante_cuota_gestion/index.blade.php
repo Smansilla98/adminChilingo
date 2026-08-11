@@ -13,6 +13,7 @@
                     <option value="">Todos los estados</option>
                     <option value="pendiente" @selected(request('estado') === 'pendiente')>Pendiente</option>
                     <option value="visto" @selected(request('estado') === 'visto')>Visto</option>
+                    <option value="pagado" @selected(request('estado') === 'pagado')>Pagado</option>
                 </select>
             </div>
         </form>
@@ -23,7 +24,7 @@
             <tr>
                 <th>Fecha envío</th>
                 <th>Alumno</th>
-                <th>Sede</th>
+                <th>Sede / bloques</th>
                 <th>Monto</th>
                 <th>Estado</th>
                 <th></th>
@@ -31,22 +32,44 @@
         </thead>
         <tbody>
             @forelse($comprobantes as $c)
+                @php
+                    $tone = match($c->estado) {
+                        'pendiente' => 'warning',
+                        'pagado' => 'success',
+                        default => 'neutral',
+                    };
+                    $bloquesTxt = $c->items->map(function ($it) {
+                        $n = $it->bloque?->nombre;
+                        $s = $it->bloque?->sede?->nombre;
+                        return $n ? ($s ? "$n · $s" : $n) : null;
+                    })->filter()->unique()->take(2)->implode(', ');
+                @endphp
                 <tr>
                     <td class="ito-mono">{{ $c->created_at?->format('d/m/Y H:i') }}</td>
                     <td>
                         <x-ito.person :name="$c->alumno?->nombre_apellido ?? '—'" />
                     </td>
-                    <td>{{ $c->sede?->nombre ?? '—' }}</td>
+                    <td>
+                        <div>{{ $c->sede?->nombre ?? '—' }}</div>
+                        @if($bloquesTxt)
+                            <div class="small text-muted">{{ $bloquesTxt }}</div>
+                        @endif
+                    </td>
                     <td class="ito-mono">$ {{ number_format($c->monto_total, 2, ',', '.') }}</td>
                     <td>
-                        <x-ito.status
-                            :tone="$c->estado === 'pendiente' ? 'warning' : 'neutral'"
-                            :label="$c->estado === 'pendiente' ? 'Pendiente' : 'Visto'"
-                        />
+                        <x-ito.status :tone="$tone" :label="$c->etiquetaEstado()" />
                     </td>
                     <td>
                         <x-ito.actions :id="'comp-'.$c->id">
                             <li><a class="dropdown-item" href="{{ route('comprobantes-cuota-alumnos.show', $c->id) }}"><i class="bi bi-eye"></i> Ver</a></li>
+                            @if(auth()->user()->isAdmin() && ! $c->estaPagado())
+                                <li>
+                                    <form action="{{ route('comprobantes-cuota-alumnos.aprobar-pago', $c->id) }}" method="post" data-confirm="¿Registrar pago desde este comprobante?">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item"><i class="bi bi-cash-coin"></i> Aprobar y pagar</button>
+                                    </form>
+                                </li>
+                            @endif
                         </x-ito.actions>
                     </td>
                 </tr>

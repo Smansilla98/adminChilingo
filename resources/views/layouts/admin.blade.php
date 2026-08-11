@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=10">
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=11">
     @include('layouts.partials.apariencia-head')
 
     @stack('vite')
@@ -22,7 +22,7 @@
 @php
     $sideUserName = auth()->user()->name ?: auth()->user()->username ?: 'Usuario';
     $sideUserInitials = collect(preg_split('/\s+/', trim($sideUserName)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('') ?: 'U';
-    $sideUserRole = auth()->user()->isAdmin() ? 'Administrador' : 'Profesor';
+    $sideUserRole = auth()->user()->etiquetaRol();
 @endphp
 <div class="shell shell--maxton" id="appShell">
     <button type="button" class="nav-backdrop" id="navBackdrop" aria-label="Cerrar menú"></button>
@@ -169,27 +169,64 @@
     const box = wrap.querySelector('[data-hub-search-results]');
     const dataEl = wrap.querySelector('[data-hub-search-data]');
     if (!input || !box || !dataEl) return;
-    let items = [];
-    try { items = JSON.parse(dataEl.textContent || '[]'); } catch (e) { items = []; }
+    let modules = [];
+    try { modules = JSON.parse(dataEl.textContent || '[]'); } catch (e) { modules = []; }
+    let timer = null;
+    let entityHits = [];
+    const searchUrl = @json(auth()->check() ? route('hub.search') : '');
+
+    function esc(s) {
+        return String(s || '').replace(/[&<>"']/g, function (c) {
+            return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);
+        });
+    }
+
     function render(q) {
         const query = (q || '').trim().toLowerCase();
-        const hits = !query ? items.slice(0, 8) : items.filter(function (it) {
+        const modHits = (!query ? modules.slice(0, 6) : modules.filter(function (it) {
             return (it.label || '').toLowerCase().indexOf(query) !== -1;
-        }).slice(0, 10);
+        }).slice(0, 6));
+        const hits = modHits.concat(entityHits).slice(0, 16);
         if (!hits.length) {
             box.innerHTML = '<div class="topbar-search-empty">Sin resultados</div>';
             box.hidden = false;
             return;
         }
         box.innerHTML = hits.map(function (it) {
-            return '<a class="topbar-search-item" role="option" href="' + it.href + '">' +
-                '<i class="bi ' + (it.icon || 'bi-box') + '" aria-hidden="true"></i>' +
-                '<span>' + it.label + '</span></a>';
+            return '<a class="topbar-search-item" role="option" href="' + esc(it.href) + '">' +
+                '<i class="bi ' + esc(it.icon || 'bi-box') + '" aria-hidden="true"></i>' +
+                '<span><strong>' + esc(it.label) + '</strong>' +
+                (it.meta ? '<small class="d-block text-muted">' + esc(it.meta) + '</small>' : '') +
+                '</span></a>';
         }).join('');
         box.hidden = false;
     }
+
+    function fetchEntities(q) {
+        if (!searchUrl || !q || q.length < 2) {
+            entityHits = [];
+            render(q);
+            return;
+        }
+        fetch(searchUrl + '?q=' + encodeURIComponent(q), {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        }).then(function (r) { return r.json(); }).then(function (data) {
+            entityHits = Array.isArray(data.results) ? data.results : [];
+            render(q);
+        }).catch(function () {
+            entityHits = [];
+            render(q);
+        });
+    }
+
     input.addEventListener('focus', function () { render(input.value); });
-    input.addEventListener('input', function () { render(input.value); });
+    input.addEventListener('input', function () {
+        const q = input.value;
+        render(q);
+        clearTimeout(timer);
+        timer = setTimeout(function () { fetchEntities(q.trim()); }, 220);
+    });
     input.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') { box.hidden = true; input.blur(); }
         else if (e.key === 'Enter') {

@@ -5,6 +5,21 @@
 
 @section('content')
 <div class="reportes-wrap">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        @if(!empty($sedeScope))
+            <span class="badge bg-info text-dark">Vista filtrada por tus sedes</span>
+        @endif
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ route('reportes.export.excel', ['mes' => $mes, 'año' => $año]) }}" class="btn btn-sm btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+        </a>
+        <a href="{{ route('reportes.export.pdf', ['mes' => $mes, 'año' => $año]) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
+            <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
+        </a>
+    </div>
+</div>
 <ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item">
         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#rep-alumnos" type="button" role="tab">

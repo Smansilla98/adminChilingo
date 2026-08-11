@@ -46,9 +46,17 @@ class AlumnoController extends Controller
             /** @var \App\Models\User|null $user */
             $user = auth()->user();
 
-            $query = Alumno::with(['bloque', 'bloques', 'sede']);
+            $query = Alumno::with(['bloque.sede', 'bloques.sede', 'sede']);
 
-            if ($user && $user->isProfesor() && ! $user->isAdmin()) {
+            if ($user && $user->isCoordinadorSede() && ! $user->isAdmin()) {
+                $sedeIds = $user->sedeIdsCoordinadas();
+                $ids = $sedeIds !== [] ? $sedeIds : [0];
+                $query->where(function ($q) use ($ids) {
+                    $q->whereIn('sede_id', $ids)
+                        ->orWhereHas('bloques', fn ($b) => $b->whereIn('bloques.sede_id', $ids))
+                        ->orWhereHas('bloque', fn ($b) => $b->whereIn('sede_id', $ids));
+                });
+            } elseif ($user && $user->isProfesor() && ! $user->isAdmin() && ! $user->puedeGestionarOperativo()) {
                 $prof = $user->profesor;
                 if ($prof) {
                     $query->where(function ($sub) use ($prof) {

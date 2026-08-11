@@ -4,6 +4,7 @@
         $u = auth()->user();
         $candidates = [
             ['Dashboard', 'dashboard', 'bi-house'],
+            ['Pendientes', 'operativo.pendientes', 'bi-check2-square'],
             ['Alumnos', 'alumnos.index', 'bi-people', 'admin.alumnos'],
             ['Profesores', 'profesores.index', 'bi-person-badge', 'admin.profesores'],
             ['Bloques', 'bloques.index', 'bi-collection', 'admin.bloques'],
@@ -74,7 +75,7 @@
             type="search"
             id="hubModuleSearch"
             class="topbar-search-input"
-            placeholder="Buscar módulo del sistema…"
+            placeholder="Buscar módulo, alumno, bloque…"
             autocomplete="off"
             data-hub-search-input
         >

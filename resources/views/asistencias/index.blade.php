@@ -4,6 +4,11 @@
 @section('page-title', 'Asistencias')
 
 @section('content')
+@php
+    $esProfeSolo = auth()->user()?->isProfesor() && ! auth()->user()?->isAdmin();
+    $matrixIndexRoute = $esProfeSolo ? 'profesor.asistencias.matrix' : 'asistencias.index';
+    $diaCreateRoute = $esProfeSolo ? 'profesor.asistencias.create' : 'asistencias.create';
+@endphp
 <div class="ito-page">
     <div class="ito-page-head">
         <div>
@@ -14,19 +19,21 @@
                     Matriz de asistencias
                 @endif
             </h1>
-            <p class="ito-page-sub">Control de presencia por bloque</p>
+            <p class="ito-page-sub">Control de presencia por bloque · sede visible en cada filtro</p>
         </div>
         <div class="ito-page-actions">
             @if(empty($vistaLista))
-            <a href="{{ route('asistencias.create') }}" class="btn btn-secondary btn-sm">
+            <a href="{{ route($diaCreateRoute) }}" class="btn btn-secondary btn-sm">
                 <i class="bi bi-calendar-plus"></i> Cargar un día
             </a>
             @endif
+            @unless($esProfeSolo)
             <a href="{{ route('asistencias.index', array_merge(request()->except('vista'), ['vista' => 'lista'])) }}" class="btn btn-secondary btn-sm">
                 <i class="bi bi-list-ul"></i> Vista lista
             </a>
+            @endunless
             @if(!empty($vistaLista))
-            <a href="{{ route('asistencias.index', request()->except('vista')) }}" class="btn btn-primary btn-sm">
+            <a href="{{ route($matrixIndexRoute, request()->except('vista')) }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-grid-3x3"></i> Volver a matriz
             </a>
             @endif
@@ -67,7 +74,7 @@
             <span><i style="background:var(--s3);color:var(--muted);border:1px solid var(--border)">—</i> Sin marcar</span>
         </div>
 
-        <form method="GET" class="mb-3">
+        <form method="GET" action="{{ route($matrixIndexRoute) }}" class="mb-3">
             <div class="row g-3 align-items-end">
                 <div class="col-md-4">
                     <label class="form-label">Bloque</label>
@@ -111,11 +118,17 @@
             </div>
         </div>
 
-        <form action="{{ route('asistencias.matrix.update') }}" method="POST" class="asistencias-matrix-form" id="asistencias-matrix-form">
+        <form action="{{ route($matrixUpdateRoute ?? 'asistencias.matrix.update') }}" method="POST" class="asistencias-matrix-form" id="asistencias-matrix-form">
             @csrf
             <input type="hidden" name="bloque_id" value="{{ $bloque->id }}">
             <input type="hidden" name="mes" value="{{ $mes }}">
             <input type="hidden" name="año" value="{{ $año }}">
+
+            @if(($marcadoresEspeciales ?? 0) > 0)
+            <div class="alert alert-info py-2 small mb-3">
+                Este mes ya tiene <strong>{{ $marcadoresEspeciales }}</strong> marca(s) de feriado o sin clases. Revisá antes de pisar columnas enteras.
+            </div>
+            @endif
 
             @if($alumnos->isNotEmpty())
             <div class="asist-bulk-bar mb-3" role="group" aria-label="Asignación masiva de asistencia">
@@ -123,7 +136,7 @@
                     <label for="asist-bulk-tipo">Asignación masiva</label>
                     <select id="asist-bulk-tipo" class="form-select form-select-sm">
                         <option value="">— Sin marcar</option>
-                        <option value="presente">P · Presente</option>
+                        <option value="presente" selected>P · Presente</option>
                         <option value="tarde">T · Tarde</option>
                         <option value="ausencia_justificada">J · Justificado</option>
                         <option value="ausencia_injustificada">I · Ausente</option>
@@ -131,10 +144,16 @@
                         <option value="sin_clases">S · Sin clases</option>
                     </select>
                 </div>
-                <button type="button" class="btn btn-secondary btn-sm" id="asist-bulk-all" title="Aplica el tipo elegido a todas las celdas de la planilla">
+                <button type="button" class="btn btn-secondary btn-sm" id="asist-bulk-all" title="Aplica el tipo elegido a todas las celdas">
                     Aplicar a toda la planilla
                 </button>
-                <span class="text-muted small">O usá ↓ en cada día para aplicar solo a esa columna.</span>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="asist-bulk-presentes" title="Marca todos presentes">
+                    Todos presentes
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="asist-copy-prev" title="Copia cada columna desde el día anterior de la matriz">
+                    Copiar día anterior
+                </button>
+                <span class="text-muted small d-none d-md-inline">O usá ↓ en cada día.</span>
             </div>
             @endif
 
@@ -229,8 +248,9 @@
             </div>
 
             @if($alumnos->isNotEmpty())
-            <div class="mt-3">
-                <button type="submit" class="btn btn-primary">Guardar matriz</button>
+            <div class="asist-sticky-save mt-3">
+                <button type="submit" class="btn btn-primary btn-lg w-100 w-md-auto">Guardar matriz</button>
+                <span class="text-muted small">Los cambios no se guardan hasta tocar este botón.</span>
             </div>
             @endif
         </form>
@@ -269,8 +289,8 @@
                 select.dataset.letra = letraByTipo[select.value] || '—';
             }
 
-            function applyToSelects(selects) {
-                var tipo = bulkTipo ? bulkTipo.value : '';
+            function applyToSelects(selects, tipoOverride) {
+                var tipo = typeof tipoOverride === 'string' ? tipoOverride : (bulkTipo ? bulkTipo.value : '');
                 selects.forEach(function (sel) {
                     sel.value = tipo;
                     paintCell(sel);
@@ -288,6 +308,14 @@
                 });
             }
 
+            var btnPresentes = document.getElementById('asist-bulk-presentes');
+            if (btnPresentes) {
+                btnPresentes.addEventListener('click', function () {
+                    if (bulkTipo) bulkTipo.value = 'presente';
+                    applyToSelects(Array.from(form.querySelectorAll('.asistencia-cell-select')), 'presente');
+                });
+            }
+
             form.querySelectorAll('.asist-bulk-col').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     var fecha = btn.getAttribute('data-fecha');
@@ -295,6 +323,28 @@
                     applyToSelects(Array.from(form.querySelectorAll('.asistencia-cell-select[data-fecha="' + fecha + '"]')));
                 });
             });
+
+            var btnCopy = document.getElementById('asist-copy-prev');
+            if (btnCopy) {
+                btnCopy.addEventListener('click', function () {
+                    var fechas = [];
+                    form.querySelectorAll('.asist-bulk-col').forEach(function (b) {
+                        var f = b.getAttribute('data-fecha');
+                        if (f && fechas.indexOf(f) === -1) fechas.push(f);
+                    });
+                    for (var i = 1; i < fechas.length; i++) {
+                        var prev = fechas[i - 1];
+                        var cur = fechas[i];
+                        var prevSelects = Array.from(form.querySelectorAll('.asistencia-cell-select[data-fecha="' + prev + '"]'));
+                        var curSelects = Array.from(form.querySelectorAll('.asistencia-cell-select[data-fecha="' + cur + '"]'));
+                        curSelects.forEach(function (sel, idx) {
+                            if (!prevSelects[idx]) return;
+                            sel.value = prevSelects[idx].value;
+                            paintCell(sel);
+                        });
+                    }
+                });
+            }
         })();
         </script>
         @endpush

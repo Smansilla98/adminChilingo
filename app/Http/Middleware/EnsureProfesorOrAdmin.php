@@ -11,10 +11,14 @@ class EnsureProfesorOrAdmin
     public function handle(Request $request, Closure $next): Response
     {
         $u = $request->user();
-        if (! $u || (! $u->isAdmin() && ! $u->isProfesor())) {
+        if (! $u) {
             abort(403);
         }
 
-        return $next($request);
+        if ($u->isAdmin() || $u->isProfesor() || $u->isCoordinadorSede() || $u->isCoordinadorArea()) {
+            return $next($request);
+        }
+
+        abort(403);
     }
 }

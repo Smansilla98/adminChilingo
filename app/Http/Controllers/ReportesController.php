@@ -16,8 +16,109 @@ class ReportesController extends Controller
 {
     public function index(Request $request)
     {
+        $this->assertPuedeVerReportes();
+
         $mes = $request->filled('mes') ? (int) $request->mes : (int) now()->month;
         $año = $request->filled('año') ? (int) $request->año : (int) now()->year;
+        $data = $this->compilarDatos($mes, $año);
+
+        return view('reportes.index', $data);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $this->assertPuedeVerReportes();
+
+        $mes = $request->filled('mes') ? (int) $request->mes : (int) now()->month;
+        $año = $request->filled('año') ? (int) $request->año : (int) now()->year;
+        $data = $this->compilarDatos($mes, $año);
+
+        $payload = [
+            'meta' => ['mes' => $mes, 'año' => $año],
+            'alumnos_profesor' => collect($data['alumnosPorProfesor'])->map(fn ($r) => [
+                $r['profesor']->nombre,
+                $r['sedes']->join(', '),
+                $r['bloques_count'],
+                $r['alumnos_count'],
+            ])->all(),
+            'ingresos_profesor' => collect($data['ingresosPorProfesor'])->map(fn ($r) => [
+                $r['profesor']->nombre,
+                $r['alumnos_count'],
+                round($r['emitido'], 2),
+                round($r['cobrado'], 2),
+                $r['porcentaje_cobrado'],
+            ])->all(),
+            'actividad' => collect($data['actividadPorProfesor'])->map(fn ($r) => [
+                $r['profesor_nombre'],
+                $r['clases_dictadas'],
+                $r['alumnos_promedio_presentes'],
+                $r['ultimo_bloque']?->nombre ?? '—',
+                $r['ultima_fecha'] ?? '—',
+            ])->all(),
+            'alumnos_bloque' => collect($data['alumnosPorBloque'])->map(fn ($r) => [
+                $r['sede']?->nombre ?? '—',
+                $r['bloque']->nombre,
+                $r['profesor']?->nombre ?? '—',
+                $r['alumnos_count'],
+                round((float) ($data['ingresosPorBloque'][$r['bloque']->id] ?? 0), 2),
+            ])->all(),
+            'financiero_sede' => collect($data['resumenFinanciero'])->map(fn ($r) => [
+                $r['sede']->nombre,
+                round($r['ingresos'], 2),
+                round($r['total_gastos'], 2),
+                round($r['resultado'], 2),
+            ])->all(),
+            'global' => [
+                ['Ingresos totales', round($data['ingresosTotales'], 2)],
+                ['Gastos totales', round($data['gastosTotales'], 2)],
+                ['Resultado', round($data['resultadoGlobal'], 2)],
+            ],
+        ];
+
+        $nombre = sprintf('reportes-%04d-%02d.xlsx', $año, $mes);
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ReportesExport($payload), $nombre);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $this->assertPuedeVerReportes();
+
+        $mes = $request->filled('mes') ? (int) $request->mes : (int) now()->month;
+        $año = $request->filled('año') ? (int) $request->año : (int) now()->year;
+        $data = $this->compilarDatos($mes, $año);
+
+        return view('reportes.pdf', $data);
+    }
+
+    private function assertPuedeVerReportes(): void
+    {
+        if (! auth()->user()?->puedeVerReportes()) {
+            abort(403, 'No tenés acceso a reportes.');
+        }
+    }
+
+    /**
+     * @return list<int>|null null = sin filtro (admin)
+     */
+    private function sedeScopeIds(): ?array
+    {
+        $user = auth()->user();
+        if (! $user || $user->isAdmin()) {
+            return null;
+        }
+        if ($user->isCoordinadorSede()) {
+            $ids = $user->sedeIdsCoordinadas();
+
+            return $ids !== [] ? $ids : [0];
+        }
+
+        return null;
+    }
+
+    private function compilarDatos(int $mes, int $año): array
+    {
+        $sedeScope = $this->sedeScopeIds();
 
         // 1) Alumnos por profesor
         $profesores = Profesor::with(['bloques.alumnos' => fn ($q) => $q->where('alumnos.activo', true)])
@@ -174,11 +275,14 @@ class ReportesController extends Controller
             ->values();
 
         // 2) Alumnos por bloque
-        $bloques = Bloque::with(['sede', 'profesor', 'alumnos' => fn ($q) => $q->where('alumnos.activo', true)])
+        $bloquesQ = Bloque::with(['sede', 'profesor', 'alumnos' => fn ($q) => $q->where('alumnos.activo', true)])
             ->where('activo', true)
             ->orderBy('sede_id')
-            ->orderBy('nombre')
-            ->get();
+            ->orderBy('nombre');
+        if ($sedeScope !== null) {
+            $bloquesQ->whereIn('sede_id', $sedeScope);
+        }
+        $bloques = $bloquesQ->get();
 
         $alumnosPorBloque = $bloques->map(function (Bloque $b) {
             return [
@@ -284,7 +388,11 @@ class ReportesController extends Controller
         }
 
         // 6) Armar resumen por sede (ingresos vs egresos, propiedad sede, etc.)
-        $sedes = Sede::with(['gastos'])->orderBy('nombre')->get();
+        $sedesQ = Sede::with(['gastos'])->orderBy('nombre');
+        if ($sedeScope !== null) {
+            $sedesQ->whereIn('id', $sedeScope);
+        }
+        $sedes = $sedesQ->get();
         $resumenFinanciero = [];
 
         foreach ($sedes as $sede) {
@@ -314,12 +422,41 @@ class ReportesController extends Controller
             ];
         }
 
-        // 7) Inversión total vs recuperado (global)
-        $ingresosTotales = (float) PagoDetalle::sum('monto');
-        $gastosTotales = (float) Gasto::sum('monto');
+        // 7) Inversión total vs recuperado
+        if ($sedeScope !== null) {
+            $ingresosTotales = (float) collect($resumenFinanciero)->sum('ingresos');
+            $gastosTotales = (float) collect($resumenFinanciero)->sum('total_gastos');
+        } else {
+            $ingresosTotales = (float) PagoDetalle::sum('monto');
+            $gastosTotales = (float) Gasto::sum('monto');
+        }
         $resultadoGlobal = $ingresosTotales - $gastosTotales;
 
-        return view('reportes.index', [
+        // Scope por sede: filtrar bloques / profesores
+        if ($sedeScope !== null) {
+            $alumnosPorBloque = $alumnosPorBloque->filter(
+                fn ($r) => in_array((int) ($r['sede']?->id ?? 0), $sedeScope, true)
+            )->values();
+            $alumnosPorProfesor = $alumnosPorProfesor->filter(function ($r) use ($sedeScope) {
+                $sedeNombres = Sede::query()->whereIn('id', $sedeScope)->pluck('nombre')->all();
+
+                return $r['sedes']->intersect($sedeNombres)->isNotEmpty()
+                    || $r['sedes']->isEmpty();
+            })->values();
+            // Mejor: filtrar por bloques de la sede
+            $profIdsEnSede = Bloque::query()->whereIn('sede_id', $sedeScope)->pluck('profesor_id')->filter()->unique()->all();
+            $alumnosPorProfesor = $alumnosPorProfesor->filter(
+                fn ($r) => in_array((int) $r['profesor']->id, $profIdsEnSede, true)
+            )->values();
+            $ingresosPorProfesor = $ingresosPorProfesor->filter(
+                fn ($r) => in_array((int) $r['profesor']->id, $profIdsEnSede, true)
+            )->values();
+            $actividadPorProfesor = $actividadPorProfesor->filter(
+                fn ($r) => in_array((int) $r['profesor_id'], $profIdsEnSede, true)
+            )->values();
+        }
+
+        return [
             'mes' => $mes,
             'año' => $año,
             'añosDisponibles' => $añosDisponibles,
@@ -332,17 +469,24 @@ class ReportesController extends Controller
             'ingresosTotales' => $ingresosTotales,
             'gastosTotales' => $gastosTotales,
             'resultadoGlobal' => $resultadoGlobal,
-        ]);
+            'sedeScope' => $sedeScope,
+        ];
     }
 
     public function profesores()
     {
+        $this->assertPuedeVerReportes();
+        $sedeScope = $this->sedeScopeIds();
+
         $profesores = Profesor::with(['bloques.alumnos' => fn ($q) => $q->where('alumnos.activo', true), 'bloques.sede'])
             ->where('activo', true)
             ->get();
 
-        $alumnosPorProfesor = $profesores->map(function (Profesor $profesor) {
+        $alumnosPorProfesor = $profesores->map(function (Profesor $profesor) use ($sedeScope) {
             $bloques = $profesor->bloques;
+            if ($sedeScope !== null) {
+                $bloques = $bloques->filter(fn (Bloque $b) => in_array((int) $b->sede_id, $sedeScope, true));
+            }
             $alumnosIds = $bloques
                 ->flatMap(fn (Bloque $b) => $b->alumnos->pluck('id'))
                 ->unique()

@@ -64,9 +64,10 @@
         'config' => [
             'label' => 'Configuración',
             'accent' => 'config',
-            'patterns' => ['accesos.*', 'ayuda', 'apariencia.*'],
+            'patterns' => ['accesos.*', 'ayuda', 'apariencia.*', 'operativo.cierre-mes'],
             'links' => array_filter([
                 auth()->user()->isAdmin() ? ['route' => 'accesos.index', 'label' => 'Accesos', 'pattern' => 'accesos.*'] : null,
+                auth()->user()->isAdmin() ? ['route' => 'operativo.cierre-mes', 'label' => 'Cierre de mes', 'pattern' => 'operativo.cierre-mes'] : null,
                 ['route' => 'apariencia.edit', 'label' => 'Apariencia', 'pattern' => 'apariencia.*'],
                 auth()->user()->tieneAccesoModulo('ayuda') ? ['route' => 'ayuda', 'label' => 'Ayuda', 'pattern' => 'ayuda'] : null,
             ]),
@@ -85,10 +86,12 @@
 
     $profesorLinks = array_filter([
         auth()->user()->tieneAccesoModulo('profesor.mis_bloques') ? ['route' => 'profesor.bloques', 'label' => 'Mis bloques', 'pattern' => 'profesor.bloques*'] : null,
-        auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.create', 'label' => 'Asistencia', 'pattern' => 'profesor.asistencias.*'] : null,
+        auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.matrix', 'label' => 'Asistencias (matriz)', 'pattern' => 'profesor.asistencias.matrix*'] : null,
+        auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.create', 'label' => 'Asistencia del día', 'pattern' => 'profesor.asistencias.create'] : null,
         auth()->user()->tieneAccesoModulo('profesor.mis_alumnos') ? ['route' => 'profesor.alumnos', 'label' => 'Mis alumnos', 'pattern' => 'profesor.alumnos*'] : null,
         auth()->user()->tieneAccesoModulo('profesor.pagos_cuotas') ? ['route' => 'profesor.pagos-cuotas.index', 'label' => 'Pagos de cuotas', 'pattern' => 'profesor.pagos-cuotas.*'] : null,
         auth()->user()->tieneAccesoModulo('comprobantes') ? ['route' => 'comprobantes-cuota-alumnos.index', 'label' => 'Comprobantes', 'pattern' => 'comprobantes-cuota-alumnos.*'] : null,
+        auth()->user()->tieneAccesoModulo('profesor.mis_eventos') ? ['route' => 'profesor.eventos', 'label' => 'Mis eventos', 'pattern' => 'profesor.eventos*'] : null,
         auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
         auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
         auth()->user()->tieneAccesoModulo('calendario') ? ['route' => 'calendario.index', 'label' => 'Calendario', 'pattern' => 'calendario.*'] : null,
@@ -108,9 +111,22 @@
     <span class="side-link-text">Inicio</span>
 </a>
 
-@if(auth()->user()->isAdmin())
+<a class="side-link side-link--top {{ request()->routeIs('operativo.pendientes') ? 'active' : '' }}"
+   href="{{ route('operativo.pendientes') }}"
+   title="Pendientes">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span class="side-link-text">Pendientes</span>
+</a>
+
+@if(auth()->user()->puedeGestionarOperativo())
     @foreach($navGroups as $key => $group)
-        @if(count($group['links']) > 0)
+        @php
+            $groupLinks = array_values(array_filter($group['links'], function ($link) {
+                // Los links ya vienen filtrados por tieneAccesoModulo; coordinadores respetan puedeVerLinkGestion vía ese helper.
+                return $link !== null;
+            }));
+        @endphp
+        @if(count($groupLinks) > 0)
             <div class="nav-group {{ $activeGroup === $key ? 'open' : '' }}" data-accent="{{ $group['accent'] }}">
                 <button type="button" class="nav-group-btn" aria-expanded="{{ $activeGroup === $key ? 'true' : 'false' }}">
                     <span class="nav-group-dot" aria-hidden="true"></span>
@@ -118,7 +134,7 @@
                     <svg class="nav-group-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
                 </button>
                 <div class="nav-group-links">
-                    @foreach($group['links'] as $link)
+                    @foreach($groupLinks as $link)
                         @php
                             $href = route($link['route']).($link['fragment'] ?? '');
                             $isActive = request()->routeIs($link['pattern']);

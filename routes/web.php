@@ -19,7 +19,9 @@ use App\Http\Controllers\DisenoController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\FacturacionMensualController;
 use App\Http\Controllers\GastoController;
+use App\Http\Controllers\HubSearchController;
 use App\Http\Controllers\InventarioItemController;
+use App\Http\Controllers\OperativoController;
 use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\PlanComprasController;
@@ -56,8 +58,13 @@ Route::prefix('biblioteca')->middleware('throttle:60,1')->group(function () {
 // Rutas públicas
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
+if (filter_var(env('ALLOW_PUBLIC_REGISTER', false), FILTER_VALIDATE_BOOLEAN)) {
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+} else {
+    Route::get('/register', fn () => redirect()->route('login')->with('error', 'El registro público está deshabilitado. Pedile acceso a administración.'))->name('register');
+    Route::post('/register', fn () => abort(403, 'Registro público deshabilitado.'));
+}
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rutas protegidas
@@ -77,6 +84,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/apariencia', [AparienciaController::class, 'update'])->name('apariencia.update');
     Route::post('/apariencia/restablecer', [AparienciaController::class, 'reset'])->name('apariencia.reset');
 
+    // Operativo diario
+    Route::get('/pendientes', [OperativoController::class, 'pendientes'])->name('operativo.pendientes');
+    Route::get('/api/hub-search', HubSearchController::class)->name('hub.search');
+
     // Programa oficial — accesible para todos; edición solo admin
     Route::get('/programa', [ProgramaController::class, 'index'])->middleware('modulo:programa')->name('programa.index');
     Route::get('/programa/partituras', [ProgramaController::class, 'partiturasIndex'])->middleware('modulo:programa')->name('programa.partituras.index');
@@ -93,11 +104,42 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/comprobantes-cuota-alumnos/{id}', [ComprobanteCuotaAlumnoGestionController::class, 'show'])->name('comprobantes-cuota-alumnos.show')->whereNumber('id');
         Route::get('/comprobantes-cuota-alumnos/{id}/comprobante', [ComprobanteCuotaAlumnoGestionController::class, 'comprobante'])->name('comprobantes-cuota-alumnos.comprobante')->whereNumber('id');
         Route::post('/comprobantes-cuota-alumnos/{id}/visto', [ComprobanteCuotaAlumnoGestionController::class, 'marcarVisto'])->name('comprobantes-cuota-alumnos.visto')->whereNumber('id');
+        Route::post('/comprobantes-cuota-alumnos/{id}/aprobar-pago', [ComprobanteCuotaAlumnoGestionController::class, 'aprobarYRegistrarPago'])->name('comprobantes-cuota-alumnos.aprobar-pago')->whereNumber('id');
     });
 
-    // Rutas de Admin
+    // Gestión operativa: dirección/admin + coordinadores
+    Route::middleware(['role:admin,coordinador_sede,coordinador_area'])->group(function () {
+        // Alumnos
+        Route::get('/alumnos/import', [AlumnoController::class, 'importForm'])->middleware('role:admin')->name('alumnos.import.form');
+        Route::post('/alumnos/import', [AlumnoController::class, 'importStore'])->middleware('role:admin')->name('alumnos.import.store');
+        Route::resource('alumnos', AlumnoController::class);
+        Route::get('/alumnos/export/excel', [AlumnoController::class, 'export'])->name('alumnos.export');
+
+        // Bloques / sedes / eventos / shows / asistencias
+        Route::resource('bloques', BloqueController::class);
+        Route::post('bloques/{bloque}/horarios', [BloqueHorarioController::class, 'store'])->name('bloques.horarios.store');
+        Route::delete('bloque-horarios/{bloqueHorario}', [BloqueHorarioController::class, 'destroy'])->name('bloque-horarios.destroy');
+        Route::resource('shows', ShowController::class);
+        Route::resource('sedes', SedeController::class);
+        Route::resource('eventos', EventoController::class);
+        Route::post('asistencias/matrix', [AsistenciaController::class, 'matrixUpdate'])->name('asistencias.matrix.update');
+        Route::post('asistencias', [AsistenciaController::class, 'store'])->name('asistencias.store');
+        Route::resource('asistencias', AsistenciaController::class)->except(['store']);
+        Route::get('/asistencias/bloque/{bloque}', function (Bloque $bloque) {
+            return redirect()->route('asistencias.create', ['bloque_id' => $bloque->id]);
+        })->name('asistencias.bloque');
+    });
+
+    // Reportes: dirección/admin + coordinador de sede (no coordinador de área)
+    Route::middleware(['role:admin,coordinador_sede'])->group(function () {
+        Route::get('/reportes', [ReportesController::class, 'index'])->name('reportes.index');
+        Route::get('/reportes/export/excel', [ReportesController::class, 'exportExcel'])->name('reportes.export.excel');
+        Route::get('/reportes/export/pdf', [ReportesController::class, 'exportPdf'])->name('reportes.export.pdf');
+        Route::get('/reportes/profesores', [ReportesController::class, 'profesores'])->name('reportes.profesores');
+    });
+
+    // Solo dirección / admin
     Route::middleware(['role:admin'])->group(function () {
-        // Matriz de accesos por usuario
         Route::get('/accesos', [AccesosController::class, 'index'])->name('accesos.index');
         Route::post('/accesos', [AccesosController::class, 'update'])->name('accesos.update');
 
@@ -115,41 +157,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/biblioteca/admin/{bibliotecaItem}/toggle', [BibliotecaAdminController::class, 'toggle'])->name('biblioteca.admin.toggle')->whereNumber('bibliotecaItem');
         Route::delete('/biblioteca/admin/{bibliotecaItem}', [BibliotecaAdminController::class, 'destroy'])->name('biblioteca.admin.destroy')->whereNumber('bibliotecaItem');
 
-        // Alumnos
-        Route::get('/alumnos/import', [AlumnoController::class, 'importForm'])->name('alumnos.import.form');
-        Route::post('/alumnos/import', [AlumnoController::class, 'importStore'])->name('alumnos.import.store');
-        Route::resource('alumnos', AlumnoController::class);
-        Route::get('/alumnos/export/excel', [AlumnoController::class, 'export'])->name('alumnos.export');
-
-        // Profesores — el segmento plural evita que Str::singular() genere "profesore" en la URL
         Route::resource('profesores', ProfesorController::class)
             ->parameters(['profesores' => 'profesor']);
 
-        // Bloques
-        Route::resource('bloques', BloqueController::class);
-        Route::post('bloques/{bloque}/horarios', [BloqueHorarioController::class, 'store'])->name('bloques.horarios.store');
-        Route::delete('bloque-horarios/{bloqueHorario}', [BloqueHorarioController::class, 'destroy'])->name('bloque-horarios.destroy');
-
-        // Shows (próximos shows, bloques o convocatoria abierta)
-        Route::resource('shows', ShowController::class);
-
         Route::resource('disenos', DisenoController::class)->middleware('modulo:admin.disenos');
 
-        // Sedes
-        Route::resource('sedes', SedeController::class);
-
-        // Eventos
-        Route::resource('eventos', EventoController::class);
-
-        // Asistencias (ruta store con nombre explícito por uso en create.blade.php)
-        Route::post('asistencias/matrix', [AsistenciaController::class, 'matrixUpdate'])->name('asistencias.matrix.update');
-        Route::post('asistencias', [AsistenciaController::class, 'store'])->name('asistencias.store');
-        Route::resource('asistencias', AsistenciaController::class)->except(['store']);
-
-        // Cuotas
         Route::resource('cuotas', CuotaController::class);
 
-        // Pagos (trazabilidad: quién paga, cuándo, varios alumnos, PDF)
         Route::get('/pagos', [PagoController::class, 'index'])->name('pagos.index');
         Route::get('/pagos/crear', [PagoController::class, 'create'])->name('pagos.create');
         Route::post('/pagos', [PagoController::class, 'store'])->name('pagos.store');
@@ -159,35 +173,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pagos/{pago}/comprobante', [PagoController::class, 'downloadComprobante'])->name('pagos.comprobante');
         Route::get('/pagos/api/alumnos-por-cuota', [PagoController::class, 'alumnosParaCuota'])->name('pagos.api.alumnos-cuota');
 
-        // Facturación por mes
         Route::get('/facturacion-mensual', [FacturacionMensualController::class, 'index'])->name('facturacion-mensual.index');
         Route::get('/facturacion-mensual/crear', [FacturacionMensualController::class, 'create'])->name('facturacion-mensual.create');
         Route::post('/facturacion-mensual', [FacturacionMensualController::class, 'store'])->name('facturacion-mensual.store');
         Route::get('/facturacion-mensual/{facturacionMensual}/editar', [FacturacionMensualController::class, 'edit'])->name('facturacion-mensual.edit');
         Route::put('/facturacion-mensual/{facturacionMensual}', [FacturacionMensualController::class, 'update'])->name('facturacion-mensual.update');
 
-        // Inventarios por sede (instrumentos, herramientas, repuestos, etc.)
         Route::resource('inventarios', InventarioItemController::class);
-
-        // Plan de compras (sugerencias por sede, sin generar aún una orden formal)
         Route::get('/plan-compras', [PlanComprasController::class, 'index'])->name('plan-compras.index');
-
-        // Órdenes de compra formales (justificadas por los datos de plan de compras / inventarios)
         Route::resource('ordenes-compra', OrdenCompraController::class);
-
-        // Gastos (sueldos, alquiler, servicios, reparaciones, etc.) — alimenta Reportes
         Route::resource('gastos', GastoController::class);
 
-        // Reportes (solo admin: ingresos, egresos, alumnos x profesor/bloque, etc.)
-        Route::get('/reportes', [ReportesController::class, 'index'])->name('reportes.index');
-
-        // Dashboard: "ver todo" profesores (pantalla dedicada)
-        Route::get('/reportes/profesores', [ReportesController::class, 'profesores'])->name('reportes.profesores');
-
-        // Dashboard: acceso rápido a asistencia por bloque (usa el create existente con query string)
-        Route::get('/asistencias/bloque/{bloque}', function (Bloque $bloque) {
-            return redirect()->route('asistencias.create', ['bloque_id' => $bloque->id]);
-        })->name('asistencias.bloque');
+        Route::get('/cierre-de-mes', [OperativoController::class, 'cierreMes'])->name('operativo.cierre-mes');
     });
 
     // Rutas de Profesor
@@ -200,5 +197,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/mis-eventos', [EventoController::class, 'index'])->middleware('modulo:profesor.mis_eventos')->name('profesor.eventos');
         Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->middleware('modulo:profesor.asistencia')->name('profesor.asistencias.create');
         Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware('modulo:profesor.asistencia')->name('profesor.asistencias.store');
+        Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware('modulo:profesor.asistencia')->name('profesor.asistencias.matrix');
+        Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware('modulo:profesor.asistencia')->name('profesor.asistencias.matrix.update');
     });
 });

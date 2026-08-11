@@ -25,8 +25,8 @@ class DashboardController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        // Si es profesor, mostrar dashboard limitado
-        if ($user->isProfesor() && ! $user->isAdmin()) {
+        // Si es profesor (sin panel de gestión), dashboard limitado
+        if ($user->isProfesor() && ! $user->isAdmin() && ! $user->puedeGestionarOperativo()) {
             return $this->dashboardProfesor();
         }
 

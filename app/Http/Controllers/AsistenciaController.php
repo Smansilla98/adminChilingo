@@ -51,7 +51,10 @@ class AsistenciaController extends Controller
         $bloquesQuery = Bloque::where('activo', true)->with('sede')->orderBy('nombre');
         /** @var \App\Models\User|null $userIdx */
         $userIdx = auth()->user();
-        if ($userIdx && $userIdx->isProfesor() && ! $userIdx->isAdmin()) {
+        if ($userIdx && $userIdx->isCoordinadorSede() && ! $userIdx->isAdmin()) {
+            $sedeIds = $userIdx->sedeIdsCoordinadas();
+            $bloquesQuery->whereIn('sede_id', $sedeIds !== [] ? $sedeIds : [0]);
+        } elseif ($userIdx && $userIdx->isProfesor() && ! $userIdx->isAdmin() && ! $userIdx->puedeGestionarOperativo()) {
             $profIdx = $userIdx->profesor;
             $idsIdx = $profIdx ? $profIdx->bloqueIdsDondeParticipa()->all() : [];
             $bloquesQuery->whereIn('id', $idsIdx !== [] ? $idsIdx : [0]);
@@ -121,6 +124,7 @@ class AsistenciaController extends Controller
         $alumnos = $bloque->alumnos()->where('alumnos.activo', true)->orderBy('alumnos.nombre_apellido')->get();
 
         $asistenciasMap = collect();
+        $marcadoresEspeciales = 0;
         if (Schema::hasTable('asistencias')) {
             $asistenciasMap = Asistencia::query()
                 ->where('bloque_id', $bloque->id)
@@ -128,6 +132,7 @@ class AsistenciaController extends Controller
                 ->whereMonth('fecha', $mes)
                 ->get()
                 ->keyBy(fn (Asistencia $a) => $a->alumno_id.'|'.$a->fecha->format('Y-m-d'));
+            $marcadoresEspeciales = $asistenciasMap->filter(fn (Asistencia $a) => in_array($a->tipo_asistencia, ['feriado', 'sin_clases'], true))->count();
         }
 
         return view('asistencias.index', [
@@ -141,6 +146,10 @@ class AsistenciaController extends Controller
             'fechas' => $fechas,
             'alumnos' => $alumnos,
             'asistenciasMap' => $asistenciasMap,
+            'marcadoresEspeciales' => $marcadoresEspeciales,
+            'matrixUpdateRoute' => ($userIdx && $userIdx->isProfesor() && ! $userIdx->isAdmin())
+                ? 'profesor.asistencias.matrix.update'
+                : 'asistencias.matrix.update',
         ]);
     }
 
@@ -221,11 +230,16 @@ class AsistenciaController extends Controller
             throw $e;
         }
 
-        return redirect()->route('asistencias.index', [
-            'bloque_id' => $bloque->id,
-            'mes' => $validated['mes'],
-            'año' => $validated['año'],
-        ])->with('success', 'Matriz de asistencias guardada.');
+        return redirect()->route(
+            ($userMx && $userMx->isProfesor() && ! $userMx->isAdmin())
+                ? 'profesor.asistencias.matrix'
+                : 'asistencias.index',
+            [
+                'bloque_id' => $bloque->id,
+                'mes' => $validated['mes'],
+                'año' => $validated['año'],
+            ]
+        )->with('success', 'Matriz de asistencias guardada.');
     }
 
     public function create(Request $request)
@@ -242,7 +256,7 @@ class AsistenciaController extends Controller
         $bloques = $bloquesQuery->get();
 
         if ($bloqueId) {
-            $bloque = Bloque::with('alumnos')->findOrFail($bloqueId);
+            $bloque = Bloque::with(['alumnos', 'sede'])->findOrFail($bloqueId);
             /** @var \App\Models\User|null $userBloque */
             $userBloque = auth()->user();
             if ($userBloque && $userBloque->isProfesor() && ! $userBloque->isAdmin()) {

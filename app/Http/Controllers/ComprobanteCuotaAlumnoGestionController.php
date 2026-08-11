@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\ComprobanteCuotaAlumno;
 use App\Models\User;
+use App\Services\PagoDesdeComprobanteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class ComprobanteCuotaAlumnoGestionController extends Controller
 {
@@ -20,13 +22,20 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
         $user = auth()->user();
 
         $query = ComprobanteCuotaAlumno::query()
-            ->with(['alumno', 'sede', 'items.bloque', 'items.cuota'])
+            ->with(['alumno', 'sede', 'items.bloque.sede', 'items.cuota', 'pago'])
             ->orderByDesc('created_at');
 
-        if ($user->isProfesor() && ! $user->isAdmin()) {
+        if ($user->isProfesor() && ! $user->isAdmin() && ! $user->isCoordinadorSede()) {
             $prof = $user->profesor;
             $ids = $prof ? $prof->bloqueIdsDondeParticipa()->all() : [];
             $query->whereHas('items', fn ($q) => $q->whereIn('bloque_id', $ids !== [] ? $ids : [0]));
+        } elseif ($user->isCoordinadorSede() && ! $user->isAdmin()) {
+            $sedeIds = $user->sedeIdsCoordinadas();
+            $query->where(function ($q) use ($sedeIds) {
+                $ids = $sedeIds !== [] ? $sedeIds : [0];
+                $q->whereIn('sede_id', $ids)
+                    ->orWhereHas('items.bloque', fn ($b) => $b->whereIn('sede_id', $ids));
+            });
         }
 
         if ($request->filled('estado')) {
@@ -42,7 +51,7 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
     {
         $comprobanteCuotaAlumno = ComprobanteCuotaAlumno::query()->findOrFail($id);
         $this->authorizeVer($comprobanteCuotaAlumno);
-        $comprobanteCuotaAlumno->load(['alumno.sede', 'sede', 'items.bloque', 'items.cuota']);
+        $comprobanteCuotaAlumno->load(['alumno.sede', 'sede', 'items.bloque.sede', 'items.cuota', 'pago']);
 
         return view('comprobante_cuota_gestion.show', compact('comprobanteCuotaAlumno'));
     }
@@ -68,9 +77,38 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
     {
         $comprobanteCuotaAlumno = ComprobanteCuotaAlumno::query()->findOrFail($id);
         $this->authorizeVer($comprobanteCuotaAlumno);
+
+        if ($comprobanteCuotaAlumno->estaPagado()) {
+            return back()->with('success', 'Este comprobante ya está pagado.');
+        }
+
         $comprobanteCuotaAlumno->update(['estado' => 'visto']);
 
-        return back()->with('success', 'Marcado como visto.');
+        return back()->with('success', 'Marcado como visto (sin registrar pago).');
+    }
+
+    public function aprobarYRegistrarPago(Request $request, int $id, PagoDesdeComprobanteService $service)
+    {
+        if (! auth()->user()?->isAdmin()) {
+            abort(403, 'Solo administración puede registrar el pago desde el comprobante.');
+        }
+
+        $comprobanteCuotaAlumno = ComprobanteCuotaAlumno::query()->findOrFail($id);
+        $this->authorizeVer($comprobanteCuotaAlumno);
+
+        try {
+            $result = $service->aprobar(
+                $comprobanteCuotaAlumno,
+                (int) auth()->id(),
+                $request->boolean('liquidar_profesor', true)
+            );
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('pagos.show', $result['pago'])
+            ->with('success', $result['mensaje']);
     }
 
     private function authorizeVer(ComprobanteCuotaAlumno $c): void

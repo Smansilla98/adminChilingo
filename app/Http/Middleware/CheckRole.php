@@ -9,22 +9,45 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckRole
 {
     /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  string  ...$roles  Uno o más roles (también admite "admin,direccion").
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (! auth()->check()) {
             return redirect()->route('login');
         }
 
         $user = auth()->user();
+        $needed = collect($roles)
+            ->flatMap(fn (string $r) => explode(',', $r))
+            ->map(fn (string $r) => trim($r))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
-        if ($user->role !== $role && ! $user->hasRole($role)) {
-            abort(403, 'No tienes permisos para acceder a esta sección.');
+        foreach ($needed as $role) {
+            if ($this->matches($user, $role)) {
+                return $next($request);
+            }
         }
 
-        return $next($request);
+        abort(403, 'No tenés permisos para acceder a esta sección.');
+    }
+
+    private function matches(\App\Models\User $user, string $role): bool
+    {
+        // admin y dirección son equivalentes para el panel
+        if ($role === 'admin' || $role === 'direccion') {
+            return $user->isAdmin();
+        }
+
+        if ($role === 'profesor') {
+            return $user->isProfesor()
+                || $user->isCoordinadorSede()
+                || $user->isCoordinadorArea();
+        }
+
+        return $user->role === $role || $user->hasRole($role);
     }
 }

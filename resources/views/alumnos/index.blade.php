@@ -97,8 +97,17 @@
                     <td>{{ $alumno->instrumento_principal }}</td>
                     <td>{{ $alumno->tipo_tambor ?? '—' }}</td>
                     <td>{{ $alumno->tambor_procedencia ?? '—' }}</td>
-                    <td>{{ $alumno->bloques->isNotEmpty() ? $alumno->bloques->pluck('nombre')->join(', ') : ($alumno->bloque?->nombre ?? '—') }}</td>
-                    <td>{{ $alumno->sede->nombre }}</td>
+                    <td>
+                        @php
+                            $bloquesAl = $alumno->bloques->isNotEmpty() ? $alumno->bloques : collect([$alumno->bloque])->filter();
+                        @endphp
+                        @forelse($bloquesAl as $b)
+                            <div>{{ $b->nombre }}@if($b->sede)<span class="text-muted"> · {{ $b->sede->nombre }}</span>@endif</div>
+                        @empty
+                            —
+                        @endforelse
+                    </td>
+                    <td>{{ $alumno->sede->nombre ?? '—' }}</td>
                     <td>
                         <x-ito.actions :id="'alumno-'.$alumno->id">
                             <li>

@@ -73,15 +73,18 @@ class User extends Authenticatable
     }
 
     /**
-     * Verificar si el usuario es admin
+     * Admin o Dirección (mismo nivel de privilegios globales).
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin' || $this->hasRole('admin');
+        return $this->role === 'admin'
+            || $this->role === 'direccion'
+            || $this->hasRole('admin')
+            || $this->hasRole('direccion');
     }
 
     /**
-     * Verificar si el usuario es profesor
+     * Verificar si el usuario es profesor (rol docente; no incluye solo-coordinador).
      */
     public function isProfesor(): bool
     {
@@ -97,11 +100,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Verificar si es dirección / admin
+     * Dirección / admin (alias explícito).
      */
     public function isDireccion(): bool
     {
-        return $this->isAdmin() || $this->hasRole('direccion');
+        return $this->isAdmin();
     }
 
     /**
@@ -118,6 +121,106 @@ class User extends Authenticatable
     public function isCoordinadorArea(): bool
     {
         return $this->hasRole('coordinador_area');
+    }
+
+    /**
+     * Puede ver el menú de gestión (no solo “Mi espacio”).
+     */
+    public function puedeGestionarOperativo(): bool
+    {
+        return $this->isAdmin() || $this->isCoordinadorSede() || $this->isCoordinadorArea();
+    }
+
+    /**
+     * Puede ver reportes (global o de su sede).
+     */
+    public function puedeVerReportes(): bool
+    {
+        return $this->isAdmin() || $this->isCoordinadorSede();
+    }
+
+    /**
+     * Etiqueta legible del rol principal.
+     */
+    public function etiquetaRol(): string
+    {
+        if ($this->role === 'direccion' || $this->hasRole('direccion')) {
+            return 'Dirección';
+        }
+        if ($this->role === 'admin' || $this->hasRole('admin')) {
+            return 'Administrador';
+        }
+        if ($this->isCoordinadorSede()) {
+            return 'Coordinador de sede';
+        }
+        if ($this->isCoordinadorArea()) {
+            return 'Coordinador de área';
+        }
+        if ($this->hasRole('profesor') || $this->role === 'profesor') {
+            return 'Profesor';
+        }
+        if ($this->isAlumno()) {
+            return 'Alumno';
+        }
+
+        return 'Usuario';
+    }
+
+    /**
+     * IDs de sedes que coordina (columna sedes.coordinador_id o pivot profesor_sede).
+     *
+     * @return list<int>
+     */
+    public function sedeIdsCoordinadas(): array
+    {
+        $prof = $this->profesor;
+        if (! $prof) {
+            return [];
+        }
+
+        $ids = [];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'coordinador_id')) {
+            $ids = array_merge(
+                $ids,
+                Sede::query()->where('coordinador_id', $prof->id)->pluck('id')->all()
+            );
+        }
+        if (\Illuminate\Support\Facades\Schema::hasTable('profesor_sede')) {
+            $ids = array_merge(
+                $ids,
+                $prof->sedesConRol()->wherePivot('rol', 'coordinador')->pluck('sedes.id')->all()
+            );
+        }
+
+        return array_values(array_unique(array_map('intval', $ids)));
+    }
+
+    /**
+     * Links del panel de gestión permitidos para coordinadores (admin ve todos).
+     */
+    public function puedeVerLinkGestion(string $clave): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $sede = [
+            'admin.alumnos', 'admin.bloques', 'admin.sedes', 'admin.asistencias',
+            'admin.eventos', 'admin.shows', 'comprobantes', 'admin.reportes',
+            'programa', 'calendario', 'ayuda',
+        ];
+        $area = [
+            'admin.alumnos', 'admin.asistencias', 'programa', 'calendario', 'ayuda',
+        ];
+
+        if ($this->isCoordinadorSede()) {
+            return in_array($clave, $sede, true);
+        }
+        if ($this->isCoordinadorArea()) {
+            return in_array($clave, $area, true);
+        }
+
+        return false;
     }
 
     /**
@@ -147,8 +250,9 @@ class User extends Authenticatable
     /**
      * Control simple de accesos por módulo/submódulo.
      *
-     * - Admin: siempre tiene acceso (para no bloquear administración).
-     * - Otros usuarios: si la clave existe y es false → bloquea; si no existe → permite.
+     * - Admin/dirección: siempre tiene acceso.
+     * - Coordinadores: acceso a su set operativo (salvo bloqueo explícito en modulos_access).
+     * - Otros: si la clave existe y es false → bloquea; si no existe → permite.
      */
     public function tieneAccesoModulo(string $clave): bool
     {
@@ -158,7 +262,14 @@ class User extends Authenticatable
 
         $map = is_array($this->modulos_access) ? $this->modulos_access : [];
 
-        // Si la clave no existe, por defecto permitimos (fallback seguro para despliegues graduales).
+        if (array_key_exists($clave, $map) && ! (bool) $map[$clave]) {
+            return false;
+        }
+
+        if ($this->isCoordinadorSede() || $this->isCoordinadorArea()) {
+            return $this->puedeVerLinkGestion($clave);
+        }
+
         if (! array_key_exists($clave, $map)) {
             return true;
         }

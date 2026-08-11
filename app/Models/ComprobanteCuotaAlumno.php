@@ -18,6 +18,7 @@ class ComprobanteCuotaAlumno extends Model
         'comprobante_path',
         'notas',
         'estado',
+        'pago_id',
     ];
 
     protected $casts = [
@@ -35,6 +36,11 @@ class ComprobanteCuotaAlumno extends Model
         return $this->belongsTo(Sede::class);
     }
 
+    public function pago(): BelongsTo
+    {
+        return $this->belongsTo(Pago::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(ComprobanteCuotaAlumnoItem::class, 'comprobante_cuota_alumno_id');
@@ -43,5 +49,20 @@ class ComprobanteCuotaAlumno extends Model
     public function estaPendiente(): bool
     {
         return $this->estado === 'pendiente';
+    }
+
+    public function estaPagado(): bool
+    {
+        return $this->estado === 'pagado' || (bool) $this->pago_id;
+    }
+
+    public function etiquetaEstado(): string
+    {
+        return match ($this->estado) {
+            'pendiente' => 'Pendiente de revisión',
+            'pagado' => 'Pagado',
+            'visto' => 'Visto',
+            default => (string) $this->estado,
+        };
     }
 }
