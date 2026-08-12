@@ -69,6 +69,9 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
     Route::post('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'guardar'])
         ->middleware('throttle:20,1')
         ->name('programa.toque.editor.guardar');
+    Route::post('/toque/{programaRitmo:slug}/editor/referencia', [PartituraController::class, 'subirReferencia'])
+        ->middleware('throttle:10,1')
+        ->name('programa.toque.editor.referencia');
     Route::get('/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
     Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])
         ->middleware('throttle:20,1')

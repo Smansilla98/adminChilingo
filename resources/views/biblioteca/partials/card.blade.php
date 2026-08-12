@@ -29,6 +29,7 @@
     data-biblio-toque-href="{{ e($toqueHref) }}"
     data-biblio-filter-href="{{ e($biblioToqueHref) }}"
     data-biblio-share-url="{{ $item->permalinkUrl() }}"
+    data-biblio-editor-href="{{ e($item->urlPasarAlEditor() ?? '') }}"
     role="button"
     tabindex="0"
     aria-label="Ver {{ $item->titulo }}"
@@ -88,5 +89,10 @@
             @endif
             <time datetime="{{ $item->created_at?->toDateString() }}">{{ $item->created_at?->locale('es')->diffForHumans() }}</time>
         </div>
+        @if($item->urlPasarAlEditor())
+            <div class="mt-2">
+                @include('biblioteca.partials.pasar-editor', ['item' => $item, 'variant' => 'sm'])
+            </div>
+        @endif
     </div>
 </article>

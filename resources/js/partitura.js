@@ -28,6 +28,10 @@ function montar() {
             parteUrl: el.dataset.parteUrl || null,
             readonly: el.dataset.readonly === '1',
             editorNombre: el.dataset.editorNombre || '',
+            uploadRefUrl: el.dataset.uploadRefUrl || null,
+            refUrl: el.dataset.refUrl || null,
+            refTipo: el.dataset.refTipo || 'imagen',
+            refNombre: el.dataset.refNombre || '',
         });
         window.partituraEditor = editor;
     });

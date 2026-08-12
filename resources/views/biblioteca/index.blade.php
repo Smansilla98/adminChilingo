@@ -105,6 +105,6 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/biblioteca-modal.js') }}?v=3"></script>
+<script src="{{ asset('js/biblioteca-modal.js') }}?v=4"></script>
 <script src="{{ asset('js/biblioteca-share.js') }}?v=1"></script>
 @endpush

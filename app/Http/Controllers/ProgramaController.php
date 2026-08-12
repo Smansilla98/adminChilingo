@@ -148,6 +148,7 @@ class ProgramaController extends Controller
 
         $request->validate([
             'quitar_partitura' => 'nullable|boolean',
+            'abrir_editor' => 'nullable|boolean',
             'partitura_archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:20480',
         ]);
 
@@ -162,6 +163,12 @@ class ProgramaController extends Controller
             $programaRitmo->update([
                 'medios' => app(ProgramaRitmoMediosService::class)->actualizarSoloPartitura($request, $programaRitmo),
             ]);
+        }
+
+        if ($request->boolean('abrir_editor')) {
+            return redirect()
+                ->route('programa.toque.editor', $programaRitmo)
+                ->with('success', 'Original guardado. Está al lado del editor para pasarlo a partitura digital.');
         }
 
         return redirect()

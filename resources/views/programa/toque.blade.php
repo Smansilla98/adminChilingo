@@ -69,13 +69,19 @@
         <div class="prog-score-empty">
             <p class="biblio-eyebrow mb-1">Partitura</p>
             <h2 class="h5 mb-2">Todavía no hay partitura interactiva</h2>
-            <p class="text-muted small mb-3">Podés ver el PDF del cuadernillo más abajo, o sumar un video en la biblioteca.</p>
+            <p class="text-muted small mb-3">
+                @if($tienePdf)
+                    Hay un PDF/imagen de original. Abrí el editor: queda al lado para pasarlo a partitura digital, o importá un MusicXML de MuseScore.
+                @else
+                    Subí un PDF/foto en el editor (Importar) o un MusicXML de MuseScore para volcar las notas.
+                @endif
+            </p>
             <div class="prog-cta-row">
                 @if($tienePdf)
                     <a href="#material" class="btn btn-sm btn-primary">Ver PDF</a>
                 @endif
                 <a href="{{ route('biblioteca.create', ['toque' => $programaRitmo->slug]) }}" class="btn btn-sm btn-outline-secondary">Subir material</a>
-                <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">Crear partitura</a>
+                <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">{{ $tienePdf ? 'Pasar al editor' : 'Crear partitura' }}</a>
             </div>
         </div>
     @endunless
@@ -194,7 +200,7 @@
 @if(($bibliotecaItems ?? collect())->isNotEmpty())
 @include('biblioteca.partials.modal')
 @push('scripts')
-<script src="{{ asset('js/biblioteca-modal.js') }}?v=3"></script>
+<script src="{{ asset('js/biblioteca-modal.js') }}?v=4"></script>
 <script src="{{ asset('js/biblioteca-share.js') }}?v=1"></script>
 @endpush
 @endif

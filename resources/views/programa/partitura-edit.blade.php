@@ -68,9 +68,14 @@
                         <div class="alert alert-danger py-2 small mt-2">{{ $message }}</div>
                     @enderror
 
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" name="abrir_editor" value="1" id="abrir_editor" checked>
+                        <label class="form-check-label small" for="abrir_editor">Después de guardar, abrir el editor con el original al lado</label>
+                    </div>
+
                     <div class="d-flex flex-wrap gap-2 mt-4">
                         <button type="submit" class="btn btn-warning">
-                            <i class="bi bi-check-lg"></i> Guardar partitura
+                            <i class="bi bi-check-lg"></i> Guardar y pasar al editor
                         </button>
                         <a href="{{ route('programa.partituras.index') }}" class="btn btn-outline-secondary">Volver al catálogo</a>
                         <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-outline-primary btn-sm">
@@ -88,12 +93,12 @@
         <div class="card mb-3">
             <div class="card-header"><strong class="small">Cómo cargar desde el libro PDF</strong></div>
             <div class="card-body">
-                <p class="small text-muted">El libro escaneado «Toques Chilinga» usa un formato visual que <strong>no se puede armar en la rejilla</strong> del sistema. La forma correcta es subir la página de cada toque:</p>
+                <p class="small text-muted">Un PDF o foto del cuadernillo <strong>no se convierte solo en notas</strong> (es un dibujo). El editor lo pone al lado para transcribirlo. Si lo escribiste en MuseScore, exportá <strong>MusicXML</strong> e importalo: ahí sí se vuelcan las notas.</p>
                 <ol class="partitura-pasos">
-                    <li>Abrí el PDF de referencia en tu computadora o celular.</li>
-                    <li>Buscá el toque <strong>{{ $programaRitmo->nombre }}</strong>.</li>
-                    <li>Exportá esa página como <strong>PDF</strong> o sacale una <strong>foto / captura</strong> clara.</li>
-                    <li>Arrastrala al recuadro de la izquierda y guardá.</li>
+                    <li>Subí la página del toque <strong>{{ $programaRitmo->nombre }}</strong> (PDF o foto).</li>
+                    <li>Abrí el editor: el original queda a la izquierda.</li>
+                    <li>Pasá las figuras al pentagrama digital y guardá.</li>
+                    <li>O importá un <strong>.musicxml</strong> exportado de MuseScore.</li>
                 </ol>
             </div>
         </div>

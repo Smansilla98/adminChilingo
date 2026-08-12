@@ -59,14 +59,13 @@
             </div>
             <div class="card-body">
                 <p class="small text-muted mb-3">
-                    Editor de notación completo (estilo MuseScore) con la nomenclatura del cuadernillo:
-                    duraciones, silencios, tresillos, dinámicas, repeticiones, varios tambores,
-                    reproducción con metrónomo y export a PDF, PNG, MusicXML o MIDI.
+                    En el editor: <strong>Importar</strong> un PDF/foto (queda de referencia al lado) o un
+                    <strong>MusicXML de MuseScore</strong> para volcar las notas. También exporta PDF, PNG, MusicXML y MIDI.
                 </p>
                 @if(isset($programaRitmo))
                     <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-primary btn-sm">
                         <i class="bi bi-pencil-square"></i>
-                        {{ $tieneScore ? 'Abrir editor de partitura' : 'Crear partitura digital' }}
+                        {{ $tieneScore ? 'Abrir editor de partitura' : 'Crear / importar partitura' }}
                     </a>
                 @endif
             </div>

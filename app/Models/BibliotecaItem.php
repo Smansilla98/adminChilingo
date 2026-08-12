@@ -142,6 +142,23 @@ class BibliotecaItem extends Model
         return route('biblioteca.show', $this);
     }
 
+    public function esReferenciaDePartitura(): bool
+    {
+        return $this->esImagen() || $this->esPdf() || $this->esVideo();
+    }
+
+    public function urlPasarAlEditor(): ?string
+    {
+        if (! $this->toque || ! $this->esReferenciaDePartitura() || ! $this->archivoUrl()) {
+            return null;
+        }
+
+        return route('programa.toque.editor', [
+            'programaRitmo' => $this->toque,
+            'biblio' => $this->id,
+        ]);
+    }
+
     public function miniaturaUrl(): string
     {
         return route('biblioteca.miniatura', $this);

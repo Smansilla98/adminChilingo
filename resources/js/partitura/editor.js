@@ -12,13 +12,14 @@ import { INSTRUMENTOS, instrumentoPorId, golpesDe, GOLPES, DINAMICAS, MARCAS_TEX
 import { renderScore } from './renderer.js';
 import { MotorAudio } from './audio.js';
 import { exportarPNG, exportarPDF, exportarMusicXML, exportarMIDI } from './exporters.js';
+import { importarMusicXML, importarScoreJson, tipoArchivoImport } from './importers.js';
 
 const MAX_UNDO = 60;
 
 export class EditorPartitura {
     /**
      * @param {HTMLElement} root
-     * @param {{ score?: object, saveUrl?: string|null, backUrl?: string|null, parteUrl?: string|null, readonly?: boolean, editorNombre?: string }} [opts]
+     * @param {{ score?: object, saveUrl?: string|null, backUrl?: string|null, parteUrl?: string|null, readonly?: boolean, editorNombre?: string, uploadRefUrl?: string|null, refUrl?: string|null, refEsPdf?: boolean, refNombre?: string }} [opts]
      */
     constructor(root, opts = {}) {
         this.root = root;
@@ -27,6 +28,10 @@ export class EditorPartitura {
         this.parteUrl = opts.parteUrl || null;
         this.readonly = !!opts.readonly;
         this.editorNombre = String(opts.editorNombre || '').trim();
+        this.uploadRefUrl = opts.uploadRefUrl || null;
+        this.refUrl = opts.refUrl || null;
+        this.refTipo = opts.refTipo || (opts.refEsPdf ? 'pdf' : 'imagen');
+        this.refNombre = opts.refNombre || '';
 
         this.score = normalizarPartitura(opts.score || crearPartitura());
         this.sel = null;              // {sectionIdx, measureIdx, instId, noteIdx}
@@ -93,6 +98,16 @@ export class EditorPartitura {
                     <button class="pt-btn" data-a="zoom-in" title="Zoom +">+</button>
                 </div>
                 <div class="pt-tb-group pt-tb-right">
+                    ${this.readonly ? '' : `
+                    <div class="pt-dropdown">
+                        <button class="pt-btn" data-a="import-menu">Importar ▾</button>
+                        <div class="pt-dropdown-menu">
+                            <button data-a="import-ref">PDF / imagen (original)</button>
+                            <button data-a="import-xml">MusicXML (MuseScore)</button>
+                            <button data-a="import-json">JSON del editor</button>
+                        </div>
+                    </div>`}
+                    <button class="pt-btn pt-toggle ${this.refUrl ? 'on' : ''}" data-a="toggle-ref" title="Ver original" ${this.refUrl ? '' : 'hidden'}>Original</button>
                     <div class="pt-dropdown">
                         <button class="pt-btn" data-a="export-menu">Exportar ▾</button>
                         <div class="pt-dropdown-menu">
@@ -105,9 +120,23 @@ export class EditorPartitura {
                     ${this.readonly ? '' : '<button class="pt-btn pt-btn-primary" data-a="save">Guardar</button>'}
                 </div>
             </header>
+            <input type="file" hidden data-import="ref" accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf">
+            <input type="file" hidden data-import="xml" accept=".musicxml,.xml,application/xml,text/xml">
+            <input type="file" hidden data-import="json" accept=".json,application/json">
 
             <div class="pt-body">
                 <aside class="pt-palette" data-zone="paleta"></aside>
+                <aside class="pt-ref" data-zone="ref" hidden>
+                    <div class="pt-ref-head">
+                        <strong>Original</strong>
+                        <span class="pt-ref-name" data-ref-name></span>
+                        <label class="pt-ref-op">Opacidad
+                            <input type="range" min="20" max="100" value="100" data-f="ref-op">
+                        </label>
+                        <button class="pt-btn" data-a="toggle-ref" title="Ocultar">✕</button>
+                    </div>
+                    <div class="pt-ref-body" data-ref-body></div>
+                </aside>
                 <main class="pt-canvas-wrap" tabindex="0">
                     <div class="pt-page" data-zone="page">
                         <div class="pt-canvas" data-zone="canvas"></div>
@@ -133,6 +162,12 @@ export class EditorPartitura {
             estructura: this.root.querySelector('[data-zone="estructura"]'),
             status: this.root.querySelector('[data-zone="status"]'),
             zoomLabel: this.root.querySelector('.pt-zoom-label'),
+            ref: this.root.querySelector('[data-zone="ref"]'),
+            refBody: this.root.querySelector('[data-ref-body]'),
+            refName: this.root.querySelector('[data-ref-name]'),
+            inputRef: this.root.querySelector('[data-import="ref"]'),
+            inputXml: this.root.querySelector('[data-import="xml"]'),
+            inputJson: this.root.querySelector('[data-import="json"]'),
         };
 
         this.pintarPaleta();
@@ -140,6 +175,11 @@ export class EditorPartitura {
         this.root.addEventListener('change', (e) => this.onChange(e));
         this.root.addEventListener('input', (e) => this.onInput(e));
         this.el.canvas.addEventListener('click', (e) => this.onCanvasClick(e));
+        this.el.inputRef?.addEventListener('change', (e) => this.onImportFile(e.target.files?.[0]));
+        this.el.inputXml?.addEventListener('change', (e) => this.onImportFile(e.target.files?.[0]));
+        this.el.inputJson?.addEventListener('change', (e) => this.onImportFile(e.target.files?.[0]));
+        this.bindDropImport();
+        if (this.refUrl) this.mostrarReferencia(this.refUrl, this.refTipo, this.refNombre, true);
         window.addEventListener('resize', debounce(() => this.render(), 200));
         window.addEventListener('beforeunload', (e) => {
             if (this.dirty && !this.readonly) {
@@ -450,7 +490,23 @@ export class EditorPartitura {
             case 'zoom-in': return this.setZoom(this.zoom + 0.15);
             case 'zoom-out': return this.setZoom(this.zoom - 0.15);
             case 'save': return this.guardar();
-            case 'export-menu': return btn.closest('.pt-dropdown').classList.toggle('open');
+            case 'export-menu':
+            case 'import-menu':
+                this.root.querySelectorAll('.pt-dropdown').forEach((d) => {
+                    if (d !== btn.closest('.pt-dropdown')) d.classList.remove('open');
+                });
+                return btn.closest('.pt-dropdown').classList.toggle('open');
+            case 'import-ref':
+                this.cerrarMenus();
+                return this.el.inputRef?.click();
+            case 'import-xml':
+                this.cerrarMenus();
+                return this.el.inputXml?.click();
+            case 'import-json':
+                this.cerrarMenus();
+                return this.el.inputJson?.click();
+            case 'toggle-ref':
+                return this.toggleReferencia();
             case 'export-pdf': return exportarPDF(this.el.canvas, this.score).catch((err) => this.aviso(`PDF: ${err.message}`));
             case 'export-png': return exportarPNG(this.el.canvas, this.score).catch((err) => this.aviso(`PNG: ${err.message}`));
             case 'export-xml': return exportarMusicXML(this.score);
@@ -554,6 +610,9 @@ export class EditorPartitura {
             m.texto = e.target.value || null;
             this.tocado();
             return this.renderDiferido();
+        }
+        if (f === 'ref-op' && this.el.refBody) {
+            this.el.refBody.style.opacity = String(Number(e.target.value) / 100);
         }
     }
 
@@ -786,6 +845,140 @@ export class EditorPartitura {
     renderDiferido() {
         clearTimeout(this._rt);
         this._rt = setTimeout(() => this.render(), 400);
+    }
+
+    cerrarMenus() {
+        this.root.querySelectorAll('.pt-dropdown').forEach((d) => d.classList.remove('open'));
+    }
+
+    bindDropImport() {
+        const wrap = this.el.wrap;
+        if (!wrap || this.readonly) return;
+        wrap.addEventListener('dragover', (e) => {
+            if (![...e.dataTransfer.items].some((i) => i.kind === 'file')) return;
+            e.preventDefault();
+            wrap.classList.add('pt-drop');
+        });
+        wrap.addEventListener('dragleave', () => wrap.classList.remove('pt-drop'));
+        wrap.addEventListener('drop', (e) => {
+            wrap.classList.remove('pt-drop');
+            const file = e.dataTransfer?.files?.[0];
+            if (!file) return;
+            e.preventDefault();
+            this.onImportFile(file);
+        });
+    }
+
+    async onImportFile(file) {
+        if (!file || this.readonly) return;
+        const tipo = tipoArchivoImport(file);
+        if (this.el.inputRef) this.el.inputRef.value = '';
+        if (this.el.inputXml) this.el.inputXml.value = '';
+        if (this.el.inputJson) this.el.inputJson.value = '';
+
+        if (tipo === 'mxl') {
+            return this.aviso('Exportá desde MuseScore como MusicXML descomprimido (.musicxml), no .mxl.');
+        }
+        if (tipo === 'pdf' || tipo === 'imagen') {
+            return this.subirReferencia(file);
+        }
+        if (tipo === 'xml' || tipo === 'json') {
+            try {
+                const texto = await file.text();
+                const score = tipo === 'json' ? importarScoreJson(texto) : importarMusicXML(texto);
+                this.aplicarScoreImportado(score);
+                this.aviso(tipo === 'json'
+                    ? 'JSON cargado. Revisá y guardá.'
+                    : 'MusicXML volcado al editor. Revisá tambores y golpes, y guardá.');
+            } catch (err) {
+                this.aviso(err.message || 'No se pudo importar el archivo.');
+            }
+            return;
+        }
+        this.aviso('Usá PDF/imagen (original), MusicXML de MuseScore o JSON del editor.');
+    }
+
+    aplicarScoreImportado(score) {
+        this.editar(() => {
+            this.score = normalizarPartitura(score);
+            this.sel = null;
+            const titleInput = this.root.querySelector('[data-f="title"]');
+            const autorInput = this.root.querySelector('[data-f="autor"]');
+            const tempoInput = this.root.querySelector('[data-f="tempo"]');
+            const tsInput = this.root.querySelector('[data-f="ts"]');
+            if (titleInput) titleInput.value = this.score.title || '';
+            if (autorInput) autorInput.value = this.score.autor || '';
+            if (tempoInput) tempoInput.value = String(this.score.tempo || 100);
+            if (tsInput) tsInput.value = `${this.score.timeSignature.num}/${this.score.timeSignature.den}`;
+            return true;
+        });
+        this.seleccionInicial();
+    }
+
+    async subirReferencia(file) {
+        if (!this.uploadRefUrl) {
+            return this.aviso('Este toque no permite subir el original desde acá.');
+        }
+        const nombre = (this.editorNombre || this.root.dataset.editorNombre || '').trim();
+        if (nombre.length < 2) {
+            this.aviso('Indicá tu nombre para subir el original.');
+            window.dispatchEvent(new CustomEvent('partitura:pedir-nombre'));
+            return;
+        }
+        this.aviso('Subiendo original…');
+        const fd = new FormData();
+        fd.append('partitura_archivo', file);
+        fd.append('editor_nombre', nombre);
+        try {
+            const res = await fetch(this.uploadRefUrl, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body: fd,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data.message || data.error || data.errors?.partitura_archivo?.[0] || `HTTP ${res.status}`);
+            }
+            this.mostrarReferencia(data.url, data.es_pdf ? 'pdf' : 'imagen', data.nombre || file.name, true);
+            this.aviso('Original al lado. Transcribí las notas en el editor y guardá.');
+        } catch (err) {
+            this.aviso(`No se pudo subir: ${err.message}`);
+        }
+    }
+
+    mostrarReferencia(url, tipo, nombre, abrir = true) {
+        this.refUrl = url;
+        this.refTipo = tipo === 'pdf' || tipo === 'video' ? tipo : 'imagen';
+        this.refNombre = nombre || '';
+        if (this.el.refName) this.el.refName.textContent = this.refNombre;
+        if (this.el.refBody) {
+            if (this.refTipo === 'pdf') {
+                this.el.refBody.innerHTML = `<iframe src="${attr(url)}#view=FitH" title="Original PDF"></iframe>`;
+            } else if (this.refTipo === 'video') {
+                this.el.refBody.innerHTML = `<video src="${attr(url)}" controls playsinline></video>`;
+            } else {
+                this.el.refBody.innerHTML = `<img src="${attr(url)}" alt="${attr(this.refNombre || 'Original')}">`;
+            }
+        }
+        const toggle = this.root.querySelector('[data-a="toggle-ref"]');
+        if (toggle) toggle.hidden = false;
+        if (abrir) this.setReferenciaVisible(true);
+    }
+
+    toggleReferencia() {
+        this.setReferenciaVisible(!this.root.classList.contains('has-ref'));
+    }
+
+    setReferenciaVisible(on) {
+        if (!this.el.ref) return;
+        this.el.ref.hidden = !on;
+        this.root.classList.toggle('has-ref', on);
+        this.root.querySelectorAll('[data-a="toggle-ref"]').forEach((b) => b.classList.toggle('on', on));
+        this.render();
     }
 
     aviso(msg) {

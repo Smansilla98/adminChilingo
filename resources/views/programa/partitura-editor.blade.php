@@ -57,6 +57,10 @@
     data-parte-url="{{ route('programa.toque.parte', ['programaRitmo' => $programaRitmo, 'instrumento' => '__INST__']) }}"
     data-readonly="0"
     data-editor-nombre=""
+    data-upload-ref-url="{{ route('programa.toque.editor.referencia', $programaRitmo) }}"
+    data-ref-url="{{ $refUrl ?? '' }}"
+    data-ref-tipo="{{ $refTipo ?? 'imagen' }}"
+    data-ref-nombre="{{ e($refNombre ?? '') }}"
 ></div>
 @endsection
 

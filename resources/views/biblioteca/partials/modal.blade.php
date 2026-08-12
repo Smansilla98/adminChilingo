@@ -22,6 +22,9 @@
                             data-share-url="" data-share-title="" data-share-text="">
                         <i class="bi bi-share" aria-hidden="true"></i> Compartir
                     </button>
+                    <a href="#" data-biblio-editor-link class="btn btn-sm btn-warning" hidden>
+                        <i class="bi bi-music-note-list"></i> Pasar al editor
+                    </a>
                     <a href="#" data-biblio-toque-link class="btn btn-sm btn-outline-secondary" hidden>Ver toque</a>
                     <a href="#" target="_blank" rel="noopener" data-biblio-open-raw class="btn btn-sm btn-secondary">Abrir original</a>
                 </div>

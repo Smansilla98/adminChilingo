@@ -45,6 +45,7 @@
         @endif
     </div>
     <div class="prog-cta-row">
+        @include('biblioteca.partials.pasar-editor', ['item' => $item, 'variant' => 'primary'])
         @include('biblioteca.partials.share-button', ['item' => $item, 'variant' => 'primary'])
         <a href="{{ route('biblioteca.index') }}" class="btn btn-outline-secondary btn-sm">Ver biblioteca</a>
     </div>
@@ -87,6 +88,7 @@
                 {{ $item->created_at?->locale('es')->isoFormat('D MMM YYYY') }}
             </p>
             <div class="d-flex flex-wrap gap-2">
+                @include('biblioteca.partials.pasar-editor', ['item' => $item, 'variant' => 'sm'])
                 @if($item->toque)
                     <a href="{{ route('programa.toque.show', $item->toque) }}" class="btn btn-sm btn-outline-secondary">Ver toque</a>
                 @endif

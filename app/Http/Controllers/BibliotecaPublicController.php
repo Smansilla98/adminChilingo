@@ -269,6 +269,13 @@ class BibliotecaPublicController extends Controller
             }
         }
 
+        $item->load('toque');
+        if ($item->urlPasarAlEditor()) {
+            return redirect()
+                ->route('biblioteca.show', $item)
+                ->with('success', 'Listo. Ya podés pasarlo al editor de partitura con el original al lado.');
+        }
+
         $redirectParams = [];
         if (! empty($validated['toque'])) {
             $redirectParams['toque'] = $validated['toque'];

@@ -7,6 +7,7 @@
     const descEl = modal.querySelector('[data-biblio-desc]');
     const toqueEl = modal.querySelector('[data-biblio-toque]');
     const toqueLink = modal.querySelector('[data-biblio-toque-link]');
+    const editorLink = modal.querySelector('[data-biblio-editor-link]');
     const tagsEl = modal.querySelector('[data-biblio-tags]');
     const autorEl = modal.querySelector('[data-biblio-autor]');
     const rawLink = modal.querySelector('[data-biblio-open-raw]');
@@ -58,6 +59,16 @@
                 toqueLink.hidden = false;
             } else {
                 toqueLink.hidden = true;
+            }
+        }
+
+        if (editorLink) {
+            const editorHref = card.getAttribute('data-biblio-editor-href') || '';
+            if (editorHref) {
+                editorLink.href = editorHref;
+                editorLink.hidden = false;
+            } else {
+                editorLink.hidden = true;
             }
         }
 
