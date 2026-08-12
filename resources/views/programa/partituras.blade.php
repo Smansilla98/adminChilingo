@@ -9,7 +9,7 @@
         <h2 class="h4 mb-1">Partituras por toque</h2>
         <p class="text-muted mb-0">
             Subí el PDF o la foto de cada toque (una página del libro «Toques Chilinga»)
-            o creá partituras nuevas con el <strong>Compositor Session</strong> (estilo Ableton).
+            o creá partituras nuevas con el <strong>Editor de partitura</strong> (notación del cuadernillo).
         </p>
     </div>
     <div class="d-flex flex-wrap gap-2 align-items-center">

@@ -73,8 +73,8 @@
                             <i class="bi bi-check-lg"></i> Guardar partitura
                         </button>
                         <a href="{{ route('programa.partituras.index') }}" class="btn btn-outline-secondary">Volver al catálogo</a>
-                        <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-music-note-beamed"></i> Compositor digital
+                        <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-music-note-list"></i> Editor de partitura
                         </a>
                         <a href="{{ route('programa.toque.edit', $programaRitmo) }}#partitura-recursos" class="btn btn-outline-secondary btn-sm ms-auto">
                             Videos y más recursos →
@@ -100,7 +100,7 @@
         <div class="card">
             <div class="card-body small text-muted">
                 <p class="mb-2"><i class="bi bi-lightbulb text-warning"></i> <strong>Tip:</strong> En muchos lectores PDF podés «Imprimir → Guardar como PDF» eligiendo solo la página del toque.</p>
-                <p class="mb-0">Para partituras nuevas usá el <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}">Compositor digital</a> (nomenclatura del cuadernillo). La misma rejilla también está en la edición avanzada del toque.</p>
+                <p class="mb-0">Para partituras nuevas usá el <a href="{{ route('programa.toque.editor', $programaRitmo) }}">Editor de partitura</a> (notación del cuadernillo, reproducción y partes por tambor).</p>
             </div>
         </div>
     </div>

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ProgramaRitmo;
+use App\Support\PartituraScore;
 use App\Support\ProgramaRitmoMedios;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -20,16 +21,6 @@ class ProgramaRitmoMediosService
         $baseDir = 'programa-ritmos/'.$ritmo->id;
 
         $pathsAntes = $this->pathsEnMedios($medios);
-
-        if ($request->boolean('quitar_partitura_vexflow')) {
-            $medios['partitura_vexflow'] = null;
-        } else {
-            $json = $request->input('partitura_vexflow_json');
-            if (is_string($json) && trim($json) !== '') {
-                $decoded = json_decode($json, true);
-                $medios['partitura_vexflow'] = ProgramaRitmoMedios::normalizarPartituraVexflow($decoded);
-            }
-        }
 
         if ($request->boolean('quitar_partitura')) {
             $medios['partitura'] = null;
@@ -111,28 +102,16 @@ class ProgramaRitmoMediosService
     }
 
     /**
-     * Solo actualiza la partitura digital (VexFlow / cuadernillo) del toque.
+     * Guarda solo la partitura digital v4 (editor tipo MuseScore) del toque.
      *
+     * @param  array<string, mixed>|null  $score
      * @return array<string, mixed>
      */
-    public function actualizarSoloCompositor(Request $request, ProgramaRitmo $ritmo): array
+    public function guardarPartituraScore(ProgramaRitmo $ritmo, ?array $score): array
     {
         $medios = ProgramaRitmoMedios::normalizar($ritmo->medios);
-
-        // Limpiar restos de Flat.io si existían
         $medios['partitura_flat'] = null;
-
-        if ($request->boolean('quitar_partitura_vexflow')) {
-            $medios['partitura_vexflow'] = null;
-
-            return $medios;
-        }
-
-        $json = $request->input('partitura_vexflow_json');
-        if (is_string($json) && trim($json) !== '') {
-            $decoded = json_decode($json, true);
-            $medios['partitura_vexflow'] = ProgramaRitmoMedios::normalizarPartituraVexflow($decoded);
-        }
+        $medios['partitura_score'] = $score === null ? null : PartituraScore::normalizar($score);
 
         return $medios;
     }

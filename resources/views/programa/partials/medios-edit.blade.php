@@ -9,7 +9,7 @@
     if ($recursos === []) {
         $recursos = [['tipo' => 'enlace', 'titulo' => '', 'url' => '', 'contenido' => '', 'path' => null, 'nombre' => null]];
     }
-    $tieneVex = ! empty($m['partitura_vexflow']['hits']) || ! empty($m['partitura_vexflow']['sections']);
+    $tieneScore = ! empty($m['partitura_score']['sections']);
 @endphp
 
 <div class="card mb-3" id="partitura-recursos">
@@ -17,8 +17,8 @@
         <span>Videos, partitura y archivos del toque</span>
         @if(isset($programaRitmo))
             <div class="d-flex flex-wrap gap-1">
-                <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-music-note-beamed"></i> Compositor digital
+                <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-music-note-list"></i> Editor de partitura
                 </a>
                 <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-warning">
                     <i class="bi bi-cloud-upload"></i> Subir PDF/imagen
@@ -48,20 +48,21 @@
 
         <div class="card border-primary mb-4">
             <div class="card-header bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <h3 class="h6 mb-0"><i class="bi bi-music-note-beamed"></i> Compositor digital (VexFlow)</h3>
-                @if($tieneVex)
+                <h3 class="h6 mb-0"><i class="bi bi-music-note-list"></i> Editor de partitura</h3>
+                @if($tieneScore)
                     <span class="badge bg-success">Con partitura</span>
                 @endif
             </div>
             <div class="card-body">
                 <p class="small text-muted mb-3">
-                    Creá o editá partituras en <strong>Session View</strong> (estilo Ableton):
-                    tracks por instrumento, escenas del toque y clips arrastrables desde la biblioteca.
+                    Editor de notación completo (estilo MuseScore) con la nomenclatura del cuadernillo:
+                    duraciones, silencios, tresillos, dinámicas, repeticiones, varios tambores,
+                    reproducción con metrónomo y export a PDF, PNG, MusicXML o MIDI.
                 </p>
                 @if(isset($programaRitmo))
-                    <a href="{{ route('programa.toque.compositor.edit', $programaRitmo) }}" class="btn btn-primary btn-sm">
+                    <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-primary btn-sm">
                         <i class="bi bi-pencil-square"></i>
-                        {{ $tieneVex ? 'Abrir compositor' : 'Crear partitura digital' }}
+                        {{ $tieneScore ? 'Abrir editor de partitura' : 'Crear partitura digital' }}
                     </a>
                 @endif
             </div>

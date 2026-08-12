@@ -27,6 +27,7 @@ use App\Http\Controllers\PagoController;
 use App\Http\Controllers\PlanComprasController;
 use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\ProfesorPagoCuotaController;
+use App\Http\Controllers\PartituraController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioMailController;
@@ -93,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/programa/partituras', [ProgramaController::class, 'partiturasIndex'])->middleware('modulo:programa')->name('programa.partituras.index');
     Route::get('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->middleware('modulo:programa')->name('programa.toque.show');
     Route::get('/programa/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->middleware('modulo:programa')->name('programa.toque.archivo');
+    Route::get('/programa/toque/{programaRitmo:slug}/parte/{instrumento}', [PartituraController::class, 'parte'])->middleware('modulo:programa')->name('programa.toque.parte');
 
     // Calendario (accesible para todos)
     Route::get('/calendario', [CalendarioController::class, 'index'])->middleware('modulo:calendario')->name('calendario.index');
@@ -147,8 +149,8 @@ Route::middleware(['auth'])->group(function () {
         Route::match(['put', 'post'], '/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])->name('programa.toque.update');
         Route::get('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'editPartitura'])->name('programa.toque.partitura.edit');
         Route::post('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'updatePartitura'])->name('programa.toque.partitura.update');
-        Route::get('/programa/toque/{programaRitmo:slug}/compositor', [ProgramaController::class, 'editCompositor'])->name('programa.toque.compositor.edit');
-        Route::post('/programa/toque/{programaRitmo:slug}/compositor', [ProgramaController::class, 'updateCompositor'])->name('programa.toque.compositor.update');
+        Route::get('/programa/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'editor'])->name('programa.toque.editor');
+        Route::post('/programa/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'guardar'])->name('programa.toque.editor.guardar');
         Route::post('/programa/partituras/cargar-cuadernillo', [ProgramaController::class, 'importarCuadernillo'])->name('programa.partituras.importar-cuadernillo');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');

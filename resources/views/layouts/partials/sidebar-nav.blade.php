@@ -50,7 +50,7 @@
             'accent' => 'contenido',
             'patterns' => [
                 'programa.index', 'programa.seccion.*', 'programa.partituras.*',
-                'programa.toque.partitura.*', 'programa.toque.compositor.*',
+                'programa.toque.partitura.*', 'programa.toque.editor', 'programa.toque.editor.*',
                 'programa.toque.edit', 'programa.toque.update', 'disenos.*',
                 'biblioteca.admin.*',
             ],

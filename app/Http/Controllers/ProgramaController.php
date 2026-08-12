@@ -105,7 +105,7 @@ class ProgramaController extends Controller
                 $r->resumen_medios = [
                     'partitura' => $tieneArchivo,
                     'partitura_nombre' => $m['partitura']['nombre'] ?? null,
-                    'digital' => ! empty($m['partitura_vexflow']['sections']) || ! empty($m['partitura_vexflow']['hits']),
+                    'digital' => ! empty($m['partitura_score']['sections']),
                     'videos' => $videosBase + $videosGrupo,
                     'cortes' => count($m['cortes'] ?? []),
                     'recursos' => count($m['recursos'] ?? []),
@@ -163,50 +163,6 @@ class ProgramaController extends Controller
         return redirect()
             ->route('programa.partituras.index')
             ->with('success', 'Partitura de «'.$programaRitmo->nombre.'» guardada.');
-    }
-
-    public function editCompositor(ProgramaRitmo $programaRitmo)
-    {
-        $this->authorizeAdmin();
-
-        $medios = $programaRitmo->mediosNormalizados();
-
-        return view('programa.compositor-edit', compact('programaRitmo', 'medios'));
-    }
-
-    public function updateCompositor(Request $request, ProgramaRitmo $programaRitmo)
-    {
-        $this->authorizeAdmin();
-
-        $request->validate([
-            'quitar_partitura_vexflow' => 'nullable|boolean',
-            'partitura_vexflow_json' => 'nullable|string|max:500000',
-        ]);
-
-        if (! $request->boolean('quitar_partitura_vexflow')) {
-            $json = trim((string) $request->input('partitura_vexflow_json', ''));
-            $actual = $programaRitmo->mediosNormalizados();
-            $decoded = $json !== '' ? json_decode($json, true) : null;
-            $normalizada = is_array($decoded)
-                ? ProgramaRitmoMedios::normalizarPartituraVexflow($decoded)
-                : null;
-
-            if ($normalizada === null && empty($actual['partitura_vexflow'])) {
-                return back()->withErrors([
-                    'partitura_vexflow_json' => 'La partitura está vacía. Cargá al menos un golpe o usá el ejemplo antes de guardar.',
-                ]);
-            }
-        }
-
-        if (Schema::hasColumn('programa_ritmos', 'medios')) {
-            $programaRitmo->update([
-                'medios' => app(ProgramaRitmoMediosService::class)->actualizarSoloCompositor($request, $programaRitmo),
-            ]);
-        }
-
-        return redirect()
-            ->route('programa.toque.show', $programaRitmo)
-            ->with('success', 'Partitura digital de «'.$programaRitmo->nombre.'» guardada.');
     }
 
     public function showToque(ProgramaRitmo $programaRitmo)
@@ -424,7 +380,7 @@ class ProgramaController extends Controller
     }
 
     /**
-     * Carga en la BD las partituras digitales del Cuadernillo (JSON → partitura_vexflow).
+     * Asigna a cada toque el PDF del Cuadernillo (páginas correspondientes).
      * Equivalente a: php artisan db:seed --class=PartiturasCuadernilloSeeder
      */
     public function importarCuadernillo(Request $request, PartiturasCuadernilloImporter $importer)

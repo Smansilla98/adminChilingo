@@ -275,7 +275,3 @@
 })();
 </script>
 @endpush
-
-@push('vite')
-@vite(['resources/js/programa-partitura.js'])
-@endpush
