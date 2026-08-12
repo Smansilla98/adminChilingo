@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.publico')
 
 @section('title', 'Editar: ' . $programaRitmo->nombre)
-@section('page-title', 'Editar página del toque')
+@section('publico-brand', 'Programa')
 
 @section('content')
 @php

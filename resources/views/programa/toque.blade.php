@@ -1,48 +1,78 @@
-@extends('layouts.app')
+@extends('layouts.publico')
 
-@section('title', $programaRitmo->nombre . ' — Programa')
-@section('page-title', $programaRitmo->nombre)
+@section('title', $programaRitmo->nombre.' — Programa')
+@section('publico-brand', 'Programa')
 
 @section('content')
 @php
     $añoLabel = $años[$programaRitmo->año] ?? $programaRitmo->año.'° Año';
     $secciones = $programaRitmo->seccionesProfundizacion();
     $enlaces = is_array($programaRitmo->enlaces) ? $programaRitmo->enlaces : [];
+    $esAdmin = auth()->user()?->isAdmin();
+    $score = $medios['partitura_score'] ?? null;
+    $tieneScore = is_array($score) && \App\Support\PartituraScore::tieneGolpes($score);
+    $tienePdf = ! empty(($medios['partitura']['path'] ?? null));
 @endphp
 
-<nav aria-label="breadcrumb" class="mb-3">
+<nav aria-label="breadcrumb" class="mb-2">
     <ol class="breadcrumb mb-0 small">
         <li class="breadcrumb-item"><a href="{{ route('programa.index') }}">Programa</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('programa.index') }}#toques-por-anio">{{ $añoLabel }}</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('programa.partituras.index') }}">Partituras</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('programa.index') }}#anio-{{ $programaRitmo->año }}">{{ $añoLabel }}</a></li>
         <li class="breadcrumb-item active">{{ $programaRitmo->nombre }}</li>
     </ol>
 </nav>
 
-<div class="card programa-toque-header mb-3">
-    <div class="card-body">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
-            <div>
-                <span class="badge bg-warning text-dark mb-2">{{ $añoLabel }} · Toque {{ $programaRitmo->orden }}</span>
-                <h2 class="h4 mb-1">{{ $programaRitmo->nombre }}</h2>
-                @if($programaRitmo->autor)
-                <p class="text-muted mb-0">{{ $programaRitmo->autor }}</p>
-                @endif
-                @if($programaRitmo->opcional && $programaRitmo->notas)
-                <p class="small text-muted mb-0 mt-1"><i class="bi bi-info-circle"></i> {{ $programaRitmo->notas }}</p>
-                @elseif($programaRitmo->opcional)
-                <span class="badge bg-secondary mt-1">Opcional</span>
-                @endif
-            </div>
-            @if(auth()->user()?->isAdmin())
-            <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning me-1"><i class="bi bi-music-note-list"></i> Editor de partitura</a>
-            <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-outline-warning me-1"><i class="bi bi-cloud-upload"></i> Cambiar PDF</a>
-            <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Editar página</a>
-            @endif
-        </div>
+<div class="biblio-hero biblio-hero--compact">
+    <div>
+        <p class="biblio-eyebrow">{{ $añoLabel }} · Toque {{ $programaRitmo->orden }}</p>
+        <h1>{{ $programaRitmo->nombre }}</h1>
+        @if($programaRitmo->autor)
+            <p class="biblio-lead">{{ $programaRitmo->autor }}</p>
+        @endif
         @if($programaRitmo->resumen)
-        <p class="lead mt-3 mb-0">{{ $programaRitmo->resumen }}</p>
+            <p class="biblio-lead">{{ $programaRitmo->resumen }}</p>
         @endif
     </div>
+    <div class="prog-hero-actions">
+        @if($tieneScore)
+            <a href="#partitura" class="btn btn-primary"><i class="bi bi-play-fill"></i> Escuchar</a>
+        @endif
+        @if($esAdmin)
+            <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-warning"><i class="bi bi-pencil-square"></i> Editar partitura</a>
+            <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-upload"></i> PDF</a>
+            <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Página</a>
+        @endif
+    </div>
+</div>
+
+<nav class="prog-path" aria-label="En esta página">
+    <a class="prog-chip" href="#partitura">Partitura</a>
+    <a class="prog-chip" href="#material">Material</a>
+    <a class="prog-chip" href="#comunidad">Comunidad</a>
+    @if(filled($programaRitmo->contenido) || collect($secciones)->contains(fn ($s) => filled($s['titulo'] ?? null) || filled($s['contenido'] ?? null)))
+        <a class="prog-chip" href="#textos">Textos</a>
+    @endif
+</nav>
+
+<div id="partitura">
+    @include('programa.partials.partitura-score-show', ['programaRitmo' => $programaRitmo, 'medios' => $medios ?? []])
+    @unless($tieneScore)
+        <div class="prog-score-empty">
+            <p class="biblio-eyebrow mb-1">Partitura</p>
+            <h2 class="h5 mb-2">Todavía no hay partitura interactiva</h2>
+            <p class="text-muted small mb-3">Podés ver el PDF del cuadernillo más abajo, o sumar un video en la biblioteca.</p>
+            <div class="prog-cta-row">
+                @if($tienePdf)
+                    <a href="#material" class="btn btn-sm btn-primary">Ver PDF</a>
+                @endif
+                <a href="{{ route('biblioteca.create', ['toque' => $programaRitmo->slug]) }}" class="btn btn-sm btn-outline-secondary">Subir material</a>
+                @if($esAdmin)
+                    <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">Crear partitura</a>
+                @endif
+            </div>
+        </div>
+    @endunless
 </div>
 
 @if($objetivosAnio)
@@ -56,21 +86,12 @@
 </div>
 @endif
 
-@if(filled($programaRitmo->contenido))
-<div class="card mb-3">
-    <div class="card-body programa-contenido">
-        {!! nl2br(e($programaRitmo->contenido)) !!}
-    </div>
+<div id="material">
+    @include('programa.partials.medios-show', ['programaRitmo' => $programaRitmo, 'medios' => $medios ?? []])
 </div>
-@endif
 
-@include('programa.partials.partitura-score-show', ['programaRitmo' => $programaRitmo, 'medios' => $medios ?? []])
-
-@include('programa.partials.medios-show', ['programaRitmo' => $programaRitmo, 'medios' => $medios ?? []])
-
-{{-- Material de la comunidad (biblioteca pública asociado a este toque) --}}
 @php $bibliotecaItems = $bibliotecaItems ?? collect(); @endphp
-<section class="card mb-3">
+<section id="comunidad" class="card mb-3">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
         <strong class="small mb-0">Material de la comunidad</strong>
         <div class="d-flex flex-wrap gap-2">
@@ -84,7 +105,7 @@
     </div>
     <div class="card-body">
         @if($bibliotecaItems->isEmpty())
-            <p class="text-muted small mb-0">Todavía no hay aportes asociados a <strong>{{ $programaRitmo->nombre }}</strong>. Podés subir un video, audio o foto y marcarlo con el toque (y el instrumento, si aplica).</p>
+            <p class="text-muted small mb-0">Todavía no hay aportes asociados a <strong>{{ $programaRitmo->nombre }}</strong>. Subí un video, audio o foto y asociá el toque.</p>
         @else
             <div class="biblio-toque-grid">
                 @foreach($bibliotecaItems as $item)
@@ -100,6 +121,15 @@
     </div>
 </section>
 
+<div id="textos">
+@if(filled($programaRitmo->contenido))
+<div class="card mb-3">
+    <div class="card-body programa-contenido">
+        {!! nl2br(e($programaRitmo->contenido)) !!}
+    </div>
+</div>
+@endif
+
 @foreach($secciones as $i => $sec)
 @if(filled($sec['titulo'] ?? null) || filled($sec['contenido'] ?? null))
 <section class="card mb-3 programa-seccion-profund">
@@ -110,7 +140,7 @@
         @if(filled($sec['contenido'] ?? null))
             {!! nl2br(e($sec['contenido'])) !!}
         @else
-            <p class="text-muted mb-0 small">Sin contenido aún. @if(auth()->user()?->isAdmin())<a href="{{ route('programa.toque.edit', $programaRitmo) }}">Agregar material</a>@endif</p>
+            <p class="text-muted mb-0 small">Sin contenido aún. @if($esAdmin)<a href="{{ route('programa.toque.edit', $programaRitmo) }}">Agregar material</a>@endif</p>
         @endif
     </div>
 </section>
@@ -131,18 +161,7 @@
     </ul>
 </div>
 @endif
-
-@if(!$programaRitmo->tieneProfundizacion())
-<div class="alert alert-secondary">
-    <p class="mb-0">Esta página del toque todavía no tiene contenido cargado.
-    @if(auth()->user()?->isAdmin())
-    <a href="{{ route('programa.toque.edit', $programaRitmo) }}">Cargar contenido</a> (solo administración).
-    @else
-    Consultá con tu docente o la coordinación.
-    @endif
-    </p>
 </div>
-@endif
 
 <div class="d-flex flex-wrap justify-content-between gap-2 mt-3">
     @if($anterior && $anterior->slug)
@@ -150,17 +169,12 @@
     @else
     <span></span>
     @endif
-    <a href="{{ route('programa.index') }}#toques-por-anio" class="btn btn-outline-secondary btn-sm">Volver al programa</a>
+    <a href="{{ route('programa.partituras.index') }}" class="btn btn-outline-secondary btn-sm">Todas las partituras</a>
     @if($siguiente && $siguiente->slug)
     <a href="{{ route('programa.toque.show', $siguiente) }}" class="btn btn-outline-secondary btn-sm">{{ $siguiente->nombre }} <i class="bi bi-chevron-right"></i></a>
     @endif
 </div>
 @endsection
-
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=3">
-<link rel="stylesheet" href="{{ asset('css/biblioteca.css') }}?v=3">
-@endpush
 
 @if(($bibliotecaItems ?? collect())->isNotEmpty())
 @include('biblioteca.partials.modal')

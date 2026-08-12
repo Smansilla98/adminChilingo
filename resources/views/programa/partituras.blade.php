@@ -1,76 +1,61 @@
-@extends('layouts.app')
+@extends('layouts.publico')
 
-@section('title', 'Partituras y recursos')
-@section('page-title', 'Partituras y recursos')
+@section('title', 'Partituras')
+@section('publico-brand', 'Partituras')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+@php
+    $esAdmin = auth()->user()?->isAdmin();
+    $hayFiltro = ($busqueda ?? '') !== '' || ($pendientes ?? false) || ($digital ?? false);
+@endphp
+
+<div class="biblio-hero">
     <div>
-        <h2 class="h4 mb-1">Partituras por toque</h2>
-        <p class="text-muted mb-0">
-            Subí el PDF o la foto de cada toque (una página del libro «Toques Chilinga»)
-            o creá partituras nuevas con el <strong>Editor de partitura</strong> (notación del cuadernillo).
-        </p>
+        <p class="biblio-eyebrow">Escuchá · estudiá · tocá</p>
+        <h1>Partituras del cuadernillo</h1>
+        <p class="biblio-lead">Elegí un toque, escuchalo y silenciá los tambores que no son tuyos. Si sos docencia, también podés editar la partitura.</p>
     </div>
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-        @if(auth()->user()?->isAdmin())
+    <div class="prog-hero-actions">
+        <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary">Programa</a>
+        @if($esAdmin)
         <form action="{{ route('programa.partituras.importar-cuadernillo') }}" method="POST" class="d-inline"
               data-confirm="¿Asignar a cada toque su PDF del Cuadernillo de Toques? Reemplaza el archivo de partitura actual.">
             @csrf
-            <button type="submit" class="btn btn-primary btn-sm">
-                <i class="bi bi-file-earmark-pdf"></i> Cargar PDFs del cuadernillo
+            <button type="submit" class="btn btn-outline-warning btn-sm">
+                <i class="bi bi-file-earmark-pdf"></i> Cargar PDFs
             </button>
         </form>
         @endif
-        <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary btn-sm">Programa completo</a>
     </div>
 </div>
 
-<div class="alert alert-warning py-2 small mb-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
-    <div>
-        <i class="bi bi-info-circle"></i>
-        Cada toque muestra la <strong>partitura en PDF</strong> tomada del Cuadernillo de Toques (La Chilinga).
-        @if(auth()->user()?->isAdmin())
-            Si dice «Sin partitura», usá <strong>Cargar PDFs del cuadernillo</strong>.
-        @endif
+<form method="GET" action="{{ route('programa.partituras.index') }}" class="biblio-search" role="search">
+    <div class="biblio-search-field">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ $busqueda ?? '' }}" placeholder="Buscar toque o autor…" aria-label="Buscar toque">
     </div>
-    @if(auth()->user()?->isAdmin())
-    <form action="{{ route('programa.partituras.importar-cuadernillo') }}" method="POST" class="m-0"
-          data-confirm="¿Asignar a cada toque su PDF del Cuadernillo de Toques? Reemplaza el archivo de partitura actual.">
-        @csrf
-        <button type="submit" class="btn btn-primary btn-sm">
-            <i class="bi bi-file-earmark-pdf"></i> Cargar PDFs del cuadernillo
-        </button>
-    </form>
+    <label class="prog-chip {{ ($digital ?? false) ? 'is-on' : '' }}">
+        <input type="checkbox" name="digital" value="1" class="d-none" @checked($digital ?? false) onchange="this.form.submit()">
+        Con partitura interactiva
+    </label>
+    @if($esAdmin)
+    <label class="prog-chip {{ ($pendientes ?? false) ? 'is-on' : '' }}">
+        <input type="checkbox" name="pendientes" value="1" class="d-none" @checked($pendientes ?? false) onchange="this.form.submit()">
+        Sin PDF
+    </label>
     @endif
-</div>
-
-<form method="GET" class="row g-2 align-items-end mb-4">
-    <div class="col-md-6">
-        <label class="form-label small mb-1" for="buscarToque">Buscar toque</label>
-        <input type="search" name="q" id="buscarToque" class="form-control form-control-sm"
-               value="{{ $busqueda ?? '' }}" placeholder="Nombre o autor…">
-    </div>
-    <div class="col-auto">
-        <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" name="pendientes" value="1" id="soloPendientes"
-                @checked($pendientes ?? false) onchange="this.form.submit()">
-                                            <label class="form-check-label small" for="soloPendientes">Solo sin partitura PDF</label>
-        </div>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-sm btn-outline-secondary">Buscar</button>
-        @if(($busqueda ?? '') !== '' || ($pendientes ?? false))
-            <a href="{{ route('programa.partituras.index') }}" class="btn btn-sm btn-link">Limpiar</a>
-        @endif
-    </div>
+    <button type="submit" class="btn btn-sm btn-outline-secondary">Buscar</button>
+    @if($hayFiltro)
+        <a href="{{ route('programa.partituras.index') }}" class="btn btn-sm btn-link">Limpiar</a>
+    @endif
 </form>
 
-@if(session('success'))
-    <div class="alert alert-success py-2">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="alert alert-danger py-2">{{ session('error') }}</div>
+@if($porAño->isNotEmpty())
+<nav class="prog-year-chips" aria-label="Años">
+    @foreach($porAño as $num => $grupo)
+        <a class="prog-chip" href="#part-anio-{{ $num }}">{{ $años[$num] ?? $num.'°' }} · {{ $grupo->count() }}</a>
+    @endforeach
+</nav>
 @endif
 
 @if($estadoPrograma === 'sin_tabla')
@@ -78,73 +63,70 @@
 @elseif($estadoPrograma === 'error')
     <div class="alert alert-danger">No se pudo cargar el listado de toques.</div>
 @elseif($estadoPrograma === 'vacio')
-    <div class="alert alert-secondary">No hay toques que coincidan con la búsqueda.</div>
+    <div class="alert alert-secondary">No hay toques que coincidan. Probá limpiar el filtro.</div>
 @else
     @foreach($años as $num => $label)
         @php $grupo = $porAño->get($num, collect()); @endphp
         @if($grupo->isNotEmpty())
-            <div class="panel mb-3">
-                <div class="panel-h">
-                    <div class="panel-h-title">{{ $label }}</div>
-                    <span class="muted small">{{ $grupo->count() }} toques</span>
+            <section id="part-anio-{{ $num }}" class="mb-4">
+                <div class="prog-anio-head">
+                    <h2>{{ $label }}</h2>
+                    <span class="text-muted small">{{ $grupo->count() }} toques</span>
                 </div>
-                <div class="panel-b p-0">
-                    <div class="table-responsive">
-                        <table class="table table-sm align-middle mb-0 partituras-toques-table">
-                            <thead>
-                                <tr>
-                                    <th>Toque</th>
-                                    <th>Partitura PDF</th>
-                                    <th class="text-center">Videos</th>
-                                    <th class="text-end">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($grupo as $toque)
-                                    @php $rm = $toque->resumen_medios ?? []; @endphp
-                                    <tr>
-                                        <td>
-                                            <div class="fw-semibold">{{ $toque->nombre }}</div>
-                                            @if($toque->autor)
-                                                <div class="small text-muted">{{ Str::limit($toque->autor, 48) }}</div>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($rm['partitura'] ?? false)
-                                                <span class="badge bg-success-subtle text-success">
-                                                    <i class="bi bi-file-earmark-pdf"></i>
-                                                    {{ Str::limit($rm['partitura_nombre'] ?? 'PDF cargado', 36) }}
-                                                </span>
-                                            @else
-                                                <span class="badge bg-secondary-subtle text-muted">Sin partitura</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            @if(($rm['videos'] ?? 0) > 0)
-                                                <span class="badge bg-success-subtle text-success">{{ $rm['videos'] }}</span>
-                                            @else
-                                                <span class="text-muted">—</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-end text-nowrap">
-                                            @if(auth()->user()->isAdmin())
-                                                <a href="{{ route('programa.toque.partitura.edit', $toque) }}" class="btn btn-sm btn-warning">
-                                                    <i class="bi bi-cloud-upload"></i>
-                                                    {{ ($rm['partitura'] ?? false) ? 'Cambiar PDF' : 'Subir PDF' }}
-                                                </a>
-                                            @endif
-                                            <a href="{{ route('programa.toque.show', $toque) }}" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye"></i> Ver
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="prog-toque-grid">
+                    @foreach($grupo as $toque)
+                        @php $rm = $toque->resumen_medios ?? []; @endphp
+                        <article class="prog-toque-tile" style="cursor: default;">
+                            <div class="prog-toque-tile__top">
+                                <span class="prog-toque-tile__n">Toque {{ $toque->orden }}</span>
+                            </div>
+                            <h3>{{ $toque->nombre }}</h3>
+                            @if($toque->autor)
+                                <p class="prog-toque-tile__meta">{{ Str::limit($toque->autor, 52) }}</p>
+                            @endif
+                            <div class="prog-pills">
+                                @if($rm['digital'] ?? false)
+                                    <span class="prog-pill prog-pill--ok">Interactiva</span>
+                                @endif
+                                @if($rm['partitura'] ?? false)
+                                    <span class="prog-pill">PDF</span>
+                                @endif
+                                @if(($rm['videos'] ?? 0) > 0)
+                                    <span class="prog-pill">{{ $rm['videos'] }} videos</span>
+                                @endif
+                            </div>
+                            <div class="prog-cta-row mt-1">
+                                <a href="{{ route('programa.toque.show', $toque) }}#partitura" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> {{ ($rm['digital'] ?? false) ? 'Escuchar' : 'Abrir' }}
+                                </a>
+                                @if($esAdmin)
+                                    <a href="{{ route('programa.toque.editor', $toque) }}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </a>
+                                    <a href="{{ route('programa.toque.partitura.edit', $toque) }}" class="btn btn-sm btn-outline-secondary" title="PDF">
+                                        <i class="bi bi-cloud-upload"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
                 </div>
-            </div>
+            </section>
         @endif
     @endforeach
 @endif
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('[data-confirm]').forEach(function (el) {
+    const form = el.closest('form') || (el.tagName === 'FORM' ? el : null);
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+        if (!confirm(form.getAttribute('data-confirm') || el.getAttribute('data-confirm'))) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+@endpush

@@ -9,30 +9,30 @@
 @endphp
 
 @if($tieneScore)
-<div class="card mb-3 border-warning">
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <h3 class="h6 mb-0"><i class="bi bi-music-note-list"></i> Partitura interactiva</h3>
-        <div class="d-flex flex-wrap gap-2">
-            @if(auth()->user()?->isAdmin())
-                <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-outline-warning">
-                    <i class="bi bi-pencil-square"></i> Editor de partitura
-                </a>
-            @endif
-        </div>
-    </div>
-    <div class="card-body">
-        <p class="small text-muted mb-3">
-            Escuchá el toque, cambiá el tempo y silenciá tambores para estudiar tu parte.
-            @if($resumen)
-                <span class="d-block mt-1">
+<div class="prog-score-card">
+    <div class="prog-score-card__head">
+        <div>
+            <p class="biblio-eyebrow mb-1">Partitura interactiva</p>
+            <h2>Escuchá y estudia tu parte</h2>
+            <p class="small text-muted mb-0">
+                Reproducí el toque, cambiá el tempo y silenciá tambores.
+                @if($resumen)
                     {{ $resumen['compases'] ?? 0 }} compases ·
                     {{ $resumen['partes'] ?? 0 }} partes ·
                     {{ $score['tempo'] ?? 100 }} BPM ·
                     {{ ($score['timeSignature']['num'] ?? 4) }}/{{ ($score['timeSignature']['den'] ?? 4) }}
-                </span>
+                @endif
+            </p>
+        </div>
+        <div class="prog-cta-row">
+            @if(auth()->user()?->isAdmin())
+                <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">
+                    <i class="bi bi-pencil-square"></i> Editar
+                </a>
             @endif
-        </p>
-
+        </div>
+    </div>
+    <div class="prog-score-card__body">
         <div
             data-partitura-viewer
             data-score="{{ json_encode($score, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}"
@@ -41,7 +41,7 @@
 
         @if(count($instrumentosScore) > 0)
         <div class="mt-3">
-            <p class="small text-muted mb-2">Partes separadas por tambor (para imprimir):</p>
+            <p class="small text-muted mb-2">Imprimí o estudiá un tambor solo:</p>
             <div class="d-flex flex-wrap gap-2">
                 @foreach($instrumentosScore as $instId)
                     @if(array_key_exists($instId, PartituraScore::INSTRUMENTOS))

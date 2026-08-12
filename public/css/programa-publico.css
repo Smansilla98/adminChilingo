@@ -1,0 +1,274 @@
+/* Recorrido público del programa y las partituras */
+
+.prog-year-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.prog-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(233,237,245,.12));
+  background: color-mix(in srgb, var(--s1, #111827) 80%, transparent);
+  color: var(--muted, #a8b3c9);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.prog-chip:hover,
+.prog-chip.is-on {
+  color: var(--accent, #3e7bfa);
+  border-color: color-mix(in srgb, var(--accent, #3e7bfa) 45%, var(--border));
+  background: var(--accent-soft, rgba(62,123,250,.16));
+}
+
+.prog-toque-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.prog-toque-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border, rgba(233,237,245,.1));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent, #3e7bfa) 8%, transparent), transparent 42%),
+    var(--s1, #111827);
+  text-decoration: none;
+  color: inherit;
+  min-height: 148px;
+  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+
+.prog-toque-tile:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent, #3e7bfa) 50%, var(--border));
+  box-shadow: 0 10px 28px rgba(0,0,0,.22);
+  color: inherit;
+}
+
+.prog-toque-tile__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.prog-toque-tile__n {
+  font-family: var(--font-display, Manrope, sans-serif);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--accent, #3e7bfa);
+}
+
+.prog-toque-tile h3 {
+  margin: 0;
+  font-family: var(--font-display, Manrope, sans-serif);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.prog-toque-tile__meta {
+  margin: 0;
+  color: var(--muted, #a8b3c9);
+  font-size: 12.5px;
+}
+
+.prog-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.prog-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  color: var(--muted, #a8b3c9);
+}
+
+.prog-pill--ok {
+  background: color-mix(in srgb, #3dd68c 18%, transparent);
+  color: #8ef0b8;
+}
+
+.prog-anio-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 8px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border, rgba(233,237,245,.08));
+}
+
+.prog-anio-head h2 {
+  margin: 0;
+  font-family: var(--font-display, Manrope, sans-serif);
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.prog-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+  position: sticky;
+  top: 64px;
+  z-index: 8;
+  padding: 8px 0;
+  background: linear-gradient(180deg, var(--bg, #0a0e1a) 70%, transparent);
+}
+
+.prog-score-card {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent, #3e7bfa) 28%, var(--border));
+  background: color-mix(in srgb, var(--s1, #111827) 92%, #000);
+  margin-bottom: 1.1rem;
+}
+
+.prog-score-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px 8px;
+}
+
+.prog-score-card__head h2 {
+  margin: 0;
+  font-family: var(--font-display, Manrope, sans-serif);
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.prog-score-card__body {
+  padding: 8px 16px 18px;
+}
+
+.prog-score-empty {
+  border-radius: 18px;
+  padding: 22px 20px;
+  border: 1px dashed var(--border, rgba(233,237,245,.16));
+  background: color-mix(in srgb, var(--s1, #111827) 70%, transparent);
+  margin-bottom: 1.1rem;
+}
+
+.prog-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.prog-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pt-public-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 14px;
+  background: #14100c;
+  border-bottom: 1px solid #3a2e24;
+  color: #f3e9d8;
+  font-size: 13px;
+}
+
+.pt-public-bar a {
+  color: #d1a054;
+  text-decoration: none;
+  font-weight: 650;
+}
+
+.pt-public-bar a:hover { text-decoration: underline; }
+
+.pt-public-bar nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.biblio-body.pt-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+.biblio-body.pt-shell .biblio-foot { display: none; }
+.biblio-main--flush {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.biblio-main--flush > .pt-app,
+.biblio-main--flush > [data-partitura-editor] {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+.biblio-main--flush .partitura-parte-page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 20px 32px;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+.partitura-parte-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.partitura-parte-head h1 {
+  margin: 0;
+  font-family: var(--font-display, Manrope, sans-serif);
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: -0.03em;
+}
+.partitura-parte-sub {
+  margin: 6px 0 0;
+  color: var(--muted, #a8b3c9);
+  font-size: 14px;
+}
+.partitura-parte-back {
+  text-decoration: none;
+  font-weight: 650;
+  color: var(--accent, #3e7bfa);
+}
+
+@media (max-width: 640px) {
+  .prog-toque-grid { grid-template-columns: 1fr; }
+  .prog-path { top: 56px; }
+}

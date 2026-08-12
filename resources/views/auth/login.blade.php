@@ -74,7 +74,11 @@
                     <span class="auth-foot-muted">¿Pagaste la cuota?</span>
                     <a href="{{ route('comprobante-cuota-public.create') }}">Cargar comprobante (sin cuenta)</a>
                     <span class="mx-1">·</span>
-                    <a href="{{ route('biblioteca.index') }}">Biblioteca pública</a>
+                    <a href="{{ route('programa.index') }}">Programa</a>
+                    <span class="mx-1">·</span>
+                    <a href="{{ route('programa.partituras.index') }}">Partituras</a>
+                    <span class="mx-1">·</span>
+                    <a href="{{ route('biblioteca.index') }}">Biblioteca</a>
                 </div>
             </div>
         </div>

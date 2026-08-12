@@ -1,44 +1,96 @@
-@extends('layouts.app')
+@extends('layouts.publico')
 
 @section('title', 'Programa de la escuela')
-@section('page-title', 'Programa de ritmos')
+@section('publico-brand', 'Programa')
 
 @section('content')
 @php
     $catLabels = \App\Models\ProgramaSeccion::categorias();
     $seccionActiva = request('seccion');
+    $esAdmin = auth()->user()?->isAdmin();
 @endphp
 
-<div class="programa-hero card mb-3">
-    <div class="card-body">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
-            <div>
-                <h2 class="h4 mb-1"><i class="bi bi-music-note-list text-warning"></i> Programa oficial La Chilinga</h2>
-                <p class="text-muted mb-0 small">Ritmos prácticos y teóricos · Toques por año · Material de cada toque</p>
-            </div>
-            @if(auth()->user()?->isAdmin())
-            <span class="badge bg-secondary align-self-start">Edición disponible en cada toque y sección</span>
-            @endif
-        </div>
+<div class="biblio-hero">
+    <div>
+        <p class="biblio-eyebrow">Abierto · sin cuenta</p>
+        <h1>Programa oficial</h1>
+        <p class="biblio-lead">Toques por año, textos de la escuela y la partitura de cada ritmo. Entrá, escuchá y estudiá tu parte.</p>
+    </div>
+    <div class="prog-hero-actions">
+        <a href="{{ route('programa.partituras.index') }}" class="btn btn-primary">
+            <i class="bi bi-music-note-beamed"></i> Ir a partituras
+        </a>
+        <a href="#toques-por-anio" class="btn btn-outline-secondary">Ver toques</a>
     </div>
 </div>
 
 @if(($estadoPrograma ?? 'ok') === 'sin_tabla')
 <div class="alert alert-warning">Falta migrar la base: <code>php artisan migrate --force</code></div>
 @elseif(($estadoPrograma ?? '') === 'vacio')
-<div class="alert alert-info">No hay ritmos cargados. <code>php artisan migrate --force</code></div>
+<div class="alert alert-info">Todavía no hay toques publicados.</div>
 @elseif(($estadoPrograma ?? '') === 'error')
 <div class="alert alert-danger">Error al cargar el programa.</div>
 @else
 
-<div class="row g-3">
+@if($porAño->isNotEmpty())
+<nav class="prog-year-chips" aria-label="Años del programa">
+    <a class="prog-chip" href="#toques-por-anio">Todos los toques</a>
+    @foreach($porAño as $año => $ritmos)
+        <a class="prog-chip" href="#anio-{{ $año }}">{{ $años[$año] ?? $año.'°' }} · {{ $ritmos->count() }}</a>
+    @endforeach
+    @if($seccionesPorCategoria->isNotEmpty())
+        <a class="prog-chip" href="#contenido-programa">Contenido</a>
+    @endif
+</nav>
+@endif
+
+<section id="toques-por-anio" class="mb-4">
+    @foreach([1, 2, 3, 4, 5, 6] as $año)
+        @php $ritmos = $porAño->get($año, collect()); @endphp
+        @if($ritmos->isNotEmpty())
+        <div id="anio-{{ $año }}" class="mb-4">
+            <div class="prog-anio-head">
+                <h2>{{ $años[$año] ?? $año.'° Año' }}</h2>
+                <span class="text-muted small">{{ $ritmos->count() }} toques</span>
+            </div>
+            <div class="prog-toque-grid">
+                @foreach($ritmos as $r)
+                    @php
+                        $m = $r->mediosNormalizados();
+                        $tieneScore = \App\Support\PartituraScore::tieneGolpes($m['partitura_score'] ?? null);
+                        $tienePdf = ! empty($m['partitura']['path']);
+                    @endphp
+                    <a href="{{ $r->slug ? route('programa.toque.show', $r) : '#' }}" class="prog-toque-tile {{ $r->slug ? '' : 'disabled' }}">
+                        <div class="prog-toque-tile__top">
+                            <span class="prog-toque-tile__n">{{ $r->orden }}.</span>
+                            @if($r->opcional)<span class="prog-pill">Opcional</span>@endif
+                        </div>
+                        <h3>{{ $r->nombre }}</h3>
+                        @if($r->autor)
+                            <p class="prog-toque-tile__meta">{{ $r->autor }}</p>
+                        @endif
+                        <div class="prog-pills">
+                            @if($tieneScore)<span class="prog-pill prog-pill--ok">Partitura</span>@endif
+                            @if($tienePdf)<span class="prog-pill">PDF</span>@endif
+                            @if($r->tieneProfundizacion())<span class="prog-pill">Textos</span>@endif
+                            @if($esAdmin && isset($r->publicado) && ! $r->publicado)<span class="prog-pill">Borrador</span>@endif
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    @endforeach
+</section>
+
+@if($seccionesPorCategoria->isNotEmpty())
+<div id="contenido-programa" class="row g-3">
     <div class="col-lg-4">
-        <div class="card programa-nav-card sticky-lg-top" style="top: 1rem; z-index: 2;">
+        <div class="card programa-nav-card sticky-lg-top" style="top: 4.5rem; z-index: 2;">
             <div class="card-header py-2">
-                <strong class="small text-uppercase">Índice del programa</strong>
+                <strong class="small text-uppercase">Contenido de la escuela</strong>
             </div>
             <div class="list-group list-group-flush programa-nav-list">
-                <a href="#toques-por-anio" class="list-group-item list-group-item-action">Toques por año</a>
                 @foreach($catLabels as $catKey => $catLabel)
                     @php $items = $seccionesPorCategoria->get($catKey, collect()); @endphp
                     @if($items->isNotEmpty())
@@ -54,7 +106,6 @@
             </div>
         </div>
     </div>
-
     <div class="col-lg-8">
         @foreach($catLabels as $catKey => $catLabel)
             @php $items = $seccionesPorCategoria->get($catKey, collect()); @endphp
@@ -67,7 +118,7 @@
                         <p class="text-muted small mb-0 mt-1">{{ $sec->subtitulo }}</p>
                         @endif
                     </div>
-                    @if(auth()->user()?->isAdmin())
+                    @if($esAdmin)
                     <a href="{{ route('programa.seccion.edit', $sec) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Editar</a>
                     @endif
                 </div>
@@ -77,49 +128,9 @@
             </section>
             @endforeach
         @endforeach
-
-        <section id="toques-por-anio" class="card">
-            <div class="card-header">
-                <h3 class="h6 mb-0">Toques por año</h3>
-                <p class="text-muted small mb-0 mt-1">Cada toque puede tener su página con textos, videos y archivos.</p>
-            </div>
-            <div class="card-body">
-                @foreach([1, 2, 3, 4, 5, 6] as $año)
-                    @php $ritmos = $porAño->get($año, collect()); @endphp
-                    @if($ritmos->isNotEmpty())
-                    <div class="programa-anio-block mb-4">
-                        <h4 class="h6 border-bottom pb-2 mb-3">{{ $años[$año] ?? $año.'° Año' }}</h4>
-                        <div class="row g-2">
-                            @foreach($ritmos as $r)
-                            <div class="col-md-6">
-                                <a href="{{ $r->slug ? route('programa.toque.show', $r) : '#' }}" class="programa-toque-card {{ $r->slug ? '' : 'disabled' }}">
-                                    <span class="programa-toque-orden">{{ $r->orden }}.</span>
-                                    <span class="programa-toque-nombre">{{ $r->nombre }}</span>
-                                    @if($r->opcional)
-                                    <span class="badge bg-secondary ms-1">Opcional</span>
-                                    @endif
-                                    @if($r->tieneProfundizacion())
-                                    <i class="bi bi-journal-text text-warning ms-auto" title="Con profundización"></i>
-                                    @endif
-                                    @if($r->autor)
-                                    <span class="programa-toque-meta d-block">{{ $r->autor }}</span>
-                                    @endif
-                                </a>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
-                @endforeach
-            </div>
-        </section>
     </div>
 </div>
-
 @endif
 
+@endif
 @endsection
-
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=3">
-@endpush

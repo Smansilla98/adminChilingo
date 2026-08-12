@@ -56,6 +56,15 @@ Route::prefix('biblioteca')->middleware('throttle:60,1')->group(function () {
     Route::get('/{bibliotecaItem}/archivo', [BibliotecaPublicController::class, 'archivo'])->name('biblioteca.archivo')->whereNumber('bibliotecaItem');
 });
 
+// Programa y partituras públicos (lectura, como la biblioteca)
+Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
+    Route::get('/', [ProgramaController::class, 'index'])->name('programa.index');
+    Route::get('/partituras', [ProgramaController::class, 'partiturasIndex'])->name('programa.partituras.index');
+    Route::get('/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->name('programa.toque.show');
+    Route::get('/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->name('programa.toque.archivo');
+    Route::get('/toque/{programaRitmo:slug}/parte/{instrumento}', [PartituraController::class, 'parte'])->name('programa.toque.parte');
+});
+
 // Rutas públicas
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -88,13 +97,6 @@ Route::middleware(['auth'])->group(function () {
     // Operativo diario
     Route::get('/pendientes', [OperativoController::class, 'pendientes'])->name('operativo.pendientes');
     Route::get('/api/hub-search', HubSearchController::class)->name('hub.search');
-
-    // Programa oficial — accesible para todos; edición solo admin
-    Route::get('/programa', [ProgramaController::class, 'index'])->middleware('modulo:programa')->name('programa.index');
-    Route::get('/programa/partituras', [ProgramaController::class, 'partiturasIndex'])->middleware('modulo:programa')->name('programa.partituras.index');
-    Route::get('/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->middleware('modulo:programa')->name('programa.toque.show');
-    Route::get('/programa/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->middleware('modulo:programa')->name('programa.toque.archivo');
-    Route::get('/programa/toque/{programaRitmo:slug}/parte/{instrumento}', [PartituraController::class, 'parte'])->middleware('modulo:programa')->name('programa.toque.parte');
 
     // Calendario (accesible para todos)
     Route::get('/calendario', [CalendarioController::class, 'index'])->middleware('modulo:calendario')->name('calendario.index');

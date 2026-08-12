@@ -1,11 +1,15 @@
-@extends('layouts.partitura-editor')
+@extends('layouts.publico')
 
 @section('title', $instrumentoLabel.' · '.$programaRitmo->nombre)
+@section('publico-brand', 'Partituras')
+@section('body-class', 'pt-shell')
+@section('main-class', 'biblio-main--flush')
 
 @section('content')
     <div class="partitura-parte-page">
         <header class="partitura-parte-head">
             <div>
+                <p class="biblio-eyebrow">Parte para imprimir</p>
                 <h1>{{ $programaRitmo->nombre }}</h1>
                 <p class="partitura-parte-sub">
                     Parte de <strong>{{ $instrumentoLabel }}</strong>
@@ -27,3 +31,7 @@
         ></div>
     </div>
 @endsection
+
+@push('vite')
+@vite(['resources/js/partitura.js'])
+@endpush

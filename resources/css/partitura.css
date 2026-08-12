@@ -1,15 +1,16 @@
 /**
- * Editor y visor de partituras (modelo v4). Tema oscuro Chilinga, partitura en papel claro.
+ * Editor y visor de partituras (modelo v4).
+ * Misma paleta que el programa público / admin ITO; el papel de la partitura se mantiene claro.
  */
 
 :root {
-    --pt-bg: var(--surface, #14100c);
-    --pt-panel: var(--surface-2, #1d160f);
-    --pt-line: var(--line, #3a2e24);
-    --pt-text: var(--skin, #f3e9d8);
-    --pt-muted: var(--muted, #b6a488);
-    --pt-brass: var(--brass, #d1a054);
-    --pt-accent: #e86a3c;
+    --pt-bg: var(--bg, #0a0e1a);
+    --pt-panel: var(--s1, #111827);
+    --pt-line: var(--border, rgba(233, 237, 245, 0.08));
+    --pt-text: var(--text, #e9edf5);
+    --pt-muted: var(--muted, #a8b3c9);
+    --pt-brass: var(--accent, #3e7bfa);
+    --pt-accent: var(--accent, #3e7bfa);
     --pt-paper: #fbf7ef;
     --pt-toolbar-h: 56px;
 }
@@ -23,7 +24,7 @@
     min-height: 520px;
     background: var(--pt-bg);
     color: var(--pt-text);
-    font-family: Inter, system-ui, sans-serif;
+    font-family: var(--font-body, Inter, system-ui, sans-serif);
     overflow: hidden;
     position: relative;
 }
@@ -43,8 +44,9 @@
     gap: 0.75rem;
     flex-wrap: wrap;
     padding: 0.4rem 0.7rem;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--pt-brass) 12%, var(--pt-panel)), var(--pt-panel));
+    background: color-mix(in srgb, var(--pt-panel) 92%, transparent);
     border-bottom: 1px solid var(--pt-line);
+    backdrop-filter: blur(10px);
 }
 
 .pt-tb-group {
@@ -81,11 +83,11 @@
 .pt-btn:hover { background: color-mix(in srgb, var(--pt-brass) 20%, var(--pt-panel)); }
 .pt-btn:active { transform: translateY(1px); }
 .pt-btn.on,
-.pt-toggle.on { background: var(--pt-brass); border-color: var(--pt-brass); color: #1a1206; font-weight: 700; }
-.pt-btn-primary { background: var(--pt-accent); border-color: var(--pt-accent); color: #fff; font-weight: 600; padding: 0 0.9rem; }
-.pt-btn-primary:hover { background: color-mix(in srgb, var(--pt-accent) 85%, #fff); }
+.pt-toggle.on { background: var(--pt-brass); border-color: var(--pt-brass); color: var(--accent-on, #fff); font-weight: 700; }
+.pt-btn-primary { background: var(--pt-accent); border-color: var(--pt-accent); color: var(--accent-on, #fff); font-weight: 600; padding: 0 0.9rem; }
+.pt-btn-primary:hover { background: var(--accent-hover, #2f66db); }
 .pt-btn-ghost { background: transparent; }
-.pt-btn-play.on { background: #4a9a86; border-color: #4a9a86; color: #06120f; }
+.pt-btn-play.on { background: var(--success, #22c55e); border-color: var(--success, #22c55e); color: #04140b; }
 
 .pt-input {
     height: 30px;
@@ -199,7 +201,11 @@
 .pt-canvas-wrap {
     overflow: auto;
     padding: 1.1rem;
-    background: repeating-linear-gradient(45deg, #0f0c08, #0f0c08 12px, #120e09 12px, #120e09 24px);
+    background:
+        linear-gradient(rgba(233, 237, 245, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(233, 237, 245, 0.03) 1px, transparent 1px),
+        var(--pt-bg);
+    background-size: 28px 28px, 28px 28px, auto;
     outline: none;
 }
 
@@ -237,7 +243,7 @@
     pointer-events: none;
     border: 2px solid var(--pt-accent);
     border-radius: 4px;
-    background: rgba(232, 106, 60, 0.14);
+    background: color-mix(in srgb, var(--pt-accent) 16%, transparent);
     z-index: 3;
 }
 
@@ -310,7 +316,7 @@
     text-decoration: none;
 }
 .pt-mini:hover { border-color: var(--pt-brass); color: var(--pt-text); }
-.pt-mini.on { background: var(--pt-brass); border-color: var(--pt-brass); color: #1a1206; font-weight: 700; }
+.pt-mini.on { background: var(--pt-brass); border-color: var(--pt-brass); color: var(--accent-on, #fff); font-weight: 700; }
 
 .pt-details { margin-top: 0.6rem; font-size: 12px; }
 .pt-details summary { cursor: pointer; color: var(--pt-muted); }
@@ -351,7 +357,7 @@
     transform: translate(-50%, 12px);
     padding: 0.45rem 0.9rem;
     border-radius: 999px;
-    background: #221a12;
+    background: var(--pt-panel);
     border: 1px solid var(--pt-brass);
     color: var(--pt-text);
     font-size: 12px;
@@ -372,7 +378,13 @@
     flex-wrap: wrap;
     margin-bottom: 0.6rem;
 }
-.pt-viewer-title { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.pt-viewer-title {
+    margin: 0;
+    font-family: var(--font-display, Manrope, sans-serif);
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
 .pt-viewer-meta { margin: 0.15rem 0 0; font-size: 12px; color: var(--pt-muted); }
 .pt-viewer-actions { display: flex; gap: 0.3rem; margin-left: auto; flex-wrap: wrap; }
 .pt-viewer .pt-page { overflow-x: auto; }

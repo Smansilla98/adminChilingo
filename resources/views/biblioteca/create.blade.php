@@ -1,4 +1,6 @@
-@extends('layouts.biblioteca')
+@extends('layouts.publico')
+
+@section('publico-brand', 'Biblioteca')
 
 @section('title', 'Subir material')
 

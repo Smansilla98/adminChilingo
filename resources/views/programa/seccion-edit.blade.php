@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.publico')
 
 @section('title', 'Editar: ' . $seccion->titulo)
-@section('page-title', 'Editar sección del programa')
+@section('publico-brand', 'Programa')
 
 @section('content')
 <nav aria-label="breadcrumb" class="mb-3">

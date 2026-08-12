@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.publico')
 
 @section('title', 'Partitura: '.$programaRitmo->nombre)
-@section('page-title', 'Cargar partitura')
+@section('publico-brand', 'Partituras')
 
 @push('styles')
 <style>

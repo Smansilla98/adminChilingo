@@ -39,7 +39,7 @@ class ProgramaController extends Controller
             $this->asegurarDatosBase();
 
             $qRitmos = ProgramaRitmo::query()->orderBy('año')->orderBy('orden');
-            if (Schema::hasColumn('programa_ritmos', 'publicado')) {
+            if (Schema::hasColumn('programa_ritmos', 'publicado') && ! auth()->user()?->isAdmin()) {
                 $qRitmos->where('publicado', true);
             }
             $ritmos = $qRitmos->get();
@@ -77,11 +77,12 @@ class ProgramaController extends Controller
         $estadoPrograma = 'ok';
         $busqueda = trim((string) $request->query('q', ''));
         $pendientes = (int) $request->query('pendientes', 0) === 1;
+        $digital = (int) $request->query('digital', 0) === 1;
 
         if (! Schema::hasTable('programa_ritmos')) {
             $estadoPrograma = 'sin_tabla';
 
-            return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes'));
+            return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital'));
         }
 
         try {
@@ -105,7 +106,7 @@ class ProgramaController extends Controller
                 $r->resumen_medios = [
                     'partitura' => $tieneArchivo,
                     'partitura_nombre' => $m['partitura']['nombre'] ?? null,
-                    'digital' => ! empty($m['partitura_score']['sections']),
+                    'digital' => \App\Support\PartituraScore::tieneGolpes($m['partitura_score'] ?? null),
                     'videos' => $videosBase + $videosGrupo,
                     'cortes' => count($m['cortes'] ?? []),
                     'recursos' => count($m['recursos'] ?? []),
@@ -116,6 +117,9 @@ class ProgramaController extends Controller
             if ($pendientes) {
                 $ritmos = $ritmos->filter(fn (ProgramaRitmo $r) => empty(($r->resumen_medios ?? [])['partitura']));
             }
+            if ($digital) {
+                $ritmos = $ritmos->filter(fn (ProgramaRitmo $r) => ! empty(($r->resumen_medios ?? [])['digital']));
+            }
             $porAño = $ritmos->groupBy(fn (ProgramaRitmo $r) => (int) $r->año);
             if ($ritmos->isEmpty()) {
                 $estadoPrograma = 'vacio';
@@ -125,7 +129,7 @@ class ProgramaController extends Controller
             $estadoPrograma = 'error';
         }
 
-        return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes'));
+        return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital'));
     }
 
     public function editPartitura(ProgramaRitmo $programaRitmo)
@@ -239,6 +243,12 @@ class ProgramaController extends Controller
 
     public function descargarMedio(ProgramaRitmo $programaRitmo, Request $request): StreamedResponse
     {
+        if (Schema::hasColumn('programa_ritmos', 'publicado')
+            && ! $programaRitmo->publicado
+            && ! auth()->user()?->isAdmin()) {
+            abort(404);
+        }
+
         $tipo = (string) $request->query('tipo', '');
         $index = $request->integer('i');
         $medios = $programaRitmo->mediosNormalizados();

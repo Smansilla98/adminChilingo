@@ -1,6 +1,7 @@
-@extends('layouts.biblioteca')
+@extends('layouts.publico')
 
 @section('title', 'Explorar biblioteca')
+@section('publico-brand', 'Biblioteca')
 
 @section('content')
 @php

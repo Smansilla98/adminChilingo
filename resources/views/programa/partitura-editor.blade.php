@@ -1,6 +1,9 @@
-@extends('layouts.partitura-editor')
+@extends('layouts.publico')
 
 @section('title', 'Editor · '.$programaRitmo->nombre)
+@section('publico-brand', 'Partituras')
+@section('body-class', 'pt-shell')
+@section('main-class', 'biblio-main--flush')
 
 @section('content')
     <div
@@ -12,3 +15,7 @@
         data-readonly="0"
     ></div>
 @endsection
+
+@push('vite')
+@vite(['resources/js/partitura.js'])
+@endpush
