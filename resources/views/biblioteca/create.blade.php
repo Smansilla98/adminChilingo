@@ -77,8 +77,9 @@
 
             <div class="mb-3">
                 <label class="form-label" for="archivo">Archivo</label>
-                <input type="file" name="archivo" id="archivo" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.mp3,.wav,.ogg,.m4a,.pdf,image/png,image/jpeg,image/webp,video/mp4,video/webm,audio/*,application/pdf">
-                <div class="form-text">PNG (con transparencia), JPG, video MP4/WebM, audio o PDF · máx. 50 MB</div>
+                <input type="file" name="archivo" id="archivo" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.m4v,.webm,.mov,.mp3,.wav,.ogg,.m4a,.pdf,image/png,image/jpeg,image/webp,video/mp4,video/webm,audio/*,application/pdf">
+                <div class="form-text">PNG, JPG, video MP4/WebM/MOV, audio o PDF · máx. 100 MB. Si el video pesa más, pegá un enlace abajo.</div>
+                <div id="archivo-feedback" class="form-text text-danger d-none"></div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="url">O un enlace</label>
@@ -105,7 +106,7 @@
                 <label class="form-label" for="autor_nombre">Tu nombre (opcional)</label>
                 <input type="text" name="autor_nombre" id="autor_nombre" class="form-control" maxlength="120" value="{{ old('autor_nombre') }}">
             </div>
-            <button type="submit" class="btn btn-primary w-100">
+            <button type="submit" class="btn btn-primary w-100" id="biblio-submit">
                 <i class="bi bi-check-lg"></i> Publicar
             </button>
         </aside>
@@ -116,16 +117,52 @@
 @push('scripts')
 <script>
 (function () {
-    const input = document.getElementById('hashtags');
-    if (input) {
+    const tags = document.getElementById('hashtags');
+    if (tags) {
         document.querySelectorAll('[data-tag-suggest]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 const tag = btn.getAttribute('data-tag-suggest');
-                const cur = (input.value || '').trim();
+                const cur = (tags.value || '').trim();
                 if (cur.toLowerCase().indexOf(tag.toLowerCase()) !== -1) return;
-                input.value = cur ? (cur + ' ' + tag) : tag;
-                input.focus();
+                tags.value = cur ? (cur + ' ' + tag) : tag;
+                tags.focus();
             });
+        });
+    }
+
+    const MAX_BYTES = 100 * 1024 * 1024;
+    const archivo = document.getElementById('archivo');
+    const feedback = document.getElementById('archivo-feedback');
+    const form = document.querySelector('.biblio-form');
+    const submit = document.getElementById('biblio-submit');
+
+    function validarArchivo() {
+        if (!archivo || !feedback) return true;
+        const file = archivo.files && archivo.files[0];
+        feedback.classList.add('d-none');
+        feedback.textContent = '';
+        if (!file) return true;
+        if (file.size > MAX_BYTES) {
+            feedback.textContent = 'Este archivo pesa ' + (file.size / (1024 * 1024)).toFixed(1) + ' MB. El máximo es 100 MB: comprimí el video o pegá un enlace.';
+            feedback.classList.remove('d-none');
+            return false;
+        }
+        return true;
+    }
+
+    if (archivo) {
+        archivo.addEventListener('change', validarArchivo);
+    }
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            if (!validarArchivo()) {
+                e.preventDefault();
+                return;
+            }
+            if (submit) {
+                submit.disabled = true;
+                submit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Subiendo…';
+            }
         });
     }
 })();

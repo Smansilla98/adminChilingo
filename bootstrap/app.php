@@ -4,6 +4,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\PostTooLargeException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,7 +22,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (PostTooLargeException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'El archivo supera el límite de 100 MB.',
+                ], 413);
+            }
+
+            return redirect()
+                ->back()
+                ->withInput($request->except('archivo'))
+                ->withErrors([
+                    'archivo' => 'El archivo supera el límite de 100 MB. Comprimí el video o pegá un enlace.',
+                ]);
+        });
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('whatsapp:resumen-admin')

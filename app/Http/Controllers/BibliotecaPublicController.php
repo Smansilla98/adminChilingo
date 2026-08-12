@@ -14,6 +14,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BibliotecaPublicController extends Controller
 {
+    /** Límite de subida en KB (alineado con docker/php/uploads.ini). */
+    private const ARCHIVO_MAX_KB = 102400;
+
+    private const ARCHIVO_EXTENSIONES = 'jpg,jpeg,png,webp,gif,mp4,m4v,webm,mov,mp3,wav,ogg,m4a,pdf';
+
     public function index(Request $request)
     {
         if (! Schema::hasTable('biblioteca_items')) {
@@ -139,6 +144,11 @@ class BibliotecaPublicController extends Controller
             return redirect()->route('biblioteca.index')->with('success', '¡Gracias! Tu material se publicó.');
         }
 
+        $errorSubida = $this->mensajeErrorSubida($request);
+        if ($errorSubida !== null) {
+            return back()->withErrors(['archivo' => $errorSubida])->withInput();
+        }
+
         $instrumentos = array_keys(BibliotecaItem::instrumentosOpciones());
         $tieneToqueCol = Schema::hasColumn('biblioteca_items', 'programa_ritmo_id');
 
@@ -148,7 +158,7 @@ class BibliotecaPublicController extends Controller
             'autor_nombre' => 'nullable|string|max:120',
             'hashtags' => 'nullable|string|max:400',
             'url' => 'nullable|url|max:500',
-            'archivo' => 'nullable|file|max:51200|mimes:jpg,jpeg,png,webp,gif,mp4,webm,mov,mp3,wav,ogg,m4a,pdf',
+            'archivo' => 'nullable|file|max:'.self::ARCHIVO_MAX_KB.'|extensions:'.self::ARCHIVO_EXTENSIONES,
             'instrumento' => ['nullable', 'string', Rule::in($instrumentos)],
         ];
 
@@ -162,8 +172,9 @@ class BibliotecaPublicController extends Controller
         }
 
         $validated = $request->validate($rules, [
-            'archivo.max' => 'El archivo no puede superar 50 MB.',
-            'archivo.mimes' => 'Formatos permitidos: PNG/JPG/WebP, MP4/WebM/MOV, audio o PDF.',
+            'archivo.uploaded' => 'No se pudo subir el archivo. Si es un video, suele ser demasiado grande o se cortó la conexión. Máximo 100 MB, o pegá un enlace.',
+            'archivo.max' => 'El archivo no puede superar 100 MB.',
+            'archivo.extensions' => 'Formatos permitidos: PNG/JPG/WebP, MP4/WebM/MOV, audio o PDF.',
             'toque.exists' => 'Elegí un toque válido del programa.',
             'instrumento.in' => 'Elegí un instrumento de la lista.',
         ]);
@@ -200,7 +211,20 @@ class BibliotecaPublicController extends Controller
             $bytes = $file->getSize();
             $filename = (string) Str::uuid().($ext !== '' ? '.'.$ext : '');
             $dir = 'biblioteca/'.now()->format('Y/m');
-            $file->storeAs($dir, $filename, 'comprobantes');
+            try {
+                $stored = $file->storeAs($dir, $filename, 'comprobantes');
+            } catch (\Throwable $e) {
+                report($e);
+
+                return back()->withErrors([
+                    'archivo' => 'No se pudo guardar el archivo en el servidor. Reintentá o pegá un enlace.',
+                ])->withInput();
+            }
+            if (! $stored) {
+                return back()->withErrors([
+                    'archivo' => 'No se pudo guardar el archivo en el volumen. Reintentá o pegá un enlace.',
+                ])->withInput();
+            }
             $path = $dir.'/'.$filename;
         }
 
@@ -288,6 +312,25 @@ class BibliotecaPublicController extends Controller
         }
 
         return Storage::disk('comprobantes')->response($bibliotecaItem->path, $nombre, $headers);
+    }
+
+    private function mensajeErrorSubida(Request $request): ?string
+    {
+        $file = $request->files->get('archivo');
+        if (! $file instanceof \Illuminate\Http\UploadedFile && ! $file instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+            return null;
+        }
+        if ($file->isValid()) {
+            return null;
+        }
+
+        return match ($file->getError()) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'El servidor rechazó el archivo por tamaño (máximo 100 MB). Comprimí el MP4 o pegá un enlace (YouTube, Drive, etc.).',
+            UPLOAD_ERR_PARTIAL => 'La subida se interrumpió. Probá de nuevo con mejor conexión.',
+            UPLOAD_ERR_NO_FILE => 'No se recibió el archivo. Elegí el MP4 de nuevo.',
+            UPLOAD_ERR_NO_TMP_DIR, UPLOAD_ERR_CANT_WRITE => 'El servidor no pudo guardar el archivo temporal. Reintentá en unos minutos.',
+            default => 'No se pudo subir el archivo. Si es un MP4 grande, comprimilo a menos de 100 MB o pegá un enlace.',
+        };
     }
 
     /**

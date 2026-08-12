@@ -32,6 +32,9 @@ RUN docker-php-ext-install -j$(nproc) \
     gd \
     zip
 
+# Límite de subida (videos de biblioteca; el default de PHP es 2M)
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

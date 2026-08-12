@@ -66,7 +66,17 @@ php artisan storage:link 2>/dev/null || true
 mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/views
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
+# artisan serve lanza un php -S hijo: hereda PHP_INI_SCAN_DIR (no los -d del padre)
+if [ -d /usr/local/etc/php/conf.d ]; then
+    export PHP_INI_SCAN_DIR="/usr/local/etc/php/conf.d"
+fi
+if [ -f /var/www/html/docker/php/uploads.ini ]; then
+    export PHP_INI_SCAN_DIR="${PHP_INI_SCAN_DIR:+$PHP_INI_SCAN_DIR:}/var/www/html/docker/php"
+fi
+
 echo ""
+echo "=== Límites de subida PHP ==="
+php -d upload_max_filesize=100M -d post_max_size=110M -r 'echo "upload_max_filesize=".ini_get("upload_max_filesize")." post_max_size=".ini_get("post_max_size").PHP_EOL;'
 echo "=========================================="
 echo "=== Servidor iniciado ==="
 echo "Host: 0.0.0.0"
