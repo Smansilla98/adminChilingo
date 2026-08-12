@@ -12,15 +12,31 @@ use Illuminate\Support\Facades\Schema;
  *
  * Fuente: database/data/partituras-v4/*.json + manifest.json
  * Uso: php artisan db:seed --class=PartiturasEjemploSeeder
+ *      (sobreescribe). En start.sh se llama con solo-faltantes.
  */
 class PartiturasEjemploSeeder extends Seeder
 {
     public function run(): void
     {
+        $soloFaltantes = filter_var(
+            getenv('PARTITURAS_SEED_SOLO_FALTANTES') ?: '0',
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        $this->cargar($soloFaltantes);
+    }
+
+    /**
+     * @return array{ok: int, skip: int, fail: int}
+     */
+    public function cargar(bool $soloFaltantes = false): array
+    {
+        $vacio = ['ok' => 0, 'skip' => 0, 'fail' => 0];
+
         if (! Schema::hasColumn('programa_ritmos', 'medios')) {
             $this->command?->warn('La tabla programa_ritmos no tiene la columna medios. Corré las migraciones primero.');
 
-            return;
+            return $vacio;
         }
 
         $dir = database_path('data/partituras-v4');
@@ -29,17 +45,18 @@ class PartiturasEjemploSeeder extends Seeder
         if (! is_file($manifestPath)) {
             $this->command?->warn('No se encontró database/data/partituras-v4/manifest.json');
 
-            return;
+            return $vacio;
         }
 
         $manifest = json_decode((string) file_get_contents($manifestPath), true);
         if (! is_array($manifest)) {
             $this->command?->warn('manifest.json inválido.');
 
-            return;
+            return $vacio;
         }
 
         $ok = 0;
+        $skip = 0;
         $fail = 0;
 
         foreach ($manifest as $item) {
@@ -70,6 +87,13 @@ class PartiturasEjemploSeeder extends Seeder
             }
 
             $medios = $ritmo->mediosNormalizados();
+            if ($soloFaltantes && PartituraScore::tieneGolpes($medios['partitura_score'] ?? null)) {
+                $this->command?->line("· {$ritmo->nombre}: ya tiene partitura, se omite");
+                $skip++;
+
+                continue;
+            }
+
             $medios['partitura_score'] = $score;
             $ritmo->update(['medios' => $medios]);
 
@@ -78,7 +102,9 @@ class PartiturasEjemploSeeder extends Seeder
             $ok++;
         }
 
-        $this->command?->info("Listo: {$ok} partituras cargadas, {$fail} omitidas.");
+        $this->command?->info("Listo: {$ok} cargadas, {$skip} ya estaban, {$fail} omitidas.");
+
+        return compact('ok', 'skip', 'fail');
     }
 
     /**

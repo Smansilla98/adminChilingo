@@ -57,6 +57,18 @@ if [ "${RUN_SEED:-0}" = "1" ]; then
     php artisan db:seed --force --no-interaction || true
 fi
 
+# Partituras v4: regenerar JSON desde los .py y cargar seeders si faltan
+PARTITURAS_PY="database/data/partituras-v4/generar.py"
+if [ -f "$PARTITURAS_PY" ]; then
+    echo "=== Partituras v4 (Python + seeders) ==="
+    if command -v python3 >/dev/null 2>&1; then
+        python3 "$PARTITURAS_PY" || echo "⚠️  generar.py reportó problemas; se continúa con los JSON disponibles."
+    else
+        echo "⚠️  python3 no está instalado; se usan los JSON ya generados."
+    fi
+    php artisan partituras:bootstrap --no-interaction || echo "⚠️  Seeders de partituras fallaron. El servidor arranca igual."
+fi
+
 # Autoload
 composer dump-autoload --no-interaction --optimize 2>/dev/null || true
 
