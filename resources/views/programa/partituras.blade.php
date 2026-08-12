@@ -99,10 +99,10 @@
                                 <a href="{{ route('programa.toque.show', $toque) }}#partitura" class="btn btn-sm btn-primary">
                                     <i class="bi bi-play-fill"></i> {{ ($rm['digital'] ?? false) ? 'Escuchar' : 'Abrir' }}
                                 </a>
+                                <a href="{{ route('programa.toque.editor', $toque) }}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </a>
                                 @if($esAdmin)
-                                    <a href="{{ route('programa.toque.editor', $toque) }}" class="btn btn-sm btn-warning">
-                                        <i class="bi bi-pencil-square"></i> Editar
-                                    </a>
                                     <a href="{{ route('programa.toque.partitura.edit', $toque) }}" class="btn btn-sm btn-outline-secondary" title="PDF">
                                         <i class="bi bi-cloud-upload"></i>
                                     </a>

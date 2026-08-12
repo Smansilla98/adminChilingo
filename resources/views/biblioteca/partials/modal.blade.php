@@ -18,6 +18,10 @@
             <div class="biblio-modal-meta">
                 <span data-biblio-autor hidden></span>
                 <div class="biblio-modal-actions">
+                    <button type="button" class="btn btn-sm btn-primary" data-biblio-share data-biblio-ignore hidden
+                            data-share-url="" data-share-title="" data-share-text="">
+                        <i class="bi bi-share" aria-hidden="true"></i> Compartir
+                    </button>
                     <a href="#" data-biblio-toque-link class="btn btn-sm btn-outline-secondary" hidden>Ver toque</a>
                     <a href="#" target="_blank" rel="noopener" data-biblio-open-raw class="btn btn-sm btn-secondary">Abrir original</a>
                 </div>

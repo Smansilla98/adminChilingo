@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProgramaRitmo;
 use App\Services\ProgramaRitmoMediosService;
 use App\Support\PartituraScore;
+use App\Support\ProgramaRitmoMedios;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -14,10 +15,10 @@ use Illuminate\Support\Facades\Schema;
  */
 class PartituraController extends Controller
 {
-    /** Editor completo (solo admin). */
+    /** Editor abierto: la firma se pide en un pop-up (sin crear usuarios). */
     public function editor(ProgramaRitmo $programaRitmo)
     {
-        $this->soloAdmin();
+        $this->abortSiToqueNoPublico($programaRitmo);
 
         $medios = $programaRitmo->mediosNormalizados();
         $score = $medios['partitura_score'] ?? null;
@@ -29,17 +30,23 @@ class PartituraController extends Controller
         return view('programa.partitura-editor', [
             'programaRitmo' => $programaRitmo,
             'score' => $score,
+            'ultimaEdicion' => ProgramaRitmoMedios::ultimaEdicion($medios),
+            'nombreSugerido' => auth()->user()?->name ?: auth()->user()?->username,
         ]);
     }
 
-    /** Guardado del editor (JSON). */
+    /** Guardado del editor (JSON). Requiere el nombre de quien edita. */
     public function guardar(Request $request, ProgramaRitmo $programaRitmo): JsonResponse
     {
-        $this->soloAdmin();
+        $this->abortSiToqueNoPublico($programaRitmo);
 
         $data = $request->validate([
             'score' => 'nullable|array',
             'quitar' => 'nullable|boolean',
+            'editor_nombre' => 'required|string|min:2|max:80',
+        ], [
+            'editor_nombre.required' => 'Indicá tu nombre para dejar registro de la edición.',
+            'editor_nombre.min' => 'El nombre debe tener al menos 2 caracteres.',
         ]);
 
         if (! Schema::hasColumn('programa_ritmos', 'medios')) {
@@ -47,30 +54,37 @@ class PartituraController extends Controller
         }
 
         $quitar = (bool) ($data['quitar'] ?? false);
+        if ($quitar && ! auth()->user()?->isAdmin()) {
+            return response()->json(['ok' => false, 'error' => 'Solo administración puede quitar la partitura.'], 403);
+        }
+
         $score = $quitar ? null : PartituraScore::normalizar($data['score'] ?? null);
 
         if (! $quitar && $score === null) {
             return response()->json(['ok' => false, 'error' => 'La partitura está vacía o es inválida.'], 422);
         }
 
-        $medios = app(ProgramaRitmoMediosService::class)->guardarPartituraScore($programaRitmo, $score);
+        $nombre = trim((string) $data['editor_nombre']);
+        $medios = app(ProgramaRitmoMediosService::class)->guardarPartituraScore(
+            $programaRitmo,
+            $score,
+            $nombre,
+            $request->ip()
+        );
         $programaRitmo->update(['medios' => $medios]);
 
         return response()->json([
             'ok' => true,
             'score' => $medios['partitura_score'],
             'resumen' => PartituraScore::resumen($medios['partitura_score']),
+            'editado_por' => $nombre,
         ]);
     }
 
     /** Parte separada por instrumento, lista para imprimir. */
     public function parte(ProgramaRitmo $programaRitmo, string $instrumento)
     {
-        if (Schema::hasColumn('programa_ritmos', 'publicado')
-            && ! $programaRitmo->publicado
-            && ! auth()->user()?->isAdmin()) {
-            abort(404);
-        }
+        $this->abortSiToqueNoPublico($programaRitmo);
 
         if (! array_key_exists($instrumento, PartituraScore::INSTRUMENTOS)) {
             abort(404);
@@ -94,8 +108,12 @@ class PartituraController extends Controller
         ]);
     }
 
-    private function soloAdmin(): void
+    private function abortSiToqueNoPublico(ProgramaRitmo $programaRitmo): void
     {
-        abort_unless(auth()->user()?->isAdmin(), 403);
+        if (Schema::hasColumn('programa_ritmos', 'publicado')
+            && ! $programaRitmo->publicado
+            && ! auth()->user()?->isAdmin()) {
+            abort(404);
+        }
     }
 }

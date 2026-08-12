@@ -7,26 +7,29 @@
     }
     $recursos = old('recursos', $m['recursos'] ?? []);
     if ($recursos === []) {
-        $recursos = [['tipo' => 'enlace', 'titulo' => '', 'url' => '', 'contenido' => '', 'path' => null, 'nombre' => null]];
+        $recursos = [['tipo' => 'imagen', 'titulo' => '', 'url' => '', 'contenido' => '', 'path' => null, 'nombre' => null]];
     }
     $tieneScore = ! empty($m['partitura_score']['sections']);
 @endphp
 
 <div class="card mb-3" id="partitura-recursos">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <span>Videos, partitura y archivos del toque</span>
+        <span>Videos, fotos, ensayos y archivos</span>
         @if(isset($programaRitmo))
             <div class="d-flex flex-wrap gap-1">
                 <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-primary">
                     <i class="bi bi-music-note-list"></i> Editor de partitura
                 </a>
+                @if($esAdmin ?? auth()->user()?->isAdmin())
                 <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-warning">
                     <i class="bi bi-cloud-upload"></i> Subir PDF/imagen
                 </a>
+                @endif
             </div>
         @endif
     </div>
     <div class="card-body">
+        @if($esAdmin ?? auth()->user()?->isAdmin())
         <div class="card border-warning mb-4">
             <div class="card-header bg-transparent">
                 <h3 class="h6 mb-0"><i class="bi bi-file-earmark-music"></i> Partitura (recomendado)</h3>
@@ -45,6 +48,7 @@
                 ])
             </div>
         </div>
+        @endif
 
         <div class="card border-primary mb-4">
             <div class="card-header bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -70,7 +74,7 @@
 
         <hr>
         <h3 class="h6 mb-2">Videos de bases (por tambor)</h3>
-        <p class="small text-muted mb-3">Pegá el enlace del video (YouTube, Vimeo, etc.).</p>
+        <p class="small text-muted mb-3">Pegá el enlace (YouTube, Vimeo, Drive…). Sirve para estudiar cada voz en clase.</p>
         <div class="row g-3 mb-4">
             @foreach($videosBase as $key => $label)
             <div class="col-md-6">
@@ -83,7 +87,8 @@
         </div>
 
         <hr>
-        <h3 class="h6 mb-2">Ensamble y llamadas</h3>
+        <h3 class="h6 mb-2">Ensamble, llamadas y ensayos</h3>
+        <p class="small text-muted mb-3">Videos del grupo completo, llamadas y tomas de ensayo o show.</p>
         <div class="row g-3 mb-4">
             @foreach($videosGrupo as $key => $label)
             <div class="col-md-6">
@@ -97,10 +102,10 @@
 
         <hr>
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h3 class="h6 mb-0">Cortes</h3>
+            <h3 class="h6 mb-0">Cortes y fragmentos</h3>
             <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-corte"><i class="bi bi-plus"></i> Añadir corte</button>
         </div>
-        <p class="small text-muted">Trozos del toque: un video por enlace o un archivo (PDF, foto o video).</p>
+        <p class="small text-muted">Un video, foto o PDF por fragmento (llamada, puente, final…).</p>
         <div id="cortes-wrap" class="d-grid gap-3 mb-4">
             @foreach($cortes as $i => $corte)
             <div class="border rounded p-3 corte-item">
@@ -118,17 +123,17 @@
                     <label class="ms-2"><input type="checkbox" name="cortes[{{ $i }}][quitar_archivo]" value="1"> Quitar</label>
                 </div>
                 @endif
-                <input type="file" name="cortes[{{ $i }}][archivo]" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4,.webm">
+                <input type="file" name="cortes[{{ $i }}][archivo]" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,image/*,video/*">
             </div>
             @endforeach
         </div>
 
         <hr>
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h3 class="h6 mb-0">Recursos adicionales</h3>
+            <h3 class="h6 mb-0">Fotos, apuntes y material de clase</h3>
             <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-recurso"><i class="bi bi-plus"></i> Añadir recurso</button>
         </div>
-        <p class="small text-muted">Cualquier extra: foto, PDF, video, enlace o un texto escrito.</p>
+        <p class="small text-muted">Fotos de pizarra, videos de ensayo, PDFs, detalles de oído o un texto para la clase.</p>
         <div id="recursos-wrap" class="d-grid gap-3">
             @foreach($recursos as $i => $rec)
             <div class="border rounded p-3 recurso-item">
@@ -149,7 +154,7 @@
                     </div>
                 </div>
                 <input type="text" name="recursos[{{ $i }}][url]" class="form-control form-control-sm mb-2 recurso-url" placeholder="URL (video, web, imagen externa…)" value="{{ $rec['url'] ?? '' }}">
-                <textarea name="recursos[{{ $i }}][contenido]" class="form-control form-control-sm mb-2 recurso-texto" rows="3" placeholder="Texto (solo tipo «Bloque de texto»)">{{ $rec['contenido'] ?? '' }}</textarea>
+                <textarea name="recursos[{{ $i }}][contenido]" class="form-control form-control-sm mb-2 recurso-texto" rows="3" placeholder="Detalle, apunte o nota para la clase (opcional)">{{ $rec['contenido'] ?? '' }}</textarea>
                 @if(!empty($rec['path']))
                 <input type="hidden" name="recursos[{{ $i }}][path]" value="{{ $rec['path'] }}">
                 <input type="hidden" name="recursos[{{ $i }}][nombre]" value="{{ $rec['nombre'] ?? '' }}">
@@ -158,7 +163,7 @@
                     <label class="ms-2"><input type="checkbox" name="recursos[{{ $i }}][quitar_archivo]" value="1"> Quitar</label>
                 </div>
                 @endif
-                <input type="file" name="recursos[{{ $i }}][archivo]" class="form-control form-control-sm recurso-archivo">
+                <input type="file" name="recursos[{{ $i }}][archivo]" class="form-control form-control-sm recurso-archivo" accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.pdf,image/*,video/*,application/pdf">
             </div>
             @endforeach
         </div>

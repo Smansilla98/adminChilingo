@@ -28,6 +28,7 @@
     data-biblio-toque="{{ e($toqueLabel ?? '') }}"
     data-biblio-toque-href="{{ e($toqueHref) }}"
     data-biblio-filter-href="{{ e($biblioToqueHref) }}"
+    data-biblio-share-url="{{ $item->permalinkUrl() }}"
     role="button"
     tabindex="0"
     aria-label="Ver {{ $item->titulo }}"
@@ -62,6 +63,7 @@
             </div>
         @endif
         <span class="biblio-card-type">{{ \App\Models\BibliotecaItem::TIPOS[$item->tipo] ?? $item->tipo }}</span>
+        @include('biblioteca.partials.share-button', ['item' => $item, 'variant' => 'icon'])
     </div>
     <div class="biblio-card-body">
         <h2 class="biblio-card-title">{{ $item->titulo }}</h2>

@@ -1,8 +1,10 @@
 @php
     use App\Support\PartituraScore;
+    use App\Support\ProgramaRitmoMedios;
     $score = $medios['partitura_score'] ?? null;
     $tieneScore = is_array($score) && ! empty($score['sections']) && PartituraScore::tieneGolpes($score);
     $resumen = $tieneScore ? PartituraScore::resumen($score) : null;
+    $ultimaEdicion = ProgramaRitmoMedios::ultimaEdicion(is_array($medios) ? $medios : []);
     $instrumentosScore = $tieneScore
         ? collect($score['instruments'] ?? [])->pluck('id')->filter()->values()->all()
         : [];
@@ -22,14 +24,19 @@
                     {{ $score['tempo'] ?? 100 }} BPM ·
                     {{ ($score['timeSignature']['num'] ?? 4) }}/{{ ($score['timeSignature']['den'] ?? 4) }}
                 @endif
+                @if($ultimaEdicion)
+                    <span class="d-block mt-1">Última edición: {{ $ultimaEdicion['nombre'] }}
+                        @if(!empty($ultimaEdicion['at']))
+                            · {{ \Illuminate\Support\Carbon::parse($ultimaEdicion['at'])->timezone(config('app.timezone'))->format('d/m/Y H:i') }}
+                        @endif
+                    </span>
+                @endif
             </p>
         </div>
         <div class="prog-cta-row">
-            @if(auth()->user()?->isAdmin())
-                <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">
-                    <i class="bi bi-pencil-square"></i> Editar
-                </a>
-            @endif
+            <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">
+                <i class="bi bi-pencil-square"></i> Editar
+            </a>
         </div>
     </div>
     <div class="prog-score-card__body">

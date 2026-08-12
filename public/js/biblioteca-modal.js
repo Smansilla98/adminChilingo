@@ -10,6 +10,7 @@
     const tagsEl = modal.querySelector('[data-biblio-tags]');
     const autorEl = modal.querySelector('[data-biblio-autor]');
     const rawLink = modal.querySelector('[data-biblio-open-raw]');
+    const shareBtn = modal.querySelector('[data-biblio-share]');
 
     function stopMedia() {
         media.querySelectorAll('video, audio').forEach(function (el) {
@@ -84,6 +85,18 @@
         }
 
         rawLink.href = src;
+
+        if (shareBtn) {
+            const shareUrl = card.getAttribute('data-biblio-share-url') || '';
+            if (shareUrl) {
+                shareBtn.hidden = false;
+                shareBtn.setAttribute('data-share-url', shareUrl);
+                shareBtn.setAttribute('data-share-title', title);
+                shareBtn.setAttribute('data-share-text', [title, toque].filter(Boolean).join(' · '));
+            } else {
+                shareBtn.hidden = true;
+            }
+        }
 
         if (tipo === 'imagen') {
             if (isPng) media.classList.add('is-png');

@@ -18,7 +18,7 @@ const MAX_UNDO = 60;
 export class EditorPartitura {
     /**
      * @param {HTMLElement} root
-     * @param {{ score?: object, saveUrl?: string|null, backUrl?: string|null, parteUrl?: string|null, readonly?: boolean }} [opts]
+     * @param {{ score?: object, saveUrl?: string|null, backUrl?: string|null, parteUrl?: string|null, readonly?: boolean, editorNombre?: string }} [opts]
      */
     constructor(root, opts = {}) {
         this.root = root;
@@ -26,6 +26,7 @@ export class EditorPartitura {
         this.backUrl = opts.backUrl || null;
         this.parteUrl = opts.parteUrl || null;
         this.readonly = !!opts.readonly;
+        this.editorNombre = String(opts.editorNombre || '').trim();
 
         this.score = normalizarPartitura(opts.score || crearPartitura());
         this.sel = null;              // {sectionIdx, measureIdx, instId, noteIdx}
@@ -747,6 +748,12 @@ export class EditorPartitura {
 
     async guardar() {
         if (this.readonly || !this.saveUrl || this.guardando) return;
+        const nombre = (this.editorNombre || this.root.dataset.editorNombre || '').trim();
+        if (nombre.length < 2) {
+            this.aviso('Indicá tu nombre para guardar.');
+            window.dispatchEvent(new CustomEvent('partitura:pedir-nombre'));
+            return;
+        }
         this.guardando = true;
         this.aviso('Guardando…');
         try {
@@ -758,14 +765,17 @@ export class EditorPartitura {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
                 },
-                body: JSON.stringify({ score: this.score }),
+                body: JSON.stringify({ score: this.score, editor_nombre: nombre }),
             });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                const msg = data.message || data.error || (data.errors?.editor_nombre?.[0]) || `HTTP ${res.status}`;
+                throw new Error(msg);
+            }
             if (data.score) this.score = normalizarPartitura(data.score);
             this.dirty = false;
             this.render();
-            this.aviso('Partitura guardada.');
+            this.aviso(data.editado_por ? `Guardada · ${data.editado_por}` : 'Partitura guardada.');
         } catch (err) {
             this.aviso(`No se pudo guardar: ${err.message}`);
         } finally {

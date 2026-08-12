@@ -27,6 +27,7 @@ function montar() {
             backUrl: el.dataset.backUrl || null,
             parteUrl: el.dataset.parteUrl || null,
             readonly: el.dataset.readonly === '1',
+            editorNombre: el.dataset.editorNombre || '',
         });
         window.partituraEditor = editor;
     });

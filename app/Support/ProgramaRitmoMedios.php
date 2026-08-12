@@ -25,15 +25,20 @@ class ProgramaRitmoMedios
         'ensamble' => 'Ensamble completo',
         'llamada_inicio' => 'Llamada del toque',
         'llamada_fin' => 'Llamada final',
+        'ensayo' => 'Ensayo / práctica',
+        'ensayo_bases' => 'Ensayo de bases',
+        'show' => 'Show / presentación',
     ];
 
     /** @var array<string, string> */
     public const TIPOS_RECURSO = [
-        'imagen' => 'Imagen',
+        'imagen' => 'Foto / imagen',
+        'video' => 'Video (enlace o archivo)',
+        'ensayo' => 'Ensayo / práctica',
+        'detalle' => 'Detalle de clase',
         'pdf' => 'PDF / documento',
-        'video' => 'Video (enlace)',
         'enlace' => 'Enlace web',
-        'texto' => 'Bloque de texto',
+        'texto' => 'Texto / apunte',
     ];
 
     /**
@@ -58,6 +63,8 @@ class ProgramaRitmoMedios
             'videos_grupo' => $grupo,
             'cortes' => [],
             'recursos' => [],
+            'partitura_ediciones' => [],
+            'pagina_ediciones' => [],
         ];
     }
 
@@ -116,6 +123,9 @@ class ProgramaRitmoMedios
             }
         }
 
+        $out['partitura_ediciones'] = self::normalizarEdiciones($medios['partitura_ediciones'] ?? null);
+        $out['pagina_ediciones'] = self::normalizarEdiciones($medios['pagina_ediciones'] ?? null);
+
         if (isset($medios['recursos']) && is_array($medios['recursos'])) {
             foreach ($medios['recursos'] as $r) {
                 if (! is_array($r)) {
@@ -140,6 +150,77 @@ class ProgramaRitmoMedios
         }
 
         return $out;
+    }
+
+    /**
+     * @param  mixed  $raw
+     * @return list<array{nombre: string, at: string, ip: string|null}>
+     */
+    public static function normalizarEdiciones(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($raw as $e) {
+            if (! is_array($e)) {
+                continue;
+            }
+            $nombre = trim((string) ($e['nombre'] ?? ''));
+            if ($nombre === '') {
+                continue;
+            }
+            $out[] = [
+                'nombre' => mb_substr($nombre, 0, 80),
+                'at' => (string) ($e['at'] ?? ''),
+                'ip' => isset($e['ip']) ? mb_substr((string) $e['ip'], 0, 45) : null,
+            ];
+        }
+
+        return array_slice($out, -40);
+    }
+
+    /**
+     * @param  array<string, mixed>  $medios
+     * @return array{nombre: string, at: string}|null
+     */
+    public static function ultimaEdicion(array $medios, string $clave = 'partitura_ediciones'): ?array
+    {
+        $lista = $medios[$clave] ?? [];
+        if ($lista === []) {
+            return null;
+        }
+        $last = $lista[array_key_last($lista)];
+        if (! is_array($last) || ($last['nombre'] ?? '') === '') {
+            return null;
+        }
+
+        return [
+            'nombre' => (string) $last['nombre'],
+            'at' => (string) ($last['at'] ?? ''),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $medios
+     * @return array<string, mixed>
+     */
+    public static function registrarEdicion(array $medios, string $nombre, ?string $ip = null, string $clave = 'pagina_ediciones'): array
+    {
+        $nombre = trim($nombre);
+        if ($nombre === '') {
+            return $medios;
+        }
+        $lista = is_array($medios[$clave] ?? null) ? $medios[$clave] : [];
+        $lista[] = [
+            'nombre' => mb_substr($nombre, 0, 80),
+            'at' => now()->toIso8601String(),
+            'ip' => $ip ? mb_substr($ip, 0, 45) : null,
+        ];
+        $medios[$clave] = array_slice($lista, -40);
+
+        return $medios;
     }
 
     /**

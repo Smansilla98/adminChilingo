@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BibliotecaItem;
 use App\Models\BibliotecaTag;
 use App\Models\ProgramaRitmo;
+use App\Services\BibliotecaShareMiniatura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -278,11 +279,24 @@ class BibliotecaPublicController extends Controller
             ->with('success', '¡Listo! Tu material ya está en la biblioteca.');
     }
 
+    public function show(BibliotecaItem $bibliotecaItem)
+    {
+        $this->abortSiNoPublico($bibliotecaItem);
+        $bibliotecaItem->load(['tags', 'toque']);
+
+        return view('biblioteca.show', ['item' => $bibliotecaItem]);
+    }
+
+    public function miniatura(BibliotecaItem $bibliotecaItem, BibliotecaShareMiniatura $miniatura): StreamedResponse
+    {
+        $this->abortSiNoPublico($bibliotecaItem);
+
+        return $miniatura->responder($bibliotecaItem);
+    }
+
     public function archivo(BibliotecaItem $bibliotecaItem): StreamedResponse
     {
-        if ($bibliotecaItem->estado !== 'publicado' && ! auth()->user()?->isAdmin()) {
-            abort(404);
-        }
+        $this->abortSiNoPublico($bibliotecaItem);
         if (! $bibliotecaItem->path || ! Storage::disk('comprobantes')->exists($bibliotecaItem->path)) {
             abort(404);
         }
@@ -331,6 +345,13 @@ class BibliotecaPublicController extends Controller
             UPLOAD_ERR_NO_TMP_DIR, UPLOAD_ERR_CANT_WRITE => 'El servidor no pudo guardar el archivo temporal. Reintentá en unos minutos.',
             default => 'No se pudo subir el archivo. Si es un MP4 grande, comprimilo a menos de 100 MB o pegá un enlace.',
         };
+    }
+
+    private function abortSiNoPublico(BibliotecaItem $item): void
+    {
+        if ($item->estado !== 'publicado' && ! auth()->user()?->isAdmin()) {
+            abort(404);
+        }
     }
 
     /**

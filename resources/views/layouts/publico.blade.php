@@ -9,10 +9,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=11">
-    <link rel="stylesheet" href="{{ asset('css/biblioteca.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('css/biblioteca.css') }}?v=5">
     <link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=4">
-    <link rel="stylesheet" href="{{ asset('css/programa-publico.css') }}?v=2">
+    <link rel="stylesheet" href="{{ asset('css/programa-publico.css') }}?v=3">
     @include('layouts.partials.apariencia-head')
+    @stack('head')
     @stack('vite')
     @stack('styles')
 </head>
@@ -28,7 +29,7 @@
     <nav class="biblio-nav">
         <a href="{{ route('programa.index') }}" class="{{ request()->routeIs('programa.index') || request()->routeIs('programa.toque.show') ? 'is-active' : '' }}">Programa</a>
         <a href="{{ route('programa.partituras.index') }}" class="{{ request()->routeIs('programa.partituras.*') || request()->routeIs('programa.toque.parte') || request()->routeIs('programa.toque.editor') || request()->routeIs('programa.toque.partitura.*') ? 'is-active' : '' }}">Partituras</a>
-        <a href="{{ route('biblioteca.index') }}" class="{{ request()->routeIs('biblioteca.index') ? 'is-active' : '' }}">Biblioteca</a>
+        <a href="{{ route('biblioteca.index') }}" class="{{ request()->routeIs('biblioteca.index') || request()->routeIs('biblioteca.show') ? 'is-active' : '' }}">Biblioteca</a>
         <a href="{{ route('biblioteca.create') }}" class="{{ request()->routeIs('biblioteca.create') ? 'is-active' : '' }}">Subir</a>
         @auth
             <a href="{{ route('dashboard') }}">Panel</a>

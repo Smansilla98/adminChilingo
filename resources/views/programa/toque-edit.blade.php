@@ -5,42 +5,60 @@
 
 @section('content')
 @php
+    $esAdmin = $esAdmin ?? auth()->user()?->isAdmin();
     $secciones = old('secciones', $programaRitmo->seccionesProfundizacion());
+    if ($secciones === [] || $secciones === null) {
+        $secciones = [
+            ['titulo' => 'Para la clase', 'contenido' => ''],
+            ['titulo' => 'Ensayo', 'contenido' => ''],
+        ];
+    }
     $enlaces = old('enlaces', $programaRitmo->enlaces ?? [['etiqueta' => '', 'url' => '']]);
     if ($enlaces === []) {
         $enlaces = [['etiqueta' => '', 'url' => '']];
     }
 @endphp
 
-<nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb mb-0 small">
-        <li class="breadcrumb-item"><a href="{{ route('programa.index') }}">Programa</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('programa.toque.show', $programaRitmo) }}">{{ $programaRitmo->nombre }}</a></li>
-        <li class="breadcrumb-item active">Editar</li>
-    </ol>
-</nav>
+@include('programa.partials.nombre-colaborador-modal', [
+    'ultimaEdicion' => $ultimaEdicion ?? null,
+    'nombreSugerido' => $nombreSugerido ?? '',
+    'volverUrl' => route('programa.toque.show', $programaRitmo),
+])
+
+<div class="biblio-hero biblio-hero--compact">
+    <div>
+        <p class="biblio-eyebrow">Material de clase · comunidad</p>
+        <h1>Editar {{ $programaRitmo->nombre }}</h1>
+        <p class="biblio-lead">Sumá textos, fotos, videos de ensayo, cortes y apuntes. Firmás con tu nombre; no hace falta cuenta.</p>
+    </div>
+    <a href="{{ route('programa.toque.show', $programaRitmo) }}" class="btn btn-outline-secondary btn-sm">Volver al toque</a>
+</div>
 
 <form action="{{ route('programa.toque.update', $programaRitmo) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
+    <input type="hidden" name="editor_nombre" id="editor_nombre" value="" required>
 
-    @include('partials.form-ayuda-intro', ['text' => 'Podés ir de a poco: primero nombre y un texto; después videos y archivos más abajo.'])
     <div class="card mb-3">
-        <div class="card-header">Datos del toque (en el listado)</div>
+        <div class="card-header">Datos del toque</div>
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-8">
-                    <label class="form-label">Nombre *</label>
-                    <input type="text" name="nombre" class="form-control" value="{{ old('nombre', $programaRitmo->nombre) }}" required>
+                    <label class="form-label">Nombre @if($esAdmin)*@endif</label>
+                    <input type="text" name="nombre" class="form-control" value="{{ old('nombre', $programaRitmo->nombre) }}" @if($esAdmin) required @else readonly @endif>
+                    @unless($esAdmin)
+                        <div class="form-text">El nombre del toque lo cambia solo administración.</div>
+                    @endunless
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Autor / referencia</label>
                     <input type="text" name="autor" class="form-control" value="{{ old('autor', $programaRitmo->autor) }}">
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Notas (ej. opcional 1er o 2do año)</label>
-                    <input type="text" name="notas" class="form-control" value="{{ old('notas', $programaRitmo->notas) }}">
+                    <label class="form-label">Notas para el listado</label>
+                    <input type="text" name="notas" class="form-control" value="{{ old('notas', $programaRitmo->notas) }}" placeholder="Ej. se trabaja al final de 1° año">
                 </div>
+                @if($esAdmin)
                 <div class="col-md-6">
                     <div class="form-check">
                         <input type="hidden" name="opcional" value="0">
@@ -55,12 +73,13 @@
                         <label class="form-check-label" for="publicado">Visible en el programa</label>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
     </div>
 
     <div class="card mb-3">
-        <div class="card-header">Textos de la página del toque</div>
+        <div class="card-header">Textos para la clase</div>
         <div class="card-body">
             <div class="mb-3">
                 <label class="form-label">Resumen (aparece arriba de la página)</label>
@@ -77,7 +96,12 @@
                 <label class="form-label mb-0">Apartados del toque</label>
                 <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-seccion"><i class="bi bi-plus"></i> Añadir sección</button>
             </div>
-            <p class="small text-muted">Podés armar apartados, por ejemplo: de dónde sale el toque, cómo está armado, qué practicar.</p>
+            <p class="small text-muted mb-2">Armá apartados para la clase: origen, cómo se arma, qué practicar, errores frecuentes.</p>
+            <div class="prog-year-chips mb-3" id="sugeridos-seccion">
+                @foreach(['Para la clase', 'Ensayo', 'Origen del toque', 'Cómo se arma', 'Detalle / oído'] as $sug)
+                    <button type="button" class="prog-chip" data-seccion-sug="{{ $sug }}">+ {{ $sug }}</button>
+                @endforeach
+            </div>
             <div id="secciones-wrap" class="d-grid gap-3">
                 @foreach($secciones as $i => $sec)
                 <div class="border rounded p-3 seccion-item">
@@ -116,8 +140,15 @@
 
     @include('programa.partials.medios-edit', ['programaRitmo' => $programaRitmo])
 
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a href="{{ route('programa.toque.show', $programaRitmo) }}" class="btn btn-secondary">Cancelar</a>
+    <div class="card mb-3">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <p class="small text-muted mb-0">También podés subir fotos y videos sueltos a la <a href="{{ route('biblioteca.create', ['toque' => $programaRitmo->slug]) }}">biblioteca</a> y asociarlos a este toque.</p>
+            <div class="prog-cta-row">
+                <a href="{{ route('programa.toque.show', $programaRitmo) }}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
 </form>
 @endsection
 
@@ -147,6 +178,15 @@
             if (inputs[1]) inputs[1].name = 'enlaces[' + i + '][url]';
         });
     }
+
+    document.querySelectorAll('[data-seccion-sug]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (!btnSec) return;
+            btnSec.click();
+            const last = wrapSec.querySelector('.seccion-item:last-child input[type="text"]');
+            if (last) last.value = btn.getAttribute('data-seccion-sug') || '';
+        });
+    });
 
     if (btnSec && wrapSec) {
         btnSec.addEventListener('click', function () {
@@ -238,7 +278,7 @@
                 '<button type="button" class="btn btn-sm btn-outline-danger btn-quitar-corte">×</button></div>' +
                 '<input type="text" name="cortes[' + i + '][titulo]" class="form-control form-control-sm mb-2" placeholder="Título del corte">' +
                 '<input type="text" name="cortes[' + i + '][url]" class="form-control form-control-sm mb-2" placeholder="URL de video (opcional)">' +
-                '<input type="file" name="cortes[' + i + '][archivo]" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.webp,.mp4,.webm">';
+                '<input type="file" name="cortes[' + i + '][archivo]" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,image/*,video/*">';
             wrapCortes.appendChild(div);
         });
         wrapCortes.addEventListener('click', function (e) {
@@ -258,11 +298,11 @@
                 '<div class="d-flex justify-content-between mb-2"><span class="small text-muted">Recurso ' + (i + 1) + '</span>' +
                 '<button type="button" class="btn btn-sm btn-outline-danger btn-quitar-recurso">×</button></div>' +
                 '<div class="row g-2 mb-2"><div class="col-md-4"><select name="recursos[' + i + '][tipo]" class="form-select form-select-sm">' +
-                optionsTipos('enlace') + '</select></div>' +
+                optionsTipos('imagen') + '</select></div>' +
                 '<div class="col-md-8"><input type="text" name="recursos[' + i + '][titulo]" class="form-control form-control-sm" placeholder="Título"></div></div>' +
                 '<input type="text" name="recursos[' + i + '][url]" class="form-control form-control-sm mb-2" placeholder="URL">' +
                 '<textarea name="recursos[' + i + '][contenido]" class="form-control form-control-sm mb-2" rows="3" placeholder="Texto"></textarea>' +
-                '<input type="file" name="recursos[' + i + '][archivo]" class="form-control form-control-sm">';
+                '<input type="file" name="recursos[' + i + '][archivo]" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.pdf,image/*,video/*,application/pdf">';
             wrapRecursos.appendChild(div);
         });
         wrapRecursos.addEventListener('click', function (e) {

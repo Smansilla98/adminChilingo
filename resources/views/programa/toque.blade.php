@@ -12,6 +12,7 @@
     $score = $medios['partitura_score'] ?? null;
     $tieneScore = is_array($score) && \App\Support\PartituraScore::tieneGolpes($score);
     $tienePdf = ! empty(($medios['partitura']['path'] ?? null));
+    $ultimaPagina = \App\Support\ProgramaRitmoMedios::ultimaEdicion(is_array($medios ?? null) ? $medios : [], 'pagina_ediciones');
 @endphp
 
 <nav aria-label="breadcrumb" class="mb-2">
@@ -33,15 +34,22 @@
         @if($programaRitmo->resumen)
             <p class="biblio-lead">{{ $programaRitmo->resumen }}</p>
         @endif
+        @if($ultimaPagina)
+            <p class="small text-muted mb-0">Última edición de la ficha: {{ $ultimaPagina['nombre'] }}
+                @if(!empty($ultimaPagina['at']))
+                    · {{ \Illuminate\Support\Carbon::parse($ultimaPagina['at'])->timezone(config('app.timezone'))->format('d/m/Y H:i') }}
+                @endif
+            </p>
+        @endif
     </div>
     <div class="prog-hero-actions">
         @if($tieneScore)
             <a href="#partitura" class="btn btn-primary"><i class="bi bi-play-fill"></i> Escuchar</a>
         @endif
+        <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-warning"><i class="bi bi-pencil-square"></i> Editar partitura</a>
+        <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-outline-warning"><i class="bi bi-plus-lg"></i> Sumar material</a>
         @if($esAdmin)
-            <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-warning"><i class="bi bi-pencil-square"></i> Editar partitura</a>
             <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-upload"></i> PDF</a>
-            <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Página</a>
         @endif
     </div>
 </div>
@@ -67,9 +75,7 @@
                     <a href="#material" class="btn btn-sm btn-primary">Ver PDF</a>
                 @endif
                 <a href="{{ route('biblioteca.create', ['toque' => $programaRitmo->slug]) }}" class="btn btn-sm btn-outline-secondary">Subir material</a>
-                @if($esAdmin)
-                    <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">Crear partitura</a>
-                @endif
+                <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">Crear partitura</a>
             </div>
         </div>
     @endunless
@@ -87,6 +93,12 @@
 @endif
 
 <div id="material">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <span class="small text-muted mb-0">Videos, fotos, ensayos y apuntes de clase</span>
+        <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-outline-warning">
+            <i class="bi bi-pencil"></i> Editar material
+        </a>
+    </div>
     @include('programa.partials.medios-show', ['programaRitmo' => $programaRitmo, 'medios' => $medios ?? []])
 </div>
 
@@ -95,6 +107,9 @@
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
         <strong class="small mb-0">Material de la comunidad</strong>
         <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-outline-warning">
+                <i class="bi bi-pencil"></i> Editar ficha
+            </a>
             <a href="{{ route('biblioteca.create', ['toque' => $programaRitmo->slug]) }}" class="btn btn-sm btn-primary">
                 <i class="bi bi-cloud-upload"></i> Subir para este toque
             </a>
@@ -179,7 +194,8 @@
 @if(($bibliotecaItems ?? collect())->isNotEmpty())
 @include('biblioteca.partials.modal')
 @push('scripts')
-<script src="{{ asset('js/biblioteca-modal.js') }}?v=2"></script>
+<script src="{{ asset('js/biblioteca-modal.js') }}?v=3"></script>
+<script src="{{ asset('js/biblioteca-share.js') }}?v=1"></script>
 @endpush
 @endif
 

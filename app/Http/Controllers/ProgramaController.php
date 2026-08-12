@@ -228,7 +228,7 @@ class ProgramaController extends Controller
 
     public function editToque(ProgramaRitmo $programaRitmo)
     {
-        $this->authorizeAdmin();
+        $this->abortSiToqueNoPublico($programaRitmo);
 
         $medios = $programaRitmo->mediosNormalizados();
 
@@ -238,6 +238,9 @@ class ProgramaController extends Controller
             'videosBase' => ProgramaRitmoMedios::VIDEOS_BASE,
             'videosGrupo' => ProgramaRitmoMedios::VIDEOS_GRUPO,
             'tiposRecurso' => ProgramaRitmoMedios::TIPOS_RECURSO,
+            'ultimaEdicion' => ProgramaRitmoMedios::ultimaEdicion($medios, 'pagina_ediciones'),
+            'nombreSugerido' => auth()->user()?->name ?: auth()->user()?->username,
+            'esAdmin' => (bool) auth()->user()?->isAdmin(),
         ]);
     }
 
@@ -281,10 +284,13 @@ class ProgramaController extends Controller
 
     public function updateToque(Request $request, ProgramaRitmo $programaRitmo)
     {
-        $this->authorizeAdmin();
+        $this->abortSiToqueNoPublico($programaRitmo);
+
+        $esAdmin = (bool) auth()->user()?->isAdmin();
 
         $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
+            'editor_nombre' => 'required|string|min:2|max:80',
+            'nombre' => ($esAdmin ? 'required' : 'nullable').'|string|max:255',
             'autor' => 'nullable|string|max:500',
             'notas' => 'nullable|string|max:500',
             'resumen' => 'nullable|string|max:2000',
@@ -306,13 +312,17 @@ class ProgramaController extends Controller
             'cortes' => 'nullable|array',
             'cortes.*.titulo' => 'nullable|string|max:255',
             'cortes.*.url' => 'nullable|string|max:500',
-            'cortes.*.archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,mp4,webm|max:51200',
+            'cortes.*.archivo' => 'nullable|file|max:102400|extensions:pdf,jpg,jpeg,png,webp,gif,mp4,webm,mov',
             'recursos' => 'nullable|array',
             'recursos.*.tipo' => 'nullable|string|max:32',
             'recursos.*.titulo' => 'nullable|string|max:255',
             'recursos.*.url' => 'nullable|string|max:500',
             'recursos.*.contenido' => 'nullable|string|max:20000',
-            'recursos.*.archivo' => 'nullable|file|max:51200',
+            'recursos.*.archivo' => 'nullable|file|max:102400|extensions:jpg,jpeg,png,webp,gif,mp4,webm,mov,pdf',
+        ], [
+            'editor_nombre.required' => 'Indicá tu nombre para dejar registro de la edición.',
+            'cortes.*.archivo.extensions' => 'El corte tiene que ser imagen, video o PDF.',
+            'recursos.*.archivo.extensions' => 'El archivo tiene que ser imagen, video o PDF.',
         ]);
 
         $secciones = collect($validated['secciones'] ?? [])
@@ -334,26 +344,35 @@ class ProgramaController extends Controller
             ->all();
 
         $update = [
-            'nombre' => $validated['nombre'],
             'autor' => $validated['autor'] ?? null,
             'notas' => $validated['notas'] ?? null,
             'resumen' => $validated['resumen'] ?? null,
             'contenido' => $validated['contenido'] ?? null,
-            'opcional' => $request->boolean('opcional'),
-            'publicado' => $request->boolean('publicado'),
             'secciones' => $secciones !== [] ? $secciones : null,
             'enlaces' => $enlaces !== [] ? $enlaces : null,
         ];
 
+        if ($esAdmin) {
+            $update['nombre'] = $validated['nombre'] ?? $programaRitmo->nombre;
+            $update['opcional'] = $request->boolean('opcional');
+            $update['publicado'] = $request->boolean('publicado');
+        }
+
         if (Schema::hasColumn('programa_ritmos', 'medios')) {
-            $update['medios'] = app(ProgramaRitmoMediosService::class)->procesarDesdeRequest($request, $programaRitmo);
+            $medios = app(ProgramaRitmoMediosService::class)->procesarDesdeRequest($request, $programaRitmo);
+            $update['medios'] = ProgramaRitmoMedios::registrarEdicion(
+                $medios,
+                (string) $validated['editor_nombre'],
+                $request->ip(),
+                'pagina_ediciones'
+            );
         }
 
         $programaRitmo->update($update);
 
         return redirect()
             ->route('programa.toque.show', $programaRitmo)
-            ->with('success', 'Profundización del toque actualizada.');
+            ->with('success', 'Gracias, '.$validated['editor_nombre'].'. El toque quedó actualizado.');
     }
 
     public function editSeccion(ProgramaSeccion $programaSeccion)
@@ -453,6 +472,15 @@ class ProgramaController extends Controller
     {
         if (! auth()->user()?->isAdmin()) {
             abort(403);
+        }
+    }
+
+    private function abortSiToqueNoPublico(ProgramaRitmo $programaRitmo): void
+    {
+        if (Schema::hasColumn('programa_ritmos', 'publicado')
+            && ! $programaRitmo->publicado
+            && ! auth()->user()?->isAdmin()) {
+            abort(404);
         }
     }
 }

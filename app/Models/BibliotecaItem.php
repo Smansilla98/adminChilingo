@@ -137,6 +137,27 @@ class BibliotecaItem extends Model
         return null;
     }
 
+    public function permalinkUrl(): string
+    {
+        return route('biblioteca.show', $this);
+    }
+
+    public function miniaturaUrl(): string
+    {
+        return route('biblioteca.miniatura', $this);
+    }
+
+    public function textoCompartir(): string
+    {
+        $partes = [$this->titulo ?: 'Material de la biblioteca'];
+        $toque = $this->etiquetaToqueInstrumento();
+        if ($toque) {
+            $partes[] = $toque;
+        }
+
+        return implode(' · ', $partes);
+    }
+
     public function tieneArchivo(): bool
     {
         return $this->path && Storage::disk('comprobantes')->exists($this->path);

@@ -1,11 +1,18 @@
 @php
     use App\Support\ProgramaRitmoMedios;
     $m = $medios ?? ProgramaRitmoMedios::estructuraVacia();
-    $tieneMedios = ProgramaRitmoMedios::tieneContenidoMultimedia($m);
+    $tieneMedios = ProgramaRitmoMedios::tieneContenidoMultimedia($m)
+        && (
+            ! empty($m['partitura']['path'])
+            || collect($m['videos_base'] ?? [])->contains(fn ($v) => ! empty($v['url']))
+            || collect($m['videos_grupo'] ?? [])->contains(fn ($v) => ! empty($v['url']))
+            || count($m['cortes'] ?? []) > 0
+            || count($m['recursos'] ?? []) > 0
+        );
 @endphp
 
-@if($tieneMedios)
 <section class="programa-medios mb-3">
+@if($tieneMedios)
     @if(!empty($m['partitura']['path']))
     @php
         $partituraUrl = route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'partitura']);
@@ -78,7 +85,7 @@
 
     @if($grupoConUrl->isNotEmpty())
     <div class="card mb-3">
-        <div class="card-header"><h3 class="h6 mb-0">Ensamble y llamadas</h3></div>
+        <div class="card-header"><h3 class="h6 mb-0">Ensamble, ensayos y presentaciones</h3></div>
         <div class="card-body">
             <div class="row g-4">
                 @foreach(ProgramaRitmoMedios::VIDEOS_GRUPO as $key => $label)
@@ -106,10 +113,15 @@
                 @endif
                 @if(!empty($corte['url']))
                     @include('programa.partials.video-embed', ['url' => $corte['url']])
-                @elseif(!empty($corte['path']))
-                    <a href="{{ route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'corte', 'i' => $i]) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
-                        <i class="bi bi-download"></i> {{ $corte['nombre'] ?? 'Descargar archivo' }}
-                    </a>
+                @endif
+                @if(!empty($corte['path']))
+                    @include('programa.partials.archivo-preview', [
+                        'programaRitmo' => $programaRitmo,
+                        'tipo' => 'corte',
+                        'i' => $i,
+                        'path' => $corte['path'],
+                        'nombre' => $corte['nombre'] ?? 'Archivo',
+                    ])
                 @endif
             </article>
             @endforeach
@@ -123,13 +135,28 @@
         <div class="card-body d-grid gap-4">
             @foreach($m['recursos'] as $i => $rec)
             <article class="programa-recurso">
-                @if(!empty($rec['titulo']))
-                <h4 class="h6 mb-2">{{ $rec['titulo'] }}</h4>
-                @endif
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    @if(!empty($rec['tipo']) && isset(ProgramaRitmoMedios::TIPOS_RECURSO[$rec['tipo']]))
+                        <span class="badge text-bg-secondary">{{ ProgramaRitmoMedios::TIPOS_RECURSO[$rec['tipo']] }}</span>
+                    @endif
+                    @if(!empty($rec['titulo']))
+                        <h4 class="h6 mb-0">{{ $rec['titulo'] }}</h4>
+                    @endif
+                </div>
                 @switch($rec['tipo'] ?? 'enlace')
                     @case('texto')
+                    @case('detalle')
                         @if(!empty($rec['contenido']))
                         <div class="programa-contenido">{!! nl2br(e($rec['contenido'])) !!}</div>
+                        @endif
+                        @if(!empty($rec['path']))
+                            @include('programa.partials.archivo-preview', [
+                                'programaRitmo' => $programaRitmo,
+                                'tipo' => 'recurso',
+                                'i' => $i,
+                                'path' => $rec['path'],
+                                'nombre' => $rec['nombre'] ?? 'Archivo',
+                            ])
                         @endif
                         @break
                     @case('imagen')
@@ -140,8 +167,20 @@
                         @endif
                         @break
                     @case('video')
+                    @case('ensayo')
                         @if(!empty($rec['url']))
                             @include('programa.partials.video-embed', ['url' => $rec['url']])
+                        @elseif(!empty($rec['path']))
+                            @include('programa.partials.archivo-preview', [
+                                'programaRitmo' => $programaRitmo,
+                                'tipo' => 'recurso',
+                                'i' => $i,
+                                'path' => $rec['path'],
+                                'nombre' => $rec['nombre'] ?? 'Video',
+                            ])
+                        @endif
+                        @if(!empty($rec['contenido']))
+                        <p class="small text-muted mt-2 mb-0">{!! nl2br(e($rec['contenido'])) !!}</p>
                         @endif
                         @break
                     @case('pdf')
@@ -167,5 +206,14 @@
         </div>
     </div>
     @endif
-</section>
+@else
+    <div class="prog-score-empty">
+        <p class="biblio-eyebrow mb-1">Material de clase</p>
+        <h2 class="h5 mb-2">Todavía no hay videos, fotos ni apuntes</h2>
+        <p class="text-muted small mb-3">Podés sumar ensayos, fotos de pizarra, cortes y detalles para trabajar este toque.</p>
+        <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-warning">
+            <i class="bi bi-plus-lg"></i> Agregar material
+        </a>
+    </div>
 @endif
+</section>

@@ -54,6 +54,8 @@ Route::prefix('biblioteca')->middleware('throttle:60,1')->group(function () {
     Route::get('/subir', [BibliotecaPublicController::class, 'create'])->name('biblioteca.create');
     Route::post('/', [BibliotecaPublicController::class, 'store'])->middleware('throttle:10,1')->name('biblioteca.store');
     Route::get('/{bibliotecaItem}/archivo', [BibliotecaPublicController::class, 'archivo'])->name('biblioteca.archivo')->whereNumber('bibliotecaItem');
+    Route::get('/{bibliotecaItem}/miniatura', [BibliotecaPublicController::class, 'miniatura'])->name('biblioteca.miniatura')->whereNumber('bibliotecaItem');
+    Route::get('/{bibliotecaItem}', [BibliotecaPublicController::class, 'show'])->name('biblioteca.show')->whereNumber('bibliotecaItem');
 });
 
 // Programa y partituras públicos (lectura, como la biblioteca)
@@ -63,6 +65,14 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
     Route::get('/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->name('programa.toque.show');
     Route::get('/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->name('programa.toque.archivo');
     Route::get('/toque/{programaRitmo:slug}/parte/{instrumento}', [PartituraController::class, 'parte'])->name('programa.toque.parte');
+    Route::get('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'editor'])->name('programa.toque.editor');
+    Route::post('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'guardar'])
+        ->middleware('throttle:20,1')
+        ->name('programa.toque.editor.guardar');
+    Route::get('/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
+    Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])
+        ->middleware('throttle:20,1')
+        ->name('programa.toque.update');
 });
 
 // Rutas públicas
@@ -147,12 +157,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/accesos', [AccesosController::class, 'index'])->name('accesos.index');
         Route::post('/accesos', [AccesosController::class, 'update'])->name('accesos.update');
 
-        Route::get('/programa/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
-        Route::match(['put', 'post'], '/programa/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])->name('programa.toque.update');
         Route::get('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'editPartitura'])->name('programa.toque.partitura.edit');
         Route::post('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'updatePartitura'])->name('programa.toque.partitura.update');
-        Route::get('/programa/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'editor'])->name('programa.toque.editor');
-        Route::post('/programa/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'guardar'])->name('programa.toque.editor.guardar');
         Route::post('/programa/partituras/cargar-cuadernillo', [ProgramaController::class, 'importarCuadernillo'])->name('programa.partituras.importar-cuadernillo');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');

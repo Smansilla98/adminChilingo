@@ -21,15 +21,18 @@ class ProgramaRitmoMediosService
         $baseDir = 'programa-ritmos/'.$ritmo->id;
 
         $pathsAntes = $this->pathsEnMedios($medios);
+        $esAdmin = (bool) $request->user()?->isAdmin();
 
-        if ($request->boolean('quitar_partitura')) {
-            $medios['partitura'] = null;
-        } elseif ($request->hasFile('partitura_archivo')) {
-            $file = $request->file('partitura_archivo');
-            $medios['partitura'] = [
-                'path' => $this->guardarArchivo($file, $baseDir.'/partitura'),
-                'nombre' => $file->getClientOriginalName(),
-            ];
+        if ($esAdmin) {
+            if ($request->boolean('quitar_partitura')) {
+                $medios['partitura'] = null;
+            } elseif ($request->hasFile('partitura_archivo')) {
+                $file = $request->file('partitura_archivo');
+                $medios['partitura'] = [
+                    'path' => $this->guardarArchivo($file, $baseDir.'/partitura'),
+                    'nombre' => $file->getClientOriginalName(),
+                ];
+            }
         }
 
         foreach (array_keys(ProgramaRitmoMedios::VIDEOS_BASE) as $key) {
@@ -107,11 +110,22 @@ class ProgramaRitmoMediosService
      * @param  array<string, mixed>|null  $score
      * @return array<string, mixed>
      */
-    public function guardarPartituraScore(ProgramaRitmo $ritmo, ?array $score): array
+    public function guardarPartituraScore(ProgramaRitmo $ritmo, ?array $score, ?string $editorNombre = null, ?string $ip = null): array
     {
         $medios = ProgramaRitmoMedios::normalizar($ritmo->medios);
         $medios['partitura_flat'] = null;
         $medios['partitura_score'] = $score === null ? null : PartituraScore::normalizar($score);
+
+        $nombre = trim((string) $editorNombre);
+        if ($nombre !== '') {
+            $ediciones = $medios['partitura_ediciones'] ?? [];
+            $ediciones[] = [
+                'nombre' => mb_substr($nombre, 0, 80),
+                'at' => now()->toIso8601String(),
+                'ip' => $ip ? mb_substr($ip, 0, 45) : null,
+            ];
+            $medios['partitura_ediciones'] = array_slice($ediciones, -40);
+        }
 
         return $medios;
     }
