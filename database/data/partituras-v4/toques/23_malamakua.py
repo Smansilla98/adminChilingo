@@ -3,7 +3,7 @@
 Recopilación: Luciano Molina - Pablo Cuffia (Bloque Lunes Saavedra).
 Grilla de 12 semicorcheas por compás (6/8).
 """
-from dsl import INSTS, compas, score, seccion
+from dsl import INSTS, compas, score, seccion, unisono
 
 TITULO = 'Malamakuá'
 MATCH = {'año': 3, 'orden': 3, 'nombre': 'Malamakua I'}
@@ -60,15 +60,14 @@ variacion = [
 ]
 
 # ------------------------------------------------------------ Llamada final
+# Voz "Todos": unísono estricto en un solo pentagrama.
 llamada_final = [
-    c(sg='-x=-x=-x-x=-', sa='-x=-x=-x-x=-', sm='-x=-x=-x-x=-',
-      re='-x=-x=-x-x=-', rp='-x=-x=-x-x=-', ti='-x=-x=-x-x=-',
-      texto='Llamada final — todos', dyn='f'),
-    c(sg='x=--x-x-x=--', sa='x=--x-x-x=--', sm='x=--x-x-x=--',
-      re='x=--x-x-x=--', rp='x=--x-x-x=--', ti='x=--x-x-x=--'),
+    compas(unisono('-x=-x=-x-x=-'), grid=12, num=6, den=8,
+           texto='Llamada final — todos', dyn='f'),
+    compas(unisono('x=--x-x-x=--'), grid=12, num=6, den=8),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
     seccion('Introducción', introduccion, 1),
     seccion('Toque', toque(), 4),
     seccion('Variación', variacion, 2),

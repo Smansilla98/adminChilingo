@@ -37,7 +37,7 @@ variacion = [
     for i in range(4)
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
     seccion('Llamada inicial e intermedia', llamada, 1),
     seccion('Toque', toque, 8),
     seccion('Variación sobre toque', variacion, 2),

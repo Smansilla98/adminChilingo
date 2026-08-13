@@ -2,7 +2,7 @@
  * Motor de audio: percusión sintetizada (WebAudio), transporte, metrónomo y mixer.
  * Sin samples externos: cada tambor se modela con membrana (osc con pitch-drop) + ruido filtrado.
  */
-import { instrumentoPorId, GOLPES } from './instruments.js';
+import { instrumentoPorId, GOLPES, UNISONO, vocesDeUnisono } from './instruments.js';
 import { TPQ, ticksDeNota, expandirTimeline, ticksDeCompas } from './model.js';
 
 export class MotorAudio {
@@ -186,6 +186,7 @@ export class MotorAudio {
         const segNegra = 60 / (score.tempo || 100);
         const segTick = segNegra / TPQ;
         const capacidad = ticksDeCompas(score.timeSignature);
+        const unisono = vocesDeUnisono(score);
         const t0 = this.ctx.currentTime + 0.12;
         let cursor = 0;
         const eventos = [];
@@ -200,15 +201,21 @@ export class MotorAudio {
                 }
             }
             score.instruments.forEach((cfg) => {
+                // La voz "Todos" es un unísono estricto: suena en todos los instrumentos del toque.
+                const destinos = cfg.id === UNISONO ? unisono : [cfg.id];
+                // el canal virtual "Todos" no tiene gain propio: respetamos su mute acá
+                if (cfg.id === UNISONO && (cfg.mute || (score.instruments.some((i) => i.solo) && !cfg.solo))) return;
                 let local = 0;
                 (m.voces[cfg.id] || []).forEach((n) => {
                     if (!n.rest) {
-                        eventos.push({
-                            tipo: 'nota',
-                            t: t0 + (cursor + local) * segTick,
-                            instId: cfg.id,
-                            stroke: n.stroke,
-                            vel: n.dyn ? dinamicaVel(n.dyn) : 1,
+                        destinos.forEach((instId) => {
+                            eventos.push({
+                                tipo: 'nota',
+                                t: t0 + (cursor + local) * segTick,
+                                instId,
+                                stroke: n.stroke,
+                                vel: (n.dyn ? dinamicaVel(n.dyn) : 1) * (destinos.length > 1 ? 0.85 : 1),
+                            });
                         });
                     }
                     local += ticksDeNota(n);

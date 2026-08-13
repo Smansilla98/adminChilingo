@@ -76,7 +76,7 @@ llamada_final = [
     c(sg='--------x===x===', sa='--------x===x===', sm='--------x===x==='),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
     seccion('Llamada', llamada, 1),
     seccion('Toque', toque, 8),
     seccion('Variación 1', variacion_1, 4),

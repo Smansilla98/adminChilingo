@@ -33,7 +33,7 @@ def uno(pat, texto):
                    texto=texto)]
 
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 85, INSTS, [
     seccion('Clave de Son 3-2', par(TRES_SON, DOS, 'Clave de Son (3-2)'), 2),
     seccion('Clave de Son 2-3', par(DOS, TRES_SON, 'Clave de Son (2-3)'), 2),
     seccion('Clave de Son (1 compás)', uno(SON_1C, 'Clave de Son en 1 compás'), 2),

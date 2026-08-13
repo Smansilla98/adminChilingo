@@ -81,7 +81,7 @@ llamada = [
     c(rp=RE2),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 84, INSTS, [
     seccion('Introducción', introduccion, 1),
     seccion('Toque', toque(), 4),
     seccion('Variación 1', variacion_1, 4),

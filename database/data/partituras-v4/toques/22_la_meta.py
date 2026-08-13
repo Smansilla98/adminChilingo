@@ -236,7 +236,7 @@ base_final = [
       repeat_end=True, dyn='f'),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 96, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
     seccion('Introducción 1', introduccion_1, 1),
     seccion('Llamada (sobre timbal)', llamada_timbal, 1),
     seccion('Corte', corte_1, 1),

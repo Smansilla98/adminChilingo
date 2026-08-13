@@ -25,6 +25,9 @@ class PartituraScore
 
     /** Instrumentos disponibles (id => etiqueta). Espejo de instruments.js. */
     public const INSTRUMENTOS = [
+        // Voz "Todos" del cuadernillo: unísono estricto en un solo pentagrama.
+        // No es un instrumento real; al reproducir se expande a todos los del toque.
+        'todos' => 'Todos',
         'surdo_grave' => 'Surdo Grave',
         'surdo_agudo' => 'Surdo Agudo',
         'surdo_medio' => 'Surdo Medio',

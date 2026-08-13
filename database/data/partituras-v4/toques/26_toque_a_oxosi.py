@@ -4,7 +4,7 @@ Recopilación: Luciano Molina - Pablo Cuffia (Bloque Lunes Saavedra).
 Redoblante y repique van en fusas continuas con acentos cada 4; las vueltas de
 timbal (1ra, 2da y 3ra) se escriben como secciones separadas.
 """
-from dsl import INSTS, VACIO, compas, score, seccion
+from dsl import INSTS, VACIO, compas, score, seccion, unisono
 
 TITULO = 'Toque a Oxosi'
 MATCH = {'año': 4, 'orden': 6, 'nombre': 'Oxosi II'}
@@ -107,13 +107,11 @@ final = [
       rp='3(x-x)--x-3(x-x)--x-',
       ti='x=--x-x-x-x-x=--',
       texto='Final', dyn='f'),
-    c(sg='--x-x-x---x-x=--', sa='--x-x-x---x-x=--',
-      sm='--x-x-x---x-x=--',
-      re='--x-x-x---x-x=--', rp='--x-x-x---x-x=--',
-      ti='--x-x-x---x-x=--'),
+    # segundo compás: unísono estricto de todo el bloque
+    compas(unisono('--x-x-x---x-x=--')),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 84, INSTS, [
     seccion('Toque 1', toque_1(), 4),
     seccion('Sobre Toque 1 — redoblante y repique (1ra y 3ra)',
             sobre_toque_1_rr, 2),

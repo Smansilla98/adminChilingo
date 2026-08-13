@@ -4,8 +4,11 @@ Sección auditada: **LLAMADA INICIAL Y FINAL** (voz "Todos").
 Fuente: `Toques_chilinga_compressed.pdf`, pág. 6 del PDF (pág. 3 del cuadernillo),
 primer pentagrama. Lectura a 300 dpi con zoom por tiempo.
 
-> Estado: **propuesta, no aplicada.** Nada de esto está escrito todavía en
-> `toques/01_toque_de_chilinga.py` ni en los JSON.
+> Estado: **APLICADO** (fix 1-6 completo, incluida la opción A para "Todos").
+> Escrito en `toques/01_toque_de_chilinga.py` y regenerado en
+> `01-toque-de-chilinga.json`. Falta correr el seeder en el entorno real
+> (`php artisan db:seed --class=PartiturasEjemploSeeder`) para que la base deje de
+> tener la versión vieja.
 
 ---
 
@@ -92,18 +95,38 @@ Opciones, **ninguna aplicable sin tocar código**:
 | **B. Flag `unisono` en la sección/compás** | `measure.unisono = true` + una sola voz canónica; renderer colapsa a un pentagrama etiquetado "Todos"; audio ya resuelto porque se expande a los ids reales | medio-alto, toca modelo + renderer + editor |
 | **C. Dejar la réplica tutti** (estado actual) | cero código; suena bien; se ve como 6 pentagramas iguales en vez de uno "Todos" y puede divergir al editar | cero |
 
-Mi recomendación: **A** para esta corrección (es aditiva y no rompe partituras ya
-cargadas), dejando B como mejora posterior si se quiere fidelidad visual completa.
+Decisión: se aplicó la **opción A** (aditiva, no rompe partituras ya cargadas). B queda
+como mejora posterior si se quiere colapsar visualmente sin instrumento virtual.
 
-## 6. Fix concreto propuesto (a confirmar antes de aplicar)
+Estado de la implementación:
 
-1. Corregir el compás 1 (y su repetición) a `xx-x xx-x xx-x xx-x` — corrige **D1**.
-2. Quitar la dinámica `f` inventada — corrige **D4**.
-3. Escribir los 4 compases literales, sin `repeatBegin`/`repeatEnd` — corrige **D3**.
-4. Renombrar la sección a `LLAMADA INICIAL Y FINAL` — corrige **D5**.
-5. `measure.texto` del compás 1: `"Todos — revisar con la escuela: T4"`.
-6. **D6 / "Todos"**: mantener la réplica tutti en este paso y registrar la
-   limitación (esta sección), o autorizar la opción A y aplicarla acá.
+- `instruments.js`: instrumento `todos` (`label 'Todos'`, `pitch 'b/4'`, `midi 38`) al
+  inicio de `INSTRUMENTOS`, con sus golpes y los helpers `UNISONO`, `esUnisono()`,
+  `vocesDeUnisono(score)`.
+- `PartituraScore.php`: `'todos' => 'Todos'` en la lista blanca `const INSTRUMENTOS`.
+- `audio.js`: la voz `todos` se expande a **todos los instrumentos reales** del score
+  (`vel * 0.85` cuando hay más de un destino), respetando `mute`/`solo` del canal virtual.
+- `dsl.py`: `unisono(pat)` escribe la voz `todos` y da de alta el instrumento al inicio de
+  `instruments`; un instrumento que no toca ningún golpe en toda la partitura queda
+  `visible: false` (no se dibuja, pero presta su timbre al unísono).
+- `tutti(pat, INSTS)` queda reservado para **subgrupos** (p. ej. sólo los surdos), que sí
+  llevan una línea por instrumento.
+- Pendiente conocido: `exporters.js` (MusicXML/MIDI) exporta `todos` como una parte más,
+  sin expandir a los timbres reales.
+
+## 6. Fix aplicado
+
+1. ✅ Compás 1 (y su repetición) a `xx-x xx-x xx-x xx-x` — corrige **D1**.
+2. ✅ Quitada la dinámica `f` inventada — corrige **D4**.
+3. ✅ Los 4 compases escritos literalmente, sin `repeatBegin`/`repeatEnd` — corrige **D3**.
+4. ✅ Sección renombrada a `LLAMADA INICIAL Y FINAL` — corrige **D5**.
+5. ✅ `measure.texto` del compás 1: `Todos — revisar con la escuela: T4`.
+6. ✅ **D6 / "Todos"**: opción A aplicada — la sección se escribe con `unisono(...)` y
+   queda en **un solo pentagrama** `Todos`, expandido a los 6 timbres en el audio.
+
+Verificado sobre el JSON generado: sección `LLAMADA INICIAL Y FINAL` con 4 compases,
+`voces.todos` con 12 golpes y `surdo_grave` sin notas; tempo 88; timeline de 52 compases;
+`PartituraScore::normalizar()` no pierde compases ni golpes.
 
 ## 7. Alcance más allá de esta sección
 

@@ -115,7 +115,7 @@ llamada_final = [
       rp='x===x=--3(xxx)----', ti='x===x=--3(xxx)----'),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 96, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 84, INSTS, [
     seccion('Introducción (Iyesá I)', introduccion, 1),
     seccion('Llamada', llamada, 1),
     seccion('Toque Iyesá I', toque_1, 4),

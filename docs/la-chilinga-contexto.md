@@ -73,12 +73,17 @@ y da clases en cárceles (Ezeiza) como ONG.
 > 3. El "programa por año" que ya está en `ProgramaRitmosSeeder` (1° a 6°, con ritmos
 >    opcionales) hay que leerlo como **orden de repertorio del cuadernillo**, no como
 >    niveles de alumnos ni como habilitación para avanzar. La UI no debe decir "año 3
->    bloqueado" ni "aprobaste el año 2". → **Pendiente de chequear con la escuela** cómo
->    quieren nombrarlo (¿"año", "bloque", "tanda"?), porque "pasar de año" está
->    explícitamente prohibido en el discurso pedagógico.
+>    bloqueado" ni "aprobaste el año 2".
+>    → **Aclarado (Santiago):** el agrupamiento por años es de **saber acumulado**: un
+>    toque de 3° da por sabido lo que se vio en 1° y 2°, y por eso es más difícil. No es
+>    una etiqueta de "nivel" del toque en abstracto ni de nivel del alumno. La UI puede
+>    mostrar el año como *orden y dificultad acumulada*, nunca como aprobación.
 > 4. El tempo es una **sugerencia**: el `tempo` del score arranca en el del cuadernillo,
 >    pero el reproductor tiene que permitir bajarlo sin friccion (el grupo baja el ritmo
 >    para el que le cuesta).
+>    → **Aclarado (Santiago):** el repertorio se toca **entre 80 y 90 bpm**. Los 26 JSON
+>    quedaron en esa franja y `dsl.score()` la valida (falla fuera de rango). Los valores
+>    exactos por toque son de referencia, no dogma.
 
 ---
 
@@ -135,10 +140,15 @@ temático.
 >    no seis partes que casualmente coinciden. Representarla como seis pentagramas
 >    idénticos es una mentira de notación: dice "cada instrumento tiene su parte" cuando
 >    el cuadernillo dice "acá tocamos todos lo mismo".
->    → Solución propuesta (**opción A**): instrumento virtual `todos` en `instruments.js`
->    + lista blanca de `PartituraScore.php` + mapeo a todos los instrumentos en
->    `expandirTimeline`. Es aditiva, no rompe lo ya cargado y hace que la pantalla se
->    lea como la hoja.
+>    → **Confirmado (Santiago):** "Todos" es **unísono estricto**, sin variantes por
+>    instrumento. Ejemplos: la llamada final de **Sacateca** y lo que sigue a la llamada
+>    final del **Toque de Chilinga**.
+>    → **Implementado (opción A):** instrumento virtual `todos` en `instruments.js` +
+>    lista blanca de `PartituraScore.php` + `unisono()` en el DSL + expansión a todos los
+>    instrumentos reales en el motor de audio (`vocesDeUnisono`). Se dibuja **un solo
+>    pentagrama** y suena con todos los timbres. Es aditiva, no rompe lo ya cargado y hace
+>    que la pantalla se lea como la hoja. `tutti()` queda reservado para subgrupos
+>    (p. ej. sólo los surdos), que sí llevan una línea por instrumento.
 > 3. Las **LLAMADAS** (inicial, final, de corte) son secciones de primera clase, no
 >    introducciones decorativas: son la interfaz de dirección del bloque. Deben quedar
 >    visibles y saltables/lanzables desde la UI de ensayo.
@@ -178,12 +188,18 @@ Reglas operativas, ya aplicadas o a aplicar en `database/data/partituras-v4/`:
 
 Lista viva; se completa mientras avanza la auditoría toque por toque.
 
-- Cómo nombrar el agrupamiento del repertorio (hoy "año 1" a "año 6") sin implicar
-  niveles ni promoción.
-- Confirmar el tratamiento de "Todos": ¿unísono estricto o hay variantes por instrumento
-  que el cuadernillo abrevia?
-- Tempos de referencia por toque (el cuadernillo no siempre los imprime).
+- Cómo nombrar en la UI el agrupamiento del repertorio (hoy "año 1" a "año 6") sin
+  implicar promoción. El criterio ya está: años = **saber acumulado** (aclarado por
+  Santiago); falta la palabra que use la escuela ("año", "bloque", "tanda").
 - Pasajes concretos ilegibles en el PDF (se van listando en los archivos de `revision/`).
+- Tempo fino por toque dentro de la franja 80-90 (el cuadernillo no siempre lo imprime).
+
+Ya resueltas:
+
+- **"Todos" = unísono estricto** (Sacateca, Toque de Chilinga). Implementado como
+  instrumento virtual `todos`.
+- **Tempos del repertorio: 80 a 90 bpm.**
+- **Años = dificultad por saber acumulado**, no nivel del alumno.
 
 ---
 

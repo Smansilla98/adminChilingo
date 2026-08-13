@@ -157,7 +157,7 @@ llamada_final = [
       sme='x-x-----x-x-x=--'),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
     seccion('Introducción', introduccion, 1),
     seccion('Llamada de introducción', llamada_intro, 1),
     seccion('Acompañamiento de la introducción', acompanamiento_intro, 1),

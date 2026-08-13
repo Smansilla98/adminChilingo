@@ -1,5 +1,5 @@
 """Sacateca — Cuadernillo (PDF pág. 29-30)."""
-from dsl import INSTS, VACIO, compas, score, seccion, tutti
+from dsl import INSTS, VACIO, compas, score, seccion, tutti, unisono
 
 TITULO = 'Sacateca'
 MATCH = {'año': 2, 'orden': 4, 'nombre': 'Sacateca'}
@@ -65,12 +65,13 @@ llamada_solos = [
 ]
 
 # ------------------------------------------------------------- Llamada final
+# La llamada final de Sacateca es unísono estricto de todo el bloque.
 llamada_final = [
-    compas(tutti('-xx-xxx--xx-xxx-'), texto='Llamada final', dyn='f'),
-    compas(tutti('xxxxxxxxx==-x=x-')),
+    compas(unisono('-xx-xxx--xx-xxx-'), texto='Llamada final', dyn='f'),
+    compas(unisono('xxxxxxxxx==-x=x-')),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
     seccion('Introducción', introduccion, 1),
     seccion('Llamada', llamada, 1),
     seccion('Toque', toque, 8),

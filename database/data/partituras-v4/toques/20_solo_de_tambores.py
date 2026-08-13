@@ -4,7 +4,7 @@ Escrito en un solo pentagrama para todos los tambores. El cuadernillo pasa a
 6/8 en el tramo central y vuelve a 4/4; acá se mantiene 4/4 y ese tramo se
 escribe en corcheas, aclarado en el texto del compás.
 """
-from dsl import SURDOS, compas, score, seccion
+from dsl import SURDOS, compas, score, seccion, unisono
 
 TITULO = 'Solo de Tambores (Chiruda)'
 MATCH = {'año': 3, 'orden': 4, 'nombre': 'Solo de redoblantes (Chiruda)'}
@@ -41,11 +41,12 @@ BLOQUES = [
     ('o===============', None, 'f'),
 ]
 
+# Un solo pentagrama: unísono estricto de todos los tambores (voz "Todos").
 solo = [
-    compas({i: pat for i in INST}, texto=texto, dyn=dyn)
+    compas(unisono(pat), texto=texto, dyn=dyn)
     for pat, texto, dyn in BLOQUES
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INST, [
+SCORE = score(TITULO, 'La Chilinga', 86, INST, [
     seccion('Solo de tambores', solo, 1),
 ])

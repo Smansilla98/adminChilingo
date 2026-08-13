@@ -18,6 +18,9 @@
 
 /** @type {Instrumento[]} */
 export const INSTRUMENTOS = [
+    // Voz "Todos" del cuadernillo: unísono estricto, un solo pentagrama.
+    // No es un instrumento real: al sonar se expande a todos los instrumentos del toque.
+    { id: 'todos', label: 'Todos', short: 'Tod', pitch: 'b/4', stem: 1, midi: 38, color: '#6d5b45', familia: 'membrana', freq: 120 },
     { id: 'surdo_grave', label: 'Surdo Grave', short: 'S.Gr', pitch: 'e/4', stem: -1, midi: 35, color: '#e86a3c', familia: 'membrana', freq: 62 },
     { id: 'surdo_agudo', label: 'Surdo Agudo', short: 'S.Ag', pitch: 'g/4', stem: -1, midi: 36, color: '#f0a04b', familia: 'membrana', freq: 96 },
     { id: 'surdo_medio', label: 'Surdo Medio', short: 'S.Me', pitch: 'a/4', stem: -1, midi: 41, color: '#d1a054', familia: 'membrana', freq: 78 },
@@ -60,6 +63,7 @@ export const GOLPES = {
 
 /** Golpes disponibles por instrumento (el primero es el default). */
 export const GOLPES_POR_INSTRUMENTO = {
+    todos: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
     surdo_grave: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
     surdo_agudo: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
     surdo_medio: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
@@ -82,6 +86,24 @@ export const MARCAS_TEXTO = [
     { id: 'corte', label: 'Corte', texto: 'Corte' },
     { id: 'llamada', label: 'Llamada', texto: 'Llamada' },
 ];
+
+/** Id del pentagrama de unísono estricto ("Todos" en el cuadernillo). */
+export const UNISONO = 'todos';
+
+/** @param {string} id */
+export function esUnisono(id) {
+    return id === UNISONO;
+}
+
+/**
+ * Instrumentos reales que suenan cuando toca la voz "Todos".
+ * @param {object} score
+ * @returns {string[]}
+ */
+export function vocesDeUnisono(score) {
+    const reales = (score?.instruments || []).map((i) => i.id).filter((id) => id !== UNISONO);
+    return reales.length ? reales : INSTRUMENTOS_DEFAULT;
+}
 
 /** @param {string} id */
 export function instrumentoPorId(id) {

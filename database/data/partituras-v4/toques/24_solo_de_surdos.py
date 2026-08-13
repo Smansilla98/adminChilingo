@@ -4,7 +4,7 @@ Recopilación: Luciano Molina - Pablo Cuffia (Bloque Lunes Saavedra).
 Los dos compases marcados en el cuadernillo con C (4/4) se escriben en 6/8
 aproximando la figuración; queda aclarado en el texto del compás.
 """
-from dsl import INSTS, compas, score, seccion
+from dsl import INSTS, compas, score, seccion, unisono
 
 TITULO = 'Solo de Surdos (Malamakuá)'
 MATCH = {'año': 3, 'orden': 10, 'nombre': 'Solo de Surdos (Malamakuá)'}
@@ -62,15 +62,14 @@ despues = [
 ]
 
 # ------------------------------------------------------------ Llamada final
+# Voz "Todos": unísono estricto en un solo pentagrama.
 llamada_final = [
-    c(sg='-x=-x=-x-x=-', sa='-x=-x=-x-x=-', sm='-x=-x=-x-x=-',
-      re='-x=-x=-x-x=-', rp='-x=-x=-x-x=-', ti='-x=-x=-x-x=-',
-      texto='Llamada final — todos', dyn='f'),
-    c(sg='x=--x-x-x=--', sa='x=--x-x-x=--', sm='x=--x-x-x=--',
-      re='x=--x-x-x=--', rp='x=--x-x-x=--', ti='x=--x-x-x=--'),
+    compas(unisono('-x=-x=-x-x=-'), grid=12, num=6, den=8,
+           texto='Llamada final — todos', dyn='f'),
+    compas(unisono('x=--x-x-x=--'), grid=12, num=6, den=8),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
     seccion('Solo de surdos', solo, 2),
     seccion('Entrada al acompañamiento', entrada, 1),
     seccion('Acompañamiento de surdos', acompanamiento, 4),

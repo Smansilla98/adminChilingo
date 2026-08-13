@@ -2,8 +2,16 @@
 
 Decisiones del usuario:
 - Transcripción **visual** página por página del PDF (no convertir v3).
-- Pasajes dudosos: transcribir lo más probable, sin marcas de "revisar".
+- ~~Pasajes dudosos: transcribir lo más probable, sin marcas de "revisar".~~
+  **Corregido:** lo ambiguo NO se adivina → se marca `revisar con la escuela` en el
+  `texto` del compás y en la auditoría del toque.
 - Seeder que carga los 26 y **sobreescribe** `medios.partitura_score` si ya existe.
+- **Años (1° a 5°) = saber acumulado**, no "nivel": un toque de 3° supone 1° y 2°.
+- **"Todos" = unísono estricto** (ej. llamada final de Sacateca; lo que sigue a la
+  llamada final del Toque de Chilinga) → **un solo pentagrama**, instrumento virtual
+  `todos` (opción A), nunca réplica en los 6 instrumentos. `tutti()` sólo para subgrupos.
+- **Tempos del repertorio: 80 a 90 bpm** (validado por `dsl.score()`).
+- Nombres de sección en MAYÚSCULAS; `×N` en `section.repeatX`, nunca expandido.
 
 Fuente: /home/user/Attachments/Toques_chilinga_compressed_keKpc-.pdf
 Páginas PNG (100 dpi, gris): /home/user/pdf2/pg-06.png … pg-61.png
@@ -56,4 +64,29 @@ Estructura de salida:
 - [x] MATCH verificados contra ProgramaRitmosSeeder
 - [x] Verificación server-side: PartituraScore::normalizar() sin pérdida de compases ni golpes
 
-Criterio: lectura visual por chunks (3 pentagramas), transcripción del patrón más probable, sin marcas de duda.
+## Tanda "aclaraciones del usuario" (unísono + años + tempos)
+- [x] `dsl.py`: `unisono()`/`TODOS`, tempo 80-90 obligatorio, secciones en MAYÚSCULAS,
+      auto-alta de `todos` en `instruments`, `visible:false` para instrumentos sin golpes
+- [x] `instruments.js`: instrumento `todos` + `UNISONO` / `esUnisono()` / `vocesDeUnisono()`
+- [x] `audio.js`: expansión de la voz `todos` a todos los timbres reales (respeta mute/solo)
+- [x] `PartituraScore.php`: `todos` en la lista blanca
+- [x] Unísono aplicado en 01, 02, 06, 08, 11, 13, 20, 23, 24, 26
+- [x] Tempos 80-90 en los 26
+- [x] 26 JSON regenerados (`manifest.json`: 26 partituras, 0 problemas)
+- [x] Verificado: `php /tmp/verif.php` 26 OK sin pérdida; `node --check` de los 8 JS
+- [x] README v4: tabla con Tempo + Unísono, y prosa (modelo, instrumentos, criterio)
+- [x] `docs/la-chilinga-contexto.md` con las tres aclaraciones
+- [x] `revision/01-toque-de-chilinga.md` marcado como APLICADO
+- [ ] Correr el seeder en el entorno real (no hay Composer/DB en el sandbox)
+- [ ] `exporters.js`: decidir si MusicXML/MIDI expande `todos` o se documenta la limitación
+
+## Pendiente: auditoría toque por toque contra el PDF
+Formato: un archivo por toque en `database/data/partituras-v4/revision/NN-slug.md`
+(hallazgos numerados D1, D2..., qué dice el PDF, qué hay cargado, propuesta).
+- [x] 01 Toque de Chilinga
+- [ ] 02 en adelante (orden del cuadernillo)
+- Cotejar 13 Sacateca con el audio de referencia ("Sacateca", *Percusión* 1998, 1:53 —
+  álbum completo: https://www.youtube.com/watch?v=UXrFtW144GA)
+
+Criterio de lectura: crops de 3 pentagramas a 300 dpi (`python3 /home/user/chunks.py NN 3`);
+lo ilegible se marca, no se adivina.

@@ -16,6 +16,20 @@ Tokens
   n(...)  grupo irregular: n notas en el espacio de un tiempo (negra).
           `3(xxx)` tresillo de corcheas, `6(xxxxxx)` sextillo, `5(xxxxx)` etc.
   |    separador visual, se ignora
+
+Convenciones del Cuadernillo respetadas por este DSL
+----------------------------------------------------
+* Los nombres de sección se imprimen en MAYÚSCULAS (lo hace `seccion()`), igual
+  que los encabezados del cuadernillo. La cantidad de compases la muestra el
+  renderer al lado del nombre, no se escribe en el nombre.
+* La voz "Todos" del cuadernillo es un **unísono estricto**: se escribe una sola
+  vez, con `unisono(pat)` sobre el instrumento virtual `todos`, y no se replica
+  en los pentagramas de cada instrumento. `score()` agrega `todos` a la lista de
+  instrumentos cuando alguna voz lo usa.
+* `×N` va en `section.repeatX`, nunca expandido en compases reales.
+* Tempos: el repertorio de La Chilinga se toca entre ~80 y ~90 bpm (percusión de
+  calle, tempo de marcha). Ningún toque debería salir de esa franja salvo que el
+  cuadernillo indique otra cosa.
 """
 import json
 import os
@@ -172,10 +186,23 @@ def compas(voces, repeat_begin=False, repeat_end=False, ending=None, texto=None,
 
 
 def seccion(nombre, measures, repeat_x=1):
-    return {'id': nid('s'), 'name': nombre, 'repeatX': repeat_x, 'measures': measures}
+    """Sección con nombre en MAYÚSCULAS, como los encabezados del cuadernillo."""
+    return {'id': nid('s'), 'name': nombre.upper(), 'repeatX': repeat_x,
+            'measures': measures}
 
 
 def score(title, autor, tempo, instruments, sections, num=4, den=4):
+    if not 80 <= tempo <= 90:
+        raise ValueError(f'tempo {tempo} fuera de la franja 80-90 de La Chilinga')
+    instruments = list(instruments)
+    usa_unisono = any(TODOS in m['voces'] for s in sections for m in s['measures'])
+    if usa_unisono and TODOS not in instruments:
+        instruments = [TODOS] + instruments
+    # Un instrumento que nunca toca no se dibuja, pero queda en la lista para que
+    # el unísono "Todos" sepa a qué timbres expandirse al reproducir.
+    suena = {inst for s in sections for m in s['measures']
+             for inst, notas in m['voces'].items()
+             if any(not n['rest'] for n in notas)}
     return {
         'version': 4,
         'title': title,
@@ -183,19 +210,28 @@ def score(title, autor, tempo, instruments, sections, num=4, den=4):
         'tempo': tempo,
         'timeSignature': {'num': num, 'den': den},
         'instruments': [{'id': i, 'volume': 0.9, 'mute': False, 'solo': False,
-                         'visible': True} for i in instruments],
+                         'visible': i in suena or i == TODOS} for i in instruments],
         'sections': sections,
     }
 
 
+TODOS = 'todos'
 INSTS = ['surdo_grave', 'surdo_agudo', 'surdo_medio', 'redoblante', 'repique', 'timbal']
 SURDOS = ['surdo_grave', 'surdo_agudo', 'surdo_medio']
 VACIO = '----------------'
 
 
 def tutti(pat, insts=None):
-    """Mismo patrón para varios instrumentos."""
+    """Mismo patrón para varios instrumentos (subgrupo, p. ej. los surdos).
+
+    Para la voz "Todos" del cuadernillo usar `unisono()`, no esto.
+    """
     return {i: pat for i in (insts or INSTS)}
+
+
+def unisono(pat):
+    """Voz "Todos" del cuadernillo: unísono estricto en un solo pentagrama."""
+    return {TODOS: pat}
 
 
 def dump(data, path):

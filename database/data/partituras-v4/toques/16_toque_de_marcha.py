@@ -41,7 +41,7 @@ variacion = [
       ti='-xxx-xx-o=-o=---', rp='-xxx-xxx-x=-x=--', repeat_end=True),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 108, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 90, INSTS, [
     seccion('Llamada inicial', llamada(), 1),
     seccion('Toque', toque, 8),
     seccion('Variación', variacion, 1),

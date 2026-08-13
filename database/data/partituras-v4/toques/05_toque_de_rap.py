@@ -55,7 +55,7 @@ base2 = [
             'repique': REPI_M2, 'timbal': TIMBAL}, repeat_end=True),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 96, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 82, INSTS, [
     seccion('Llamada', llamada, 1),
     seccion('Base 1', base1, 4),
     seccion('Llamada intermedia', intermedia, 1),

@@ -1,5 +1,5 @@
 """Marcha Camión — Cuadernillo (PDF págs. 7-9)."""
-from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti
+from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti, unisono
 
 TITULO = 'Marcha Camión'
 MATCH = {'año': 1, 'orden': 3, 'nombre': 'Marcha Camión'}
@@ -11,10 +11,10 @@ REPI_BASE = '--x=--x=--x=--x='
 REPI_SEXT_A = '--x=--x=--x=6:2(xxxxxx)--'
 REPI_SEXT_B = '--x=--x=--x=-xxx'
 
-# --- Llamada (Todos)
+# --- LLAMADA — voz "Todos" (unísono estricto)
 llamada = [
-    compas(tutti('x=xxx=xx--xxx=x='), texto='Llamada', dyn='f'),
-    compas(tutti('xx-xxx-xx===----')),
+    compas(unisono('x=xxx=xx--xxx=x='), texto='Llamada', dyn='f'),
+    compas(unisono('xx-xxx-xx===----')),
 ]
 
 # --- Introducción (cierra con compás de 2/4 escrito como 4/4)
@@ -27,7 +27,7 @@ introduccion = [
         'repique': '>xxx>xxx>xxx>xxx',
         'timbal': TIMBAL_BASE,
     }, repeat_begin=True, repeat_end=True, texto='Introducción', dyn='mf'),
-    compas(tutti('x===------------'), texto='Cierre (compás de 2/4)'),
+    compas(unisono('x===------------'), texto='Cierre (compás de 2/4)'),
 ]
 
 # --- Base 1
@@ -73,13 +73,13 @@ variacion = [
            repeat_end=True, dyn='f'),
 ]
 
-# --- Llamada final (Todos)
+# --- LLAMADA FINAL — voz "Todos" (unísono estricto)
 llamada_final = [
-    compas(tutti('x=x=x=x=x=====x='), texto='Llamada final', dyn='f'),
-    compas(tutti('x=====x=x===----')),
+    compas(unisono('x=x=x=x=x=====x='), texto='Llamada final', dyn='f'),
+    compas(unisono('x=====x=x===----')),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
     seccion('Llamada', llamada, 1),
     seccion('Introducción', introduccion, 1),
     seccion('Base 1', base1, 4),
