@@ -78,6 +78,21 @@ Estructura de salida:
 - [x] `docs/la-chilinga-contexto.md` con las tres aclaraciones
 - [x] `revision/01-toque-de-chilinga.md` marcado como APLICADO
 - [ ] Correr el seeder en el entorno real (no hay Composer/DB en el sandbox)
+
+## Tanda "la app seguía mostrando la partitura vieja"
+Síntoma: el editor mostraba el toque 01 con 100 BPM, 7 compases y 6 pentagramas replicados,
+mientras el JSON del repo ya tenía 88 BPM, 4 compases y la voz `todos`.
+Causa: `start.sh` corre `partituras:bootstrap` **sin** `--force` → el seeder omitía todo
+registro que ya tuviera golpes, así que la v3 guardada en la base nunca se actualizaba.
+- [x] `PartituraScore`: `fuente: {origen, hash}` conservado en `normalizar()`,
+      `normalizarFuente()` + `hashDeFuente()`
+- [x] `model.js`: `normalizarPartitura()` conserva `fuente` (el editor no lo pierde al guardar)
+- [x] Seeder: sella cada score con el hash del JSON y en modo incremental recarga cuando
+      falta **o** cuando el hash guardado difiere (sin sello = viejo → recarga)
+- [x] Verificado con `/tmp/fuente.php`: hash estable en round-trip, score sin sello se recarga
+- [ ] Confirmar en el entorno real: `php artisan partituras:bootstrap` debería mostrar
+      `↻ ... → recargo desde el JSON` en los 26 y después el editor mostrar 88 BPM /
+      4 compases / pentagrama "Todos" en el toque 01
 - [ ] `exporters.js`: decidir si MusicXML/MIDI expande `todos` o se documenta la limitación
 
 ## Pendiente: auditoría toque por toque contra el PDF

@@ -2,14 +2,29 @@
 
 Los **26 toques** del *Cuadernillo de Toques de La Chilinga* (Recopilación: Luciano Molina - Pablo Cuffia, Bloque Lunes Saavedra) transcriptos al modelo v4 del editor de partituras.
 
-Estos JSON son la fuente que carga `database/seeders/PartiturasEjemploSeeder.php` en `programa_ritmos.medios['partitura_score']` (sobreescribe lo que haya).
+Estos JSON son la fuente que carga `database/seeders/PartiturasEjemploSeeder.php` en `programa_ritmos.medios['partitura_score']` (sobreescribe lo que haya). **La fuente de verdad son los `.py`**: lo que se ve en la app sale de estos JSON, y si la app muestra algo distinto es porque la base todavía tiene una versión vieja (ver *Sello de fuente* más abajo).
 
 ## Cómo se generan
 
 ```
 python3 database/data/partituras-v4/generar.py          # regenera los 26 JSON + manifest.json
-php artisan db:seed --class=PartiturasEjemploSeeder     # los carga en la base
+php artisan db:seed --class=PartiturasEjemploSeeder     # los carga en la base (sobreescribe siempre)
+php artisan partituras:bootstrap                        # modo incremental (lo que corre start.sh)
+php artisan partituras:bootstrap --force                # fuerza la recarga de los 26
 ```
+
+### Sello de fuente (por qué la base ya no queda vieja)
+
+Cada score que carga el seeder lleva `fuente: { origen, hash }`, con el hash del JSON del
+repo del que salió. En modo incremental (`partituras:bootstrap`, el que corre en cada
+deploy) el seeder recarga el toque cuando **falta** y también cuando el hash guardado en la
+base **no coincide** con el del archivo; sólo omite los que están al día. Antes se omitía
+todo lo que ya tuviera golpes, así que un registro con la partitura vieja (v3, 100 bpm, sin
+la voz `Todos`) se quedaba viejo para siempre aunque el JSON del repo cambiara.
+
+El sello se conserva al guardar desde el editor (`model.js` y `PartituraScore::normalizar()`
+lo mantienen), así que una edición manual sobre un toque **se pierde** en el próximo deploy
+si el JSON del repo cambió: los cambios definitivos van al `.py`, el editor es para probar.
 
 * `dsl.py` — DSL de grilla: cada compás se escribe como una línea de tokens por instrumento (`-` silencio, `=` prolonga, `x` nota, `>` acentuado, `c` chapa, `t` tapado, `r` presionado, `o` abierto, `s` slap, `p` palma, `d` dedo, `a` agudo, `f` flam; `3(xxx)` / `6(xxxxxx)` grupos irregulares). Valida los ticks de cada compás: si una voz no suma el compás completo, falla.
 

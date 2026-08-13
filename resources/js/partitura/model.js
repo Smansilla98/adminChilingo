@@ -225,7 +225,7 @@ export function normalizarPartitura(raw) {
         };
     });
 
-    return {
+    const out = {
         version: VERSION,
         title: String(raw.title || 'Toque').slice(0, 160),
         autor: String(raw.autor || '').slice(0, 200),
@@ -234,6 +234,21 @@ export function normalizarPartitura(raw) {
         instruments,
         sections,
     };
+
+    // Sello de origen (partituras-v4/NN-slug.json + hash). Se conserva tal cual para
+    // que el seeder pueda detectar cuando lo guardado en la base quedó viejo.
+    const fuente = normalizarFuente(raw.fuente);
+    if (fuente) out.fuente = fuente;
+
+    return out;
+}
+
+function normalizarFuente(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const origen = String(raw.origen || '').trim().slice(0, 80);
+    const hash = String(raw.hash || '').replace(/[^a-f0-9]/gi, '').slice(0, 40);
+    if (!origen || !hash) return null;
+    return { origen, hash };
 }
 
 function clamp(n, min, max) {
