@@ -76,7 +76,7 @@ coda = [
     c(ti=TRES),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
     seccion('Llamada', llamada, 1),
     seccion('Base 1', base_1, 4),
     seccion('Base 2', base_2, 4),

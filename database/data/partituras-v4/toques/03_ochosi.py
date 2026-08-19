@@ -41,7 +41,7 @@ llamada_final = [
             **tutti('x===============', SURDOS)}),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 84, INSTS, [
     seccion('Llamada', llamada, 1),
     seccion('Toque', toque, 8),
     seccion('Variación de Repique', variacion, 4),

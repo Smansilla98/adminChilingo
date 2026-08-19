@@ -12,7 +12,12 @@ use Illuminate\Support\Facades\Schema;
  *
  * Fuente: database/data/partituras-v4/*.json + manifest.json
  * Uso: php artisan db:seed --class=PartiturasEjemploSeeder
- *      (sobreescribe). En start.sh se llama con solo-faltantes.
+ *      (sobreescribe siempre). En start.sh se llama en modo "incremental".
+ *
+ * Modo incremental (soloFaltantes = true): carga la partitura si falta Y TAMBIÉN
+ * si lo guardado en la base salió de una versión vieja del JSON. Para eso cada
+ * score guardado lleva el sello `fuente = {origen, hash}` con el hash del archivo
+ * del repo: si el hash cambió, la base quedó vieja y se recarga.
  */
 class PartiturasEjemploSeeder extends Seeder
 {
@@ -70,7 +75,14 @@ class PartiturasEjemploSeeder extends Seeder
                 continue;
             }
 
-            $score = PartituraScore::normalizar(json_decode((string) file_get_contents($file), true));
+            $contenido = (string) file_get_contents($file);
+            $hash = PartituraScore::hashDeFuente($contenido);
+            $raw = json_decode($contenido, true);
+            if (is_array($raw)) {
+                $raw['fuente'] = ['origen' => 'partituras-v4/'.basename($file), 'hash' => $hash];
+            }
+
+            $score = PartituraScore::normalizar($raw);
             if ($score === null) {
                 $this->command?->line("· {$titulo}: JSON inválido para el modelo v4");
                 $fail++;
@@ -87,11 +99,19 @@ class PartiturasEjemploSeeder extends Seeder
             }
 
             $medios = $ritmo->mediosNormalizados();
-            if ($soloFaltantes && PartituraScore::tieneGolpes($medios['partitura_score'] ?? null)) {
-                $this->command?->line("· {$ritmo->nombre}: ya tiene partitura, se omite");
+            $actual = $medios['partitura_score'] ?? null;
+            $hashActual = is_array($actual) ? (string) ($actual['fuente']['hash'] ?? '') : '';
+
+            if ($soloFaltantes && PartituraScore::tieneGolpes($actual) && $hashActual === $hash) {
+                $this->command?->line("· {$ritmo->nombre}: ya está al día, se omite");
                 $skip++;
 
                 continue;
+            }
+
+            if ($soloFaltantes && PartituraScore::tieneGolpes($actual)) {
+                $motivo = $hashActual === '' ? 'sin sello de fuente' : "sello viejo {$hashActual}";
+                $this->command?->line("↻ {$ritmo->nombre}: {$motivo} → recargo desde el JSON ({$hash})");
             }
 
             $medios['partitura_score'] = $score;

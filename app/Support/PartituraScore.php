@@ -25,6 +25,9 @@ class PartituraScore
 
     /** Instrumentos disponibles (id => etiqueta). Espejo de instruments.js. */
     public const INSTRUMENTOS = [
+        // Voz "Todos" del cuadernillo: unísono estricto en un solo pentagrama.
+        // No es un instrumento real; al reproducir se expande a todos los del toque.
+        'todos' => 'Todos',
         'surdo_grave' => 'Surdo Grave',
         'surdo_agudo' => 'Surdo Agudo',
         'surdo_medio' => 'Surdo Medio',
@@ -287,7 +290,7 @@ class PartituraScore
             return null;
         }
 
-        return [
+        $out = [
             'version' => self::VERSION,
             'title' => mb_substr(trim((string) ($raw['title'] ?? 'Toque')), 0, 120) ?: 'Toque',
             'autor' => mb_substr(trim((string) ($raw['autor'] ?? '')), 0, 120),
@@ -297,6 +300,40 @@ class PartituraScore
             'sections' => $sections,
             'updated_at' => now()->toIso8601String(),
         ];
+
+        $fuente = self::normalizarFuente($raw['fuente'] ?? null);
+        if ($fuente !== null) {
+            $out['fuente'] = $fuente;
+        }
+
+        return $out;
+    }
+
+    /**
+     * Sello de origen: de qué archivo del cuadernillo v4 salió la partitura y con qué hash.
+     * Lo usa el seeder para saber si lo guardado en la base quedó viejo.
+     *
+     * @return array{origen: string, hash: string}|null
+     */
+    public static function normalizarFuente(mixed $raw): ?array
+    {
+        if (! is_array($raw)) {
+            return null;
+        }
+        $origen = mb_substr(trim((string) ($raw['origen'] ?? '')), 0, 80);
+        $hash = preg_replace('/[^a-f0-9]/i', '', (string) ($raw['hash'] ?? ''));
+        $hash = mb_substr((string) $hash, 0, 40);
+        if ($origen === '' || $hash === '') {
+            return null;
+        }
+
+        return ['origen' => $origen, 'hash' => $hash];
+    }
+
+    /** Hash del contenido de un JSON de partitura (fuente de verdad en el repo). */
+    public static function hashDeFuente(string $contenido): string
+    {
+        return substr(sha1($contenido), 0, 16);
     }
 
     /**

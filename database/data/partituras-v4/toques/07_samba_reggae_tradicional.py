@@ -69,7 +69,7 @@ llamada_final = [
             'redoblante': VACIO, 'timbal': VACIO}),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
     seccion('Toque', toque, 4),
     seccion('Llamada 1 (sobre toque)', llamada_1, 1),
     seccion('Llamada 2 (sobre toque)', llamada_2, 1),

@@ -36,6 +36,6 @@ toque = [
     c(sg=SU, sa=SU, sm=SU, re=RE_FILL, ti=TI2, rp=RP2, repeat_end=True),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 96, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
     seccion('Toque', toque, 4),
 ])

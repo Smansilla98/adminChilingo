@@ -41,6 +41,6 @@ solo = [
     for i, p in enumerate(PATRONES)
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, ['timbal'], [
+SCORE = score(TITULO, 'La Chilinga', 86, ['timbal'], [
     seccion('Solo de timbales', solo, 1),
 ])

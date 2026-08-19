@@ -1,5 +1,5 @@
 """Candombe Argentino — Cuadernillo (PDF pág. 14)."""
-from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti
+from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti, unisono
 
 TITULO = 'Candombe Argentino'
 MATCH = {'año': 2, 'orden': 2, 'nombre': 'Candombe Argentino'}
@@ -26,10 +26,10 @@ toque = [
 llamada_final = [
     compas({**tutti(LL_SU, SURDOS), 'redoblante': LL_RR, 'repique': LL_RR,
             'timbal': LL_RR}, texto='Llamada final', dyn='f'),
-    compas(tutti('x=x=------------')),
+    compas(unisono('x=x=------------')),   # cierre en unísono estricto
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 108, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
     seccion('Llamada', llamada, 1),
     seccion('Toque', toque, 8),
     seccion('Llamada final', llamada_final, 1),

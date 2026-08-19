@@ -41,7 +41,7 @@ toque = [
       repeat_begin=True, repeat_end=True, texto='Toque', dyn='mf'),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 104, INST, [
+SCORE = score(TITULO, 'La Chilinga', 84, INST, [
     seccion('Llamada de principio', llamada(), 1),
     seccion('Toque', toque, 8),
     seccion('Llamada final', llamada(), 1),

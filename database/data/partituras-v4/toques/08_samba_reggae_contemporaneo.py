@@ -1,5 +1,5 @@
 """Samba Reggae Contemporáneo — Cuadernillo (PDF pág. 17)."""
-from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti
+from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti, unisono
 
 TITULO = 'Samba Reggae Contemporáneo'
 MATCH = {'año': 1, 'orden': 11, 'nombre': 'Samba Reggae Contemporáneo'}
@@ -15,9 +15,9 @@ BASE = {
     'timbal': '--oo--xx--oo--xx',
 }
 
-llamada = [
-    compas(tutti(LLAMADA), texto='Llamada inicial, intermedia y final', dyn='f'),
-]
+def llamada(texto='Llamada inicial, intermedia y final'):
+    """Voz "Todos": unísono estricto."""
+    return [compas(unisono(LLAMADA), texto=texto, dyn='f')]
 
 toque = [
     compas(dict(BASE), repeat_begin=True, repeat_end=True,
@@ -30,9 +30,9 @@ variacion = [
     compas({**BASE, 'surdo_medio': '------xx---fx=xx'}, repeat_end=True),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 100, INSTS, [
-    seccion('Llamada inicial', llamada, 1),
+SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
+    seccion('Llamada inicial', llamada(), 1),
     seccion('Toque', toque, 8),
     seccion('Variación de surdo medio', variacion, 2),
-    seccion('Llamada final', llamada, 1),
+    seccion('Llamada final', llamada('Llamada final'), 1),
 ])

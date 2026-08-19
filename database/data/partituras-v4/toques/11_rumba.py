@@ -1,5 +1,5 @@
 """Rumba — Cuadernillo (PDF pág. 24-25)."""
-from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti
+from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti, unisono
 
 TITULO = 'Rumba'
 MATCH = {'año': 2, 'orden': 7, 'nombre': 'Ritmo de Rumba'}
@@ -17,7 +17,7 @@ BASE = {
     'timbal': 'x=o--x=t=t--o=xx',
 }
 
-llamada = [compas(tutti(LLAMADA), texto='Llamada inicial y final', dyn='f')]
+llamada = [compas(unisono(LLAMADA), texto='Llamada inicial y final', dyn='f')]
 
 toque = [compas(dict(BASE), repeat_begin=True, repeat_end=True,
                 texto='Toque', dyn='mf')]
@@ -35,9 +35,10 @@ llamada_sobre = [
 UNISONO_1 = 'xxxxxxxx' + TRES
 UNISONO_2 = 'x==xx===--------'   # el cuadernillo lo escribe en 2/4
 
+# Voz "Todos": unísono estricto en un solo pentagrama.
 final_unisono = [
-    compas(tutti(UNISONO_1), texto='Final unísono de llamada', dyn='f'),
-    compas(tutti(UNISONO_2), texto='(compás de 2/4 completado con silencios)'),
+    compas(unisono(UNISONO_1), texto='Final unísono de llamada', dyn='f'),
+    compas(unisono(UNISONO_2), texto='(compás de 2/4 con silencios)'),
 ]
 
 variacion = [
@@ -48,7 +49,7 @@ variacion = [
     compas({**BASE, 'timbal': 'x==o=-x=-fx=o=--'}, repeat_end=True),
 ]
 
-SCORE = score(TITULO, 'La Chilinga', 104, INSTS, [
+SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
     seccion('Llamada inicial', llamada, 1),
     seccion('Toque', toque, 8),
     seccion('Llamada (sobre el toque)', llamada_sobre, 1),
