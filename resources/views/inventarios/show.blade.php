@@ -32,8 +32,11 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="text-muted small">Código</div>
-                <div class="fw-semibold">{{ $item->codigo ?? '—' }}</div>
+                <div class="text-muted small">Código / etiqueta</div>
+                <div class="fw-semibold font-monospace">{{ $item->codigo ?? '—' }}</div>
+                @if($item->codigo)
+                    <a class="small" href="{{ route('inventario.publico', $item->codigo) }}">Ficha pública (QR / URL)</a>
+                @endif
             </div>
             <div class="col-md-4">
                 <div class="text-muted small">Cantidad</div>
@@ -75,6 +78,54 @@
             <div class="col-12"><div class="text-muted small">Notas</div><div class="fw-semibold">{{ $item->notas }}</div></div>
             @endif
         </div>
+
+        @if(\Illuminate\Support\Facades\Schema::hasTable('inventario_movimientos'))
+        <hr>
+        <h2 class="h6">Trazabilidad</h2>
+        <p class="small text-muted">Ingreso, sede, reparación, evento, retorno. No es un CRUD: es el recorro del instrumento.</p>
+        <form method="POST" action="{{ route('inventarios.movimientos.store', $item) }}" class="row g-2 align-items-end mb-3">
+            @csrf
+            <div class="col-md-3">
+                <label class="form-label" for="mov-tipo">Movimiento</label>
+                <select id="mov-tipo" name="tipo" class="form-select" required>
+                    @foreach(\App\Models\InventarioMovimiento::TIPOS as $k => $lab)
+                        <option value="{{ $k }}">{{ $lab }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="mov-sede">Sede (si cambia)</label>
+                <select id="mov-sede" name="sede_id" class="form-select">
+                    <option value="">—</option>
+                    @foreach($sedes ?? [] as $s)
+                        <option value="{{ $s->id }}" @selected($item->sede_id == $s->id)>{{ $s->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="mov-nota">Nota</label>
+                <input id="mov-nota" type="text" name="nota" class="form-control" maxlength="400" placeholder="Ej. ensayo en Palomar">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" type="submit">Registrar</button>
+            </div>
+        </form>
+        @if(($item->movimientos ?? collect())->isNotEmpty())
+        <ul class="ito-feed">
+            @foreach($item->movimientos as $mov)
+            <li>
+                <strong>{{ $mov->etiquetaTipo() }}</strong>
+                · {{ $mov->created_at?->timezone(config('app.timezone'))->format('d/m/Y H:i') }}
+                @if($mov->sede) · {{ $mov->sede->nombre }}@endif
+                @if($mov->nota) · {{ $mov->nota }}@endif
+                <span class="text-muted"> · {{ $mov->autor->name ?? $mov->autor->username ?? 'Sistema' }}</span>
+            </li>
+            @endforeach
+        </ul>
+        @else
+            <p class="text-muted small mb-0">Todavía no hay movimientos. El alta ya quedó registrada al crear el ítem.</p>
+        @endif
+        @endif
     </div>
 </div>
 @endsection

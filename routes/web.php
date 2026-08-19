@@ -13,6 +13,7 @@ use App\Http\Controllers\BloqueHorarioController;
 use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoGestionController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoPublicController;
+use App\Http\Controllers\ComunidadAgendaController;
 use App\Http\Controllers\CuotaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisenoController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\FacturacionMensualController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\HubSearchController;
 use App\Http\Controllers\InventarioItemController;
+use App\Http\Controllers\InventarioPublicoController;
 use App\Http\Controllers\OperativoController;
 use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\PagoController;
@@ -48,6 +50,12 @@ Route::prefix('pagar-cuota')->middleware('throttle:20,1')->group(function () {
     Route::get('/api/alumnos', [ComprobanteCuotaAlumnoPublicController::class, 'apiAlumnos'])->middleware('throttle:8,1')->name('comprobante-cuota-public.api.alumnos');
     Route::get('/api/alumno-otros-bloques', [ComprobanteCuotaAlumnoPublicController::class, 'apiOtrosBloquesAlumno'])->middleware('throttle:12,1')->name('comprobante-cuota-public.api.alumno-otros-bloques');
 });
+
+Route::get('/agenda', [ComunidadAgendaController::class, 'index'])->middleware('throttle:60,1')->name('comunidad.agenda');
+Route::get('/tambor/{codigo}', [InventarioPublicoController::class, 'show'])
+    ->middleware('throttle:40,1')
+    ->where('codigo', '[A-Za-z0-9._-]{2,40}')
+    ->name('inventario.publico');
 
 Route::get('/salud', function () {
     $db = true;
@@ -184,6 +192,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'editPartitura'])->name('programa.toque.partitura.edit');
         Route::post('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'updatePartitura'])->name('programa.toque.partitura.update');
         Route::post('/programa/partituras/cargar-cuadernillo', [ProgramaController::class, 'importarCuadernillo'])->name('programa.partituras.importar-cuadernillo');
+        Route::post('/programa/partituras/toques', [ProgramaController::class, 'storeToque'])->name('programa.partituras.toques.store');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
 
@@ -214,6 +223,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/facturacion-mensual/{facturacionMensual}', [FacturacionMensualController::class, 'update'])->name('facturacion-mensual.update');
 
         Route::resource('inventarios', InventarioItemController::class);
+        Route::post('inventarios/{inventario}/movimientos', [InventarioItemController::class, 'registrarMovimiento'])->name('inventarios.movimientos.store');
         Route::get('/plan-compras', [PlanComprasController::class, 'index'])->name('plan-compras.index');
         Route::resource('ordenes-compra', OrdenCompraController::class);
         Route::resource('gastos', GastoController::class);

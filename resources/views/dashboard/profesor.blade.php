@@ -15,7 +15,7 @@
 <div class="hub">
     <div class="hub-hero">
         <div class="hub-hero-main">
-            <p class="hub-eyebrow">Panel docente · ITO</p>
+            <p class="hub-eyebrow">Modo docente · La Chilinga</p>
             <h1 class="hub-greeting">{{ $saludo }}, <em>{{ $primer }}</em>.</h1>
             <p class="hub-lead">Antes de clase: asistencia. Durante: chips grandes. Después: el cuaderno (eje + próximo paso).</p>
         </div>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InventarioItem extends Model
 {
@@ -89,6 +90,42 @@ class InventarioItem extends Model
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
+    }
+
+    public function movimientos(): HasMany
+    {
+        return $this->hasMany(InventarioMovimiento::class)->orderByDesc('id');
+    }
+
+    public function asegurarCodigo(): void
+    {
+        if (filled($this->codigo)) {
+            return;
+        }
+        $this->codigo = sprintf('CHL-%04d', (int) $this->id);
+        $this->save();
+    }
+
+    /**
+     * Ficha para QR / URL pública: sin alumno, DNI ni notas internas.
+     *
+     * @return array{codigo: string, nombre: string, tipo: string, sede: ?string, estado: string, marca: ?string, medida: ?string}
+     */
+    public function fichaPublica(): array
+    {
+        if ($this->exists) {
+            $this->loadMissing('sede');
+        }
+
+        return [
+            'codigo' => (string) $this->codigo,
+            'nombre' => (string) $this->nombre,
+            'tipo' => $this->tipo_label,
+            'sede' => $this->sede?->nombre,
+            'estado' => self::ESTADOS[$this->estado] ?? (string) $this->estado,
+            'marca' => $this->marca,
+            'medida' => $this->medida,
+        ];
     }
 
     public function getTipoLabelAttribute(): string

@@ -7,17 +7,15 @@
 - Laravel: `GET /up`
 - App + DB: `GET /salud` (JSON; 503 si no hay conexión a la base)
 
-## Migraciones recientes (no olvidar en producción)
+## Migraciones recientes (automáticas en Railway)
 
-Además del historial habitual, en esta etapa hay que aplicar:
+`start.sh` ejecuta `php artisan migrate --force` y, además, estas tres (idempotentes):
 
-- bitácora / cuaderno pedagógico (`observaciones_pedagogicas` y columnas `eje`, `proximo_paso`, `visible_alumno`);
-- `cargado_por_user_id` en comprobantes de cuota;
-- índices `asistencias_bloque_fecha_idx`, `comprobantes_estado_idx`, `alumnos_activo_sede_idx`.
+- `2026_08_19_120000_create_observaciones_pedagogicas_table.php`
+- `2026_08_19_160000_add_cargado_por_to_comprobantes_cuota_alumnos.php`
+- `2026_08_19_180000_cuaderno_pedagogico_e_indices.php`
 
-```bash
-php artisan migrate --force
-```
+No hace falta correrlas a mano si el contenedor arranca con `start.sh`.
 
 ## Configuración general ya aplicada
 

@@ -313,6 +313,36 @@ class DashboardController extends Controller
 
             $adminNombre = trim(auth()->user()->name ?: auth()->user()->username ?: '');
 
+            $atencionHoy = collect();
+            if (($comprobantesPendientesCount ?? 0) > 0) {
+                $atencionHoy->push([
+                    'href' => route('comprobantes-cuota-alumnos.index', ['estado' => 'pendiente']),
+                    'title' => $comprobantesPendientesCount.' comprobantes sin revisar',
+                    'hint' => 'Cobranza de hoy',
+                ]);
+            }
+            if (($cuotasPendientes ?? 0) > 0) {
+                $atencionHoy->push([
+                    'href' => route('cuotas.index'),
+                    'title' => $cuotasPendientes.' cuotas del mes aún abiertas',
+                    'hint' => 'Finanzas',
+                ]);
+            }
+            $evHoy = ($proximosEventos ?? collect())->first();
+            if ($evHoy && $evHoy->fecha && $evHoy->fecha->isToday()) {
+                $atencionHoy->push([
+                    'href' => route('eventos.index'),
+                    'title' => 'Hoy: '.$evHoy->titulo,
+                    'hint' => 'Agenda',
+                ]);
+            } elseif (($proximosEventosCount ?? 0) > 0 && $evHoy) {
+                $atencionHoy->push([
+                    'href' => route('eventos.index'),
+                    'title' => 'Próximo: '.$evHoy->titulo,
+                    'hint' => $evHoy->fecha?->locale('es')->translatedFormat('d M'),
+                ]);
+            }
+
             return view('dashboard.index', compact(
                 'alumnosActivos',
                 'bloquesActivos',
@@ -340,7 +370,8 @@ class DashboardController extends Controller
                 'alumnosPorSedeChart',
                 'asistenciasMes',
                 'adminNombre',
-                'dashboardAmbito'
+                'dashboardAmbito',
+                'atencionHoy'
             ));
         } catch (\Illuminate\Database\QueryException $e) {
             return view('dashboard.index', [
@@ -371,6 +402,7 @@ class DashboardController extends Controller
                 'asistenciasMes' => 0,
                 'adminNombre' => '',
                 'dashboardAmbito' => 'Vista general de la escuela',
+                'atencionHoy' => collect(),
             ]);
         }
     }

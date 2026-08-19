@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - ITO</title>
+    <title>La Chilinga</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=15">
 </head>
 <body class="auth-page-ito">
     <div class="auth-shell">
         <div class="auth-card auth-card--ito">
-            <div class="auth-card-ito__logo-ring" aria-hidden="true">
-                <img src="{{ asset('images/brand/logo.png') }}" alt="ITO">
+            <div class="auth-card-ito__banner">
+                <img src="{{ asset('images/brand/chilinga-30.png') }}" alt="La Chilinga · 30 años · 1995–2025">
             </div>
             <div class="auth-card-ito__head">
                 <h1 class="auth-card-ito__title">Iniciar sesión</h1>

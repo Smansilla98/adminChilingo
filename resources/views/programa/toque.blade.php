@@ -46,7 +46,7 @@
         @if($tieneScore)
             <a href="#partitura" class="btn btn-primary"><i class="bi bi-play-fill"></i> Escuchar</a>
         @endif
-        <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-warning"><i class="bi bi-pencil-square"></i> Editar partitura</a>
+        <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-warning"><i class="bi bi-pencil-square"></i> {{ $tieneScore ? 'Editar partitura' : 'Crear partitura' }}</a>
         <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-outline-warning"><i class="bi bi-plus-lg"></i> Sumar material</a>
         @if($esAdmin)
             <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cloud-upload"></i> PDF</a>

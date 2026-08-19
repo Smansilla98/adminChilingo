@@ -62,7 +62,7 @@ class PartituraScore
             'version' => self::VERSION,
             'title' => $titulo,
             'autor' => $autor,
-            'tempo' => 100,
+            'tempo' => 88,
             'timeSignature' => $ts,
             'instruments' => array_map(
                 fn (string $id) => ['id' => $id, 'volume' => 0.9, 'mute' => false, 'solo' => false, 'visible' => true],

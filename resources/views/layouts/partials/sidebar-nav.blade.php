@@ -85,6 +85,7 @@
     }
 
     $profesorLinks = array_filter([
+        ['route' => 'dashboard', 'label' => 'Hoy en clase', 'pattern' => 'dashboard'],
         auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.create', 'label' => 'Asistencia de hoy', 'pattern' => 'profesor.asistencias.create'] : null,
         auth()->user()->tieneAccesoModulo('profesor.mis_bloques') ? ['route' => 'profesor.bloques', 'label' => 'Mis bloques', 'pattern' => 'profesor.bloques*'] : null,
         auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.matrix', 'label' => 'Planilla del mes', 'pattern' => 'profesor.asistencias.matrix*'] : null,

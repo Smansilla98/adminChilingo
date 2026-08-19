@@ -62,7 +62,7 @@
 .biblio-nav a.is-active {
   color: var(--text, #e9edf5);
   background: var(--accent-soft, rgba(62,123,250,.16));
-  color: var(--accent, #3e7bfa);
+  color: var(--accent, #f26422);
 }
 
 .biblio-main {
@@ -92,7 +92,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 700;
-  color: var(--accent, #3e7bfa);
+  color: var(--accent, #f26422);
 }
 .biblio-hero h1 {
   margin: 0;
@@ -157,13 +157,13 @@
   margin: 0 0 14px;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--accent, #3e7bfa) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, #f26422) 28%, transparent);
   background: var(--accent-soft, rgba(62,123,250,.16));
   font-size: 13px;
   color: var(--text, #e9edf5);
 }
 .biblio-filter-chip a {
-  color: var(--accent, #3e7bfa);
+  color: var(--accent, #f26422);
   font-weight: 650;
   text-decoration: none;
   font-size: 12.5px;
@@ -177,7 +177,7 @@
   margin-top: 6px;
   font-size: 12px;
   font-weight: 650;
-  color: var(--accent, #3e7bfa);
+  color: var(--accent, #f26422);
   text-decoration: none;
   line-height: 1.3;
 }
@@ -188,7 +188,7 @@
   margin: 6px 0 0;
   font-size: 13px;
   font-weight: 650;
-  color: var(--accent, #3e7bfa);
+  color: var(--accent, #f26422);
 }
 .biblio-modal-actions {
   display: flex;
@@ -201,7 +201,7 @@
   padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid var(--border, rgba(233,237,245,.08));
-  background: color-mix(in srgb, var(--accent, #3e7bfa) 6%, var(--s2, #161f33));
+  background: color-mix(in srgb, var(--accent, #f26422) 6%, var(--s2, #161f33));
 }
 
 .biblio-toque-grid {
@@ -235,8 +235,8 @@
 }
 .biblio-tag:hover,
 .biblio-tag.is-active {
-  border-color: color-mix(in srgb, var(--accent, #3e7bfa) 40%, transparent);
-  color: var(--accent, #3e7bfa);
+  border-color: color-mix(in srgb, var(--accent, #f26422) 40%, transparent);
+  color: var(--accent, #f26422);
   background: var(--accent-soft, rgba(62,123,250,.16));
 }
 
@@ -280,7 +280,7 @@
   text-decoration: none;
 }
 .biblio-card-audio i,
-.biblio-card-file i { font-size: 1.8rem; color: var(--accent, #3e7bfa); }
+.biblio-card-file i { font-size: 1.8rem; color: var(--accent, #f26422); }
 .biblio-card-audio audio { width: 100%; }
 .biblio-share-btn {
   appearance: none;
@@ -308,7 +308,7 @@
 }
 .biblio-card-media > .biblio-share-btn:hover,
 .biblio-card-media > .biblio-share-btn:focus-visible {
-  background: var(--accent, #3e7bfa);
+  background: var(--accent, #f26422);
   outline: none;
 }
 .biblio-share-toast {
@@ -395,7 +395,7 @@
 }
 .biblio-card-tags a {
   font-size: 11.5px;
-  color: var(--accent, #3e7bfa);
+  color: var(--accent, #f26422);
   text-decoration: none;
   font-weight: 650;
 }
@@ -413,7 +413,7 @@
   padding: 48px 16px;
   color: var(--muted, #a8b3c9);
 }
-.biblio-empty i { font-size: 2rem; display: block; margin-bottom: 10px; color: var(--accent, #3e7bfa); }
+.biblio-empty i { font-size: 2rem; display: block; margin-bottom: 10px; color: var(--accent, #f26422); }
 .biblio-pager { margin-top: 18px; }
 
 .biblio-form {
@@ -459,7 +459,7 @@
 
 .biblio-card { cursor: pointer; }
 .biblio-card:focus-visible {
-  outline: 2px solid var(--accent, #3e7bfa);
+  outline: 2px solid var(--accent, #f26422);
   outline-offset: 2px;
 }
 .biblio-card-video {
@@ -565,7 +565,7 @@ body.biblio-modal-open { overflow: hidden; }
 .biblio-modal-audio i,
 .biblio-modal-link i {
   font-size: 2rem;
-  color: var(--accent, #3e7bfa);
+  color: var(--accent, #f26422);
   display: block;
   margin-bottom: 12px;
 }

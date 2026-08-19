@@ -78,7 +78,7 @@
 <div class="hub">
     <div class="hub-hero">
         <div class="hub-hero-main">
-            <p class="hub-eyebrow">Tablero de operación · ITO</p>
+            <p class="hub-eyebrow">La Chilinga · tablero de operación</p>
             <h1 class="hub-greeting">
                 {{ $saludo }}, <em>{{ $primerNombre }}</em>.
             </h1>
@@ -103,6 +103,25 @@
             </div>
         </dl>
     </div>
+
+    @if(($atencionHoy ?? collect())->isNotEmpty())
+    <section class="hub-section" aria-labelledby="hub-hoy">
+        <header class="hub-section-head">
+            <h2 id="hub-hoy" class="hub-section-title"><span class="hub-section-code">Hoy</span> Necesita atención</h2>
+        </header>
+        <div class="hub-modules">
+            @foreach($atencionHoy as $item)
+            <a class="hub-module" href="{{ $item['href'] }}">
+                <span class="hub-module-icon" aria-hidden="true"><i class="bi bi-lightning"></i></span>
+                <span class="hub-module-body">
+                    <span class="hub-module-title">{{ $item['title'] }}</span>
+                    <span class="hub-module-desc">{{ $item['hint'] }}</span>
+                </span>
+            </a>
+            @endforeach
+        </div>
+    </section>
+    @endif
 
     <div class="hub-kpis" role="list">
         <a class="hub-kpi" href="{{ route('alumnos.index') }}" role="listitem">

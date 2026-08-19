@@ -6,21 +6,18 @@ class AparienciaTema
 {
     /** Tokens editables guardados en users.apariencia_json */
     public const DEFAULTS = [
-        'accent' => '#3e7bfa',
+        'accent' => '#f26422',
         'font_display' => 'Manrope',
         'font_body' => 'Inter',
     ];
 
     /** @var array<string, array{hex: string, label: string}> */
     public const ACENTOS = [
-        'azul' => ['hex' => '#3e7bfa', 'label' => 'Azul ITO'],
-        'cian' => ['hex' => '#06b6d4', 'label' => 'Cian'],
-        'verde' => ['hex' => '#22c55e', 'label' => 'Verde'],
-        'teal' => ['hex' => '#14b8a6', 'label' => 'Verde agua'],
-        'ambar' => ['hex' => '#f59e0b', 'label' => 'Ámbar'],
-        'coral' => ['hex' => '#f97316', 'label' => 'Coral'],
-        'rojo' => ['hex' => '#ef4444', 'label' => 'Rojo'],
-        'violeta' => ['hex' => '#8b5cf6', 'label' => 'Violeta'],
+        'naranja' => ['hex' => '#f26422', 'label' => 'Naranja'],
+        'verde' => ['hex' => '#3daf3a', 'label' => 'Verde'],
+        'celeste' => ['hex' => '#3ec8ea', 'label' => 'Celeste'],
+        'rojo' => ['hex' => '#e31b23', 'label' => 'Rojo'],
+        'azul' => ['hex' => '#3e7bfa', 'label' => 'Azul (legado)'],
     ];
 
     /** @var array<string, array{family: string, google: string, sample: string}> */

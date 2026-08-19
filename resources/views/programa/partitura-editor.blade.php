@@ -18,9 +18,15 @@
     aria-labelledby="pt-nombre-title"
 >
     <form id="pt-nombre-form" class="pt-nombre-card" autocomplete="name">
-        <p class="biblio-eyebrow">Antes de editar</p>
-        <h2 id="pt-nombre-title">¿Cómo te llamás?</h2>
-        <p class="pt-nombre-lead">Queda registro de quién modifica cada partitura. No hace falta crear una cuenta.</p>
+        <p class="biblio-eyebrow">{{ !empty($esNueva) ? 'Crear partitura' : 'Antes de editar' }}</p>
+        <h2 id="pt-nombre-title">{{ !empty($esNueva) ? 'Vas a crear la partitura de este toque' : '¿Cómo te llamás?' }}</h2>
+        <p class="pt-nombre-lead">
+            @if(!empty($esNueva))
+                Queda una partitura vacía (88 BPM, llamada y toque) lista para escribir o importar MusicXML. Dejá tu nombre: no hace falta cuenta.
+            @else
+                Queda registro de quién modifica cada partitura. No hace falta crear una cuenta.
+            @endif
+        </p>
         @if($ultima)
             <p class="pt-nombre-last">Última edición: <strong>{{ $ultima['nombre'] }}</strong>
                 @if(!empty($ultima['at']))
@@ -44,7 +50,7 @@
         <p id="pt-nombre-error" class="pt-nombre-error" hidden>Escribí al menos 2 caracteres.</p>
         <div class="pt-nombre-actions">
             <a class="btn btn-outline-secondary" href="{{ route('programa.toque.show', $programaRitmo) }}">Cancelar</a>
-            <button type="submit" class="btn btn-primary">Entrar al editor</button>
+            <button type="submit" class="btn btn-primary">{{ !empty($esNueva) ? 'Crear partitura' : 'Entrar al editor' }}</button>
         </div>
     </form>
 </div>

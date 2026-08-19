@@ -64,6 +64,11 @@
         </a>
     </div>
 
+    <section class="hub-section" aria-labelledby="alu-fam">
+        <h2 class="hub-section-title" id="alu-fam">Para quien acompaña</h2>
+        <p class="text-muted">Próxima clase, práctica y cuota. Sin listar compañeros ni datos de otros alumnos.</p>
+    </section>
+
     @if(!empty($proximaClase))
     <section class="hub-section" aria-labelledby="alu-clase">
         <h2 class="hub-section-title" id="alu-clase">Tu próxima clase</h2>

@@ -6,14 +6,14 @@
 @section('content')
 @php
     $esAdmin = auth()->user()?->isAdmin();
-    $hayFiltro = ($busqueda ?? '') !== '' || ($pendientes ?? false) || ($digital ?? false);
+    $hayFiltro = ($busqueda ?? '') !== '' || ($pendientes ?? false) || ($digital ?? false) || ($crear ?? false);
 @endphp
 
 <div class="biblio-hero">
     <div>
         <p class="biblio-eyebrow">Escuchá · estudiá · tocá</p>
         <h1>Partituras del cuadernillo</h1>
-        <p class="biblio-lead">Elegí un toque, escuchalo y silenciá los tambores que no son tuyos. Si sos docencia, también podés editar la partitura.</p>
+        <p class="biblio-lead">Cada partitura pertenece a un toque del programa. Escuchá y silenciá los tambores que no son tuyos. Para crear una nueva, abrí un toque sin partitura o (si sos administración) sumá un toque al año que corresponda.</p>
     </div>
     <div class="prog-hero-actions">
         <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary">Programa</a>
@@ -29,6 +29,35 @@
     </div>
 </div>
 
+@if($esAdmin)
+<form action="{{ route('programa.partituras.toques.store') }}" method="POST" class="ito-card p-3 mb-3">
+    @csrf
+    <p class="fw-semibold mb-2">Nuevo toque + partitura</p>
+    <p class="small text-muted mb-3">Crea el toque en el programa y abre el editor vacío (tempo 88, llamadas y toque). Podés importar MusicXML o transcribir el PDF al lado.</p>
+    <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label" for="nuevo-toque-nombre">Nombre</label>
+            <input id="nuevo-toque-nombre" class="form-control" type="text" name="nombre" required maxlength="255" placeholder="Ej. Toque de ensayo">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="nuevo-toque-anio">Año</label>
+            <select id="nuevo-toque-anio" class="form-select" name="año" required>
+                @foreach($años as $num => $label)
+                    <option value="{{ $num }}">{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="nuevo-toque-autor">Autor / arreglo</label>
+            <input id="nuevo-toque-autor" class="form-control" type="text" name="autor" maxlength="500" placeholder="Opcional">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-warning w-100">Crear y editar</button>
+        </div>
+    </div>
+</form>
+@endif
+
 <form method="GET" action="{{ route('programa.partituras.index') }}" class="biblio-search" role="search">
     <div class="biblio-search-field">
         <i class="bi bi-search"></i>
@@ -37,6 +66,10 @@
     <label class="prog-chip {{ ($digital ?? false) ? 'is-on' : '' }}">
         <input type="checkbox" name="digital" value="1" class="d-none" @checked($digital ?? false) onchange="this.form.submit()">
         Con partitura interactiva
+    </label>
+    <label class="prog-chip {{ ($crear ?? false) ? 'is-on' : '' }}">
+        <input type="checkbox" name="crear" value="1" class="d-none" @checked($crear ?? false) onchange="this.form.submit()">
+        Sin partitura digital
     </label>
     @if($esAdmin)
     <label class="prog-chip {{ ($pendientes ?? false) ? 'is-on' : '' }}">
@@ -100,7 +133,7 @@
                                     <i class="bi bi-play-fill"></i> {{ ($rm['digital'] ?? false) ? 'Escuchar' : 'Abrir' }}
                                 </a>
                                 <a href="{{ route('programa.toque.editor', $toque) }}" class="btn btn-sm btn-warning">
-                                    <i class="bi bi-pencil-square"></i> Editar
+                                    <i class="bi bi-pencil-square"></i> {{ ($rm['digital'] ?? false) ? 'Editar' : 'Crear' }}
                                 </a>
                                 @if($esAdmin)
                                     <a href="{{ route('programa.toque.partitura.edit', $toque) }}" class="btn btn-sm btn-outline-secondary" title="PDF">

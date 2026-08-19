@@ -28,6 +28,8 @@ class PartituraController extends Controller
             $score = PartituraScore::vacia($programaRitmo->nombre, (string) $programaRitmo->autor);
         }
 
+        $esNueva = ! PartituraScore::tieneGolpes($score);
+
         $partitura = $medios['partitura'] ?? null;
         $refNombre = (string) ($partitura['nombre'] ?? '');
         $refUrl = ! empty($partitura['path'])
@@ -50,6 +52,7 @@ class PartituraController extends Controller
             'refUrl' => $refUrl,
             'refTipo' => $refTipo,
             'refNombre' => $refNombre,
+            'esNueva' => $esNueva,
         ]);
     }
 

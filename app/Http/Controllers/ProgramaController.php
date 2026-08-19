@@ -8,6 +8,7 @@ use App\Models\ProgramaSeccion;
 use App\Services\PartiturasCuadernilloImporter;
 use App\Services\ProgramaRitmoMediosService;
 use App\Support\ProgramaRitmoMedios;
+use App\Support\ProgramaRitmoSlug;
 use Database\Seeders\ProgramaRitmosSeeder;
 use Database\Seeders\ProgramaSeccionesSeeder;
 use Illuminate\Database\QueryException;
@@ -78,11 +79,12 @@ class ProgramaController extends Controller
         $busqueda = trim((string) $request->query('q', ''));
         $pendientes = (int) $request->query('pendientes', 0) === 1;
         $digital = (int) $request->query('digital', 0) === 1;
+        $crear = (int) $request->query('crear', 0) === 1;
 
         if (! Schema::hasTable('programa_ritmos')) {
             $estadoPrograma = 'sin_tabla';
 
-            return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital'));
+            return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital', 'crear'));
         }
 
         try {
@@ -120,6 +122,9 @@ class ProgramaController extends Controller
             if ($digital) {
                 $ritmos = $ritmos->filter(fn (ProgramaRitmo $r) => ! empty(($r->resumen_medios ?? [])['digital']));
             }
+            if ($crear) {
+                $ritmos = $ritmos->filter(fn (ProgramaRitmo $r) => empty(($r->resumen_medios ?? [])['digital']));
+            }
             $porAño = $ritmos->groupBy(fn (ProgramaRitmo $r) => (int) $r->año);
             if ($ritmos->isEmpty()) {
                 $estadoPrograma = 'vacio';
@@ -129,7 +134,7 @@ class ProgramaController extends Controller
             $estadoPrograma = 'error';
         }
 
-        return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital'));
+        return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital', 'crear'));
     }
 
     public function editPartitura(ProgramaRitmo $programaRitmo)
@@ -413,6 +418,52 @@ class ProgramaController extends Controller
         return redirect()
             ->route('programa.index', ['seccion' => $programaSeccion->slug])
             ->with('success', 'Sección del programa actualizada.');
+    }
+
+    /**
+     * Alta de un toque nuevo (admin) y entra al editor vacío para crear la partitura.
+     */
+    public function storeToque(Request $request)
+    {
+        $this->authorizeAdmin();
+
+        if (! Schema::hasTable('programa_ritmos')) {
+            return redirect()
+                ->route('programa.partituras.index')
+                ->with('error', 'Falta migrar programa_ritmos.');
+        }
+
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'año' => 'required|integer|min:1|max:7',
+            'autor' => 'nullable|string|max:500',
+        ]);
+
+        $año = (int) $validated['año'];
+        $orden = (int) ProgramaRitmo::query()->where('año', $año)->max('orden') + 1;
+        $slug = ProgramaRitmoSlug::generar($año, $validated['nombre']);
+
+        $attrs = [
+            'año' => $año,
+            'orden' => max(1, $orden),
+            'nombre' => $validated['nombre'],
+            'autor' => $validated['autor'] ?? null,
+        ];
+        if (Schema::hasColumn('programa_ritmos', 'slug')) {
+            $attrs['slug'] = $slug;
+        }
+        if (Schema::hasColumn('programa_ritmos', 'publicado')) {
+            $attrs['publicado'] = true;
+        }
+        if (Schema::hasColumn('programa_ritmos', 'medios')) {
+            $attrs['medios'] = ProgramaRitmoMedios::estructuraVacia();
+        }
+
+        $toque = ProgramaRitmo::query()->create($attrs);
+
+        return redirect()
+            ->route('programa.toque.editor', $toque)
+            ->with('success', 'Toque creado. Indicá tu nombre y escribí la partitura (o importá MusicXML).');
     }
 
     /**

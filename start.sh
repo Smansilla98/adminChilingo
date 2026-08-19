@@ -51,6 +51,24 @@ php artisan migrate --force --no-interaction || {
     echo "   El servidor arranca igual; la app puede tener funcionalidad limitada."
 }
 
+# Tablas/columnas de cuaderno pedagógico, comprobantes e índices.
+# Laravel las saltea si ya están en `migrations`; se listan para que Railway
+# no dependa de un migrate olvidado a mano.
+echo "=== Migraciones 2026-08-19 (cuaderno / comprobantes / índices) ==="
+for MIG in \
+    database/migrations/2026_08_19_120000_create_observaciones_pedagogicas_table.php \
+    database/migrations/2026_08_19_160000_add_cargado_por_to_comprobantes_cuota_alumnos.php \
+    database/migrations/2026_08_19_180000_cuaderno_pedagogico_e_indices.php \
+    database/migrations/2026_08_19_200000_inventario_codigo_y_movimientos.php
+do
+    if [ -f "$MIG" ]; then
+        php artisan migrate --force --no-interaction --path="$MIG" || echo "⚠️  Falló $MIG"
+    fi
+done
+
+echo "=== Estado de migraciones ==="
+php artisan migrate:status --no-interaction || true
+
 # Seed opcional (solo si RUN_SEED=1)
 if [ "${RUN_SEED:-0}" = "1" ]; then
     echo "=== Ejecutando seeders ==="
@@ -66,7 +84,12 @@ if [ -f "$PARTITURAS_PY" ]; then
     else
         echo "⚠️  python3 no está instalado; se usan los JSON ya generados."
     fi
-    php artisan partituras:bootstrap --no-interaction || echo "⚠️  Seeders de partituras fallaron. El servidor arranca igual."
+    PARTITURAS_BOOTSTRAP_ARGS="--no-interaction"
+    if [ "${PARTITURAS_BOOTSTRAP_FORCE:-0}" = "1" ]; then
+        PARTITURAS_BOOTSTRAP_ARGS="$PARTITURAS_BOOTSTRAP_ARGS --force"
+        echo "(PARTITURAS_BOOTSTRAP_FORCE=1: recarga todas las partituras v4)"
+    fi
+    php artisan partituras:bootstrap $PARTITURAS_BOOTSTRAP_ARGS || echo "⚠️  Seeders de partituras fallaron. El servidor arranca igual."
 fi
 
 # Autoload

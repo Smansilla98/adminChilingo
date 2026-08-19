@@ -64,9 +64,12 @@ El **Dockerfile** no ejecuta migraciones (no hay DB en build). Al **iniciar el c
 
 1. Espera a que MySQL esté disponible (30 intentos × 2 s).
 2. Limpia caché (config, route, view) sin tocar DB.
-3. Ejecuta `php artisan migrate --force --no-interaction`.
-4. Opcional: si `RUN_SEED=1`, ejecuta `php artisan db:seed --force`.
-5. Crea `storage`/enlaces y arranca `php artisan serve`.
+3. Ejecuta `php artisan migrate --force --no-interaction` (todas las pendientes).
+4. Corre otra vez, de forma explícita, las migraciones `2026_08_19_*` (cuaderno pedagógico, `cargado_por_user_id`, índices). Son idempotentes.
+5. Muestra `php artisan migrate:status`.
+6. Opcional: si `RUN_SEED=1`, ejecuta `php artisan db:seed --force`.
+7. Regenera JSON de partituras v4 (`generar.py`) y `php artisan partituras:bootstrap` (con `--force` si `PARTITURAS_BOOTSTRAP_FORCE=1`).
+8. Crea `storage`/enlaces y arranca `php artisan serve`.
 
 Build y ejecución:
 

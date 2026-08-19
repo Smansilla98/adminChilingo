@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumno;
 use App\Models\InventarioItem;
+use App\Models\InventarioMovimiento;
 use App\Models\Sede;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class InventarioItemController extends Controller
 {
@@ -72,16 +74,22 @@ class InventarioItemController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateItem($request);
-        InventarioItem::create($validated);
+        $item = InventarioItem::create($validated);
+        $item->asegurarCodigo();
+        $this->registrar($item, 'ingreso', 'Alta en inventario');
 
-        return redirect()->route('inventarios.index')->with('success', 'Item de inventario creado.');
+        return redirect()->route('inventarios.show', $item)->with('success', 'Item de inventario creado. Código '.$item->codigo.'.');
     }
 
     public function show(InventarioItem $inventario)
     {
         $inventario->load(['sede', 'alumno']);
+        if (Schema::hasTable('inventario_movimientos')) {
+            $inventario->load(['movimientos.autor', 'movimientos.sede']);
+        }
+        $sedes = Sede::orderBy('nombre')->get();
 
-        return view('inventarios.show', ['item' => $inventario]);
+        return view('inventarios.show', ['item' => $inventario, 'sedes' => $sedes]);
     }
 
     public function edit(InventarioItem $inventario)
@@ -106,9 +114,14 @@ class InventarioItemController extends Controller
     public function update(Request $request, InventarioItem $inventario)
     {
         $validated = $this->validateItem($request, $inventario->id);
+        $sedeCambio = isset($validated['sede_id']) && (int) $validated['sede_id'] !== (int) $inventario->sede_id;
         $inventario->update($validated);
+        $inventario->asegurarCodigo();
+        if ($sedeCambio) {
+            $this->registrar($inventario, 'sede', 'Cambio de sede');
+        }
 
-        return redirect()->route('inventarios.index')->with('success', 'Item actualizado.');
+        return redirect()->route('inventarios.show', $inventario)->with('success', 'Item actualizado.');
     }
 
     public function destroy(InventarioItem $inventario)
@@ -118,13 +131,42 @@ class InventarioItemController extends Controller
         return redirect()->route('inventarios.index')->with('success', 'Item eliminado.');
     }
 
+    public function registrarMovimiento(Request $request, InventarioItem $inventario)
+    {
+        $data = $request->validate([
+            'tipo' => 'required|in:'.implode(',', array_keys(InventarioMovimiento::TIPOS)),
+            'nota' => 'nullable|string|max:400',
+            'sede_id' => 'nullable|exists:sedes,id',
+        ]);
+        if (($data['tipo'] ?? '') === 'sede' && ! empty($data['sede_id'])) {
+            $inventario->update(['sede_id' => $data['sede_id']]);
+        }
+        $this->registrar($inventario, $data['tipo'], $data['nota'] ?? null, $data['sede_id'] ?? $inventario->sede_id);
+
+        return back()->with('success', 'Movimiento registrado.');
+    }
+
+    private function registrar(InventarioItem $item, string $tipo, ?string $nota, ?int $sedeId = null): void
+    {
+        if (! Schema::hasTable('inventario_movimientos')) {
+            return;
+        }
+        InventarioMovimiento::query()->create([
+            'inventario_item_id' => $item->id,
+            'user_id' => auth()->id(),
+            'sede_id' => $sedeId ?? $item->sede_id,
+            'tipo' => $tipo,
+            'nota' => $nota,
+        ]);
+    }
+
     private function validateItem(Request $request, ?int $id = null): array
     {
         $validated = $request->validate([
             'sede_id' => 'required|exists:sedes,id',
             'tipo' => 'required|string|max:30',
             'nombre' => 'required|string|max:255',
-            'codigo' => 'nullable|string|max:255',
+            'codigo' => 'nullable|string|max:40|unique:inventario_items,codigo'.($id ? ','.$id : ''),
             'es_consumible' => 'boolean',
             'cantidad' => 'required|numeric|min:0',
             'unidad' => 'nullable|string|max:20',
@@ -155,6 +197,8 @@ class InventarioItemController extends Controller
         if (($validated['propietario_tipo'] ?? 'escuela') !== 'alumno') {
             $validated['alumno_id'] = null;
         }
+        $codigo = trim((string) ($validated['codigo'] ?? ''));
+        $validated['codigo'] = $codigo === '' ? null : $codigo;
 
         if (! $validated['es_consumible']) {
             $validated['cantidad'] = 1;

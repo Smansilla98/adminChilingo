@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'ITO - Sistema de gestión'),
+    'name' => env('APP_NAME', 'La Chilinga'),
 
     /*
     |--------------------------------------------------------------------------

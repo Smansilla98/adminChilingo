@@ -1,48 +1,52 @@
-/* ITO — Admin Dark Shell */
+/* ITO — Admin Dark Shell — paleta 30 años La Chilinga */
 
 :root {
-  /* Nueva paleta (dashboard-v2 / alumnos-v2) */
-  --ink: #0a0e1a;
-  --bg: #0a0e1a;
-  --surface: #111827;
-  --s1: #111827;
-  --surface-2: #161f33;
-  --s2: #161f33;
-  --surface-3: #1e2a45;
-  --s3: #1e2a45;
-  --line: rgba(233, 237, 245, 0.08);
-  --border: rgba(233, 237, 245, 0.08);
-  --skin: #e9edf5;
-  --text: #e9edf5;
-  --muted: #a8b3c9;
-  --muted-2: #8b97b0;
+  /* Marca: negro, blanco, naranja, verde, celeste, rojo */
+  --ch-negro: #000000;
+  --ch-blanco: #ffffff;
+  --ch-naranja: #f26422;
+  --ch-verde: #3daf3a;
+  --ch-celeste: #3ec8ea;
+  --ch-rojo: #e31b23;
 
-  /* Acento primario (editables vía Apariencia: --accent*, --font-display, --font-body) */
-  --accent: #3e7bfa;
-  --accent-hover: #2f66db;
-  --accent-soft: rgba(62, 123, 250, 0.16);
+  --ink: #000000;
+  --bg: #000000;
+  --surface: #111111;
+  --s1: #111111;
+  --surface-2: #1a1a1a;
+  --s2: #1a1a1a;
+  --surface-3: #242424;
+  --s3: #242424;
+  --line: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.12);
+  --skin: #ffffff;
+  --text: #ffffff;
+  --muted: #c8c8c8;
+  --muted-2: #9a9a9a;
+
+  --accent: #f26422;
+  --accent-hover: #d4551b;
+  --accent-soft: rgba(242, 100, 34, 0.20);
   --accent-on: #ffffff;
-  --blue: #3e7bfa;
+  --blue: #3ec8ea;
 
-  /* Estados */
-  --success: #22c55e;
-  --success-soft: rgba(34, 197, 94, 0.14);
-  --warning: #f59e0b;
-  --warning-soft: rgba(245, 158, 11, 0.14);
-  --danger: #ef4444;
-  --danger-soft: rgba(239, 68, 68, 0.14);
-  --neutral: #94a3b8;
+  --success: #3daf3a;
+  --success-soft: rgba(61, 175, 58, 0.18);
+  --warning: #f26422;
+  --warning-soft: rgba(242, 100, 34, 0.18);
+  --danger: #e31b23;
+  --danger-soft: rgba(227, 27, 35, 0.18);
+  --neutral: #9a9a9a;
 
-  /* Alias legacy (cuero/tambor → nueva paleta) para no romper referencias */
-  --brick: #3e7bfa;
-  --brick-soft: rgba(62, 123, 250, 0.15);
-  --brass: #3e7bfa;
-  --accent2: #3e7bfa;
-  --brass-soft: rgba(62, 123, 250, 0.16);
-  --verdigris: #22c55e;
-  --verdigris-soft: rgba(34, 197, 94, 0.14);
-  --green: #22c55e;
-  --purple: #8b5cf6;
+  --brick: #f26422;
+  --brick-soft: rgba(242, 100, 34, 0.16);
+  --brass: #3ec8ea;
+  --brass-soft: rgba(62, 200, 234, 0.16);
+  --accent2: #3ec8ea;
+  --verdigris: #3daf3a;
+  --verdigris-soft: rgba(61, 175, 58, 0.14);
+  --green: #3daf3a;
+  --purple: #3ec8ea;
 
   --radius: 14px;
   --radius-sm: 10px;
@@ -57,8 +61,16 @@ html, body {
 
 body {
   background:
-    radial-gradient(1100px 520px at 12% -18%, var(--accent-soft), transparent 58%),
-    radial-gradient(900px 520px at 92% 0%, rgba(34, 197, 94, 0.06), transparent 52%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 11px,
+      rgba(62, 200, 234, 0.04) 11px,
+      rgba(62, 200, 234, 0.04) 12px
+    ),
+    radial-gradient(900px 480px at 8% -12%, rgba(61, 175, 58, 0.14), transparent 55%),
+    radial-gradient(800px 480px at 48% -18%, rgba(242, 100, 34, 0.16), transparent 52%),
+    radial-gradient(900px 480px at 92% 0%, rgba(62, 200, 234, 0.14), transparent 52%),
     var(--bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -396,9 +408,10 @@ body.auth-page-ito {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(1200px 600px at 20% -20%, rgba(232, 93, 43, 0.18), transparent 60%),
-    radial-gradient(900px 600px at 90% 0%, rgba(91, 158, 240, 0.12), transparent 55%),
-    var(--bg);
+    radial-gradient(900px 480px at 12% -10%, rgba(61, 175, 58, 0.16), transparent 55%),
+    radial-gradient(800px 480px at 50% -18%, rgba(242, 100, 34, 0.18), transparent 52%),
+    radial-gradient(900px 480px at 92% 0%, rgba(62, 200, 234, 0.16), transparent 52%),
+    #000;
   color: var(--text);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, sans-serif;
 }
@@ -413,16 +426,30 @@ body.auth-page-ito .auth-shell {
 body.auth-page-ito .auth-card--ito {
   position: relative;
   width: 100%;
-  max-width: 400px;
-  margin-top: 52px;
-  padding: 56px 26px 0;
-  background:
-    radial-gradient(900px 260px at 30% -40%, rgba(255, 255, 255, 0.06), transparent 70%),
-    var(--s2);
+  max-width: 420px;
+  margin-top: 0;
+  padding: 0 0 0;
+  background: #111;
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.35);
-  overflow: visible;
+  overflow: hidden;
+}
+
+body.auth-page-ito .auth-card-ito__banner {
+  background: #000;
+}
+body.auth-page-ito .auth-card-ito__banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+body.auth-page-ito .auth-card-ito__head {
+  text-align: center;
+  padding: 18px 26px 8px;
+}
+body.auth-page-ito .auth-card-ito__body {
+  padding: 0 26px 8px;
 }
 
 body.auth-page-ito .auth-card-ito__logo-ring {
@@ -471,7 +498,7 @@ body.auth-page-ito .auth-card-ito__sub {
 }
 
 body.auth-page-ito .auth-card-ito__body {
-  padding: 18px 0 22px;
+  padding: 8px 26px 22px;
 }
 
 body.auth-page-ito .auth-alerts {
@@ -2467,10 +2494,10 @@ body.shell-nav-open {
    ========================================================= */
 
 :root {
-  --muted: #a8b3c9;
-  --muted-2: #8b97b0;
-  --focus-ring: 0 0 0 3px rgba(62, 123, 250, 0.55);
-  --focus-outline: 2px solid #7aafff;
+  --muted: #c8c8c8;
+  --muted-2: #9a9a9a;
+  --focus-ring: 0 0 0 3px rgba(62, 200, 234, 0.55);
+  --focus-outline: 2px solid #3ec8ea;
 }
 
 /* Skip link */
@@ -2574,21 +2601,21 @@ html.ito-text-lg .nav-group-label {
 
 /* Alto contraste */
 html.ito-contrast {
-  --border: rgba(233, 237, 245, 0.28);
-  --line: rgba(233, 237, 245, 0.28);
-  --muted: #c5cee0;
-  --muted-2: #aeb8cc;
-  --accent: #5b93ff;
-  --bg: #05070f;
-  --s1: #0c1220;
-  --s2: #121a2c;
-  --s3: #1a2540;
+  --border: rgba(255, 255, 255, 0.32);
+  --line: rgba(255, 255, 255, 0.32);
+  --muted: #e8e8e8;
+  --muted-2: #c8c8c8;
+  --accent: #ff7a3a;
+  --bg: #000000;
+  --s1: #0d0d0d;
+  --s2: #161616;
+  --s3: #222222;
 }
 html.ito-contrast body {
   background: var(--bg);
 }
 html.ito-contrast .ito-table tbody tr:hover {
-  background: rgba(91, 147, 255, 0.14);
+  background: rgba(242, 100, 34, 0.16);
 }
 html.ito-contrast .ito-status-dot {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
@@ -2600,7 +2627,7 @@ html.ito-contrast .ito-card {
 
 /* Preferencias en menú usuario */
 .ito-pref-btn.is-on {
-  color: #9bb8ff !important;
+  color: #3ec8ea !important;
 }
 .ito-pref-btn.is-on::after {
   content: ' · on';
@@ -2731,7 +2758,7 @@ body.ito-modal-open { overflow: hidden; }
 /* Asistencias: no solo color */
 .asist-cell-p { box-shadow: inset 0 -3px 0 #22c55e; }
 .asist-cell-t { box-shadow: inset 0 -3px 0 #f59e0b; }
-.asist-cell-j { box-shadow: inset 0 -3px 0 #3e7bfa; }
+.asist-cell-j { box-shadow: inset 0 -3px 0 #3ec8ea; }
 .asist-cell-i { box-shadow: inset 0 -3px 0 #ef4444; }
 .asist-cell-f { box-shadow: inset 0 -3px 0 #2dd4bf; }
 .asist-cell-s { box-shadow: inset 0 -3px 0 #94a3b8; }
@@ -2893,6 +2920,8 @@ html.ito-contrast .programa-didactic-viewer .daw-map-step.is-on {
   justify-content: space-between;
   gap: 18px 28px;
   align-items: flex-end;
+  padding: 4px 0 4px 14px;
+  border-left: 4px solid var(--brass);
 }
 .hub-eyebrow {
   margin: 0 0 8px;
