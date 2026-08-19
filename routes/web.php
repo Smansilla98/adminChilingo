@@ -38,6 +38,11 @@ use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\SedeController;
 use App\Http\Controllers\SeguimientoPedagogicoController;
 use App\Http\Controllers\ShowController;
+use App\Http\Controllers\VillaGesellCalendarioController;
+use App\Http\Controllers\VillaGesellController;
+use App\Http\Controllers\VillaGesellGastoController;
+use App\Http\Controllers\VillaGesellInscriptoController;
+use App\Http\Controllers\VillaGesellInsumoController;
 use App\Models\Bloque;
 use Illuminate\Support\Facades\Route;
 
@@ -184,9 +189,27 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reportes/profesores', [ReportesController::class, 'profesores'])->name('reportes.profesores');
     });
 
+    Route::middleware(['role:admin,coordinador_sede', 'modulo:admin.villa_gesell'])->prefix('villa-gesell')->name('villa-gesell.')->group(function () {
+        Route::get('/', [VillaGesellController::class, 'index'])->name('index');
+        Route::put('/config', [VillaGesellController::class, 'updateConfig'])->name('config');
+        Route::post('/dias/generar', [VillaGesellController::class, 'generarDias'])->name('dias.generar');
+        Route::get('/calendario', [VillaGesellCalendarioController::class, 'index'])->name('calendario');
+        Route::put('/dias/{dia}', [VillaGesellCalendarioController::class, 'updateDia'])->name('dias.update');
+        Route::post('/dias/{dia}/slots', [VillaGesellCalendarioController::class, 'generarSlots'])->name('dias.slots');
+        Route::post('/dias/{dia}/tocadas', [VillaGesellCalendarioController::class, 'storeTocada'])->name('tocadas.store');
+        Route::put('/tocadas/{tocada}', [VillaGesellCalendarioController::class, 'updateTocada'])->name('tocadas.update');
+        Route::delete('/tocadas/{tocada}', [VillaGesellCalendarioController::class, 'destroyTocada'])->name('tocadas.destroy');
+        Route::get('/plan', [VillaGesellGastoController::class, 'plan'])->name('plan');
+        Route::resource('inscriptos', VillaGesellInscriptoController::class)->except(['show'])->parameters(['inscriptos' => 'inscripto']);
+        Route::resource('insumos', VillaGesellInsumoController::class)->except(['show'])->parameters(['insumos' => 'insumo']);
+        Route::resource('gastos', VillaGesellGastoController::class)->except(['show'])->parameters(['gastos' => 'gasto']);
+    });
+
     // Solo dirección / admin
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/accesos', [AccesosController::class, 'index'])->name('accesos.index');
+        Route::get('/accesos/crear', [AccesosController::class, 'create'])->name('accesos.create');
+        Route::post('/accesos/crear', [AccesosController::class, 'store'])->name('accesos.store');
         Route::post('/accesos', [AccesosController::class, 'update'])->name('accesos.update');
 
         Route::get('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'editPartitura'])->name('programa.toque.partitura.edit');

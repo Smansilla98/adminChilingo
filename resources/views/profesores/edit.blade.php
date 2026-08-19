@@ -7,7 +7,7 @@
 <div class="card">
     <div class="card-header">Editar profesor</div>
     <div class="card-body">
-        @include('partials.form-ayuda-intro', ['text' => 'Actualizá los datos y, si cambió, los bloques o sedes donde da clase.'])
+        @include('partials.form-ayuda-intro', ['text' => 'Actualizá los datos, la cuenta de ingreso si hace falta, y los bloques o sedes donde da clase.'])
         <form action="{{ route('profesores.update', $profesor) }}" method="POST">
             @csrf
             @method('PUT')
@@ -36,11 +36,16 @@
                     </div>
                 </div>
             </div>
+            @include('profesores._form_usuario')
             @include('profesores._form_bloques', ['bloquesParaAsignar' => $bloquesParaAsignar, 'profesor' => $profesor])
             @include('profesores._form_sedes_roles', ['sedes' => $sedes ?? collect(), 'profesor' => $profesor])
             <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{{ route('profesores.index') }}" class="btn btn-secondary">Cancelar</a>
+            <a href="{{ route('profesores.show', $profesor) }}" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+@include('profesores._form_usuario_script')
+@endpush

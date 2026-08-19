@@ -10,6 +10,7 @@
             <h1 class="ito-page-title">Accesos</h1>
             <p class="ito-page-sub">Quién puede ver qué en el sistema</p>
         </div>
+        <a href="{{ route('accesos.create') }}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Nuevo usuario</a>
     </div>
 
     <div class="ito-card">

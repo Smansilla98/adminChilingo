@@ -30,6 +30,7 @@
             'items' => array_values(array_filter([
                 $user->tieneAccesoModulo('admin.eventos') ? ['href' => route('eventos.index'), 'icon' => 'bi-calendar-event', 'title' => 'Eventos', 'desc' => 'Ensayos, muestras y fechas'] : null,
                 $user->tieneAccesoModulo('admin.shows') ? ['href' => route('shows.index'), 'icon' => 'bi-mic', 'title' => 'Shows', 'desc' => 'Presentaciones y logística'] : null,
+                $user->tieneAccesoModulo('admin.villa_gesell') ? ['href' => route('villa-gesell.index'), 'icon' => 'bi-sun', 'title' => 'Villa Gesell', 'desc' => 'Gira costa 2027: cupo, tocadas y gastos'] : null,
             ])),
         ],
         [
@@ -67,7 +68,7 @@
             'code' => '06',
             'label' => 'Configuración',
             'items' => array_values(array_filter([
-                $user->isAdmin() ? ['href' => route('accesos.index'), 'icon' => 'bi-shield-lock', 'title' => 'Accesos', 'desc' => 'Permisos por usuario'] : null,
+                $user->isAdmin() ? ['href' => route('accesos.index'), 'icon' => 'bi-shield-lock', 'title' => 'Accesos', 'desc' => 'Altas de usuario y permisos'] : null,
                 $user->tieneAccesoModulo('ayuda') ? ['href' => route('ayuda'), 'icon' => 'bi-question-circle', 'title' => 'Ayuda', 'desc' => 'Guías rápidas del sistema'] : null,
             ])),
         ],

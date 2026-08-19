@@ -310,4 +310,83 @@ class RolesYNegocioTest extends TestCase
             ])
             ->assertSessionHasErrors('lookup_token');
     }
+
+    public function test_admin_crea_usuario_con_ficha_de_profesor(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin',
+            'username' => 'admin1',
+            'email' => 'admin@test.local',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+        ]);
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)
+            ->post(route('accesos.store'), [
+                'name' => 'Nuevo Profe',
+                'username' => 'nuevoprofe',
+                'email' => 'nuevo@test.local',
+                'password' => 'password12',
+                'password_confirmation' => 'password12',
+                'role' => 'profesor',
+                'profesor_vinculo' => 'nuevo',
+            ])
+            ->assertRedirect(route('accesos.index', ['user_id' => User::query()->where('email', 'nuevo@test.local')->value('id')]));
+
+        $creado = User::query()->where('email', 'nuevo@test.local')->first();
+        $this->assertNotNull($creado);
+        $this->assertTrue($creado->hasRole('profesor'));
+        $this->assertDatabaseHas('profesores', [
+            'user_id' => $creado->id,
+            'nombre' => 'Nuevo Profe',
+        ]);
+    }
+
+    public function test_admin_crea_profesor_con_usuario_y_contrasena(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin',
+            'username' => 'admin2',
+            'email' => 'admin2@test.local',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+        ]);
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)
+            ->post(route('profesores.store'), [
+                'nombre' => 'Docente Costa',
+                'email' => 'costa@test.local',
+                'activo' => '1',
+                'cuenta_modo' => 'nueva',
+                'login_username' => 'docentecosta',
+                'login_password' => 'password12',
+                'login_password_confirmation' => 'password12',
+            ])
+            ->assertRedirect(route('profesores.index'));
+
+        $profesor = Profesor::query()->where('nombre', 'Docente Costa')->first();
+        $this->assertNotNull($profesor);
+        $this->assertNotNull($profesor->user);
+        $this->assertSame('docentecosta', $profesor->user->username);
+        $this->assertTrue($profesor->user->hasRole('profesor'));
+        $this->assertTrue(Hash::check('password12', $profesor->user->password));
+    }
+
+    public function test_profesor_no_puede_crear_usuarios(): void
+    {
+        $user = User::create([
+            'name' => 'Profe',
+            'username' => 'profe2',
+            'email' => 'profe2@test.local',
+            'password' => Hash::make('password'),
+            'role' => 'profesor',
+        ]);
+        $user->assignRole('profesor');
+
+        $this->actingAs($user)
+            ->get(route('accesos.create'))
+            ->assertForbidden();
+    }
 }

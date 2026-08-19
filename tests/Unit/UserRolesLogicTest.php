@@ -50,6 +50,7 @@ class UserRolesLogicTest extends TestCase
         $this->assertTrue($user->puedeVerReportes());
         $this->assertTrue($user->puedeGestionarOperativo());
         $this->assertTrue($user->puedeVerLinkGestion('admin.reportes'));
+        $this->assertTrue($user->puedeVerLinkGestion('admin.villa_gesell'));
         $this->assertFalse($user->puedeVerLinkGestion('admin.gastos'));
         $this->assertSame('Coordinador de sede', $user->etiquetaRol());
     }

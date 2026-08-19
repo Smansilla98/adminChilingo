@@ -24,6 +24,16 @@
         <div class="mb-3">
             <strong>Estado:</strong> {{ $profesor->activo ? 'Activo' : 'Inactivo' }}
         </div>
+        <div class="mb-3">
+            <strong>Ingreso al sistema:</strong>
+            @if($profesor->user)
+                {{ $profesor->user->username ?: $profesor->user->email }}
+                <span class="text-muted small">— para cambiar la contraseña, usá Editar</span>
+            @else
+                Sin cuenta.
+                <a href="{{ route('profesores.edit', $profesor) }}">Crear usuario y contraseña</a>
+            @endif
+        </div>
         @if(!empty($alumnoPerfil))
         <div class="alert alert-info py-2 small mb-3">
             <i class="bi bi-mortarboard"></i> También tiene perfil de <strong>alumno</strong>:

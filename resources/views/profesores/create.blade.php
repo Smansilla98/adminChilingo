@@ -7,7 +7,7 @@
 <div class="card">
     <div class="card-header">Nuevo profesor</div>
     <div class="card-body">
-        @include('partials.form-ayuda-intro', ['text' => 'Nombre y contacto alcanzan para empezar. Después indicá en qué bloques y sedes participa.'])
+        @include('partials.form-ayuda-intro', ['text' => 'Nombre, contacto y, si hace falta, usuario y contraseña para que entre al sistema. Después indicá bloques y sedes.'])
         <form action="{{ route('profesores.store') }}" method="POST">
             @csrf
             <div class="row mb-3">
@@ -35,6 +35,7 @@
                     </div>
                 </div>
             </div>
+            @include('profesores._form_usuario')
             @include('profesores._form_bloques', ['bloquesParaAsignar' => $bloquesParaAsignar])
             @include('profesores._form_sedes_roles', ['sedes' => $sedes ?? collect()])
             <button type="submit" class="btn btn-primary">Guardar</button>
@@ -43,3 +44,7 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+@include('profesores._form_usuario_script')
+@endpush

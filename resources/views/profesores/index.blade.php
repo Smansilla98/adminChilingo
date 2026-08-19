@@ -7,6 +7,9 @@
 <x-ito.list-page title="Profesores" subtitle="Cuerpo docente y vínculos a bloques">
     <x-slot:actions>
         <a href="{{ route('profesores.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nuevo profesor</a>
+        @if(auth()->user()?->isAdmin())
+            <a href="{{ route('accesos.create') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-person-plus"></i> Nuevo usuario</a>
+        @endif
     </x-slot:actions>
 
     <table class="ito-table">

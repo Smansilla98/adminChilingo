@@ -319,7 +319,7 @@ class User extends Authenticatable
 
         $sede = [
             'admin.alumnos', 'admin.bloques', 'admin.sedes', 'admin.asistencias',
-            'admin.eventos', 'admin.shows', 'comprobantes', 'admin.reportes',
+            'admin.eventos', 'admin.shows', 'admin.villa_gesell', 'comprobantes', 'admin.reportes',
             'programa', 'calendario', 'ayuda',
         ];
         $area = [

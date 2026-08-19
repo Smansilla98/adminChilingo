@@ -16,10 +16,11 @@
         'eventos' => [
             'label' => 'Eventos y shows',
             'accent' => 'eventos',
-            'patterns' => ['eventos.*', 'shows.*'],
+            'patterns' => ['eventos.*', 'shows.*', 'villa-gesell.*'],
             'links' => array_filter([
                 auth()->user()->tieneAccesoModulo('admin.eventos') ? ['route' => 'eventos.index', 'label' => 'Eventos', 'pattern' => 'eventos.*'] : null,
                 auth()->user()->tieneAccesoModulo('admin.shows') ? ['route' => 'shows.index', 'label' => 'Shows', 'pattern' => 'shows.*'] : null,
+                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.index', 'label' => 'Villa Gesell', 'pattern' => 'villa-gesell.*'] : null,
             ]),
         ],
         'economico' => [

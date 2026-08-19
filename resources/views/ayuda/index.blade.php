@@ -352,7 +352,7 @@
                         <ul class="mb-0">
                             <li><strong>Eventos</strong> — cargar y ver actividades.</li>
                             <li><strong>Asistencias</strong> — quién vino a clase.</li>
-                            <li><strong>Shows</strong>, <strong>Facturación</strong>, <strong>Inventario</strong>, <strong>Compras</strong> y <strong>Gastos</strong>: según lo que use la escuela.</li>
+                            <li><strong>Shows</strong>, <strong>Villa Gesell</strong> (gira costa 2027: inscriptos, calendario, insumos y plan de gastos), <strong>Facturación</strong>, <strong>Inventario</strong>, <strong>Compras</strong> y <strong>Gastos</strong>: según lo que use la escuela.</li>
                             <li><strong>Reportes</strong> — listados y números para revisar.</li>
                         </ul>
                     </div>
@@ -367,8 +367,9 @@
                 </h3>
                 <div id="c-accesos" class="accordion-collapse collapse" aria-labelledby="h-accesos" data-bs-parent="#ayudaAccordion">
                     <div class="accordion-body ayuda-body">
-                        <p class="mb-2">En <strong>Accesos</strong> (menú de administración) elegís qué partes del sistema puede usar cada persona.</p>
+                        <p class="mb-2">En <strong>Accesos</strong> (menú de administración) creás cuentas y elegís qué partes del sistema puede usar cada persona.</p>
                         <ol class="mb-0">
+                            <li><strong>Nuevo usuario</strong>: nombre, ingreso, contraseña y rol. Podés crear una ficha de profesor o asociar la cuenta a alguien que ya está en el plantel.</li>
                             <li>Elegí el usuario en la lista.</li>
                             <li>Tildá lo que puede ver (Programa, Alumnos, Pagos, etc.).</li>
                             <li><strong>Guardar accesos</strong>.</li>
