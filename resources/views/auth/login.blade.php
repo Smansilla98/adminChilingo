@@ -11,8 +11,8 @@
 <body class="auth-page-ito">
     <div class="auth-shell">
         <div class="auth-card auth-card--ito">
-            <div class="auth-card-ito__banner">
-                <img src="{{ asset('images/brand/chilinga-30.png') }}" alt="La Chilinga · 30 años · 1995–2025">
+            <div class="auth-card-ito__logo-ring" aria-hidden="true">
+                <img src="{{ asset('images/brand/logo.png') }}" alt="ITO">
             </div>
             <div class="auth-card-ito__head">
                 <h1 class="auth-card-ito__title">Iniciar sesión</h1>

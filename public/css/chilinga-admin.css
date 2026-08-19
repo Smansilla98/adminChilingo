@@ -426,30 +426,16 @@ body.auth-page-ito .auth-shell {
 body.auth-page-ito .auth-card--ito {
   position: relative;
   width: 100%;
-  max-width: 420px;
-  margin-top: 0;
-  padding: 0 0 0;
-  background: #111;
+  max-width: 400px;
+  margin-top: 52px;
+  padding: 56px 26px 0;
+  background:
+    radial-gradient(900px 260px at 30% -40%, rgba(255, 255, 255, 0.06), transparent 70%),
+    var(--s2);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
-}
-
-body.auth-page-ito .auth-card-ito__banner {
-  background: #000;
-}
-body.auth-page-ito .auth-card-ito__banner img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-body.auth-page-ito .auth-card-ito__head {
-  text-align: center;
-  padding: 18px 26px 8px;
-}
-body.auth-page-ito .auth-card-ito__body {
-  padding: 0 26px 8px;
+  overflow: visible;
 }
 
 body.auth-page-ito .auth-card-ito__logo-ring {
@@ -498,7 +484,7 @@ body.auth-page-ito .auth-card-ito__sub {
 }
 
 body.auth-page-ito .auth-card-ito__body {
-  padding: 8px 26px 22px;
+  padding: 18px 0 22px;
 }
 
 body.auth-page-ito .auth-alerts {
