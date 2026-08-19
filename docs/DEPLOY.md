@@ -2,6 +2,23 @@
 
 **Guía completa de ejecución (local, Docker, Railway):** ver **[EJECUCION.md](EJECUCION.md)**.
 
+## Salud
+
+- Laravel: `GET /up`
+- App + DB: `GET /salud` (JSON; 503 si no hay conexión a la base)
+
+## Migraciones recientes (no olvidar en producción)
+
+Además del historial habitual, en esta etapa hay que aplicar:
+
+- bitácora / cuaderno pedagógico (`observaciones_pedagogicas` y columnas `eje`, `proximo_paso`, `visible_alumno`);
+- `cargado_por_user_id` en comprobantes de cuota;
+- índices `asistencias_bloque_fecha_idx`, `comprobantes_estado_idx`, `alumnos_activo_sede_idx`.
+
+```bash
+php artisan migrate --force
+```
+
 ## Configuración general ya aplicada
 
 - **TrustProxies**: la app confía en proxies (Railway/HTTPS).

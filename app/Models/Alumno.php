@@ -80,9 +80,18 @@ class Alumno extends Model
     /**
      * Calcular edad
      */
-    public function getEdadAttribute(): int
+    public function getEdadAttribute(): ?int
     {
+        if (! $this->fecha_nacimiento) {
+            return null;
+        }
+
         return Carbon::parse($this->fecha_nacimiento)->age;
+    }
+
+    public function observacionesPedagogicas(): HasMany
+    {
+        return $this->hasMany(ObservacionPedagogica::class)->latest('fecha')->latest('id');
     }
 
     /**

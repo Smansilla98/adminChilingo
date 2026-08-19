@@ -11,6 +11,7 @@
     @stack('styles')
 </head>
 <body>
+<a class="ito-skip" href="#contenido-principal">Ir al contenido</a>
 <div class="auth-shell py-4">
     <div class="auth-card auth-card--fluid">
         <div class="auth-head mb-3">
@@ -20,7 +21,7 @@
                 <div class="auth-sub">@yield('guest-subtitle', '')</div>
             </div>
         </div>
-        <div class="auth-body">
+        <div class="auth-body" id="contenido-principal" tabindex="-1">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif

@@ -19,6 +19,7 @@ class ComprobanteCuotaAlumno extends Model
         'notas',
         'estado',
         'pago_id',
+        'cargado_por_user_id',
     ];
 
     protected $casts = [

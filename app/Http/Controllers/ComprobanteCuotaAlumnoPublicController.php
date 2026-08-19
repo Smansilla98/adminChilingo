@@ -4,16 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumno;
 use App\Models\Bloque;
-use App\Models\ComprobanteCuotaAlumno;
-use App\Models\ComprobanteCuotaAlumnoItem;
 use App\Models\Cuota;
 use App\Models\PagoDetalle;
 use App\Models\Sede;
+use App\Services\ComprobanteCuotaRegistroService;
+use App\Support\PagoCuotaToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ComprobanteCuotaAlumnoPublicController extends Controller
@@ -127,6 +125,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             'mes' => 'required|integer|min:1|max:12',
             'bloque_ids' => 'required|array|min:1',
             'bloque_ids.*' => 'integer|exists:bloques,id',
+            'dni' => 'required|string|min:6|max:20',
         ]);
 
         $bloqueIds = array_map('intval', $request->input('bloque_ids', []));
@@ -177,11 +176,17 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             $cuotasPorBloque[$bid] = $this->cuotaParaBloqueMes((int) $bid, $año, $mes);
         }
 
+        $dni = preg_replace('/\D+/', '', (string) $request->input('dni'));
+        if (strlen($dni) < 6) {
+            return response()->json(['error' => 'Ingresá el DNI completo (solo números).'], 422);
+        }
+
         $alumnos = Alumno::query()
             ->whereIn('id', $interseccion->all())
             ->where('activo', true)
+            ->whereRaw("REPLACE(REPLACE(REPLACE(dni, '.', ''), '-', ''), ' ', '') = ?", [$dni])
             ->orderBy('nombre_apellido')
-            ->get(['id', 'nombre_apellido', 'dni']);
+            ->get(['id', 'nombre_apellido']);
 
         $data = $alumnos->filter(function (Alumno $a) use ($cuotasPorBloque) {
             foreach ($cuotasPorBloque as $cuota) {
@@ -197,14 +202,14 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         })->values()->map(fn (Alumno $a) => [
             'id' => $a->id,
             'nombre_apellido' => $a->nombre_apellido,
-            'dni' => $a->dni,
+            'lookup_token' => PagoCuotaToken::emitir((int) $a->id, $sedeId),
         ]);
 
         return response()->json([
             'alumnos' => $data,
             'puede_multibloque' => count($bloqueIds) > 1,
-            'nota_multibloque' => count($bloqueIds) > 1
-                ? 'Solo aparecen alumnos inscriptos en todos los bloques seleccionados y a quienes aplica cada cuota.'
+            'nota_multibloque' => $data->isEmpty()
+                ? 'No encontramos un alumno activo con ese DNI en los bloques elegidos (o la cuota ya figura paga).'
                 : null,
         ]);
     }
@@ -213,10 +218,15 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
     {
         $request->validate([
             'alumno_id' => 'required|exists:alumnos,id',
+            'lookup_token' => 'required|string',
             'sede_id' => 'required|exists:sedes,id',
             'año' => 'required|integer|min:2000|max:2100',
             'mes' => 'required|integer|min:1|max:12',
         ]);
+        $payload = PagoCuotaToken::leer($request->input('lookup_token'));
+        if (! $payload || $payload['alumno_id'] !== $request->integer('alumno_id') || $payload['sede_id'] !== $request->integer('sede_id')) {
+            return response()->json(['error' => 'La búsqueda venció. Volvé a ingresar el DNI.'], 422);
+        }
 
         $alumno = Alumno::query()->findOrFail($request->integer('alumno_id'));
         $año = $request->integer('año');
@@ -261,7 +271,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         return response()->json(['bloques_cuotas' => $extra]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ComprobanteCuotaRegistroService $registro)
     {
         if (! Schema::hasTable('comprobantes_cuota_alumnos')) {
             abort(503, 'Función no disponible: ejecutá migraciones.');
@@ -273,84 +283,39 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             'mes' => 'required|integer|min:1|max:12',
             'fecha_pago' => 'required|date',
             'alumno_id' => 'required|exists:alumnos,id',
+            'dni' => 'required|string|min:6|max:20',
+            'lookup_token' => 'required|string',
             'bloque_ids' => 'required|array|min:1',
             'bloque_ids.*' => 'integer|exists:bloques,id',
             'comprobante' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'notas' => 'nullable|string|max:1000',
         ]);
 
-        $bloqueIds = array_values(array_unique(array_map('intval', $validated['bloque_ids'])));
-        $año = $validated['año'];
-        $mes = $validated['mes'];
-        $sedeId = (int) $validated['sede_id'];
-
         $alumno = Alumno::query()->findOrFail($validated['alumno_id']);
-
-        $itemsData = [];
-        $montoTotal = 0.0;
-        foreach ($bloqueIds as $bid) {
-            $bloque = Bloque::query()->whereKey($bid)->where('sede_id', $sedeId)->where('activo', true)->first();
-            if (! $bloque) {
-                throw ValidationException::withMessages(['bloque_ids' => 'Uno de los bloques no corresponde a la sede elegida.']);
-            }
-            $cuota = $this->cuotaParaBloqueMes($bid, $año, $mes);
-            if (! $cuota) {
-                throw ValidationException::withMessages(['bloque_ids' => 'No hay cuota para el bloque «'.$bloque->nombre.'» en el mes elegido.']);
-            }
-            if (! $cuota->aplicaAAlumno($alumno)) {
-                throw ValidationException::withMessages(['alumno_id' => 'La cuota no aplica a este alumno en el bloque «'.$bloque->nombre.'».']);
-            }
-            $enBloque = $alumno->bloques()->where('bloques.id', $bid)->exists()
-                || (int) $alumno->bloque_id === (int) $bid;
-            if (! $enBloque) {
-                throw ValidationException::withMessages(['alumno_id' => 'El alumno no está inscripto en todos los bloques seleccionados.']);
-            }
-            if ($this->alumnoYaPagoCuota((int) $alumno->id, (int) $cuota->id)) {
-                throw ValidationException::withMessages([
-                    'alumno_id' => 'Ya consta el pago de esta cuota para este alumno. No hace falta enviar otro comprobante.',
-                ]);
-            }
-            $monto = (float) $cuota->monto;
-            $montoTotal += $monto;
-            $itemsData[] = [
-                'cuota_id' => $cuota->id,
-                'bloque_id' => $bid,
-                'monto' => $monto,
-            ];
+        $token = PagoCuotaToken::leer($validated['lookup_token']);
+        if (! $token || $token['alumno_id'] !== (int) $alumno->id || $token['sede_id'] !== (int) $validated['sede_id']) {
+            throw ValidationException::withMessages(['dni' => 'La búsqueda venció. Volvé a buscar el DNI.']);
+        }
+        $dniIngresado = preg_replace('/\D+/', '', (string) $validated['dni']);
+        $dniAlumno = preg_replace('/\D+/', '', (string) $alumno->dni);
+        if ($dniAlumno === '' || $dniIngresado !== $dniAlumno) {
+            throw ValidationException::withMessages(['dni' => 'El DNI no coincide con el alumno.']);
         }
 
-        $upload = $request->file('comprobante');
-        $ext = strtolower((string) $upload->getClientOriginalExtension());
-        if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
-            $ext = strtolower((string) ($upload->guessExtension() ?: 'pdf'));
-        }
-        if (! in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
-            $ext = 'pdf';
-        }
-        $path = $upload->storeAs('comprobantes_cuota_alumnos', (string) Str::uuid().'.'.$ext, 'comprobantes');
-
-        DB::transaction(function () use ($validated, $alumno, $sedeId, $montoTotal, $path, $itemsData) {
-            $c = ComprobanteCuotaAlumno::create([
-                'alumno_id' => $alumno->id,
-                'sede_id' => $sedeId,
-                'fecha_pago' => $validated['fecha_pago'],
-                'monto_total' => round($montoTotal, 2),
-                'comprobante_path' => $path,
-                'notas' => $validated['notas'] ?? null,
-                'estado' => 'pendiente',
-            ]);
-            foreach ($itemsData as $row) {
-                ComprobanteCuotaAlumnoItem::create([
-                    'comprobante_cuota_alumno_id' => $c->id,
-                    'cuota_id' => $row['cuota_id'],
-                    'bloque_id' => $row['bloque_id'],
-                    'monto' => $row['monto'],
-                ]);
-            }
-        });
+        $registro->registrar(
+            $alumno,
+            (int) $validated['sede_id'],
+            (int) $validated['año'],
+            (int) $validated['mes'],
+            $validated['fecha_pago'],
+            $validated['bloque_ids'],
+            $request->file('comprobante'),
+            $validated['notas'] ?? null,
+            null,
+        );
 
         return redirect()->route('comprobante-cuota-public.create')
-            ->with('success', 'Recibimos tu comprobante. Tu profesor o la administración lo verá en el panel de comprobantes enviados.');
+            ->with('success', 'Recibimos tu comprobante. Tu profesor o la administración lo verá en el panel.');
     }
 
     private function cuotaParaBloqueMes(int $bloqueId, int $año, int $mes): ?Cuota

@@ -9,6 +9,7 @@ use App\Models\Cuota;
 use App\Models\PagoDetalle;
 use App\Models\Profesor;
 use App\Models\Sede;
+use App\Services\AlumnosListadoService;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -40,69 +41,17 @@ class AlumnoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, AlumnosListadoService $listado)
     {
         try {
             /** @var \App\Models\User|null $user */
             $user = auth()->user();
-
-            $query = Alumno::with(['bloque.sede', 'bloques.sede', 'sede']);
-
-            if ($user && $user->isCoordinadorSede() && ! $user->isAdmin()) {
-                $sedeIds = $user->sedeIdsCoordinadas();
-                $ids = $sedeIds !== [] ? $sedeIds : [0];
-                $query->where(function ($q) use ($ids) {
-                    $q->whereIn('sede_id', $ids)
-                        ->orWhereHas('bloques', fn ($b) => $b->whereIn('bloques.sede_id', $ids))
-                        ->orWhereHas('bloque', fn ($b) => $b->whereIn('sede_id', $ids));
-                });
-            } elseif ($user && $user->isProfesor() && ! $user->isAdmin() && ! $user->puedeGestionarOperativo()) {
-                $prof = $user->profesor;
-                if ($prof) {
-                    $query->where(function ($sub) use ($prof) {
-                        $bloqueVisible = fn ($q) => $q->where('profesor_id', $prof->id)
-                            ->orWhereHas('profesores', fn ($q2) => $q2->where('profesores.id', $prof->id));
-                        $sub->whereHas('bloque', $bloqueVisible)
-                            ->orWhereHas('bloques', $bloqueVisible);
-                    });
-                } else {
-                    $query->whereRaw('1=0');
-                }
-            }
-
-            if ($request->filled('sede_id')) {
-                $query->where('sede_id', $request->sede_id);
-            }
-
-            if ($request->filled('bloque_id')) {
-                $query->whereHas('bloques', function ($q) use ($request) {
-                    $q->where('bloques.id', $request->bloque_id);
-                });
-            }
-
-            if ($request->filled('activo')) {
-                $query->where('activo', $request->activo === '1');
-            }
-
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('nombre_apellido', 'like', "%{$search}%")
-                        ->orWhere('dni', 'like', "%{$search}%");
-                });
-            }
-
-            if ($request->filled('tipo_tambor')) {
-                $query->where('tipo_tambor', $request->tipo_tambor);
-            }
-
-            if ($request->filled('tambor_procedencia')) {
-                $query->where('tambor_procedencia', $request->tambor_procedencia);
-            }
+            $query = $listado->queryIndex($request, $user);
+            $catalogo = $listado->filtrosCatalogo($user);
+            $sedes = $catalogo['sedes'];
+            $bloques = $catalogo['bloques'];
 
             $alumnos = $query->orderBy('nombre_apellido')->paginate(20);
-            $sedes = Sede::where('activo', true)->get();
-            $bloques = Bloque::where('activo', true)->with('sede')->get();
             $tiposTambor = self::TIPOS_TAMBOR;
             $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
         } catch (QueryException $e) {
@@ -128,6 +77,7 @@ class AlumnoController extends Controller
             $sedes = collect();
             $bloques = collect();
         }
+        [$sedes, $bloques] = $this->acotarSedesYBloques($sedes, $bloques);
         $instrumentos = \App\Models\Bloque::TAMBORES_DISPONIBLES;
         $tiposTambor = self::TIPOS_TAMBOR;
         $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
@@ -161,6 +111,7 @@ class AlumnoController extends Controller
         ]);
 
         $validated['activo'] = $request->boolean('activo');
+        $this->asegurarSedeYBloquesPermitidos((int) $validated['sede_id'], array_map('intval', $request->input('bloque_ids', [])));
         $bloqueIds = array_map('intval', $request->input('bloque_ids', []));
         $principalId = $request->integer('bloque_principal_id') ?: ($bloqueIds[0] ?? null);
         $validated['bloque_id'] = $principalId;
@@ -178,15 +129,12 @@ class AlumnoController extends Controller
      */
     public function show(Alumno $alumno)
     {
-        $user = auth()->user();
-        if ($user && $user->isProfesor() && ! $user->isAdmin()) {
-            $prof = $user->profesor;
-            if (! $prof || ! $this->alumnoPerteneceABloquesDelProfesor($alumno, $prof)) {
-                abort(403);
-            }
-        }
+        $this->autorizarFichaAlumno($alumno);
 
         $alumno->load(['bloque.profesor', 'bloques.sede', 'bloques.profesor', 'sede', 'asistencias', 'user']);
+        if (\Illuminate\Support\Facades\Schema::hasTable('observaciones_pedagogicas')) {
+            $alumno->load(['observacionesPedagogicas.autor', 'observacionesPedagogicas.bloque']);
+        }
         $profesorPerfil = $alumno->profesorPerfil();
 
         $bloquesIds = $alumno->bloques->pluck('id')->filter()->values();
@@ -281,6 +229,7 @@ class AlumnoController extends Controller
      */
     public function edit(Alumno $alumno)
     {
+        $this->autorizarFichaAlumno($alumno);
         try {
             $sedes = Sede::where('activo', true)->get();
             $bloques = Bloque::where('activo', true)->with('sede')->get();
@@ -288,6 +237,7 @@ class AlumnoController extends Controller
             $sedes = collect();
             $bloques = collect();
         }
+        [$sedes, $bloques] = $this->acotarSedesYBloques($sedes, $bloques);
         $instrumentos = \App\Models\Bloque::TAMBORES_DISPONIBLES;
         $tiposTambor = self::TIPOS_TAMBOR;
         $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
@@ -303,6 +253,7 @@ class AlumnoController extends Controller
      */
     public function update(Request $request, Alumno $alumno)
     {
+        $this->autorizarFichaAlumno($alumno);
         $validated = $request->validate([
             'nombre_apellido' => 'required|string|max:255',
             'dni' => 'nullable|string|unique:alumnos,dni,'.$alumno->id.'|max:20',
@@ -322,6 +273,7 @@ class AlumnoController extends Controller
         ]);
 
         $validated['activo'] = $request->boolean('activo');
+        $this->asegurarSedeYBloquesPermitidos((int) $validated['sede_id'], array_map('intval', $request->input('bloque_ids', [])));
         $bloqueIds = array_map('intval', $request->input('bloque_ids', []));
         $principalId = $request->integer('bloque_principal_id') ?: ($bloqueIds[0] ?? null);
         $validated['bloque_id'] = $principalId;
@@ -339,6 +291,7 @@ class AlumnoController extends Controller
      */
     public function destroy(Alumno $alumno)
     {
+        $this->autorizarFichaAlumno($alumno);
         $alumno->delete();
 
         return redirect()->route('alumnos.index')
@@ -350,7 +303,7 @@ class AlumnoController extends Controller
      */
     public function export(Request $request)
     {
-        return Excel::download(new AlumnosExport($request), 'alumnos_'.now()->format('Y-m-d').'.xlsx');
+        return Excel::download(new AlumnosExport($request, auth()->user()), 'alumnos_'.now()->format('Y-m-d').'.xlsx');
     }
 
     public function importForm()
@@ -737,6 +690,57 @@ class AlumnoController extends Controller
             return $q->get();
         } catch (QueryException $e) {
             return collect();
+        }
+    }
+
+    private function autorizarFichaAlumno(Alumno $alumno): void
+    {
+        $user = auth()->user();
+        if (! $user || $user->isAdmin()) {
+            return;
+        }
+        $alumno->loadMissing(['bloques', 'bloque']);
+        if (! $user->puedeGestionarAlumno($alumno)) {
+            abort(403);
+        }
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, Sede>  $sedes
+     * @param  \Illuminate\Support\Collection<int, Bloque>  $bloques
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
+     */
+    private function acotarSedesYBloques($sedes, $bloques): array
+    {
+        $user = auth()->user();
+        if ($user && $user->acotaPorSede()) {
+            $ids = $user->sedeIdsOperativas() ?: [0];
+            $sedes = $sedes->whereIn('id', $ids)->values();
+            $bloques = $bloques->whereIn('sede_id', $ids)->values();
+        }
+
+        return [$sedes, $bloques];
+    }
+
+    /**
+     * @param  list<int>  $bloqueIds
+     */
+    private function asegurarSedeYBloquesPermitidos(int $sedeId, array $bloqueIds): void
+    {
+        $user = auth()->user();
+        if (! $user || $user->isAdmin() || ! $user->acotaPorSede()) {
+            return;
+        }
+        $permitidas = $user->sedeIdsOperativas();
+        if (! in_array($sedeId, $permitidas, true)) {
+            abort(403);
+        }
+        if ($bloqueIds === []) {
+            return;
+        }
+        $ajenos = Bloque::query()->whereIn('id', $bloqueIds)->whereNotIn('sede_id', $permitidas ?: [0])->exists();
+        if ($ajenos) {
+            abort(403);
         }
     }
 }

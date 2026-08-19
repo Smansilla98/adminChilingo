@@ -44,7 +44,21 @@ php artisan serve
 
 Abrir `http://localhost:8000`. Usuario: `admin`, contraseña: `admin123`.
 
-## 3. Ejecución con Docker
+## Tests
+
+En CI (GitHub Actions) PHP se instala **con `pdo_sqlite`**. En local:
+
+```bash
+sudo apt-get install php8.3-sqlite3
+composer test
+```
+
+Si el PHP del host no tiene sqlite, `scripts/test.sh` (invocado por `composer test`) usa Docker (`Dockerfile.test`).
+
+```bash
+bash scripts/test.sh
+```
+
 
 El **Dockerfile** no ejecuta migraciones (no hay DB en build). Al **iniciar el contenedor**, `start.sh` hace todo:
 

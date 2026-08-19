@@ -80,6 +80,7 @@ class BusinessSchema
             $table->id();
             $table->string('nombre');
             $table->unsignedBigInteger('coordinador_id')->nullable();
+            $table->boolean('activo')->default(true);
             $table->timestamps();
         });
 
@@ -158,6 +159,7 @@ class BusinessSchema
             $table->text('notas')->nullable();
             $table->string('estado')->default('pendiente');
             $table->foreignId('pago_id')->nullable()->constrained('pagos')->nullOnDelete();
+            $table->foreignId('cargado_por_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
 

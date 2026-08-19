@@ -106,6 +106,13 @@
         </form>
 
         @if(!empty($matrix) && $bloque && $fechas->isNotEmpty())
+        <div class="asist-mobile-day d-md-none mb-3">
+            <p class="fw-semibold mb-2">En el teléfono: pasá lista de un día y seguí con la clase.</p>
+            <a class="btn btn-primary btn-lg w-100" href="{{ route($diaCreateRoute, ['bloque_id' => $bloque->id, 'fecha' => now()->toDateString()]) }}">
+                Asistencia de hoy
+            </a>
+            <p class="small text-muted mt-2 mb-0">La planilla del mes está pensada para escritorio.</p>
+        </div>
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
             <div>
                 <strong>{{ $bloque->nombre }}</strong>

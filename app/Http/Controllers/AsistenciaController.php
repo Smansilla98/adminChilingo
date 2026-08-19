@@ -51,12 +51,8 @@ class AsistenciaController extends Controller
         $bloquesQuery = Bloque::where('activo', true)->with('sede')->orderBy('nombre');
         /** @var \App\Models\User|null $userIdx */
         $userIdx = auth()->user();
-        if ($userIdx && $userIdx->isCoordinadorSede() && ! $userIdx->isAdmin()) {
-            $sedeIds = $userIdx->sedeIdsCoordinadas();
-            $bloquesQuery->whereIn('sede_id', $sedeIds !== [] ? $sedeIds : [0]);
-        } elseif ($userIdx && $userIdx->isProfesor() && ! $userIdx->isAdmin() && ! $userIdx->puedeGestionarOperativo()) {
-            $profIdx = $userIdx->profesor;
-            $idsIdx = $profIdx ? $profIdx->bloqueIdsDondeParticipa()->all() : [];
+        if ($userIdx && ! $userIdx->veTodosLosBloques()) {
+            $idsIdx = $userIdx->bloqueIdsPermitidos();
             $bloquesQuery->whereIn('id', $idsIdx !== [] ? $idsIdx : [0]);
         }
         $bloques = $bloquesQuery->get();
@@ -65,8 +61,17 @@ class AsistenciaController extends Controller
         if ($request->get('vista') === 'lista') {
             $query = Asistencia::with(['alumno', 'bloque']);
 
+            if ($userIdx && ! $userIdx->veTodosLosBloques()) {
+                $idsLista = $userIdx->bloqueIdsPermitidos();
+                $query->whereIn('bloque_id', $idsLista !== [] ? $idsLista : [0]);
+            }
+
             if ($request->filled('bloque_id')) {
-                $query->where('bloque_id', $request->bloque_id);
+                $bid = (int) $request->bloque_id;
+                if ($userIdx && ! $userIdx->puedeAccederBloque($bid)) {
+                    abort(403);
+                }
+                $query->where('bloque_id', $bid);
             }
 
             if ($request->filled('fecha')) {
@@ -112,12 +117,8 @@ class AsistenciaController extends Controller
             ->where('activo', true)
             ->findOrFail($bloqueId);
 
-        if ($userIdx && $userIdx->isProfesor() && ! $userIdx->isAdmin()) {
-            $profIdx = $userIdx->profesor;
-            $permitidosIdx = $profIdx ? $profIdx->bloqueIdsDondeParticipa()->all() : [];
-            if (! in_array((int) $bloque->id, array_map('intval', $permitidosIdx), true)) {
-                abort(403);
-            }
+        if ($userIdx && ! $userIdx->puedeAccederBloque((int) $bloque->id)) {
+            abort(403);
         }
 
         $fechas = $this->fechasClaseDelMes($bloque, $año, $mes);
@@ -174,12 +175,8 @@ class AsistenciaController extends Controller
 
         /** @var \App\Models\User|null $userMx */
         $userMx = auth()->user();
-        if ($userMx && $userMx->isProfesor() && ! $userMx->isAdmin()) {
-            $profMx = $userMx->profesor;
-            $permitidosMx = $profMx ? $profMx->bloqueIdsDondeParticipa()->all() : [];
-            if (! in_array((int) $bloque->id, array_map('intval', $permitidosMx), true)) {
-                abort(403);
-            }
+        if ($userMx && ! $userMx->puedeAccederBloque((int) $bloque->id)) {
+            abort(403);
         }
 
         $fechasPermitidas = $this->fechasClaseDelMes($bloque, (int) $validated['año'], (int) $validated['mes'])
@@ -248,27 +245,26 @@ class AsistenciaController extends Controller
         $bloquesQuery = Bloque::where('activo', true)->with('sede');
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
-        if ($user && $user->isProfesor() && ! $user->isAdmin()) {
-            $prof = $user->profesor;
-            $ids = $prof ? $prof->bloqueIdsDondeParticipa()->all() : [];
+        if ($user && ! $user->veTodosLosBloques()) {
+            $ids = $user->bloqueIdsPermitidos();
             $bloquesQuery->whereIn('id', $ids !== [] ? $ids : [0]);
         }
         $bloques = $bloquesQuery->get();
 
         if ($bloqueId) {
             $bloque = Bloque::with(['alumnos', 'sede'])->findOrFail($bloqueId);
-            /** @var \App\Models\User|null $userBloque */
-            $userBloque = auth()->user();
-            if ($userBloque && $userBloque->isProfesor() && ! $userBloque->isAdmin()) {
-                $profB = $userBloque->profesor;
-                $permitidos = $profB ? $profB->bloqueIdsDondeParticipa()->all() : [];
-                if (! in_array((int) $bloque->id, array_map('intval', $permitidos), true)) {
-                    abort(403);
-                }
+            if ($user && ! $user->puedeAccederBloque((int) $bloque->id)) {
+                abort(403);
             }
             $tiposAsistencia = $this->getTiposAsistencia();
+            $fechaDia = $request->get('fecha', date('Y-m-d'));
+            $asistenciasHoy = Asistencia::query()
+                ->where('bloque_id', $bloque->id)
+                ->whereDate('fecha', $fechaDia)
+                ->get()
+                ->keyBy('alumno_id');
 
-            return view('asistencias.create', compact('bloque', 'bloques', 'tiposAsistencia'));
+            return view('asistencias.create', compact('bloque', 'bloques', 'tiposAsistencia', 'asistenciasHoy'));
         }
 
         $tiposAsistencia = $this->getTiposAsistencia();
@@ -295,12 +291,8 @@ class AsistenciaController extends Controller
 
         /** @var \App\Models\User|null $userStore */
         $userStore = auth()->user();
-        if ($userStore && $userStore->isProfesor() && ! $userStore->isAdmin()) {
-            $profS = $userStore->profesor;
-            $permitidosS = $profS ? $profS->bloqueIdsDondeParticipa()->all() : [];
-            if (! in_array((int) $validated['bloque_id'], array_map('intval', $permitidosS), true)) {
-                abort(403);
-            }
+        if ($userStore && ! $userStore->puedeAccederBloque((int) $validated['bloque_id'])) {
+            abort(403);
         }
 
         $fecha = $validated['fecha'];
@@ -340,6 +332,7 @@ class AsistenciaController extends Controller
 
     public function show(Asistencia $asistencia)
     {
+        $this->autorizarAsistencia($asistencia);
         $asistencia->load(['alumno', 'bloque']);
 
         return view('asistencias.show', compact('asistencia'));
@@ -347,6 +340,7 @@ class AsistenciaController extends Controller
 
     public function edit(Asistencia $asistencia)
     {
+        $this->autorizarAsistencia($asistencia);
         $asistencia->load(['alumno', 'bloque']);
         $tiposAsistencia = $this->getTiposAsistencia();
 
@@ -355,6 +349,7 @@ class AsistenciaController extends Controller
 
     public function update(Request $request, Asistencia $asistencia)
     {
+        $this->autorizarAsistencia($asistencia);
         $validated = $request->validate([
             'presente' => 'boolean',
             'tipo_asistencia' => Asistencia::reglaValidacionTipo(),
@@ -377,6 +372,7 @@ class AsistenciaController extends Controller
 
     public function destroy(Asistencia $asistencia)
     {
+        $this->autorizarAsistencia($asistencia);
         $bloqueId = $asistencia->bloque_id;
         $mes = $asistencia->fecha->month;
         $año = $asistencia->fecha->year;
@@ -387,5 +383,13 @@ class AsistenciaController extends Controller
             'mes' => $mes,
             'año' => $año,
         ])->with('success', 'Asistencia eliminada exitosamente.');
+    }
+
+    private function autorizarAsistencia(Asistencia $asistencia): void
+    {
+        $user = auth()->user();
+        if ($user && ! $user->puedeAccederBloque((int) $asistencia->bloque_id)) {
+            abort(403);
+        }
     }
 }

@@ -58,6 +58,10 @@ php artisan serve
 
 Acceder a: `http://localhost:8000`
 
+## Tests (sqlite)
+
+CI instala `pdo_sqlite`. En Ubuntu/Debian local: `sudo apt-get install php8.3-sqlite3` y después `composer test`. Si no podés instalar el paquete, `composer test` intenta Docker (`Dockerfile.test`).
+
 ## Estructura de Permisos
 
 ### Admin

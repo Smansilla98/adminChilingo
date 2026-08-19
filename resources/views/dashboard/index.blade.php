@@ -85,7 +85,7 @@
             <p class="hub-lead">
                 {{ $sedesActivasEnBloques ?? 0 }} sedes activas ·
                 {{ number_format($asistenciasMes ?? 0, 0, ',', '.') }} asistencias este mes ·
-                vista general de la escuela.
+                {{ $dashboardAmbito ?? 'Vista general de la escuela' }}.
             </p>
         </div>
         <dl class="hub-meta">
@@ -95,7 +95,7 @@
             </div>
             <div>
                 <dt>Rol</dt>
-                <dd>Admin</dd>
+                <dd>{{ $user->etiquetaRol() }}</dd>
             </div>
             <div>
                 <dt>Estado</dt>

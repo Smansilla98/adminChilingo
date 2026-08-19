@@ -172,4 +172,142 @@ class RolesYNegocioTest extends TestCase
             'tipo_asistencia' => 'presente',
         ]);
     }
+
+    public function test_login_no_convierte_alumno_en_profesor(): void
+    {
+        $user = User::create([
+            'name' => 'Alumno Login',
+            'username' => 'alulogin',
+            'email' => 'alu@test.local',
+            'password' => Hash::make('password'),
+            'role' => 'alumno',
+        ]);
+        $user->assignRole('alumno');
+
+        $this->post('/login', [
+            'username' => 'alulogin',
+            'password' => 'password',
+        ])->assertRedirect(route('dashboard'));
+
+        $user->refresh();
+        $this->assertTrue($user->hasRole('alumno'));
+        $this->assertFalse($user->hasRole('profesor'));
+        $this->assertSame('alumno', $user->role);
+    }
+
+    public function test_profesor_no_ve_asistencias_de_otro_bloque(): void
+    {
+        $sede = Sede::create(['nombre' => 'Sede A']);
+        $profA = Profesor::create(['nombre' => 'Profe A', 'activo' => true]);
+        $profB = Profesor::create(['nombre' => 'Profe B', 'activo' => true]);
+        $bloqueA = Bloque::create([
+            'nombre' => 'Bloque A',
+            'sede_id' => $sede->id,
+            'profesor_id' => $profA->id,
+            'activo' => true,
+        ]);
+        $bloqueB = Bloque::create([
+            'nombre' => 'Bloque B',
+            'sede_id' => $sede->id,
+            'profesor_id' => $profB->id,
+            'activo' => true,
+        ]);
+        $alumnoB = Alumno::create([
+            'nombre_apellido' => 'Alumno B',
+            'sede_id' => $sede->id,
+            'bloque_id' => $bloqueB->id,
+            'activo' => true,
+        ]);
+        Asistencia::create([
+            'alumno_id' => $alumnoB->id,
+            'bloque_id' => $bloqueB->id,
+            'fecha' => '2026-03-10',
+            'tipo_asistencia' => 'presente',
+            'presente' => true,
+        ]);
+
+        $userA = User::create([
+            'name' => 'Profe A',
+            'username' => 'profea',
+            'email' => 'profea@test.local',
+            'password' => Hash::make('password'),
+            'role' => 'profesor',
+        ]);
+        $userA->assignRole('profesor');
+        $profA->user_id = $userA->id;
+        $profA->save();
+
+        $this->actingAs($userA)
+            ->get(route('profesor.asistencias.matrix', ['vista' => 'lista']))
+            ->assertOk()
+            ->assertDontSee('Alumno B');
+    }
+
+    public function test_coordinador_area_no_ve_alumno_de_otra_sede(): void
+    {
+        $sedeA = Sede::create(['nombre' => 'Sede A', 'activo' => true]);
+        $sedeB = Sede::create(['nombre' => 'Sede B', 'activo' => true]);
+        $user = User::create([
+            'name' => 'Coord Área',
+            'username' => 'coordarea',
+            'email' => 'ca@test.local',
+            'password' => Hash::make('password'),
+            'role' => 'profesor',
+        ]);
+        $user->assignRole('profesor');
+        $user->assignRole('coordinador_area');
+        $prof = Profesor::create(['nombre' => 'Coord Área', 'activo' => true, 'user_id' => $user->id]);
+        $bloqueA = Bloque::create([
+            'nombre' => 'Bloque A',
+            'sede_id' => $sedeA->id,
+            'profesor_id' => $prof->id,
+            'activo' => true,
+        ]);
+        $bloqueB = Bloque::create([
+            'nombre' => 'Bloque B',
+            'sede_id' => $sedeB->id,
+            'profesor_id' => null,
+            'activo' => true,
+        ]);
+        $alumnoA = Alumno::create([
+            'nombre_apellido' => 'Alumno Sede A',
+            'sede_id' => $sedeA->id,
+            'bloque_id' => $bloqueA->id,
+            'activo' => true,
+        ]);
+        $alumnoB = Alumno::create([
+            'nombre_apellido' => 'Alumno Sede B',
+            'sede_id' => $sedeB->id,
+            'bloque_id' => $bloqueB->id,
+            'activo' => true,
+        ]);
+
+        $this->actingAs($user)->get(route('alumnos.show', $alumnoA))->assertOk();
+        $this->actingAs($user)->get(route('alumnos.show', $alumnoB))->assertForbidden();
+    }
+
+    public function test_api_publica_alumnos_exige_dni(): void
+    {
+        $this->getJson(route('comprobante-cuota-public.api.alumnos', [
+            'sede_id' => 1,
+            'año' => 2026,
+            'mes' => 3,
+            'bloque_ids' => [1],
+        ]))->assertStatus(422);
+    }
+
+    public function test_comprobante_publico_store_exige_token(): void
+    {
+        $this->from(route('comprobante-cuota-public.create'))
+            ->post(route('comprobante-cuota-public.store'), [
+                'sede_id' => 1,
+                'año' => 2026,
+                'mes' => 3,
+                'fecha_pago' => '2026-03-01',
+                'alumno_id' => 1,
+                'dni' => '30111222',
+                'bloque_ids' => [1],
+            ])
+            ->assertSessionHasErrors('lookup_token');
+    }
 }

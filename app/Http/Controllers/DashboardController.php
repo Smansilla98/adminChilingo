@@ -14,7 +14,10 @@ use App\Models\Pago;
 use App\Models\PagoDetalle;
 use App\Models\Profesor;
 use App\Models\Sede;
+use App\Services\EspacioAlumnoService;
+use App\Services\JornadaDocenteService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -25,6 +28,11 @@ class DashboardController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        // Si es alumno (sin rol docente/gestión), espacio simple
+        if ($user->isAlumno() && ! $user->isProfesor() && ! $user->isAdmin() && ! $user->puedeGestionarOperativo()) {
+            return $this->dashboardAlumno();
+        }
+
         // Si es profesor (sin panel de gestión), dashboard limitado
         if ($user->isProfesor() && ! $user->isAdmin() && ! $user->puedeGestionarOperativo()) {
             return $this->dashboardProfesor();
@@ -32,26 +40,49 @@ class DashboardController extends Controller
 
         // Dashboard Admin (protegido si faltan tablas por migraciones pendientes)
         try {
-            $alumnosActivos = Alumno::where('activo', true)->count();
-            $bloquesActivos = Bloque::where('activo', true)->count();
-            $alumnosNuevosMes = Alumno::query()
-                ->where('activo', true)
-                ->whereYear('created_at', now()->year)
-                ->whereMonth('created_at', now()->month)
-                ->count();
-            $sedesActivasEnBloques = (int) Bloque::query()
-                ->where('activo', true)
-                ->distinct()
-                ->count('sede_id');
+            $filtroSedes = null;
+            if ($user->acotaPorSede()) {
+                $filtroSedes = $user->sedeIdsOperativas();
+                if ($filtroSedes === []) {
+                    $filtroSedes = [0];
+                }
+            }
+            $dashboardAmbito = $filtroSedes !== null ? 'Indicadores de tus sedes' : 'Vista general de la escuela';
 
             $mesActual = (int) now()->month;
             $anioActual = (int) now()->year;
 
+            $cacheKey = 'dash.kpi.'.$user->id.'.'.md5(json_encode($filtroSedes));
+            $kpis = Cache::remember($cacheKey, 90, function () use ($filtroSedes, $anioActual, $mesActual) {
+                $alumnosQ = Alumno::query()->where('activo', true);
+                $bloquesQ = Bloque::query()->where('activo', true);
+                if ($filtroSedes !== null) {
+                    $alumnosQ->whereIn('sede_id', $filtroSedes);
+                    $bloquesQ->whereIn('sede_id', $filtroSedes);
+                }
+                $asistQ = Asistencia::query()->whereYear('fecha', $anioActual)->whereMonth('fecha', $mesActual);
+                if ($filtroSedes !== null) {
+                    $asistQ->whereHas('bloque', fn ($q) => $q->whereIn('sede_id', $filtroSedes));
+                }
+
+                return [
+                    'alumnosActivos' => $alumnosQ->count(),
+                    'bloquesActivos' => $bloquesQ->count(),
+                    'alumnosNuevosMes' => (clone $alumnosQ)->whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count(),
+                    'sedesActivasEnBloques' => (int) (clone $bloquesQ)->distinct()->count('sede_id'),
+                    'asistenciasMes' => (int) $asistQ->count(),
+                ];
+            });
+            $alumnosActivos = $kpis['alumnosActivos'];
+            $bloquesActivos = $kpis['bloquesActivos'];
+            $alumnosNuevosMes = $kpis['alumnosNuevosMes'];
+            $sedesActivasEnBloques = $kpis['sedesActivasEnBloques'];
+            $asistenciasMes = $kpis['asistenciasMes'];
+
             // Total "cuotas emitidas" del mes = suma de asignaciones (cuota_alumno o todos los alumnos del bloque)
             $cuotasMes = Cuota::query()
                 ->with([
-                    'alumnos' => fn ($q) => $q->where('activo', true)->with('sede'),
-                    'bloque.alumnos' => fn ($q) => $q->where('alumnos.activo', true),
+                    'alumnos' => fn ($q) => $q->where('activo', true)->select('alumnos.id'),
                     'bloque.sede',
                     'sede',
                 ])
@@ -80,7 +111,10 @@ class DashboardController extends Controller
                 } else {
                     $objetivo = $c->alumnos->isNotEmpty()
                         ? $c->alumnos->unique('id')->count()
-                        : ($c->bloque?->alumnos?->unique('id')->count() ?? 0);
+                        : ($c->bloque_id ? (int) Alumno::query()->where('activo', true)->where(function ($q) use ($c) {
+                            $q->where('bloque_id', $c->bloque_id)
+                                ->orWhereHas('bloques', fn ($b) => $b->where('bloques.id', $c->bloque_id));
+                        })->count() : 0);
                 }
                 $cuotasTotal += $objetivo;
             }
@@ -103,13 +137,12 @@ class DashboardController extends Controller
             $profBase = Profesor::query()
                 ->where('activo', true)
                 ->with(['bloques' => function ($q) {
-                    $q->where('activo', true)->with(['sede', 'alumnos' => fn ($qa) => $qa->where('alumnos.activo', true)]);
+                    $q->where('activo', true)->with('sede');
                 }])
+                ->withCount(['bloques as bloques_count' => fn ($q) => $q->where('activo', true)])
                 ->get()
                 ->map(function (Profesor $p) {
-                    $alumnosIds = $p->bloques->flatMap(fn ($b) => $b->alumnos->pluck('id'))->unique();
-                    $p->alumnos_count = $alumnosIds->count();
-                    $p->bloques_count = $p->bloques->count();
+                    $p->alumnos_count = (int) ($p->bloques_count ?? $p->bloques->count());
                     $p->sedes_str = $p->bloques->pluck('sede.nombre')->unique()->filter()->implode(' · ');
                     $p->initials = collect(preg_split('/\s+/', trim($p->nombre ?? '')))
                         ->filter()
@@ -133,7 +166,9 @@ class DashboardController extends Controller
 
             $horarios = BloqueHorario::query()
                 ->with(['bloque' => function ($q) {
-                    $q->where('activo', true)->with(['sede', 'profesor', 'alumnos' => fn ($qa) => $qa->where('alumnos.activo', true)]);
+                    $q->where('activo', true)
+                        ->with(['sede', 'profesor'])
+                        ->withCount(['alumnos as alumnos_activos_count' => fn ($qa) => $qa->where('alumnos.activo', true)]);
                 }])
                 ->get()
                 ->filter(fn (BloqueHorario $h) => (bool) $h->bloque)
@@ -165,7 +200,7 @@ class DashboardController extends Controller
                 $bloque = $h->bloque;
                 $fechaClase = $inicioSemana->copy()->addDays(max(0, ((int) $h->dia_semana) - 1))->startOfDay();
 
-                $totalAlumnos = $bloque ? (int) $bloque->alumnos()->where('activo', true)->count() : 0;
+                $totalAlumnos = $bloque ? (int) ($bloque->alumnos_activos_count ?? 0) : 0;
 
                 $agg = $this->resolverAsistenciaClaseSemana($asistPorBloqueFecha, (int) $bloque->id, $fechaClase, $inicioSemana, $hoy);
                 $regTotal = (int) ($agg->total_reg ?? 0);
@@ -276,11 +311,6 @@ class DashboardController extends Controller
                 ->filter(fn ($r) => $r['total'] > 0)
                 ->values();
 
-            $asistenciasMes = (int) Asistencia::query()
-                ->whereYear('fecha', $anioActual)
-                ->whereMonth('fecha', $mesActual)
-                ->count();
-
             $adminNombre = trim(auth()->user()->name ?: auth()->user()->username ?: '');
 
             return view('dashboard.index', compact(
@@ -309,7 +339,8 @@ class DashboardController extends Controller
                 'chartGastos',
                 'alumnosPorSedeChart',
                 'asistenciasMes',
-                'adminNombre'
+                'adminNombre',
+                'dashboardAmbito'
             ));
         } catch (\Illuminate\Database\QueryException $e) {
             return view('dashboard.index', [
@@ -339,6 +370,7 @@ class DashboardController extends Controller
                 'alumnosPorSedeChart' => collect(),
                 'asistenciasMes' => 0,
                 'adminNombre' => '',
+                'dashboardAmbito' => 'Vista general de la escuela',
             ]);
         }
     }
@@ -354,7 +386,7 @@ class DashboardController extends Controller
             $profesor = $user->profesor;
 
             if ($profesor) {
-                $bloques = $profesor->bloquesActivos()->with('sede', 'alumnos')->get();
+                $bloques = $profesor->bloquesActivos()->with(['sede', 'alumnos', 'horarios'])->get();
                 $proximosEventos = Evento::where('profesor_id', $profesor->id)
                     ->proximos()
                     ->limit(5)
@@ -373,7 +405,32 @@ class DashboardController extends Controller
             // Cualquier otro fallo: mostrar dashboard vacío
         }
 
-        return view('dashboard.profesor', compact('bloques', 'proximosEventos', 'comprobantesCuotaPendientes'));
+        $jornada = app(JornadaDocenteService::class)->armar($user, $bloques);
+        $bloquesHoy = $jornada['bloquesHoy'];
+        $pendientesAsistencia = $jornada['pendientesAsistencia'];
+        $proximosPasos = $jornada['proximosPasos'];
+
+        return view('dashboard.profesor', compact(
+            'bloques',
+            'bloquesHoy',
+            'pendientesAsistencia',
+            'proximosPasos',
+            'proximosEventos',
+            'comprobantesCuotaPendientes'
+        ));
+    }
+
+    private function dashboardAlumno()
+    {
+        $user = auth()->user();
+        $alumno = $user->alumno;
+        if ($alumno) {
+            $alumno->loadMissing('sede');
+        }
+
+        $espacio = app(EspacioAlumnoService::class)->armar($alumno);
+
+        return view('dashboard.alumno', array_merge(compact('alumno'), $espacio));
     }
 
     /**

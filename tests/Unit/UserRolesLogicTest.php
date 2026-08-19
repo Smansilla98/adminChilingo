@@ -80,4 +80,28 @@ class UserRolesLogicTest extends TestCase
         $this->assertFalse(Asistencia::esPresente('ausencia_injustificada'));
         $this->assertFalse(Asistencia::esPresente('feriado'));
     }
+
+    public function test_alumno_se_reconoce_por_role_legacy(): void
+    {
+        $user = $this->userConRoles('alumno', []);
+        $this->assertTrue($user->isAlumno());
+        $this->assertFalse($user->isProfesor());
+        $this->assertSame('Alumno', $user->etiquetaRol());
+    }
+
+    public function test_coordinacion_acota_por_sede_no_ve_toda_la_escuela(): void
+    {
+        $admin = $this->userConRoles('admin', ['admin']);
+        $area = $this->userConRoles('profesor', ['profesor', 'coordinador_area']);
+        $sede = $this->userConRoles('profesor', ['profesor', 'coordinador_sede']);
+        $profe = $this->userConRoles('profesor', ['profesor']);
+
+        $this->assertTrue($admin->veTodosLosBloques());
+        $this->assertFalse($area->veTodosLosBloques());
+        $this->assertTrue($area->acotaPorSede());
+        $this->assertFalse($sede->veTodosLosBloques());
+        $this->assertTrue($sede->acotaPorSede());
+        $this->assertFalse($profe->veTodosLosBloques());
+        $this->assertFalse($profe->acotaPorSede());
+    }
 }

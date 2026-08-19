@@ -33,7 +33,7 @@
                 <strong>Fecha de nacimiento:</strong> {{ $alumno->fecha_nacimiento ? $alumno->fecha_nacimiento->format('d/m/Y') : '—' }}
             </div>
             <div class="col-md-4">
-                <strong>Edad:</strong> {{ $alumno->edad }} años
+                <strong>Edad:</strong> {{ $alumno->edad !== null ? $alumno->edad.' años' : '—' }}
             </div>
         </div>
         <div class="row mb-3">
@@ -181,11 +181,105 @@
             </table>
         </div>
 
+        @php $puedeBitacora = auth()->user() && (auth()->user()->isAdmin() || auth()->user()->isProfesor() || auth()->user()->isCoordinadorSede() || auth()->user()->isCoordinadorArea()); @endphp
+        @if($puedeBitacora && \Illuminate\Support\Facades\Schema::hasTable('observaciones_pedagogicas'))
+        <h6 class="mt-4">Cuaderno pedagógico</h6>
+        <p class="text-muted small">Registrá qué competencia se trabajó y el siguiente paso. Si lo compartís, el alumno lo ve en su espacio.</p>
+        <form action="{{ route('seguimiento.store') }}" method="POST" class="card card-body mb-3">
+            @csrf
+            <input type="hidden" name="alumno_id" value="{{ $alumno->id }}">
+            <input type="hidden" name="fecha" value="{{ now()->toDateString() }}">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="ped-tipo">Tipo</label>
+                    <select id="ped-tipo" name="tipo" class="form-select" required>
+                        @foreach(\App\Models\ObservacionPedagogica::TIPOS as $valor => $etiqueta)
+                        <option value="{{ $valor }}">{{ $etiqueta }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="ped-eje">Eje</label>
+                    <select id="ped-eje" name="eje" class="form-select">
+                        <option value="">Sin eje</option>
+                        @foreach(\App\Models\ObservacionPedagogica::EJES as $valor => $etiqueta)
+                        <option value="{{ $valor }}">{{ $etiqueta }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="ped-bloque">Bloque (opcional)</label>
+                    <select id="ped-bloque" name="bloque_id" class="form-select">
+                        <option value="">Sin bloque</option>
+                        @foreach($alumno->bloques as $bl)
+                        <option value="{{ $bl->id }}">{{ $bl->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="ped-toque">Toque / rudimento / obra</label>
+                    <input id="ped-toque" type="text" name="toque" class="form-control" maxlength="160" placeholder="Ej. paradiddle, Malamakua, lectura 4/4">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="ped-proximo">Próximo paso</label>
+                    <input id="ped-proximo" type="text" name="proximo_paso" class="form-control" maxlength="400" placeholder="Ej. independizar mano izquierda a 80 BPM">
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="ped-cuerpo">Qué pasó hoy</label>
+                    <textarea id="ped-cuerpo" name="cuerpo" class="form-control" rows="3" required maxlength="4000" placeholder="Qué se trabajó, qué costó, cómo respondió."></textarea>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="visible_alumno" value="1" id="ped-visible">
+                        <label class="form-check-label" for="ped-visible">Mostrar el próximo paso en el espacio del alumno</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Guardar en el cuaderno</button>
+                </div>
+            </div>
+        </form>
+        <ul class="list-group mb-4">
+            @forelse($alumno->observacionesPedagogicas as $nota)
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                    <div>
+                        <strong>{{ $nota->etiquetaTipo() }}</strong>
+                        @if($nota->eje)<span class="badge text-bg-secondary">{{ $nota->etiquetaEje() }}</span>@endif
+                        <span class="text-muted"> · {{ $nota->fecha?->format('d/m/Y') }}</span>
+                        @if($nota->toque)<span> · {{ $nota->toque }}</span>@endif
+                        @if($nota->bloque)<span class="text-muted"> · {{ $nota->bloque->nombre }}</span>@endif
+                        <div class="mt-1">{{ $nota->cuerpo }}</div>
+                        @if($nota->proximo_paso)
+                        <div class="mt-1"><strong>Sigue:</strong> {{ $nota->proximo_paso }}</div>
+                        @endif
+                        <div class="small text-muted mt-1">{{ $nota->autor->name ?? $nota->autor->username ?? 'Docente' }}@if($nota->visible_alumno) · visible para el alumno@endif</div>
+                    </div>
+                    @if(auth()->id() === $nota->user_id || auth()->user()->isAdmin())
+                    <form action="{{ route('seguimiento.destroy', $nota) }}" method="POST" onsubmit="return confirm('¿Eliminar esta nota?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                    @endif
+                </div>
+            </li>
+            @empty
+            <li class="list-group-item text-muted">Todavía no hay notas en el cuaderno.</li>
+            @endforelse
+        </ul>
+        @endif
+
         @if(isset($alumno->asistencias) && $alumno->asistencias->isNotEmpty())
         <h6 class="mt-4">Últimas asistencias</h6>
         <ul class="list-group">
             @foreach($alumno->asistencias->take(10) as $a)
-            <li class="list-group-item">{{ $a->fecha ? \Carbon\Carbon::parse($a->fecha)->format('d/m/Y') : '' }} — {{ $a->presente ? 'Presente' : 'Ausente' }}</li>
+            <li class="list-group-item">
+                {{ $a->fecha ? \Carbon\Carbon::parse($a->fecha)->format('d/m/Y') : '' }}
+                —
+                <span aria-hidden="true">{{ \App\Models\Asistencia::letraTipo($a->tipo_asistencia) }}</span>
+                {{ \App\Models\Asistencia::TIPOS_ASISTENCIA[$a->tipo_asistencia] ?? ($a->presente ? 'Presente' : 'Ausente') }}
+            </li>
             @endforeach
         </ul>
         @endif

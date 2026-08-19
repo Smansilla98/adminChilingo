@@ -85,11 +85,12 @@
     }
 
     $profesorLinks = array_filter([
+        auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.create', 'label' => 'Asistencia de hoy', 'pattern' => 'profesor.asistencias.create'] : null,
         auth()->user()->tieneAccesoModulo('profesor.mis_bloques') ? ['route' => 'profesor.bloques', 'label' => 'Mis bloques', 'pattern' => 'profesor.bloques*'] : null,
-        auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.matrix', 'label' => 'Asistencias (matriz)', 'pattern' => 'profesor.asistencias.matrix*'] : null,
-        auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.create', 'label' => 'Asistencia del día', 'pattern' => 'profesor.asistencias.create'] : null,
+        auth()->user()->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.matrix', 'label' => 'Planilla del mes', 'pattern' => 'profesor.asistencias.matrix*'] : null,
         auth()->user()->tieneAccesoModulo('profesor.mis_alumnos') ? ['route' => 'profesor.alumnos', 'label' => 'Mis alumnos', 'pattern' => 'profesor.alumnos*'] : null,
         auth()->user()->tieneAccesoModulo('profesor.pagos_cuotas') ? ['route' => 'profesor.pagos-cuotas.index', 'label' => 'Pagos de cuotas', 'pattern' => 'profesor.pagos-cuotas.*'] : null,
+        auth()->user()->tieneAccesoModulo('comprobantes') ? ['route' => 'comprobantes-cuota-alumnos.create', 'label' => 'Cargar comprobante', 'pattern' => 'comprobantes-cuota-alumnos.create'] : null,
         auth()->user()->tieneAccesoModulo('comprobantes') ? ['route' => 'comprobantes-cuota-alumnos.index', 'label' => 'Comprobantes', 'pattern' => 'comprobantes-cuota-alumnos.*'] : null,
         auth()->user()->tieneAccesoModulo('profesor.mis_eventos') ? ['route' => 'profesor.eventos', 'label' => 'Mis eventos', 'pattern' => 'profesor.eventos*'] : null,
         auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,

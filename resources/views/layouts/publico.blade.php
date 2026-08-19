@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=11">
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=13">
     <link rel="stylesheet" href="{{ asset('css/biblioteca.css') }}?v=5">
     <link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=4">
     <link rel="stylesheet" href="{{ asset('css/programa-publico.css') }}?v=3">
@@ -18,6 +18,7 @@
     @stack('styles')
 </head>
 <body class="biblio-body @yield('body-class')">
+<a class="ito-skip" href="#contenido-principal">Ir al contenido</a>
 <header class="biblio-top">
     <a href="{{ route('programa.index') }}" class="biblio-brand">
         <x-brand-logo variant="sidebar" />
@@ -39,7 +40,7 @@
     </nav>
 </header>
 
-<main class="biblio-main @yield('main-class')">
+<main id="contenido-principal" class="biblio-main @yield('main-class')" tabindex="-1">
     @if(session('success'))
         <div class="alert alert-success py-2">{{ session('success') }}</div>
     @endif
@@ -62,6 +63,7 @@
     @yield('publico-foot', 'Espacio abierto · Programa, partituras y biblioteca sin cuenta')
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/ito-a11y.js') }}?v=1"></script>
 @stack('scripts')
 </body>
 </html>

@@ -135,13 +135,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
-            if (! $user->hasRole('admin') && ! $user->hasRole('profesor')) {
-                if ($user->role === 'admin') {
-                    $user->assignRole('admin');
-                } else {
-                    $user->assignRole('profesor');
-                }
-            }
+            $this->asegurarRolSpatie($user);
 
             return redirect()->intended(route('dashboard'));
         }
@@ -161,5 +155,30 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /**
+     * Alinea Spatie con users.role sin convertir alumnos en profesores.
+     */
+    private function asegurarRolSpatie(User $user): void
+    {
+        $mapa = [
+            'admin' => 'admin',
+            'direccion' => 'direccion',
+            'coordinador_sede' => 'coordinador_sede',
+            'coordinador_area' => 'coordinador_area',
+            'profesor' => 'profesor',
+            'alumno' => 'alumno',
+        ];
+
+        foreach ($mapa as $spatie) {
+            if ($user->hasRole($spatie)) {
+                return;
+            }
+        }
+
+        $objetivo = $mapa[$user->role ?? ''] ?? 'profesor';
+        Role::firstOrCreate(['name' => $objetivo]);
+        $user->assignRole($objetivo);
     }
 }

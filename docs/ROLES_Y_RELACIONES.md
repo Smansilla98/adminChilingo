@@ -28,6 +28,7 @@
 
 - Tabla **`coordinador_area`**: `profesor_id`, `area` (género, costa, tambores).
 - Un profesor puede ser coordinador de una o más áreas.
+- **Alcance de datos:** el CRUD de alumnos (y asistencias) se limita a las **sedes a las que pertenece** (bloques donde da clase, `profesor_sede`, o sede que coordina). No ve el padrón de toda la escuela.
 - Modelo: `CoordinadorArea`; constantes: `CoordinadorArea::AREAS`.
 - Relación: `Profesor::coordinadorAreas()`.
 

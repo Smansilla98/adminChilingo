@@ -26,8 +26,9 @@
                     </td>
                     <td>{{ $a->bloque->nombre ?? '—' }}</td>
                     <td>
-                        <x-ito.status :tone="$tone" :label="$tiposAsistencia[$a->tipo_asistencia] ?? $a->tipo_asistencia" />
+                        <x-ito.status :tone="$tone" :label="($tiposAsistencia[$a->tipo_asistencia] ?? $a->tipo_asistencia)" />
                     </td>
+                    @unless(auth()->user()?->isProfesor() && ! auth()->user()?->isAdmin() && ! auth()->user()?->puedeGestionarOperativo())
                     <td>
                         <x-ito.actions :id="'asist-'.$a->id">
                             <li><a class="dropdown-item" href="{{ route('asistencias.show', $a) }}"><i class="bi bi-eye"></i> Ver</a></li>
@@ -41,6 +42,7 @@
                             </li>
                         </x-ito.actions>
                     </td>
+                    @endunless
                 </tr>
             @empty
                 <tr>

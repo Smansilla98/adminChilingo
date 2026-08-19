@@ -1,0 +1,9 @@
+# PHP 8.3 + pdo_sqlite para correr Feature tests sin instalar paquetes en el host.
+FROM php:8.3-cli
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git unzip libzip-dev libsqlite3-dev sqlite3 \
+    && docker-php-ext-install pdo_sqlite zip \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app

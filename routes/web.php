@@ -24,29 +24,45 @@ use App\Http\Controllers\InventarioItemController;
 use App\Http\Controllers\OperativoController;
 use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\PartituraController;
 use App\Http\Controllers\PlanComprasController;
 use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\ProfesorPagoCuotaController;
-use App\Http\Controllers\PartituraController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioMailController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\SedeController;
+use App\Http\Controllers\SeguimientoPedagogicoController;
 use App\Http\Controllers\ShowController;
 use App\Models\Bloque;
 use Illuminate\Support\Facades\Route;
 
 // Carga pública de comprobante de cuota (sin sesión)
-Route::prefix('pagar-cuota')->middleware('throttle:30,1')->group(function () {
+Route::prefix('pagar-cuota')->middleware('throttle:20,1')->group(function () {
     Route::get('/comprobante', [ComprobanteCuotaAlumnoPublicController::class, 'create'])->name('comprobante-cuota-public.create');
     Route::post('/comprobante', [ComprobanteCuotaAlumnoPublicController::class, 'store'])->name('comprobante-cuota-public.store');
     Route::get('/api/periodos', [ComprobanteCuotaAlumnoPublicController::class, 'apiPeriodos'])->name('comprobante-cuota-public.api.periodos');
     Route::get('/api/bloques', [ComprobanteCuotaAlumnoPublicController::class, 'apiBloques'])->name('comprobante-cuota-public.api.bloques');
-    Route::get('/api/alumnos', [ComprobanteCuotaAlumnoPublicController::class, 'apiAlumnos'])->name('comprobante-cuota-public.api.alumnos');
-    Route::get('/api/alumno-otros-bloques', [ComprobanteCuotaAlumnoPublicController::class, 'apiOtrosBloquesAlumno'])->name('comprobante-cuota-public.api.alumno-otros-bloques');
+    Route::get('/api/alumnos', [ComprobanteCuotaAlumnoPublicController::class, 'apiAlumnos'])->middleware('throttle:8,1')->name('comprobante-cuota-public.api.alumnos');
+    Route::get('/api/alumno-otros-bloques', [ComprobanteCuotaAlumnoPublicController::class, 'apiOtrosBloquesAlumno'])->middleware('throttle:12,1')->name('comprobante-cuota-public.api.alumno-otros-bloques');
 });
+
+Route::get('/salud', function () {
+    $db = true;
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+    } catch (\Throwable) {
+        $db = false;
+    }
+
+    return response()->json([
+        'ok' => $db,
+        'app' => config('app.name'),
+        'time' => now()->toIso8601String(),
+    ], $db ? 200 : 503);
+})->name('salud');
 
 // Biblioteca pública (sin login)
 Route::prefix('biblioteca')->middleware('throttle:60,1')->group(function () {
@@ -111,6 +127,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pendientes', [OperativoController::class, 'pendientes'])->name('operativo.pendientes');
     Route::get('/api/hub-search', HubSearchController::class)->name('hub.search');
 
+    Route::post('/seguimiento', [SeguimientoPedagogicoController::class, 'store'])->name('seguimiento.store');
+    Route::delete('/seguimiento/{observacionPedagogica}', [SeguimientoPedagogicoController::class, 'destroy'])->name('seguimiento.destroy');
+
     // Calendario (accesible para todos)
     Route::get('/calendario', [CalendarioController::class, 'index'])->middleware('modulo:calendario')->name('calendario.index');
     Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->middleware('modulo:calendario')->name('calendario.eventos');
@@ -118,6 +137,8 @@ Route::middleware(['auth'])->group(function () {
     // Comprobantes de cuota enviados por alumnos (admin o profesor)
     Route::middleware(['profesor_o_admin', 'modulo:comprobantes'])->group(function () {
         Route::get('/comprobantes-cuota-alumnos', [ComprobanteCuotaAlumnoGestionController::class, 'index'])->name('comprobantes-cuota-alumnos.index');
+        Route::get('/comprobantes-cuota-alumnos/cargar', [ComprobanteCuotaAlumnoGestionController::class, 'create'])->name('comprobantes-cuota-alumnos.create');
+        Route::post('/comprobantes-cuota-alumnos/cargar', [ComprobanteCuotaAlumnoGestionController::class, 'store'])->name('comprobantes-cuota-alumnos.store');
         Route::get('/comprobantes-cuota-alumnos/{id}', [ComprobanteCuotaAlumnoGestionController::class, 'show'])->name('comprobantes-cuota-alumnos.show')->whereNumber('id');
         Route::get('/comprobantes-cuota-alumnos/{id}/comprobante', [ComprobanteCuotaAlumnoGestionController::class, 'comprobante'])->name('comprobantes-cuota-alumnos.comprobante')->whereNumber('id');
         Route::post('/comprobantes-cuota-alumnos/{id}/visto', [ComprobanteCuotaAlumnoGestionController::class, 'marcarVisto'])->name('comprobantes-cuota-alumnos.visto')->whereNumber('id');

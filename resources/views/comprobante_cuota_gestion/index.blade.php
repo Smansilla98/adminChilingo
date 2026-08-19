@@ -6,6 +6,7 @@
 @section('content')
 <x-ito.list-page title="Comprobantes de alumnos" subtitle="Envíos por el link público (sin entrar al sistema)">
     <x-slot:toolbar>
+        <a href="{{ route('comprobantes-cuota-alumnos.create') }}" class="btn btn-primary btn-sm">Cargar comprobante</a>
         <form method="GET" class="ito-toolbar-filters w-100 d-flex flex-wrap align-items-end gap-2">
             <div class="ito-field">
                 <label>Estado</label>

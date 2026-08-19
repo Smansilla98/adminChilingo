@@ -16,16 +16,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    libsqlite3-dev \
+    sqlite3 \
     zip \
     unzip \
     ca-certificates \
     python3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensiones PHP para MySQL
+# Instalar extensiones PHP para MySQL y tests (sqlite)
 RUN docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_mysql \
+    pdo_sqlite \
     mbstring \
     exif \
     pcntl \

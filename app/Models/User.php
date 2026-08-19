@@ -96,7 +96,120 @@ class User extends Authenticatable
      */
     public function isAlumno(): bool
     {
-        return $this->hasRole('alumno');
+        return $this->role === 'alumno' || $this->hasRole('alumno');
+    }
+
+    /**
+     * IDs de bloques que el usuario puede ver/editar. Vacío + veTodosLosBloques = todos.
+     *
+     * @return list<int>
+     */
+    public function bloqueIdsPermitidos(): array
+    {
+        if ($this->veTodosLosBloques()) {
+            return [];
+        }
+        if ($this->acotaPorSede()) {
+            $sedes = $this->sedeIdsOperativas();
+
+            return Bloque::query()
+                ->whereIn('sede_id', $sedes !== [] ? $sedes : [0])
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+        }
+        if ($this->isProfesor()) {
+            $prof = $this->profesor;
+
+            return $prof ? array_map('intval', $prof->bloqueIdsDondeParticipa()->all()) : [];
+        }
+
+        return [0];
+    }
+
+    public function veTodosLosBloques(): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Coordinación (sede o área) ve datos de las sedes a las que pertenece, no de toda la escuela.
+     */
+    public function acotaPorSede(): bool
+    {
+        return ! $this->isAdmin() && ($this->isCoordinadorSede() || $this->isCoordinadorArea());
+    }
+
+    /**
+     * Sedes del rol operativo: coordinador de sede, o sedes del profesor (área / bloques / pivot).
+     *
+     * @return list<int>
+     */
+    public function sedeIdsOperativas(): array
+    {
+        if ($this->isCoordinadorSede()) {
+            $ids = $this->sedeIdsCoordinadas();
+            if ($ids !== []) {
+                return $ids;
+            }
+        }
+
+        $prof = $this->profesor;
+        if (! $prof) {
+            return $this->isCoordinadorSede() || $this->isCoordinadorArea() ? [] : [];
+        }
+
+        $ids = $this->sedeIdsCoordinadas();
+        if (\Illuminate\Support\Facades\Schema::hasTable('profesor_sede')) {
+            $ids = array_merge($ids, $prof->sedesConRol()->pluck('sedes.id')->all());
+        }
+        $ids = array_merge(
+            $ids,
+            Bloque::query()
+                ->whereIn('id', $prof->bloqueIdsDondeParticipa()->all() ?: [0])
+                ->pluck('sede_id')
+                ->all()
+        );
+
+        return array_values(array_unique(array_filter(array_map('intval', $ids))));
+    }
+
+    public function puedeGestionarAlumno(Alumno $alumno): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+        if ($this->acotaPorSede()) {
+            $sedes = $this->sedeIdsOperativas();
+            if ($sedes === []) {
+                return false;
+            }
+            $alumnoSedes = $alumno->bloques->pluck('sede_id')->filter()->map(fn ($id) => (int) $id)->all();
+            if ($alumno->sede_id) {
+                $alumnoSedes[] = (int) $alumno->sede_id;
+            }
+            if ($alumno->bloque?->sede_id) {
+                $alumnoSedes[] = (int) $alumno->bloque->sede_id;
+            }
+
+            return array_intersect($sedes, array_unique($alumnoSedes)) !== [];
+        }
+        if ($this->isProfesor()) {
+            $prof = $this->profesor;
+
+            return $prof && $alumno->bloqueIds()->intersect($prof->bloqueIdsDondeParticipa()->map(fn ($id) => (int) $id))->isNotEmpty();
+        }
+
+        return false;
+    }
+
+    public function puedeAccederBloque(int $bloqueId): bool
+    {
+        if ($this->veTodosLosBloques()) {
+            return true;
+        }
+
+        return in_array($bloqueId, $this->bloqueIdsPermitidos(), true);
     }
 
     /**
