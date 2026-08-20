@@ -687,6 +687,90 @@ body.auth-page-ito .auth-card-ito__foot .auth-foot-muted {
   background-size: 16px 12px;
 }
 .form-check-label { color: var(--muted); text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 500; }
+
+/* Modales oscuros (alta rápida, etc.) */
+.ito-modal .modal-content {
+  background: var(--s2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+.ito-modal .modal-header {
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  align-items: flex-start;
+}
+.ito-modal .modal-footer {
+  border-top: 1px solid var(--border);
+  padding: 0.85rem 1.25rem;
+  gap: 0.5rem;
+}
+.ito-modal .modal-body {
+  padding: 1.15rem 1.25rem 1.25rem;
+}
+.ito-modal .modal-title {
+  color: var(--text);
+  font-weight: 700;
+}
+.ito-modal-eyebrow {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ito-modal-lead {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+.ito-modal .form-text {
+  color: color-mix(in srgb, var(--muted) 85%, transparent);
+}
+.ito-modal .form-control,
+.ito-modal .form-select {
+  background-color: var(--s3);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.ito-modal .form-control:focus,
+.ito-modal .form-select:focus {
+  background-color: var(--s3);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.ito-modal .form-select option {
+  background: var(--s2);
+  color: var(--text);
+}
+.ito-modal .btn-close {
+  filter: invert(1) grayscale(1);
+  opacity: 0.7;
+}
+.ito-modal .btn-close:hover { opacity: 1; }
+.ito-inline-create {
+  padding: 0.65rem 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--s3) 70%, transparent);
+}
+.ito-inline-create .form-control {
+  min-height: 36px;
+}
+.ito-modal .btn-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+}
+.ito-modal .btn-link:hover {
+  color: color-mix(in srgb, var(--accent) 80%, white);
+  text-decoration: underline;
+}
+.modal-backdrop.show {
+  opacity: 0.72;
+}
 .text-muted { color: var(--muted) !important; }
 .btn-primary {
   background: var(--accent);
