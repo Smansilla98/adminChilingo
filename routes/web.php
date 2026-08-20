@@ -200,6 +200,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/tocadas/{tocada}', [VillaGesellCalendarioController::class, 'updateTocada'])->name('tocadas.update');
         Route::delete('/tocadas/{tocada}', [VillaGesellCalendarioController::class, 'destroyTocada'])->name('tocadas.destroy');
         Route::get('/plan', [VillaGesellGastoController::class, 'plan'])->name('plan');
+        Route::post('/alumnos-rapidos', [VillaGesellInscriptoController::class, 'storeAlumnoRapido'])->name('alumnos-rapidos.store');
         Route::resource('inscriptos', VillaGesellInscriptoController::class)->except(['show'])->parameters(['inscriptos' => 'inscripto']);
         Route::resource('insumos', VillaGesellInsumoController::class)->except(['show'])->parameters(['insumos' => 'insumo']);
         Route::resource('gastos', VillaGesellGastoController::class)->except(['show'])->parameters(['gastos' => 'gasto']);

@@ -2,17 +2,38 @@
     /** @var \App\Models\VillaGesellInscripto $inscripto */
     $aporteAuto = abs((float) $inscripto->monto_esperado - $inscripto->aporteSegunDias($config->valorPorDia())) < 0.05;
     $calcularAporte = old('calcular_aporte', $inscripto->exists ? $aporteAuto : true);
+    $sedes = $sedes ?? collect();
 @endphp
 <div class="row g-3">
-    <div class="col-md-6">
-        <label class="form-label">Alumno *</label>
-        <select name="alumno_id" class="form-select @error('alumno_id') is-invalid @enderror" required>
-            <option value="">Elegí un alumno</option>
-            @foreach($alumnos as $a)
-                <option value="{{ $a->id }}" @selected(old('alumno_id', $inscripto->alumno_id) == $a->id)>{{ $a->nombre_apellido }}</option>
-            @endforeach
-        </select>
-        @error('alumno_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    <div class="col-12">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+            <label class="form-label mb-0">Alumno *</label>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Origen del alumno">
+                <input type="radio" class="btn-check" name="alumno_modo_ui" id="vg_modo_existente" value="existente" autocomplete="off" checked>
+                <label class="btn btn-outline-secondary" for="vg_modo_existente">Del padrón</label>
+                <input type="radio" class="btn-check" name="alumno_modo_ui" id="vg_modo_nuevo" value="nuevo" autocomplete="off">
+                <label class="btn btn-outline-primary" for="vg_modo_nuevo">Alumno nuevo</label>
+            </div>
+        </div>
+
+        <div id="vg_box_existente">
+            <select name="alumno_id" id="vg_alumno_id" class="form-select @error('alumno_id') is-invalid @enderror" required>
+                <option value="">Elegí un alumno</option>
+                @foreach($alumnos as $a)
+                    <option value="{{ $a->id }}" @selected(old('alumno_id', $inscripto->alumno_id) == $a->id)>{{ $a->nombre_apellido }}@if($a->dni) · DNI {{ $a->dni }}@endif</option>
+                @endforeach
+            </select>
+            @error('alumno_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <div class="form-text">Si no está en la lista, pasá a <strong>Alumno nuevo</strong>.</div>
+        </div>
+
+        <div id="vg_box_nuevo" class="border rounded p-3 mt-2" style="border-color: var(--border) !important; background: var(--s2);" hidden>
+            <p class="mb-2 small text-muted">Se crea en el padrón y queda listo para inscribir a la gira. Después podés completar sede o bloques en Alumnos.</p>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#vgModalAlumnoNuevo">
+                <i class="bi bi-person-plus"></i> Abrir formulario de alta
+            </button>
+            <span id="vg_nuevo_status" class="ms-2 small text-success" hidden></span>
+        </div>
     </div>
     <div class="col-md-3">
         <label class="form-label">Estado de pago *</label>

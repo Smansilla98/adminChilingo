@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alumno;
+use App\Models\Sede;
 use App\Models\VillaGesellInscripto;
 use App\Services\VillaGesellGiraService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -36,6 +38,7 @@ class VillaGesellInscriptoController extends Controller
     {
         $config = $this->gira->config();
         $alumnos = $this->alumnosDisponibles();
+        $sedes = Sede::query()->where('activo', true)->orderBy('nombre')->get();
         $inscripto = new VillaGesellInscripto([
             'estado_pago' => 'pendiente',
             'fecha_desde' => $config->fecha_inicio,
@@ -44,7 +47,52 @@ class VillaGesellInscriptoController extends Controller
         ]);
         $inscripto->monto_esperado = $inscripto->aporteSegunDias($config->valorPorDia());
 
-        return view('villa-gesell.inscriptos.create', compact('alumnos', 'config', 'inscripto'));
+        return view('villa-gesell.inscriptos.create', compact('alumnos', 'config', 'inscripto', 'sedes'));
+    }
+
+    public function storeAlumnoRapido(Request $request): JsonResponse
+    {
+        $request->merge([
+            'dni' => filled($request->input('dni')) ? trim((string) $request->input('dni')) : null,
+            'telefono' => filled($request->input('telefono')) ? trim((string) $request->input('telefono')) : null,
+            'fecha_nacimiento' => filled($request->input('fecha_nacimiento')) ? $request->input('fecha_nacimiento') : null,
+            'sede_id' => filled($request->input('sede_id')) ? $request->input('sede_id') : null,
+            'instrumento_principal' => filled($request->input('instrumento_principal'))
+                ? $request->input('instrumento_principal')
+                : 'Otro',
+        ]);
+
+        $data = $request->validate([
+            'nombre_apellido' => ['required', 'string', 'max:255'],
+            'dni' => ['nullable', 'string', 'max:20', 'unique:alumnos,dni'],
+            'telefono' => ['nullable', 'string', 'max:20'],
+            'fecha_nacimiento' => ['nullable', 'date'],
+            'sede_id' => ['nullable', 'exists:sedes,id'],
+            'instrumento_principal' => ['nullable', 'string', 'max:80'],
+        ], [
+            'nombre_apellido.required' => 'El nombre es obligatorio.',
+            'dni.unique' => 'Ese DNI ya está cargado en el padrón.',
+        ]);
+
+        $alumno = Alumno::query()->create([
+            'nombre_apellido' => trim($data['nombre_apellido']),
+            'dni' => $data['dni'] ?? null,
+            'telefono' => $data['telefono'] ?? null,
+            'fecha_nacimiento' => $data['fecha_nacimiento'] ?? null,
+            'sede_id' => $data['sede_id'] ?? null,
+            'instrumento_principal' => $data['instrumento_principal'] ?? 'Otro',
+            'activo' => true,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'alumno' => [
+                'id' => $alumno->id,
+                'nombre_apellido' => $alumno->nombre_apellido,
+                'dni' => $alumno->dni,
+            ],
+            'message' => 'Alumno creado. Ya lo podés inscribir a la gira.',
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -65,8 +113,9 @@ class VillaGesellInscriptoController extends Controller
         $inscripto->load('alumno');
         $config = $this->gira->config();
         $alumnos = $this->alumnosDisponibles($inscripto->alumno_id);
+        $sedes = Sede::query()->where('activo', true)->orderBy('nombre')->get();
 
-        return view('villa-gesell.inscriptos.edit', compact('inscripto', 'alumnos', 'config'));
+        return view('villa-gesell.inscriptos.edit', compact('inscripto', 'alumnos', 'config', 'sedes'));
     }
 
     public function update(Request $request, VillaGesellInscripto $inscripto): RedirectResponse

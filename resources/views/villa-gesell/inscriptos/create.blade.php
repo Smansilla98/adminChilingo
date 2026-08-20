@@ -18,8 +18,10 @@
         </form>
     </div>
 </div>
+@include('villa-gesell.inscriptos._modal_alumno')
 @endsection
 
 @push('scripts')
 @include('villa-gesell.inscriptos._form_aporte_script')
+@include('villa-gesell.inscriptos._form_alumno_rapido_script')
 @endpush

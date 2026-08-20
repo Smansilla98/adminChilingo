@@ -60,7 +60,8 @@ for MIG in \
     database/migrations/2026_08_19_160000_add_cargado_por_to_comprobantes_cuota_alumnos.php \
     database/migrations/2026_08_19_180000_cuaderno_pedagogico_e_indices.php \
     database/migrations/2026_08_19_200000_inventario_codigo_y_movimientos.php \
-    database/migrations/2026_08_19_210000_create_villa_gesell_gira_tables.php
+    database/migrations/2026_08_19_210000_create_villa_gesell_gira_tables.php \
+    database/migrations/2026_08_20_100000_alumnos_campos_opcionales_alta_rapida.php
 do
     if [ -f "$MIG" ]; then
         php artisan migrate --force --no-interaction --path="$MIG" || echo "⚠️  Falló $MIG"
