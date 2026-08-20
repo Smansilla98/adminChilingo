@@ -19,3 +19,7 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+@include('villa-gesell.inscriptos._form_aporte_script')
+@endpush

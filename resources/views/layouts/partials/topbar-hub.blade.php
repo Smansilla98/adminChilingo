@@ -14,6 +14,7 @@
             ['Eventos', 'eventos.index', 'bi-calendar-event', 'admin.eventos'],
             ['Shows', 'shows.index', 'bi-mic', 'admin.shows'],
             ['Villa Gesell', 'villa-gesell.index', 'bi-sun', 'admin.villa_gesell'],
+            ['Seña Villa Gesell', 'villa-gesell.inscriptos.index', 'bi-cash-coin', 'admin.villa_gesell'],
             ['Cuotas', 'cuotas.index', 'bi-cash-stack', 'admin.cuotas'],
             ['Pagos', 'pagos.index', 'bi-receipt', 'admin.pagos'],
             ['Facturación mensual', 'facturacion-mensual.index', 'bi-file-earmark-text', 'admin.facturacion_mensual'],

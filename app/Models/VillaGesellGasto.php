@@ -18,8 +18,8 @@ class VillaGesellGasto extends Model
     ];
 
     public const MODOS = [
-        'total' => 'Monto único',
-        'por_dia' => 'Por cada día de gira',
+        'total' => 'Valor único (no se multiplica)',
+        'por_dia' => 'Valor por día × cantidad de días',
     ];
 
     protected $fillable = [

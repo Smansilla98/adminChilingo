@@ -1,5 +1,7 @@
 @php
     /** @var \App\Models\VillaGesellInscripto $inscripto */
+    $aporteAuto = abs((float) $inscripto->monto_esperado - $inscripto->aporteSegunDias($config->valorPorDia())) < 0.05;
+    $calcularAporte = old('calcular_aporte', $inscripto->exists ? $aporteAuto : true);
 @endphp
 <div class="row g-3">
     <div class="col-md-6">
@@ -30,12 +32,29 @@
         </select>
     </div>
     <div class="col-md-3">
-        <label class="form-label">Monto esperado</label>
-        <input type="number" step="0.01" min="0" name="monto_esperado" class="form-control" value="{{ old('monto_esperado', $inscripto->monto_esperado) }}" required>
+        <label class="form-label">Desde (días en la gira)</label>
+        <input type="date" name="fecha_desde" id="vg_fecha_desde" class="form-control" value="{{ old('fecha_desde', optional($inscripto->fecha_desde)->toDateString()) }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Hasta</label>
+        <input type="date" name="fecha_hasta" id="vg_fecha_hasta" class="form-control" value="{{ old('fecha_hasta', optional($inscripto->fecha_hasta)->toDateString()) }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Aporte esperado (total)</label>
+        <input type="number" step="0.01" min="0" name="monto_esperado" id="vg_monto_esperado" class="form-control" value="{{ old('monto_esperado', $inscripto->monto_esperado) }}" required>
+        <div class="form-text" id="vg_aporte_hint">Valor por día × días de esta persona.</div>
     </div>
     <div class="col-md-3">
         <label class="form-label">Monto pagado</label>
         <input type="number" step="0.01" min="0" name="monto_pagado" class="form-control" value="{{ old('monto_pagado', $inscripto->monto_pagado) }}" required>
+    </div>
+    <div class="col-12">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="calcular_aporte" value="1" id="calcular_aporte" @checked($calcularAporte)>
+            <label class="form-check-label" for="calcular_aporte">
+                Calcular el aporte: ${{ number_format($config->valorPorDia(), 0, ',', '.') }} por día × cantidad de días
+            </label>
+        </div>
     </div>
     <div class="col-md-2">
         <label class="form-label">Plaza (1–{{ $config->cupo_maximo }})</label>
@@ -47,14 +66,6 @@
             <input class="form-check-input" type="checkbox" name="lista_espera" value="1" id="lista_espera" @checked(old('lista_espera', $inscripto->lista_espera))>
             <label class="form-check-label" for="lista_espera">Lista de espera (sin plaza)</label>
         </div>
-    </div>
-    <div class="col-md-3">
-        <label class="form-label">Desde (días en la gira)</label>
-        <input type="date" name="fecha_desde" class="form-control" value="{{ old('fecha_desde', optional($inscripto->fecha_desde)->toDateString()) }}">
-    </div>
-    <div class="col-md-3">
-        <label class="form-label">Hasta</label>
-        <input type="date" name="fecha_hasta" class="form-control" value="{{ old('fecha_hasta', optional($inscripto->fecha_hasta)->toDateString()) }}">
     </div>
 
     @foreach([

@@ -39,4 +39,9 @@ class VillaGesellCalculo
 
         return $monto;
     }
+
+    public static function porDiaPorDias(float $valorPorDia, int $dias): float
+    {
+        return $valorPorDia * max(0, $dias);
+    }
 }

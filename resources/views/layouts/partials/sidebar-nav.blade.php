@@ -16,11 +16,24 @@
         'eventos' => [
             'label' => 'Eventos y shows',
             'accent' => 'eventos',
-            'patterns' => ['eventos.*', 'shows.*', 'villa-gesell.*'],
+            'patterns' => ['eventos.*', 'shows.*'],
             'links' => array_filter([
                 auth()->user()->tieneAccesoModulo('admin.eventos') ? ['route' => 'eventos.index', 'label' => 'Eventos', 'pattern' => 'eventos.*'] : null,
                 auth()->user()->tieneAccesoModulo('admin.shows') ? ['route' => 'shows.index', 'label' => 'Shows', 'pattern' => 'shows.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.index', 'label' => 'Villa Gesell', 'pattern' => 'villa-gesell.*'] : null,
+            ]),
+        ],
+        'villa_gesell' => [
+            'label' => 'Villa Gesell',
+            'accent' => 'gesell',
+            'patterns' => ['villa-gesell.*'],
+            'links' => array_filter([
+                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.index', 'label' => 'Resumen', 'pattern' => 'villa-gesell.index', 'badge' => 'nuevo'] : null,
+                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.inscriptos.index', 'label' => 'Inscriptos', 'pattern' => 'villa-gesell.inscriptos.*', 'inactive_query' => ['estado' => 'sena']] : null,
+                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.inscriptos.index', 'label' => 'Seña', 'pattern' => 'villa-gesell.inscriptos.index', 'query' => ['estado' => 'sena'], 'active_query' => ['estado' => 'sena'], 'badge' => 'nuevo'] : null,
+                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.calendario', 'label' => 'Calendario', 'pattern' => 'villa-gesell.calendario'] : null,
+                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.insumos.index', 'label' => 'Insumos', 'pattern' => 'villa-gesell.insumos.*'] : null,
+                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.gastos.index', 'label' => 'Gastos', 'pattern' => 'villa-gesell.gastos.*'] : null,
+                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.plan', 'label' => 'Plan de gastos', 'pattern' => 'villa-gesell.plan'] : null,
             ]),
         ],
         'economico' => [
@@ -139,8 +152,26 @@
                 <div class="nav-group-links">
                     @foreach($groupLinks as $link)
                         @php
-                            $href = route($link['route']).($link['fragment'] ?? '');
+                            $href = ! empty($link['query'])
+                                ? route($link['route'], $link['query'])
+                                : route($link['route']).($link['fragment'] ?? '');
                             $isActive = request()->routeIs($link['pattern']);
+                            if ($isActive && ! empty($link['active_query'])) {
+                                foreach ($link['active_query'] as $qk => $qv) {
+                                    if ((string) request()->query($qk) !== (string) $qv) {
+                                        $isActive = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if ($isActive && ! empty($link['inactive_query'])) {
+                                foreach ($link['inactive_query'] as $qk => $qv) {
+                                    if ((string) request()->query($qk) === (string) $qv) {
+                                        $isActive = false;
+                                        break;
+                                    }
+                                }
+                            }
                         @endphp
                         <a class="side-link side-link--nested {{ $isActive ? 'active' : '' }}"
                            href="{{ $href }}"

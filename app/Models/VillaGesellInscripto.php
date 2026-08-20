@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\VillaGesellCalculo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -84,11 +85,12 @@ class VillaGesellInscripto extends Model
 
     public function diasUtilizados(): int
     {
-        if (! $this->fecha_desde || ! $this->fecha_hasta) {
-            return 0;
-        }
+        return VillaGesellCalculo::cantidadDias($this->fecha_desde, $this->fecha_hasta);
+    }
 
-        return (int) $this->fecha_desde->diffInDays($this->fecha_hasta) + 1;
+    public function aporteSegunDias(float $valorPorDia): float
+    {
+        return VillaGesellCalculo::porDiaPorDias($valorPorDia, $this->diasUtilizados());
     }
 
     public function saldo(): float

@@ -17,14 +17,19 @@ class VillaGesellInscriptoController extends Controller
     public function index(): View
     {
         $config = $this->gira->config();
+        $estado = (string) request()->query('estado', '');
         $inscriptos = VillaGesellInscripto::query()
             ->with('alumno.sede')
+            ->when(
+                $estado !== '' && array_key_exists($estado, VillaGesellInscripto::ESTADOS_PAGO),
+                fn ($q) => $q->where('estado_pago', $estado)
+            )
             ->orderByRaw('lista_espera asc')
             ->orderByRaw('plaza is null')
             ->orderBy('plaza')
             ->get();
 
-        return view('villa-gesell.inscriptos.index', compact('inscriptos', 'config'));
+        return view('villa-gesell.inscriptos.index', compact('inscriptos', 'config', 'estado'));
     }
 
     public function create(): View
@@ -33,11 +38,11 @@ class VillaGesellInscriptoController extends Controller
         $alumnos = $this->alumnosDisponibles();
         $inscripto = new VillaGesellInscripto([
             'estado_pago' => 'pendiente',
-            'monto_esperado' => $config->aporte_esperado,
             'fecha_desde' => $config->fecha_inicio,
             'fecha_hasta' => $config->fecha_fin,
             'plaza' => $this->gira->plazaDisponible(),
         ]);
+        $inscripto->monto_esperado = $inscripto->aporteSegunDias($config->valorPorDia());
 
         return view('villa-gesell.inscriptos.create', compact('alumnos', 'config', 'inscripto'));
     }
@@ -113,6 +118,14 @@ class VillaGesellInscriptoController extends Controller
         ]);
         $data['lista_espera'] = $request->boolean('lista_espera');
         $data['plaza'] = $data['plaza'] !== null ? (int) $data['plaza'] : null;
+
+        if ($request->boolean('calcular_aporte')) {
+            $tmp = new VillaGesellInscripto([
+                'fecha_desde' => $data['fecha_desde'] ?? null,
+                'fecha_hasta' => $data['fecha_hasta'] ?? null,
+            ]);
+            $data['monto_esperado'] = $tmp->aporteSegunDias($config->valorPorDia());
+        }
 
         return $data;
     }

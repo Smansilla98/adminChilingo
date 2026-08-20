@@ -53,7 +53,7 @@ class AccesosController extends Controller
         'admin.ordenes_compra' => ['Administración', 'Órdenes de compra'],
         'admin.gastos' => ['Administración', 'Gastos'],
         'admin.shows' => ['Administración', 'Shows'],
-        'admin.villa_gesell' => ['Administración', 'Villa Gesell'],
+        'admin.villa_gesell' => ['Villa Gesell', 'Gira costa'],
         'admin.disenos' => ['Administración', 'Diseño'],
     ];
 

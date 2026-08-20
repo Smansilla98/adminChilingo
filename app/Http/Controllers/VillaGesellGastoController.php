@@ -24,7 +24,7 @@ class VillaGesellGastoController extends Controller
 
     public function create(): View
     {
-        return view('villa-gesell.gastos.create', ['gasto' => new VillaGesellGasto(['modo' => 'total', 'tipo' => 'fijo'])]);
+        return view('villa-gesell.gastos.create', ['gasto' => new VillaGesellGasto(['modo' => 'por_dia', 'tipo' => 'diario'])]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -66,7 +66,7 @@ class VillaGesellGastoController extends Controller
      */
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'tipo' => ['required', Rule::in(array_keys(VillaGesellGasto::TIPOS))],
             'concepto' => ['required', 'string', 'max:160'],
             'monto' => ['required', 'numeric', 'min:0'],
@@ -74,5 +74,10 @@ class VillaGesellGastoController extends Controller
             'fecha' => ['nullable', 'date'],
             'notas' => ['nullable', 'string', 'max:2000'],
         ]);
+        if ($data['tipo'] === 'diario') {
+            $data['modo'] = 'por_dia';
+        }
+
+        return $data;
     }
 }

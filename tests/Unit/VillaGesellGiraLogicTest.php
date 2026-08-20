@@ -29,4 +29,10 @@ class VillaGesellGiraLogicTest extends TestCase
     {
         $this->assertSame(50000.0, VillaGesellCalculo::proyectarGasto(50000, 'fijo', 'total', 30));
     }
+
+    public function test_valor_por_dia_por_cantidad_de_dias(): void
+    {
+        $this->assertSame(150000.0, VillaGesellCalculo::porDiaPorDias(5000, 30));
+        $this->assertSame(0.0, VillaGesellCalculo::porDiaPorDias(5000, 0));
+    }
 }

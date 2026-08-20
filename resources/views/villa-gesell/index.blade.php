@@ -35,20 +35,20 @@
                 <div class="ito-stat">
                     <span class="text-muted d-block">Cobrado</span>
                     <strong>$ {{ number_format($plan['ingresos_pagados'], 0, ',', '.') }}</strong>
-                    <small class="d-block">esperado $ {{ number_format($plan['ingresos_esperados'], 0, ',', '.') }}</small>
+                    <small class="d-block">esperado $ {{ number_format($plan['ingresos_esperados'], 0, ',', '.') }} · $ {{ number_format($plan['valor_por_dia'], 0, ',', '.') }}/día</small>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="ito-stat">
                     <span class="text-muted d-block">Balance (cupo 100%)</span>
                     <strong>$ {{ number_format($plan['balance_cupo_lleno'], 0, ',', '.') }}</strong>
-                    <small class="d-block">si se llena el cupo y se cubren todos los días</small>
+                    <small class="d-block">{{ $plan['cupo'] }} × ${{ number_format($plan['valor_por_dia'], 0, ',', '.') }}/día × {{ $plan['dias'] }} días</small>
                 </div>
             </div>
         </div>
 
         <h2 class="h5">Datos de la gira</h2>
-        <p class="text-muted">Podés cambiar fechas, cupo y aporte aunque ya haya inscriptos. Si una plaza está ocupada, no se puede bajar el cupo por debajo de ese número.</p>
+        <p class="text-muted">El aporte se carga <strong>por día</strong> y se multiplica por la cantidad de días. Podés cambiar fechas y cupo aunque ya haya inscriptos. Si una plaza está ocupada, no se puede bajar el cupo por debajo de ese número.</p>
         <form action="{{ route('villa-gesell.config') }}" method="POST" class="row g-3 mb-4">
             @csrf
             @method('PUT')
@@ -67,9 +67,10 @@
                 <input type="number" name="cupo_maximo" min="1" class="form-control @error('cupo_maximo') is-invalid @enderror" value="{{ old('cupo_maximo', $config->cupo_maximo) }}" required>
                 @error('cupo_maximo')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-2">
-                <label class="form-label">Aporte por persona</label>
+            <div class="col-md-4">
+                <label class="form-label">Valor por día (aporte)</label>
                 <input type="number" step="0.01" min="0" name="aporte_esperado" class="form-control" value="{{ old('aporte_esperado', $config->aporte_esperado) }}" required>
+                <div class="form-text">Ese valor × {{ $config->cantidadDias() }} días × cupo = escenario 100%.</div>
             </div>
             <div class="col-md-12">
                 <label class="form-label">Notas</label>

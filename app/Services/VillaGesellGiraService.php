@@ -7,14 +7,16 @@ use App\Models\VillaGesellDia;
 use App\Models\VillaGesellGasto;
 use App\Models\VillaGesellInscripto;
 use App\Models\VillaGesellInsumo;
+use App\Support\VillaGesellCalculo;
+
 class VillaGesellGiraService
 {
     public function config(): VillaGesellConfig
     {
         $row = VillaGesellConfig::query()->first();
         if ($row) {
-        return $row;
-    }
+            return $row;
+        }
 
         return VillaGesellConfig::query()->create([
             'fecha_inicio' => '2027-01-16',
@@ -47,6 +49,7 @@ class VillaGesellGiraService
      *     cupo:int,
      *     plazas_ocupadas:int,
      *     lista_espera:int,
+     *     valor_por_dia:float,
      *     ingresos_pagados:float,
      *     ingresos_esperados:float,
      *     ingresos_si_cupo_lleno:float,
@@ -62,6 +65,7 @@ class VillaGesellGiraService
     {
         $config = $this->config();
         $dias = $config->cantidadDias();
+        $valorPorDia = $config->valorPorDia();
         $gastos = VillaGesellGasto::query()->get();
         $porTipo = [];
         foreach (array_keys(VillaGesellGasto::TIPOS) as $tipo) {
@@ -77,8 +81,10 @@ class VillaGesellGiraService
         $insumosTotales = (float) VillaGesellInsumo::query()->get()->sum(fn (VillaGesellInsumo $i) => $i->costoTotal());
 
         $pagados = (float) VillaGesellInscripto::query()->sum('monto_pagado');
-        $esperados = (float) VillaGesellInscripto::query()->sum('monto_esperado');
-        $cupoLleno = (float) $config->cupo_maximo * (float) $config->aporte_esperado;
+        $esperados = (float) VillaGesellInscripto::query()->get()->sum(
+            fn (VillaGesellInscripto $i) => (float) $i->monto_esperado
+        );
+        $cupoLleno = VillaGesellCalculo::porDiaPorDias($valorPorDia, $dias) * (int) $config->cupo_maximo;
         $plazas = (int) VillaGesellInscripto::query()->whereNotNull('plaza')->where('lista_espera', false)->count();
         $espera = (int) VillaGesellInscripto::query()->where('lista_espera', true)->count();
 
@@ -89,6 +95,7 @@ class VillaGesellGiraService
             'cupo' => (int) $config->cupo_maximo,
             'plazas_ocupadas' => $plazas,
             'lista_espera' => $espera,
+            'valor_por_dia' => $valorPorDia,
             'ingresos_pagados' => $pagados,
             'ingresos_esperados' => $esperados,
             'ingresos_si_cupo_lleno' => $cupoLleno,

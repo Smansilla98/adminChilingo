@@ -7,8 +7,8 @@
 @include('villa-gesell.partials.nav')
 
 <x-ito.list-page
-    title="Inscriptos"
-    subtitle="Pagos, plaza en el cupo, días y tambores. Todo se puede editar después de inscribir."
+    title="{{ ($estado ?? '') === 'sena' ? 'Seña · Villa Gesell' : 'Inscriptos' }}"
+    subtitle="{{ ($estado ?? '') === 'sena' ? 'Quienes dejaron seña para la gira.' : 'Pagos, plaza, días y tambores. El aporte es valor por día × los días que está cada persona.' }}"
 >
     <x-slot:actions>
         <a href="{{ route('villa-gesell.inscriptos.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Inscribir alumno</a>
@@ -37,7 +37,7 @@
                     <td>
                         @if($row->fecha_desde && $row->fecha_hasta)
                             {{ $row->fecha_desde->format('d/m') }}–{{ $row->fecha_hasta->format('d/m') }}
-                            <small class="d-block">{{ $row->diasUtilizados() }} días</small>
+                            <small class="d-block">{{ $row->diasUtilizados() }} días · ${{ number_format($config->valorPorDia(), 0, ',', '.') }}/día</small>
                         @else
                             —
                         @endif
@@ -64,7 +64,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="8">Nadie inscripto todavía. El padrón de la escuela no se duplica: se elige un alumno existente.</td></tr>
+                <tr><td colspan="8">{{ ($estado ?? '') === 'sena' ? 'Nadie con seña todavía.' : 'Nadie inscripto todavía. El padrón de la escuela no se duplica: se elige un alumno existente.' }}</td></tr>
             @endforelse
         </tbody>
     </table>

@@ -17,7 +17,7 @@
                 <option value="{{ $k }}" @selected(old('modo', $gasto->modo) === $k)>{{ $v }}</option>
             @endforeach
         </select>
-        <small class="text-muted">“Por cada día” se multiplica por los {{ $diasGira ?? 'N' }} días de la gira en el plan.</small>
+        <small class="text-muted">El valor que cargás es <strong>por día</strong>. Si el modo es “por día” (o el tipo es gasto diario), el plan hace valor × {{ $diasGira ?? 'N' }} días.</small>
     </div>
     <div class="col-md-4">
         <label class="form-label">Fecha (opcional)</label>
@@ -28,8 +28,9 @@
         <input type="text" name="concepto" class="form-control" value="{{ old('concepto', $gasto->concepto) }}" required>
     </div>
     <div class="col-md-4">
-        <label class="form-label">Monto *</label>
+        <label class="form-label">Valor *</label>
         <input type="number" step="0.01" min="0" name="monto" class="form-control" value="{{ old('monto', $gasto->monto) }}" required>
+        <div class="form-text">Si es por día, este número se multiplica por los días de la gira.</div>
     </div>
     <div class="col-12">
         <label class="form-label">Notas</label>

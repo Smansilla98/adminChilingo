@@ -1758,7 +1758,7 @@ body.shell-nav-open {
 .nav-group.open .nav-group-btn { color: var(--skin); }
 .nav-group-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
 .nav-group[data-accent="academico"] .nav-group-dot,
-.nav-group[data-accent="eventos"] .nav-group-dot { background: var(--brass); }
+.nav-group[data-accent="gesell"] .nav-group-dot { background: var(--accent, #f26422); }
 .nav-group[data-accent="economico"] .nav-group-dot { background: var(--verdigris); }
 .nav-group[data-accent="inventario"] .nav-group-dot { background: var(--purple); }
 .nav-group[data-accent="contenido"] .nav-group-dot { background: var(--brick); }
@@ -1775,7 +1775,7 @@ body.shell-nav-open {
   border-left: 1px solid var(--line);
   margin-left: 13px;
 }
-.nav-group.open .nav-group-links { max-height: 520px; }
+.nav-group.open .nav-group-links { max-height: 640px; }
 .side-link--top { margin-bottom: 14px; font-weight: 600; }
 .side-link--nested { padding-left: 10px; font-size: 13.5px; }
 .side-link-badge {

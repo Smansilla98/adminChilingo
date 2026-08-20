@@ -30,7 +30,14 @@
             'items' => array_values(array_filter([
                 $user->tieneAccesoModulo('admin.eventos') ? ['href' => route('eventos.index'), 'icon' => 'bi-calendar-event', 'title' => 'Eventos', 'desc' => 'Ensayos, muestras y fechas'] : null,
                 $user->tieneAccesoModulo('admin.shows') ? ['href' => route('shows.index'), 'icon' => 'bi-mic', 'title' => 'Shows', 'desc' => 'Presentaciones y logística'] : null,
-                $user->tieneAccesoModulo('admin.villa_gesell') ? ['href' => route('villa-gesell.index'), 'icon' => 'bi-sun', 'title' => 'Villa Gesell', 'desc' => 'Gira costa 2027: cupo, tocadas y gastos'] : null,
+            ])),
+        ],
+        [
+            'code' => '02b',
+            'label' => 'Villa Gesell',
+            'items' => array_values(array_filter([
+                $user->tieneAccesoModulo('admin.villa_gesell') ? ['href' => route('villa-gesell.index'), 'icon' => 'bi-sun', 'title' => 'Villa Gesell', 'desc' => 'Gira costa 2027: cupo, tocadas y gastos', 'badge' => 'nuevo'] : null,
+                $user->tieneAccesoModulo('admin.villa_gesell') ? ['href' => route('villa-gesell.inscriptos.index', ['estado' => 'sena']), 'icon' => 'bi-cash-coin', 'title' => 'Seña', 'desc' => 'Quién dejó seña para la gira', 'badge' => 'nuevo'] : null,
             ])),
         ],
         [

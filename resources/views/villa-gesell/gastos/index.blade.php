@@ -8,7 +8,7 @@
 
 <x-ito.list-page
     title="Gastos de la gira"
-    subtitle="Fijos, traslados, nafta y diarios. El modo “por día” se proyecta a los {{ $dias }} días si se cubre el 100%."
+    subtitle="Cargá el valor por día (o un valor único). En el plan, lo diario se multiplica por los {{ $dias }} días."
 >
     <x-slot:actions>
         <a href="{{ route('villa-gesell.gastos.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nuevo gasto</a>
@@ -21,8 +21,8 @@
                 <th>Tipo</th>
                 <th>Concepto</th>
                 <th>Modo</th>
-                <th class="text-end">Monto</th>
-                <th class="text-end">Proyectado ({{ $dias }} días)</th>
+                <th class="text-end">Valor</th>
+                <th class="text-end">× {{ $dias }} días</th>
                 <th></th>
             </tr>
         </thead>
@@ -32,7 +32,12 @@
                     <td>{{ \App\Models\VillaGesellGasto::TIPOS[$row->tipo] ?? $row->tipo }}</td>
                     <td>{{ $row->concepto }}</td>
                     <td>{{ \App\Models\VillaGesellGasto::MODOS[$row->modo] ?? $row->modo }}</td>
-                    <td class="ito-mono text-end">$ {{ number_format($row->monto, 0, ',', '.') }}</td>
+                    <td class="ito-mono text-end">
+                        $ {{ number_format($row->monto, 0, ',', '.') }}
+                        @if($row->modo === 'por_dia' || $row->tipo === 'diario')
+                            <small class="d-block text-muted">/ día</small>
+                        @endif
+                    </td>
                     <td class="ito-mono text-end">$ {{ number_format($row->proyectado($dias), 0, ',', '.') }}</td>
                     <td>
                         <x-ito.actions :id="'vg-gasto-'.$row->id">

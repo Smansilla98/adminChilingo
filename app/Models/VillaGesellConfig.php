@@ -37,4 +37,14 @@ class VillaGesellConfig extends Model
     {
         return VillaGesellCalculo::rangoFechas($this->fecha_inicio, $this->fecha_fin);
     }
+
+    public function valorPorDia(): float
+    {
+        return (float) $this->aporte_esperado;
+    }
+
+    public function aporteSiCubreTodosLosDias(int $personas = 1): float
+    {
+        return VillaGesellCalculo::porDiaPorDias($this->valorPorDia(), $this->cantidadDias()) * max(0, $personas);
+    }
 }

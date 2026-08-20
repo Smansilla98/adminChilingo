@@ -7,8 +7,8 @@
 @include('villa-gesell.partials.nav')
 
 <x-ito.list-page
-    title="Plan si se cubre el 100% de los días"
-    subtitle="Proyección con {{ $plan['dias'] }} días ({{ $config->fecha_inicio->format('d/m/Y') }} – {{ $config->fecha_fin->format('d/m/Y') }}) y cupo de {{ $plan['cupo'] }} plazas."
+    title="Plan: valor por día × cantidad de días"
+    subtitle="{{ $plan['dias'] }} días ({{ $config->fecha_inicio->format('d/m/Y') }} – {{ $config->fecha_fin->format('d/m/Y') }}). Cupo {{ $plan['cupo'] }}. Aporte ${{ number_format($plan['valor_por_dia'], 0, ',', '.') }} por día."
 >
     <div class="p-3">
         <h2 class="h5">Ingresos</h2>
@@ -23,7 +23,7 @@
                     <td class="ito-mono text-end">$ {{ number_format($plan['ingresos_esperados'], 0, ',', '.') }}</td>
                 </tr>
                 <tr>
-                    <td>Si se llena el cupo ({{ $plan['cupo'] }} × aporte ${{ number_format($config->aporte_esperado, 0, ',', '.') }})</td>
+                    <td>Si se llena el cupo ({{ $plan['cupo'] }} personas × ${{ number_format($plan['valor_por_dia'], 0, ',', '.') }}/día × {{ $plan['dias'] }} días)</td>
                     <td class="ito-mono text-end">$ {{ number_format($plan['ingresos_si_cupo_lleno'], 0, ',', '.') }}</td>
                 </tr>
             </tbody>
@@ -66,7 +66,7 @@
                 </tr>
             </tbody>
         </table>
-        <p class="text-muted mt-3 mb-0">Los gastos marcados “por cada día” o tipo “gasto diario” se multiplican por {{ $plan['dias'] }}. Nafta, traslados y fijos se suman una vez (salvo que los cargues en modo diario). Plazas ocupadas: {{ $plan['plazas_ocupadas'] }} · lista de espera: {{ $plan['lista_espera'] }}.</p>
+        <p class="text-muted mt-3 mb-0">Regla: el número que cargás es el valor de un día; el total es ese valor × {{ $plan['dias'] }} días (gastos diarios y aportes). Los fijos, traslados y nafta en modo “valor único” no se multiplican. Plazas ocupadas: {{ $plan['plazas_ocupadas'] }} · lista de espera: {{ $plan['lista_espera'] }}.</p>
     </div>
 </x-ito.list-page>
 @endsection
