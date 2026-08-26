@@ -22,6 +22,9 @@
                 @if(session('success'))
                     <div class="auth-alerts"><div class="alert alert-success mb-0 py-2">{{ session('success') }}</div></div>
                 @endif
+                @if(session('error'))
+                    <div class="auth-alerts"><div class="alert alert-warning mb-0 py-2">{{ session('error') }}</div></div>
+                @endif
                 @if($errors->any())
                     <div class="auth-alerts">
                         <div class="alert alert-danger mb-0 py-2 px-3">

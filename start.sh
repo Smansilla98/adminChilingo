@@ -7,6 +7,13 @@ echo "=========================================="
 
 echo "=== Variables de entorno ==="
 echo "APP_ENV: ${APP_ENV:-no configurado}"
+# En Railway el disco es efímero: SESSION_DRIVER=file pierde la sesión en cada
+# deploy y los formularios devuelven 419 PAGE EXPIRED.
+if [ "${APP_ENV:-}" = "production" ] && [ "${SESSION_DRIVER:-file}" = "file" ]; then
+    echo "=== SESSION_DRIVER=file en producción: pasando a database ==="
+    export SESSION_DRIVER=database
+fi
+echo "SESSION_DRIVER: ${SESSION_DRIVER:-no configurado}"
 echo "DB_CONNECTION: ${DB_CONNECTION:-no configurado}"
 echo "DB_HOST: ${DB_HOST:-no configurado}"
 echo "DB_DATABASE: ${DB_DATABASE:-no configurado}"
