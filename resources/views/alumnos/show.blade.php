@@ -247,7 +247,10 @@
                         @if($nota->proximo_paso)
                         <div class="mt-1"><strong>Sigue:</strong> {{ $nota->proximo_paso }}</div>
                         @endif
-                        <div class="small text-muted mt-1">{{ $nota->autor->name ?? $nota->autor->username ?? 'Docente' }}@if($nota->visible_alumno) · visible para el alumno@endif</div>
+                        <div class="small text-muted mt-1">
+                            {{ $nota->autor->name ?? $nota->autor->username ?? 'Docente' }}
+                            @if($nota->visible_alumno) · visible para el alumno @endif
+                        </div>
                     </div>
                     @if(auth()->id() === $nota->user_id || auth()->user()->isAdmin())
                     <form action="{{ route('seguimiento.destroy', $nota) }}" method="POST" onsubmit="return confirm('¿Eliminar esta nota?');">

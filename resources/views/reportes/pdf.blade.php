@@ -24,7 +24,7 @@
         <a href="{{ route('reportes.index', ['mes' => $mes, 'año' => $año]) }}">Volver</a>
     </div>
     <h1>Reportes ITO — {{ $mes }}/{{ $año }}</h1>
-    <p class="muted">Generado {{ now()->format('d/m/Y H:i') }}@if(!empty($sedeScope)) · filtrado por sede@endif</p>
+    <p class="muted">Generado {{ now()->format('d/m/Y H:i') }}@if(!empty($sedeScope)) · filtrado por sede @endif</p>
 
     <h2>Alumnos por profesor</h2>
     <table>

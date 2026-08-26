@@ -41,7 +41,7 @@
                 <strong>{{ $sh->titulo }}</strong>
                 · {{ $sh->fecha?->locale('es')->translatedFormat('d M Y') }}
                 @if($sh->lugar)<span class="text-muted"> · {{ $sh->lugar }}</span>@endif
-                @if($sh->convocatoria_abierta) · convocatoria abierta@endif
+                @if($sh->convocatoria_abierta) · convocatoria abierta @endif
             </li>
             @endforeach
         </ul>
