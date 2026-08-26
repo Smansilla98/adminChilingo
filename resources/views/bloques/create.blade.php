@@ -4,9 +4,12 @@
 @section('page-title', 'Nuevo bloque')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Crear bloque</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Nuevo bloque"
+    eyebrow="Bloques"
+    subtitle="Grupo de clase: nombre, sede y tambores."
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Un bloque es un grupo de clase en una sede. Poné nombre, sede y, si querés, el profe titular y los tambores que usan.'])
         <form action="{{ route('bloques.store') }}" method="POST">
             @csrf
@@ -76,6 +79,6 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('bloques.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

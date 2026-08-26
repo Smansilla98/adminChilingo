@@ -4,148 +4,34 @@
 @section('page-title', 'Nuevo Alumno')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Crear Nuevo Alumno</div>
-    <div class="card-body">
-        @include('partials.form-ayuda-intro', ['text' => 'Lo mínimo: nombre, fecha de nacimiento, instrumento y sede. Después elegí en qué bloques va.'])
-        <form action="{{ route('alumnos.store') }}" method="POST">
-            @csrf
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="nombre_apellido" class="form-label">Nombre y Apellido *</label>
-                    <input type="text" class="form-control @error('nombre_apellido') is-invalid @enderror" 
-                           id="nombre_apellido" name="nombre_apellido" value="{{ old('nombre_apellido') }}" required>
-                    @error('nombre_apellido')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="dni" class="form-label">
-                        DNI
-                        @if(!old('dni'))
-                            <span class="badge bg-warning text-dark ms-1">Incompleto</span>
-                        @endif
-                    </label>
-                    <input type="text" class="form-control @error('dni') is-invalid @enderror" 
-                           id="dni" name="dni" value="{{ old('dni') }}">
-                    @error('dni')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento *</label>
-                    <input type="date" class="form-control @error('fecha_nacimiento') is-invalid @enderror" 
-                           id="fecha_nacimiento" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}" required>
-                    @error('fecha_nacimiento')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="telefono" class="form-label">Teléfono</label>
-                    <input type="text" class="form-control @error('telefono') is-invalid @enderror" 
-                           id="telefono" name="telefono" value="{{ old('telefono') }}">
-                    @error('telefono')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="instrumento_principal" class="form-label">Instrumento Principal *</label>
-                    <select class="form-select @error('instrumento_principal') is-invalid @enderror" 
-                            id="instrumento_principal" name="instrumento_principal" required>
-                        <option value="">Elegí…</option>
-                        @foreach($instrumentos as $instrumento)
-                        <option value="{{ $instrumento }}" {{ old('instrumento_principal') == $instrumento ? 'selected' : '' }}>
-                            {{ $instrumento }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('instrumento_principal')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="instrumento_secundario" class="form-label">Instrumento Secundario</label>
-                    <select class="form-select @error('instrumento_secundario') is-invalid @enderror" 
-                            id="instrumento_secundario" name="instrumento_secundario">
-                        <option value="">Ninguno</option>
-                        @foreach($instrumentos as $instrumento)
-                        <option value="{{ $instrumento }}" {{ old('instrumento_secundario') == $instrumento ? 'selected' : '' }}>
-                            {{ $instrumento }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('instrumento_secundario')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="tipo_tambor" class="form-label">Tipo de instrumento (tambor)</label>
-                    <select class="form-select @error('tipo_tambor') is-invalid @enderror" 
-                            id="tipo_tambor" name="tipo_tambor">
-                        <option value="">Elegí…</option>
-                        @foreach($tiposTambor as $tipo)
-                        <option value="{{ $tipo }}" {{ old('tipo_tambor') == $tipo ? 'selected' : '' }}>
-                            {{ $tipo }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('tipo_tambor')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="tambor_procedencia" class="form-label">Procedencia del instrumento</label>
-                    <select class="form-select @error('tambor_procedencia') is-invalid @enderror"
-                            id="tambor_procedencia" name="tambor_procedencia">
-                        <option value="">Elegí…</option>
-                        @foreach($procedenciasTambor as $procedencia)
-                        <option value="{{ $procedencia }}" {{ old('tambor_procedencia') == $procedencia ? 'selected' : '' }}>
-                            {{ $procedencia }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('tambor_procedencia')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="sede_id" class="form-label">Sede *</label>
-                    <select class="form-select @error('sede_id') is-invalid @enderror" 
-                            id="sede_id" name="sede_id" required>
-                        <option value="">Elegí…</option>
-                        @foreach($sedes as $sede)
-                        <option value="{{ $sede->id }}" {{ old('sede_id') == $sede->id ? 'selected' : '' }}>
-                            {{ $sede->nombre }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('sede_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-            @include('alumnos._form_bloques', ['bloques' => $bloques])
-            @include('alumnos._form_profesor_vinculo', ['profesoresSinVinculo' => $profesoresSinVinculo ?? collect()])
-            <div class="mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="activo" name="activo" value="1" checked>
-                    <label class="form-check-label" for="activo">Activo</label>
-                </div>
-            </div>
-            <div class="d-flex justify-content-between">
-                <a href="{{ route('alumnos.index') }}" class="btn btn-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-            </div>
-        </form>
-    </div>
-</div>
-@endsection
+<x-ito.shell-page
+    title="Nuevo alumno"
+    subtitle="Alta en tres pasos: datos, instrumentos y clases."
+    eyebrow="Alumnos"
+>
+    <x-slot:actions>
+        <a href="{{ route('alumnos.index') }}" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
+    </x-slot:actions>
 
+    <form action="{{ route('alumnos.store') }}" method="POST" class="ito-form">
+        @csrf
+        <x-ito.form-steps
+            :steps="['Datos', 'Instrumentos', 'Clases']"
+            submit-label="Guardar alumno"
+        >
+            <x-slot:cancel>
+                <a href="{{ route('alumnos.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+            </x-slot:cancel>
+            @include('alumnos._form', [
+                'alumno' => null,
+                'instrumentos' => $instrumentos,
+                'tiposTambor' => $tiposTambor,
+                'procedenciasTambor' => $procedenciasTambor,
+                'sedes' => $sedes,
+                'bloques' => $bloques,
+                'profesoresSinVinculo' => $profesoresSinVinculo ?? collect(),
+            ])
+        </x-ito.form-steps>
+    </form>
+</x-ito.shell-page>
+@endsection

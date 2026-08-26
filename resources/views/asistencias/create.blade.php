@@ -15,12 +15,14 @@
     ];
     $otrosTipos = collect($tiposAsistencia)->except(array_keys($chipsRapidos));
 @endphp
-<div class="card asist-dia-card">
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <span>Elegí bloque y fecha</span>
+<x-ito.shell-page
+    title="Cargar asistencias"
+    eyebrow="Asistencias"
+    subtitle="Elegí bloque y fecha, después marcá cada alumno."
+>
+    <x-slot:actions>
         <a href="{{ route($matrixRoute) }}" class="btn btn-sm btn-outline-secondary">Ir a planilla del mes</a>
-    </div>
-    <div class="card-body">
+    </x-slot:actions>
         @include('partials.form-ayuda-intro', ['text' => 'Primero elegí el bloque y el día. Después marcá cada alumno con letra y texto (P, T, J o I).'])
         <form method="GET" class="mb-4">
             <div class="row g-3">
@@ -107,8 +109,7 @@
             @endif
         </form>
         @endif
-    </div>
-</div>
+</x-ito.shell-page>
 @endsection
 
 @push('scripts')

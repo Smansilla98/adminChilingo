@@ -5,9 +5,11 @@
 
 @section('content')
 @include('villa-gesell.partials.nav')
-<div class="card">
-    <div class="card-header">Editar inscripción · {{ $inscripto->alumno?->nombre_apellido }}</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Editar inscripción"
+    eyebrow="Villa Gesell"
+    subtitle="{{ $inscripto->alumno?->nombre_apellido }}"
+>
         <p class="text-muted">Se puede cambiar plaza, pagos, días, talle y tambores aunque el cupo ya esté definido o la plaza ocupada (si movés a otra plaza libre).</p>
         <form action="{{ route('villa-gesell.inscriptos.update', $inscripto) }}" method="POST">
             @csrf
@@ -18,8 +20,7 @@
                 <a href="{{ route('villa-gesell.inscriptos.index') }}" class="btn btn-link">Volver</a>
             </div>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
 @include('villa-gesell.inscriptos._modal_alumno')
 @endsection
 

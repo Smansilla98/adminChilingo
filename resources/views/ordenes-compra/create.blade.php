@@ -4,9 +4,12 @@
 @section('page-title', 'Nueva orden de compra')
 
 @section('content')
-<div class="card">
-    <div class="card-header py-3">Nueva orden de compra</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Nueva orden de compra"
+    eyebrow="Compras"
+    subtitle="Sede, motivo e ítems a comprar."
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Pedido de compra: sede, motivo y lista de cosas a comprar (podés sumar varias filas).'])
         <form action="{{ route('ordenes-compra.store') }}" method="POST">
             @csrf
@@ -17,7 +20,7 @@
                 <a href="{{ route('ordenes-compra.index') }}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection
 

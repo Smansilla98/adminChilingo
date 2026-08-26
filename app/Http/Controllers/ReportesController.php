@@ -103,17 +103,7 @@ class ReportesController extends Controller
      */
     private function sedeScopeIds(): ?array
     {
-        $user = auth()->user();
-        if (! $user || $user->isAdmin()) {
-            return null;
-        }
-        if ($user->isCoordinadorSede()) {
-            $ids = $user->sedeIdsCoordinadas();
-
-            return $ids !== [] ? $ids : [0];
-        }
-
-        return null;
+        return app(\App\Services\AmbitoSedeService::class)->idsPara(auth()->user());
     }
 
     private function compilarDatos(int $mes, int $año): array

@@ -10,14 +10,21 @@
     $hora = (int) now()->format('G');
     $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
     $alumnosTotal = $bloques->sum(fn ($b) => $b->alumnos ? $b->alumnos->count() : 0);
+    $faltaLista = ($pendientesAsistencia ?? collect())->isNotEmpty();
 @endphp
 
-<div class="hub">
+<div class="hub hub--docente">
     <div class="hub-hero">
         <div class="hub-hero-main">
             <p class="hub-eyebrow">Modo docente · La Chilinga</p>
             <h1 class="hub-greeting">{{ $saludo }}, <em>{{ $primer }}</em>.</h1>
-            <p class="hub-lead">Antes de clase: asistencia. Durante: chips grandes. Después: el cuaderno (eje + próximo paso).</p>
+            <p class="hub-lead">
+                @if($faltaLista)
+                    Primero: pasar lista. Después: el cuaderno (eje + próximo paso).
+                @else
+                    Antes de clase: asistencia. Durante: chips grandes. Después: el cuaderno.
+                @endif
+            </p>
         </div>
         <dl class="hub-meta">
             <div>
@@ -29,11 +36,58 @@
                 <dd>Profesor</dd>
             </div>
             <div>
-                <dt>Estado</dt>
-                <dd><span class="hub-status-dot" aria-hidden="true"></span> Operativo</dd>
+                <dt>Lista</dt>
+                <dd>
+                    @if($faltaLista)
+                        <span class="hub-status-dot hub-status-dot--alert" aria-hidden="true"></span>
+                        Pendiente
+                    @else
+                        <span class="hub-status-dot hub-status-dot--ok" aria-hidden="true"></span>
+                        Al día
+                    @endif
+                </dd>
             </div>
         </dl>
     </div>
+
+    @if($faltaLista)
+    <section class="hub-section hub-section--priority" aria-labelledby="jornada-pend">
+        <header class="hub-section-head">
+            <h2 class="hub-section-title" id="jornada-pend"><span class="hub-section-code">Ahora</span> Falta pasar lista</h2>
+        </header>
+        <p class="text-muted mb-2">Hoy tenés clase y todavía no hay asistencia cargada.</p>
+        <div class="hub-modules">
+            @foreach($pendientesAsistencia as $pend)
+            <a class="hub-module hub-module--alert" href="{{ route('profesor.asistencias.create', ['bloque_id' => $pend->id, 'fecha' => now()->toDateString()]) }}">
+                <span class="hub-module-icon"><i class="bi bi-exclamation-circle" aria-hidden="true"></i></span>
+                <span class="hub-module-body">
+                    <span class="hub-module-title">{{ $pend->nombre }}</span>
+                    <span class="hub-module-desc">Tomar asistencia ahora · {{ $pend->sede->nombre ?? 'Sede' }}</span>
+                </span>
+            </a>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
+    @if(($bloquesHoy ?? collect())->isNotEmpty())
+    <section class="hub-section">
+        <header class="hub-section-head">
+            <h2 class="hub-section-title"><span class="hub-section-code">Hoy</span> Clases de hoy</h2>
+        </header>
+        <div class="hub-modules">
+            @foreach($bloquesHoy as $bloqueHoy)
+            <a class="hub-module" href="{{ route('profesor.asistencias.create', ['bloque_id' => $bloqueHoy->id, 'fecha' => now()->toDateString()]) }}">
+                <span class="hub-module-icon"><i class="bi bi-check2-square" aria-hidden="true"></i></span>
+                <span class="hub-module-body">
+                    <span class="hub-module-title">Tomar asistencia · {{ $bloqueHoy->nombre }}</span>
+                    <span class="hub-module-desc">{{ $bloqueHoy->sede->nombre ?? 'Sede' }} · {{ $bloqueHoy->alumnos?->count() ?? 0 }} alumnos</span>
+                </span>
+            </a>
+            @endforeach
+        </div>
+    </section>
+    @endif
 
     <div class="hub-kpis hub-kpis--4">
         <a class="hub-kpi" href="{{ route('profesor.bloques') }}">
@@ -74,45 +128,6 @@
         </a>
     </div>
 
-    @if(($bloquesHoy ?? collect())->isNotEmpty())
-    <section class="hub-section">
-        <header class="hub-section-head">
-            <h2 class="hub-section-title"><span class="hub-section-code">Hoy</span> Clases de hoy</h2>
-        </header>
-        <div class="hub-modules">
-            @foreach($bloquesHoy as $bloqueHoy)
-            <a class="hub-module" href="{{ route('profesor.asistencias.create', ['bloque_id' => $bloqueHoy->id, 'fecha' => now()->toDateString()]) }}">
-                <span class="hub-module-icon"><i class="bi bi-check2-square" aria-hidden="true"></i></span>
-                <span class="hub-module-body">
-                    <span class="hub-module-title">Tomar asistencia · {{ $bloqueHoy->nombre }}</span>
-                    <span class="hub-module-desc">{{ $bloqueHoy->sede->nombre ?? 'Sede' }} · {{ $bloqueHoy->alumnos?->count() ?? 0 }} alumnos</span>
-                </span>
-            </a>
-            @endforeach
-        </div>
-    </section>
-    @endif
-
-    @if(($pendientesAsistencia ?? collect())->isNotEmpty())
-    <section class="hub-section" aria-labelledby="jornada-pend">
-        <header class="hub-section-head">
-            <h2 class="hub-section-title" id="jornada-pend"><span class="hub-section-code">Ahora</span> Falta pasar lista</h2>
-        </header>
-        <p class="text-muted">Hoy tenés clase y todavía no hay asistencia cargada.</p>
-        <div class="hub-modules">
-            @foreach($pendientesAsistencia as $pend)
-            <a class="hub-module" href="{{ route('profesor.asistencias.create', ['bloque_id' => $pend->id, 'fecha' => now()->toDateString()]) }}">
-                <span class="hub-module-icon"><i class="bi bi-exclamation-circle" aria-hidden="true"></i></span>
-                <span class="hub-module-body">
-                    <span class="hub-module-title">{{ $pend->nombre }}</span>
-                    <span class="hub-module-desc">Tomar asistencia ahora</span>
-                </span>
-            </a>
-            @endforeach
-        </div>
-    </section>
-    @endif
-
     @if(($proximosPasos ?? collect())->isNotEmpty())
     <section class="hub-section" aria-labelledby="jornada-sigue">
         <header class="hub-section-head">
@@ -132,9 +147,9 @@
 
     <section class="hub-section">
         <header class="hub-section-head">
-            <h2 class="hub-section-title"><span class="hub-section-code">01</span> Accesos rápidos</h2>
+            <h2 class="hub-section-title"><span class="hub-section-code">Hacer</span> Accesos rápidos</h2>
         </header>
-        <div class="hub-modules">
+        <div class="hub-modules hub-modules--compact">
             <a class="hub-module" href="{{ route('profesor.asistencias.create') }}">
                 <span class="hub-module-icon"><i class="bi bi-check2-square"></i></span>
                 <span class="hub-module-body">
@@ -142,18 +157,11 @@
                     <span class="hub-module-desc">Cargar presencia del día</span>
                 </span>
             </a>
-        <a href="{{ route('comprobantes-cuota-alumnos.create') }}" class="hub-module">
-            <span class="hub-module-icon"><i class="bi bi-upload"></i></span>
-            <span class="hub-module-body">
-                <span class="hub-module-title">Cargar comprobante</span>
-                <span class="hub-module-desc">Si te lo alcanzaron en clase</span>
-            </span>
-        </a>
-        <a class="hub-module" href="{{ route('profesor.bloques') }}">
-                <span class="hub-module-icon"><i class="bi bi-collection"></i></span>
+            <a href="{{ route('comprobantes-cuota-alumnos.create') }}" class="hub-module">
+                <span class="hub-module-icon"><i class="bi bi-upload"></i></span>
                 <span class="hub-module-body">
-                    <span class="hub-module-title">Mis bloques</span>
-                    <span class="hub-module-desc">Grupos asignados</span>
+                    <span class="hub-module-title">Cargar comprobante</span>
+                    <span class="hub-module-desc">Si te lo alcanzaron en clase</span>
                 </span>
             </a>
             <a class="hub-module" href="{{ route('profesor.alumnos') }}">
@@ -163,25 +171,11 @@
                     <span class="hub-module-desc">Listado por bloque</span>
                 </span>
             </a>
-            <a class="hub-module" href="{{ route('programa.index') }}">
-                <span class="hub-module-icon"><i class="bi bi-journal-text"></i></span>
-                <span class="hub-module-body">
-                    <span class="hub-module-title">Programa</span>
-                    <span class="hub-module-desc">Toques y material</span>
-                </span>
-            </a>
             <a class="hub-module" href="{{ route('programa.partituras.index') }}">
                 <span class="hub-module-icon"><i class="bi bi-file-earmark-music"></i></span>
                 <span class="hub-module-body">
                     <span class="hub-module-title">Partituras</span>
                     <span class="hub-module-desc">PDFs del cuadernillo</span>
-                </span>
-            </a>
-            <a class="hub-module" href="{{ route('calendario.index') }}">
-                <span class="hub-module-icon"><i class="bi bi-calendar3"></i></span>
-                <span class="hub-module-body">
-                    <span class="hub-module-title">Calendario</span>
-                    <span class="hub-module-desc">Fechas y ensayos</span>
                 </span>
             </a>
         </div>
@@ -191,6 +185,7 @@
         <div class="hub-panel">
             <div class="hub-panel-head">
                 <div class="hub-panel-title">Bloques asignados</div>
+                <a href="{{ route('profesor.bloques') }}" class="hub-panel-link">Ver todos →</a>
             </div>
             @forelse($bloques as $bloque)
                 <div class="hub-list-item">
@@ -198,6 +193,7 @@
                         <div class="fw-semibold">{{ $bloque->nombre ?? 'Bloque' }}</div>
                         <div class="small text-muted">{{ $bloque->sede->nombre ?? '—' }} · {{ $bloque->alumnos?->count() ?? 0 }} alumnos</div>
                     </div>
+                    <a class="btn btn-sm btn-primary" href="{{ route('profesor.asistencias.create', ['bloque_id' => $bloque->id, 'fecha' => now()->toDateString()]) }}">Asistencia</a>
                 </div>
             @empty
                 <p class="text-muted small mb-0">No tenés bloques asignados.</p>

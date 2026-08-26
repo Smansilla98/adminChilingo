@@ -4,9 +4,12 @@
 @section('page-title', 'Editar sede')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Editar sede</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Editar sede"
+    eyebrow="Sedes"
+    subtitle="Corregí datos y porcentajes de liquidación."
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Corregí los datos de la sede. Los porcentajes de abajo se usan al registrar pagos.'])
         <form action="{{ route('sedes.update', $sede) }}" method="POST">
             @csrf
@@ -68,6 +71,6 @@
             <a href="{{ route('sedes.index') }}" class="btn btn-secondary">Cancelar</a>
             <a href="{{ route('sedes.show', $sede) }}" class="btn btn-outline-secondary">Ver</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

@@ -4,15 +4,15 @@
 @section('page-title', 'Orden de compra #' . $orden->id)
 
 @section('content')
-<div class="card">
-    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <div>Orden #{{ $orden->id }} — {{ $orden->sede?->nombre }}</div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('ordenes-compra.edit', $orden) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Editar</a>
-            <a href="{{ route('ordenes-compra.index') }}" class="btn btn-sm btn-outline-secondary">Volver</a>
-        </div>
-    </div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Orden #{{ $orden->id }}"
+    eyebrow="Compras"
+    subtitle="{{ $orden->sede?->nombre }}"
+>
+    <x-slot:actions>
+        <a href="{{ route('ordenes-compra.edit', $orden) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{{ route('ordenes-compra.index') }}" class="btn btn-sm btn-outline-secondary">Volver</a>
+    </x-slot:actions>
         <div class="row g-3 mb-3">
             <div class="col-md-3">
                 <div class="text-muted small">Sede</div>
@@ -98,7 +98,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
+</x-ito.shell-page>
 @endsection
 

@@ -5,72 +5,62 @@
 
 @section('content')
 @php $isAdmin = auth()->user()->isAdmin(); @endphp
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">{{ $alumno->nombre_apellido }}</h5>
-        <div>
-            @if($isAdmin)
+<x-ito.shell-page
+    title="{{ $alumno->nombre_apellido }}"
+    subtitle="Ficha, contacto y seguimiento"
+    eyebrow="Alumnos"
+>
+    <x-slot:actions>
+        @if($isAdmin)
             <a href="{{ route('alumnos.edit', $alumno) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
-            <a href="{{ route('alumnos.index') }}" class="btn btn-secondary btn-sm">Volver</a>
-            @else
-            <a href="{{ route('profesor.alumnos') }}" class="btn btn-secondary btn-sm">Volver a mis alumnos</a>
-            @endif
-        </div>
-    </div>
-    <div class="card-body">
-        @if(!empty($profesorPerfil))
+            <a href="{{ route('alumnos.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
+        @else
+            <a href="{{ route('profesor.alumnos') }}" class="btn btn-outline-secondary btn-sm">Volver a mis alumnos</a>
+        @endif
+    </x-slot:actions>
+
+    @if(!empty($profesorPerfil))
         <div class="alert alert-info py-2 small mb-3">
             <i class="bi bi-person-badge"></i> También tiene perfil de <strong>profesor</strong>:
             <a href="{{ route('profesores.show', $profesorPerfil) }}">{{ $profesorPerfil->nombre }}</a>
         </div>
-        @endif
+    @endif
 
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>DNI:</strong> {{ $alumno->dni ?? '—' }}
-            </div>
-            <div class="col-md-4">
-                <strong>Fecha de nacimiento:</strong> {{ $alumno->fecha_nacimiento ? $alumno->fecha_nacimiento->format('d/m/Y') : '—' }}
-            </div>
-            <div class="col-md-4">
-                <strong>Edad:</strong> {{ $alumno->edad !== null ? $alumno->edad.' años' : '—' }}
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <strong>Teléfono:</strong> {{ $alumno->telefono ?? '—' }}
-            </div>
-            <div class="col-md-4">
-                <strong>Sede principal:</strong> {{ $alumno->sede->nombre ?? '—' }}
-            </div>
-            <div class="col-md-4">
-                <strong>Estado:</strong> {{ $alumno->activo ? 'Activo' : 'Inactivo' }}
-            </div>
-        </div>
+    <div class="ito-show-grid">
+        <section class="ito-show-block">
+            <h2 class="ito-show-title">Datos</h2>
+            <dl class="ito-dl">
+                <div><dt>DNI</dt><dd>{{ $alumno->dni ?? '—' }}</dd></div>
+                <div><dt>Nacimiento</dt><dd>{{ $alumno->fecha_nacimiento ? $alumno->fecha_nacimiento->format('d/m/Y') : '—' }}</dd></div>
+                <div><dt>Edad</dt><dd>{{ $alumno->edad !== null ? $alumno->edad.' años' : '—' }}</dd></div>
+                <div><dt>Sede</dt><dd>{{ $alumno->sede->nombre ?? '—' }}</dd></div>
+                <div><dt>Estado</dt><dd>{{ $alumno->activo ? 'Activo' : 'Inactivo' }}</dd></div>
+            </dl>
+        </section>
 
-        <h6 class="mt-2">Instrumentos</h6>
-        <ul class="list-group mb-3">
-            <li class="list-group-item d-flex justify-content-between">
-                <span>Principal</span>
-                <strong>{{ $alumno->instrumento_principal ?? '—' }}</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-                <span>Secundario</span>
-                <strong>{{ $alumno->instrumento_secundario ?? '—' }}</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-                <span>Tipo de tambor</span>
-                <strong>{{ $alumno->tipo_tambor ?? '—' }}</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-                <span>Procedencia del instrumento</span>
-                <strong>{{ $alumno->tambor_procedencia ?? '—' }}</strong>
-            </li>
+        <section class="ito-show-block">
+            <h2 class="ito-show-title">Contacto</h2>
+            <x-ito.contact-actions
+                :telefono="$alumno->telefono"
+                :nombre="$alumno->nombre_apellido"
+            />
+        </section>
+    </div>
+
+    <section class="ito-show-block mt-3">
+        <h2 class="ito-show-title">Instrumentos</h2>
+        <ul class="list-group list-group-flush ito-list-flush">
+            <li class="list-group-item d-flex justify-content-between"><span>Principal</span><strong>{{ $alumno->instrumento_principal ?? '—' }}</strong></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Secundario</span><strong>{{ $alumno->instrumento_secundario ?? '—' }}</strong></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Tipo de tambor</span><strong>{{ $alumno->tipo_tambor ?? '—' }}</strong></li>
+            <li class="list-group-item d-flex justify-content-between"><span>Procedencia</span><strong>{{ $alumno->tambor_procedencia ?? '—' }}</strong></li>
         </ul>
+    </section>
 
-        <h6 class="mt-2">Bloques</h6>
+    <section class="ito-show-block mt-3">
+        <h2 class="ito-show-title">Bloques</h2>
         @if($alumno->bloques->isNotEmpty())
-        <ul class="list-group mb-3">
+        <ul class="list-group list-group-flush ito-list-flush">
             @foreach($alumno->bloques as $bloque)
             <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span>
@@ -91,23 +81,23 @@
             @endforeach
         </ul>
         @elseif($alumno->bloque)
-        <p class="mb-3">{{ $alumno->bloque->nombre }} @if($alumno->bloque->profesor)({{ $alumno->bloque->profesor->nombre }})@endif</p>
+        <p class="mb-0">{{ $alumno->bloque->nombre }} @if($alumno->bloque->profesor)({{ $alumno->bloque->profesor->nombre }})@endif</p>
         @else
-        <p class="text-muted mb-3">Sin bloques asignados.</p>
+        <p class="text-muted mb-0">Sin bloques asignados.</p>
         @endif
+    </section>
 
-        <h6 class="mt-4">Historial de pagos de cuotas</h6>
-        <div class="table-responsive mb-4">
-            <table class="table table-striped align-middle">
+    <section class="ito-show-block mt-4">
+        <h2 class="ito-show-title">Historial de pagos de cuotas</h2>
+        <div class="table-responsive">
+            <table class="ito-table">
                 <thead>
                     <tr>
                         <th>Fecha pago</th>
                         <th>Cuota / período</th>
                         <th>Monto pagado</th>
                         <th>Abono docente</th>
-                        @if($isAdmin)
-                        <th></th>
-                        @endif
+                        @if($isAdmin)<th></th>@endif
                     </tr>
                 </thead>
                 <tbody>
@@ -136,16 +126,18 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="{{ $isAdmin ? 5 : 4 }}" class="text-center text-muted">Aún no hay pagos registrados para este alumno.</td>
+                        <td colspan="{{ $isAdmin ? 5 : 4 }}" class="ito-empty">Aún no hay pagos registrados para este alumno.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+    </section>
 
-        <h6 class="mt-2">Estado de cuenta (cuotas aplicables)</h6>
+    <section class="ito-show-block mt-4">
+        <h2 class="ito-show-title">Estado de cuenta</h2>
         <div class="table-responsive">
-            <table class="table table-striped align-middle">
+            <table class="ito-table">
                 <thead>
                     <tr>
                         <th>Período</th>
@@ -174,18 +166,20 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted">No hay cuotas asociadas para este alumno.</td>
+                        <td colspan="4" class="ito-empty">No hay cuotas asociadas para este alumno.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+    </section>
 
-        @php $puedeBitacora = auth()->user() && (auth()->user()->isAdmin() || auth()->user()->isProfesor() || auth()->user()->isCoordinadorSede() || auth()->user()->isCoordinadorArea()); @endphp
-        @if($puedeBitacora && \Illuminate\Support\Facades\Schema::hasTable('observaciones_pedagogicas'))
-        <h6 class="mt-4">Cuaderno pedagógico</h6>
+    @php $puedeBitacora = auth()->user() && (auth()->user()->isAdmin() || auth()->user()->isProfesor() || auth()->user()->isCoordinadorSede() || auth()->user()->isCoordinadorArea()); @endphp
+    @if($puedeBitacora && \Illuminate\Support\Facades\Schema::hasTable('observaciones_pedagogicas'))
+    <section class="ito-show-block mt-4">
+        <h2 class="ito-show-title">Cuaderno pedagógico</h2>
         <p class="text-muted small">Registrá qué competencia se trabajó y el siguiente paso. Si lo compartís, el alumno lo ve en su espacio.</p>
-        <form action="{{ route('seguimiento.store') }}" method="POST" class="card card-body mb-3">
+        <form action="{{ route('seguimiento.store') }}" method="POST" class="ito-form-section mb-3">
             @csrf
             <input type="hidden" name="alumno_id" value="{{ $alumno->id }}">
             <input type="hidden" name="fecha" value="{{ now()->toDateString() }}">
@@ -239,7 +233,7 @@
                 </div>
             </div>
         </form>
-        <ul class="list-group mb-4">
+        <ul class="list-group list-group-flush ito-list-flush">
             @forelse($alumno->observacionesPedagogicas as $nota)
             <li class="list-group-item">
                 <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
@@ -268,11 +262,13 @@
             <li class="list-group-item text-muted">Todavía no hay notas en el cuaderno.</li>
             @endforelse
         </ul>
-        @endif
+    </section>
+    @endif
 
-        @if(isset($alumno->asistencias) && $alumno->asistencias->isNotEmpty())
-        <h6 class="mt-4">Últimas asistencias</h6>
-        <ul class="list-group">
+    @if(isset($alumno->asistencias) && $alumno->asistencias->isNotEmpty())
+    <section class="ito-show-block mt-4">
+        <h2 class="ito-show-title">Últimas asistencias</h2>
+        <ul class="list-group list-group-flush ito-list-flush">
             @foreach($alumno->asistencias->take(10) as $a)
             <li class="list-group-item">
                 {{ $a->fecha ? \Carbon\Carbon::parse($a->fecha)->format('d/m/Y') : '' }}
@@ -282,7 +278,7 @@
             </li>
             @endforeach
         </ul>
-        @endif
-    </div>
-</div>
+    </section>
+    @endif
+</x-ito.shell-page>
 @endsection

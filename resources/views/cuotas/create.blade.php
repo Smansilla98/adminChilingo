@@ -4,9 +4,11 @@
 @section('page-title', 'Nueva cuota')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Nueva cuota</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Nueva cuota"
+    eyebrow="Cuotas"
+    subtitle="Monto y para quién aplica (escuela, sede o bloque)."
+>
         @include('partials.form-ayuda-intro', ['text' => 'Definí el monto y para quién es la cuota (toda la escuela, una sede o un bloque). Si hay varias para el mismo mes, al cobrar se usa la más específica.'])
         <form action="{{ route('cuotas.store') }}" method="POST" id="formCuota">
             @csrf
@@ -113,8 +115,7 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('cuotas.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
 
 @push('scripts')
 <script type="application/json" id="bloquesAlumnosJson">

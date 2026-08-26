@@ -4,9 +4,12 @@
 @section('page-title', 'Editar orden de compra')
 
 @section('content')
-<div class="card">
-    <div class="card-header py-3">Editar orden de compra #{{ $orden->id }}</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Editar orden #{{ $orden->id }}"
+    eyebrow="Compras"
+    subtitle="Corregí la orden y sus ítems."
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Corregí la orden y sus ítems.'])
         <form action="{{ route('ordenes-compra.update', $orden) }}" method="POST">
             @csrf
@@ -18,7 +21,7 @@
                 <a href="{{ route('ordenes-compra.show', $orden) }}" class="btn btn-secondary">Volver</a>
             </div>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection
 

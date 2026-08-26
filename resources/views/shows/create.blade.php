@@ -4,9 +4,12 @@
 @section('page-title', 'Nuevo show')
 
 @section('content')
-<div class="card shadow-sm">
-    <div class="card-header py-3">Nuevo show</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Nuevo show"
+    eyebrow="Shows"
+    subtitle="Título, fecha y bloques participantes."
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Show o presentación: título, fecha y qué bloques participan (o marcá convocatoria abierta).'])
         <form action="{{ route('shows.store') }}" method="POST">
             @csrf
@@ -61,6 +64,6 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('shows.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

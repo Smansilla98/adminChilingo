@@ -4,9 +4,12 @@
 @section('page-title', 'Nueva sede')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Nueva sede</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Nueva sede"
+    eyebrow="Sedes"
+    subtitle="Datos de la sede y reparto de cuota."
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Datos de la sede (nombre y dirección). Más abajo podés definir cuánto de cada cuota va a la escuela y al profesor.'])
         <form action="{{ route('sedes.store') }}" method="POST">
             @csrf
@@ -67,6 +70,6 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('sedes.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

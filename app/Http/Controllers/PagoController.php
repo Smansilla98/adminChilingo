@@ -7,6 +7,7 @@ use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\Pago;
 use App\Models\PagoDetalle;
+use App\Services\AmbitoSedeService;
 use App\Support\LiquidacionDocente;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -19,17 +20,29 @@ use Throwable;
 
 class PagoController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, AmbitoSedeService $ambito)
     {
         $pagos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
         $alumnos = collect();
         $cuotas = collect();
+        $filtroSedes = $ambito->idsPara(auth()->user());
 
         if (Schema::hasTable('pagos')) {
             try {
                 $query = Pago::with(['detalles.alumno', 'detalles.cuota', 'registradoPor']);
+                if ($filtroSedes !== null) {
+                    $ambito->aplicarPagos($query, $filtroSedes);
+                }
                 if ($request->filled('alumno_id')) {
                     $query->whereHas('detalles', fn ($q) => $q->where('alumno_id', $request->alumno_id));
+                }
+                if ($request->filled('alumno')) {
+                    $term = trim((string) $request->input('alumno'));
+                    $query->whereHas('detalles.alumno', function ($q) use ($term) {
+                        $q->where('nombre_apellido', 'like', '%'.$term.'%')
+                            ->orWhere('dni', 'like', '%'.$term.'%')
+                            ->orWhere('telefono', 'like', '%'.$term.'%');
+                    });
                 }
                 if ($request->filled('cuota_id')) {
                     $query->whereHas('detalles', fn ($q) => $q->where('cuota_id', $request->cuota_id));
@@ -46,16 +59,12 @@ class PagoController extends Controller
             }
         }
 
-        if (Schema::hasTable('alumnos')) {
-            try {
-                $alumnos = Alumno::where('activo', true)->orderBy('nombre_apellido')->get();
-            } catch (QueryException $e) {
-                // mantener collect()
-            }
-        }
         if (Schema::hasTable('cuotas')) {
             try {
                 $qCuotas = Cuota::query();
+                if ($filtroSedes !== null) {
+                    $ambito->aplicarCuotas($qCuotas, $filtroSedes);
+                }
                 if (Schema::hasColumn('cuotas', 'activo')) {
                     $qCuotas->orderBy('activo', 'desc');
                 }
@@ -87,10 +96,16 @@ class PagoController extends Controller
      */
     private function pagoFormViewData(): array
     {
+        $ambito = app(AmbitoSedeService::class);
+        $filtroSedes = $ambito->idsPara(auth()->user());
+
         $cuotas = collect();
         if (Schema::hasTable('cuotas')) {
             try {
                 $q = Cuota::query();
+                if ($filtroSedes !== null) {
+                    $ambito->aplicarCuotas($q, $filtroSedes);
+                }
                 if (Schema::hasColumn('cuotas', 'activo')) {
                     $q->orderBy('activo', 'desc');
                 }
@@ -107,11 +122,14 @@ class PagoController extends Controller
             ->values();
         if ($bloquesFiltro->isEmpty() && Schema::hasColumn('cuotas', 'alcance')) {
             try {
-                $bloquesFiltro = Bloque::query()
+                $bloquesQ = Bloque::query()
                     ->where('activo', true)
                     ->with('sede')
-                    ->orderBy('nombre')
-                    ->get();
+                    ->orderBy('nombre');
+                if ($filtroSedes !== null) {
+                    $ambito->aplicarBloques($bloquesQ, $filtroSedes);
+                }
+                $bloquesFiltro = $bloquesQ->get();
             } catch (\Throwable $e) {
                 $bloquesFiltro = collect();
             }

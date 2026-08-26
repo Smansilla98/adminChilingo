@@ -12,7 +12,7 @@
         <select name="sede_id" id="sede_id" class="form-select" required>
             <option value="">Elegí sede</option>
             @foreach($sedes as $s)
-                <option value="{{ $s->id }}" {{ (string) old('sede_id') === (string) $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
+                <option value="{{ $s->id }}" {{ (string) ($prefill['sede_id'] ?? old('sede_id')) === (string) $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
             @endforeach
         </select>
     </div>
@@ -32,7 +32,7 @@
     <div class="mb-3">
         <label class="form-label" for="dni">DNI del alumno</label>
         <div class="d-flex flex-wrap gap-2">
-            <input type="text" name="dni" id="dni" class="form-control" inputmode="numeric" autocomplete="off" required minlength="6" maxlength="20" placeholder="Solo números" value="{{ old('dni') }}">
+            <input type="text" name="dni" id="dni" class="form-control" inputmode="numeric" autocomplete="off" required minlength="6" maxlength="20" placeholder="Solo números" value="{{ $prefill['dni'] ?? old('dni') }}">
             <button type="button" class="btn btn-outline-primary" id="btn-buscar-alumno">Buscar</button>
         </div>
         <div id="hint-alumnos" class="form-text" role="status"></div>

@@ -4,9 +4,12 @@
 @section('page-title', 'Editar bloque')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Editar bloque</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Editar bloque"
+    eyebrow="Bloques"
+    subtitle="{{ $bloque->nombre }}"
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Cambiá los datos del bloque abajo. Más abajo podés sumar los días y horarios de clase (así salen en el calendario).'])
         <form action="{{ route('bloques.update', $bloque) }}" method="POST">
             @csrf
@@ -124,6 +127,6 @@
                 <button type="submit" class="btn btn-sm btn-outline-primary">Agregar horario</button>
             </div>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

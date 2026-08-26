@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 class ComprobanteCuotaAlumnoPublicController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
         if (! Schema::hasTable('comprobantes_cuota_alumnos')) {
             abort(503, 'Función no disponible: ejecutá migraciones.');
@@ -30,7 +30,19 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             ->orderBy('nombre')
             ->get(['id', 'nombre']);
 
-        return view('comprobante_cuota_public.create', compact('sedes'));
+        $prefill = [
+            'sede_id' => $request->query('sede_id', old('sede_id')),
+            'dni' => $request->query('dni', old('dni')),
+        ];
+
+        // Si hay sesión de alumno, sugerir DNI/sede sin exponer padrón.
+        if (auth()->check() && auth()->user()->isAlumno() && auth()->user()->alumno) {
+            $alu = auth()->user()->alumno;
+            $prefill['dni'] = $prefill['dni'] ?: $alu->dni;
+            $prefill['sede_id'] = $prefill['sede_id'] ?: $alu->sede_id;
+        }
+
+        return view('comprobante_cuota_public.create', compact('sedes', 'prefill'));
     }
 
     public function apiPeriodos(Request $request): JsonResponse

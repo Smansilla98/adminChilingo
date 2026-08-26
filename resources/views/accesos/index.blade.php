@@ -7,6 +7,7 @@
 <div class="ito-page">
     <div class="ito-page-head">
         <div>
+            <p class="ito-eyebrow">Accesos</p>
             <h1 class="ito-page-title">Accesos</h1>
             <p class="ito-page-sub">Quién puede ver qué en el sistema</p>
         </div>

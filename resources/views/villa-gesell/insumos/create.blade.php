@@ -5,9 +5,12 @@
 
 @section('content')
 @include('villa-gesell.partials.nav')
-<div class="card">
-    <div class="card-header">Nuevo insumo</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Nuevo insumo"
+    eyebrow="Villa Gesell"
+    subtitle="Material de la gira."
+>
+
         <form action="{{ route('villa-gesell.insumos.store') }}" method="POST">
             @csrf
             @include('villa-gesell.insumos._form')
@@ -16,6 +19,6 @@
                 <a class="btn btn-link" href="{{ route('villa-gesell.insumos.index') }}">Cancelar</a>
             </div>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

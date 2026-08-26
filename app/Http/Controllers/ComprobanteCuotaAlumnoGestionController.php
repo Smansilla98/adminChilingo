@@ -23,22 +23,19 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
 
         /** @var User $user */
         $user = auth()->user();
+        $ambito = app(\App\Services\AmbitoSedeService::class);
+        $filtroSedes = $ambito->idsPara($user);
 
         $query = ComprobanteCuotaAlumno::query()
             ->with(['alumno', 'sede', 'items.bloque.sede', 'items.cuota', 'pago'])
             ->orderByDesc('created_at');
 
-        if ($user->isProfesor() && ! $user->isAdmin() && ! $user->acotaPorSede()) {
+        if ($filtroSedes !== null) {
+            $ambito->aplicarComprobantes($query, $filtroSedes);
+        } elseif ($user->isProfesor() && ! $user->isAdmin()) {
             $prof = $user->profesor;
             $ids = $prof ? $prof->bloqueIdsDondeParticipa()->all() : [];
             $query->whereHas('items', fn ($q) => $q->whereIn('bloque_id', $ids !== [] ? $ids : [0]));
-        } elseif ($user->acotaPorSede()) {
-            $sedeIds = $user->sedeIdsOperativas();
-            $query->where(function ($q) use ($sedeIds) {
-                $ids = $sedeIds !== [] ? $sedeIds : [0];
-                $q->whereIn('sede_id', $ids)
-                    ->orWhereHas('items.bloque', fn ($b) => $b->whereIn('sede_id', $ids));
-            });
         }
 
         if ($request->filled('estado')) {

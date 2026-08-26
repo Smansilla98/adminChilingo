@@ -21,9 +21,14 @@
 @section('page-title', $editando ? 'Editar pago' : 'Registrar pago')
 
 @section('content')
-<div class="card">
-    <div class="card-header">{{ $editando ? 'Editar pago #' . $pago->id : 'Nuevo pago' }}</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="{{ $editando ? 'Editar pago #'.$pago->id : 'Nuevo pago' }}"
+    eyebrow="Pagos"
+    subtitle="{{ $editando ? 'Corregí líneas y comprobante.' : 'Cada fila es alumno + cuota + monto. El total es la suma.' }}"
+>
+    <x-slot:actions>
+        <a href="{{ $editando ? route('pagos.show', $pago) : route('pagos.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
+    </x-slot:actions>
         @include('partials.form-ayuda-intro', ['text' => 'Cada fila es alumno + cuota + monto. El total debe ser la suma de todas las filas. El comprobante es opcional.'])
         <form action="{{ $editando ? route('pagos.update', $pago) : route('pagos.store') }}" method="POST" enctype="multipart/form-data" id="form-pago-lineas">
             @csrf
@@ -118,8 +123,7 @@
             <button type="submit" class="btn btn-primary">{{ $editando ? 'Guardar cambios' : 'Guardar pago' }}</button>
             <a href="{{ $editando ? route('pagos.show', $pago) : route('pagos.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
 @if($editando)
 @include('pagos._modal_comprobante')
 @endif

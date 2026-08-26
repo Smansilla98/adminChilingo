@@ -72,6 +72,19 @@
         </form>
     </x-slot:toolbar>
 
+    <x-slot:filters>
+        <x-ito.filter-chips
+            :clear-url="route('alumnos.index')"
+            :filters="[
+                'sede_id' => 'Sede',
+                'bloque_id' => 'Bloque',
+                'tipo_tambor' => 'Tambor',
+                'tambor_procedencia' => 'Procedencia',
+                'search' => 'Búsqueda',
+            ]"
+        />
+    </x-slot:filters>
+
     <table class="ito-table alumnos-table table-alumnos">
         <thead>
             <tr>
@@ -136,7 +149,17 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="9" class="ito-empty">No hay alumnos registrados</td></tr>
+                <tr>
+                    <td colspan="9">
+                        <x-ito.empty
+                            title="{{ request()->hasAny(['sede_id','bloque_id','tipo_tambor','tambor_procedencia','search']) ? 'Ningún alumno coincide' : 'No hay alumnos' }}"
+                            description="{{ request()->hasAny(['sede_id','bloque_id','tipo_tambor','tambor_procedencia','search']) ? 'Probá limpiar los filtros o cambiar la búsqueda.' : 'Cuando cargues el padrón, aparecen acá.' }}"
+                            icon="bi-people"
+                            :action-href="$isAdmin ? (request()->hasAny(['sede_id','bloque_id','tipo_tambor','tambor_procedencia','search']) ? route('alumnos.index') : route('alumnos.create')) : null"
+                            :action-label="$isAdmin ? (request()->hasAny(['sede_id','bloque_id','tipo_tambor','tambor_procedencia','search']) ? 'Limpiar filtros' : 'Nuevo alumno') : null"
+                        />
+                    </td>
+                </tr>
             @endforelse
         </tbody>
     </table>

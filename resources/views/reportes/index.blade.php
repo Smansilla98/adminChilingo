@@ -4,20 +4,26 @@
 @section('page-title', 'Reportes')
 
 @section('content')
-<div class="reportes-wrap">
+<x-ito.shell-page
+    title="Reportes"
+    eyebrow="Reportes"
+    subtitle="Alumnos, ingresos y actividad. Exportá Excel o PDF."
+    :flush="true"
+>
+    <x-slot:actions>
+        <a href="{{ route('reportes.export.excel', ['mes' => $mes, 'año' => $año]) }}" class="btn btn-sm btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Excel
+        </a>
+        <a href="{{ route('reportes.export.pdf', ['mes' => $mes, 'año' => $año]) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
+            <i class="bi bi-file-earmark-pdf"></i> PDF
+        </a>
+    </x-slot:actions>
+<div class="reportes-wrap p-3 p-md-4">
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div>
         @if(!empty($sedeScope))
             <span class="badge bg-info text-dark">Vista filtrada por tus sedes</span>
         @endif
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-        <a href="{{ route('reportes.export.excel', ['mes' => $mes, 'año' => $año]) }}" class="btn btn-sm btn-success">
-            <i class="bi bi-file-earmark-excel"></i> Exportar Excel
-        </a>
-        <a href="{{ route('reportes.export.pdf', ['mes' => $mes, 'año' => $año]) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
-            <i class="bi bi-file-earmark-pdf"></i> Exportar PDF
-        </a>
     </div>
 </div>
 <ul class="nav nav-tabs mb-3" role="tablist">
@@ -50,7 +56,7 @@
 
 <div class="tab-content">
     <div class="tab-pane fade show active" id="rep-alumnos" role="tabpanel">
-        <div class="card mb-3">
+        <div class="ito-card mb-3">
             <div class="card-header py-3">Alumnos por profesor</div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -80,7 +86,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="ito-card">
             <div class="card-header py-3">Alumnos por bloque (con ingresos asociados)</div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -120,7 +126,7 @@
     </div>
 
     <div class="tab-pane fade" id="rep-ingresos-profesor" role="tabpanel">
-        <div class="card">
+        <div class="ito-card">
             <div class="card-header py-3 d-flex justify-content-between align-items-center">
                 <span>Ingresos por profesor</span>
                 <form method="GET" class="d-flex gap-2 align-items-center">
@@ -191,7 +197,7 @@
     </div>
 
     <div class="tab-pane fade" id="rep-actividad-profesor" role="tabpanel">
-        <div class="card">
+        <div class="ito-card">
             <div class="card-header py-3 d-flex justify-content-between align-items-center">
                 <span>Actividad por profesor</span>
                 <form method="GET" class="d-flex gap-2 align-items-center">
@@ -258,7 +264,7 @@
     </div>
 
     <div class="tab-pane fade" id="rep-ingresos" role="tabpanel">
-        <div class="card">
+        <div class="ito-card">
             <div class="card-header py-3">Ingresos y egresos por sede</div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -334,12 +340,12 @@
     </div>
 
     <div class="tab-pane fade" id="rep-global" role="tabpanel">
-        <div class="card">
+        <div class="ito-card">
             <div class="card-header py-3">Resumen global de inversión vs recuperación</div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <div class="card border-start-primary shadow-sm h-100">
+                        <div class="ito-card border-start-primary shadow-sm h-100">
                             <div class="card-body">
                                 <div class="text-muted small">Ingresos totales (pagos)</div>
                                 <div class="h5 mb-0 fw-bold">{{ $ingresosTotales ? '$ ' . number_format($ingresosTotales, 2, ',', '.') : '—' }}</div>
@@ -347,7 +353,7 @@
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-start-danger shadow-sm h-100">
+                        <div class="ito-card border-start-danger shadow-sm h-100">
                             <div class="card-body">
                                 <div class="text-muted small">Gastos totales</div>
                                 <div class="h5 mb-0 fw-bold">{{ $gastosTotales ? '$ ' . number_format($gastosTotales, 2, ',', '.') : '—' }}</div>
@@ -355,7 +361,7 @@
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-start-success shadow-sm h-100">
+                        <div class="ito-card border-start-success shadow-sm h-100">
                             <div class="card-body">
                                 <div class="text-muted small">Resultado global (ingresos - gastos)</div>
                                 <div class="h5 mb-0 fw-bold {{ $resultadoGlobal >= 0 ? 'text-success' : 'text-danger' }}">
@@ -375,4 +381,5 @@
     </div>
 </div>
 </div>
+</x-ito.shell-page>
 @endsection

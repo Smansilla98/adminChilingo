@@ -12,12 +12,12 @@
         default => 'bg-secondary',
     };
 @endphp
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <span>Envío #{{ $comprobanteCuotaAlumno->id }}
-            <span class="badge {{ $badgeClass }} ms-1">{{ $comprobanteCuotaAlumno->etiquetaEstado() }}</span>
-        </span>
-        <div class="d-flex gap-2 flex-wrap">
+<x-ito.shell-page
+    title="Envío #{{ $comprobanteCuotaAlumno->id }}"
+    eyebrow="Comprobantes"
+    subtitle="{{ $comprobanteCuotaAlumno->etiquetaEstado() }}"
+>
+    <x-slot:actions>
             @if($comprobanteCuotaAlumno->comprobante_path)
             <a href="{{ route('comprobantes-cuota-alumnos.comprobante', $comprobanteCuotaAlumno->id) }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener"><i class="bi bi-file-earmark"></i> Archivo</a>
             @endif
@@ -39,10 +39,8 @@
             @if($comprobanteCuotaAlumno->pago_id)
             <a href="{{ route('pagos.show', $comprobanteCuotaAlumno->pago_id) }}" class="btn btn-sm btn-success">Ver pago #{{ $comprobanteCuotaAlumno->pago_id }}</a>
             @endif
-            <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="btn btn-sm btn-secondary">Volver al listado</a>
-        </div>
-    </div>
-    <div class="card-body">
+            <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="btn btn-sm btn-outline-secondary">Volver al listado</a>
+    </x-slot:actions>
         @if(session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
@@ -93,6 +91,5 @@
         @elseif(! auth()->user()->isAdmin())
             <p class="text-muted small mb-0">Podés marcar como visto. El registro del pago lo hace administración.</p>
         @endif
-    </div>
-</div>
+</x-ito.shell-page>
 @endsection

@@ -4,9 +4,12 @@
 @section('page-title', $cuota->nombre)
 
 @section('content')
-<div class="card">
-    <div class="card-header">Cuota</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="{{ $cuota->nombre }}"
+    eyebrow="Cuotas"
+    subtitle="Detalle de la cuota"
+>
+
         <dl class="row">
             <dt class="col-sm-3">Nombre</dt>
             <dd class="col-sm-9">{{ $cuota->nombre }}</dd>
@@ -44,6 +47,6 @@
         </dl>
         <a href="{{ route('cuotas.edit', $cuota) }}" class="btn btn-warning">Editar</a>
         <a href="{{ route('cuotas.index') }}" class="btn btn-secondary">Volver</a>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

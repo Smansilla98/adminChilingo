@@ -4,12 +4,11 @@
 @section('page-title', 'Pagos de cuotas')
 
 @section('content')
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h5 class="mb-0">Pagos registrados (tus bloques)</h5>
-        <span class="text-muted small">Solo para mirar pagos ya cargados. Si un alumno mandó comprobante pero no está el pago, mirá Comprobantes.</span>
-    </div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Pagos de cuotas"
+    eyebrow="Docente"
+    subtitle="Solo lectura: pagos ya cargados de tus bloques."
+>
         @php $hasAlcanceCuota = \Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'); @endphp
         <form method="GET" class="mb-3">
             <div class="row g-2 align-items-end">
@@ -37,7 +36,7 @@
         </form>
 
         <div class="table-responsive">
-            <table class="table table-striped table-sm">
+            <table class="ito-table table table-sm">
                 <thead>
                     <tr>
                         <th>Fecha pago</th>
@@ -89,6 +88,5 @@
             </table>
         </div>
         {{ $detalles->links() }}
-    </div>
-</div>
+</x-ito.shell-page>
 @endsection

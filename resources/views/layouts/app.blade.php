@@ -6,10 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'La Chilinga')</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=18">
+    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=24">
     @include('layouts.partials.apariencia-head')
 
     @stack('vite')
@@ -194,102 +194,14 @@
     });
 })();
 </script>
-<script>
-(function () {
-    const wrap = document.querySelector('[data-hub-search]');
-    if (!wrap) return;
-    const input = wrap.querySelector('[data-hub-search-input]');
-    const box = wrap.querySelector('[data-hub-search-results]');
-    const dataEl = wrap.querySelector('[data-hub-search-data]');
-    if (!input || !box || !dataEl) return;
-    let modules = [];
-    try { modules = JSON.parse(dataEl.textContent || '[]'); } catch (e) { modules = []; }
-    let timer = null;
-    let entityHits = [];
-    const searchUrl = @json(auth()->check() ? route('hub.search') : '');
-
-    function esc(s) {
-        return String(s || '').replace(/[&<>"']/g, function (c) {
-            return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);
-        });
-    }
-
-    function render(q) {
-        const query = (q || '').trim().toLowerCase();
-        const modHits = (!query ? modules.slice(0, 6) : modules.filter(function (it) {
-            return (it.label || '').toLowerCase().indexOf(query) !== -1;
-        }).slice(0, 6)).map(function (it) {
-            return Object.assign({}, it, { group: it.group || 'Módulos' });
-        });
-        const hits = modHits.concat(entityHits).slice(0, 16);
-        if (!hits.length) {
-            box.innerHTML = '<div class="topbar-search-empty">Sin resultados</div>';
-            box.hidden = false;
-            return;
-        }
-        box.innerHTML = hits.map(function (it) {
-            return '<a class="topbar-search-item" role="option" href="' + esc(it.href) + '">' +
-                '<i class="bi ' + esc(it.icon || 'bi-box') + '" aria-hidden="true"></i>' +
-                '<span><strong>' + esc(it.label) + '</strong>' +
-                (it.meta ? '<small class="d-block text-muted">' + esc(it.meta) + '</small>' : '') +
-                '</span></a>';
-        }).join('');
-        box.hidden = false;
-    }
-
-    function fetchEntities(q) {
-        if (!searchUrl || !q || q.length < 2) {
-            entityHits = [];
-            render(q);
-            return;
-        }
-        fetch(searchUrl + '?q=' + encodeURIComponent(q), {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'same-origin'
-        }).then(function (r) { return r.json(); }).then(function (data) {
-            entityHits = Array.isArray(data.results) ? data.results : [];
-            render(q);
-        }).catch(function () {
-            entityHits = [];
-            render(q);
-        });
-    }
-
-    input.addEventListener('focus', function () { render(input.value); });
-    input.addEventListener('input', function () {
-        const q = input.value;
-        render(q);
-        clearTimeout(timer);
-        timer = setTimeout(function () { fetchEntities(q.trim()); }, 220);
-    });
-    input.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            box.hidden = true;
-            input.blur();
-        } else if (e.key === 'Enter') {
-            const first = box.querySelector('a.topbar-search-item');
-            if (first) {
-                e.preventDefault();
-                window.location.href = first.getAttribute('href');
-            }
-        }
-    });
-    document.addEventListener('click', function (e) {
-        if (!wrap.contains(e.target)) box.hidden = true;
-    });
-    document.addEventListener('keydown', function (e) {
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
-            e.preventDefault();
-            input.focus();
-            render(input.value);
-        }
-    });
-})();
-</script>
+<script src="{{ asset('js/hub-search.js') }}?v=1"></script>
 @auth
 <script src="{{ asset('js/recordatorio-chatbot.js') }}?v=3"></script>
 @endauth
 <script src="{{ asset('js/ito-a11y.js') }}?v=1"></script>
+<script src="{{ asset('js/ito-nav-progress.js') }}?v=1"></script>
+<script src="{{ asset('js/ito-form-steps.js') }}?v=1"></script>
+<script src="{{ asset('js/ito-tables.js') }}?v=1"></script>
 @stack('scripts')
 </body>
 </html>

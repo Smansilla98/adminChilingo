@@ -4,12 +4,14 @@
 @section('page-title', 'Importación masiva de alumnos')
 
 @section('content')
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Importar alumnos (CSV / Excel)</h5>
+<x-ito.shell-page
+    title="Importar alumnos"
+    eyebrow="Alumnos"
+    subtitle="CSV o Excel. La primera fila son los títulos de columna."
+>
+    <x-slot:actions>
         <a href="{{ route('alumnos.index') }}" class="btn btn-sm btn-outline-secondary">Volver</a>
-    </div>
-    <div class="card-body">
+    </x-slot:actions>
         @include('partials.form-ayuda-intro', ['text' => 'Subí una planilla con muchos alumnos de una vez. Elegí la sede antes de enviar el archivo.'])
         <div class="alert alert-info mb-3">
             <div class="fw-semibold mb-1">Cómo tiene que venir el archivo</div>
@@ -59,7 +61,6 @@
                 <a href="{{ route('alumnos.index') }}" class="btn btn-outline-secondary">Cancelar</a>
             </div>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
 @endsection
 

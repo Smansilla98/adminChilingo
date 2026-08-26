@@ -4,45 +4,65 @@
 @section('page-title', 'Nuevo profesor')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Nuevo profesor</div>
-    <div class="card-body">
-        @include('partials.form-ayuda-intro', ['text' => 'Nombre, contacto y, si hace falta, usuario y contraseña para que entre al sistema. Después indicá bloques y sedes.'])
-        <form action="{{ route('profesores.store') }}" method="POST">
-            @csrf
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Nombre *</label>
-                    <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required>
-                    @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Teléfono</label>
-                    <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}">
-                    @error('telefono')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Correo electrónico</label>
-                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}">
-                    @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-6 d-flex align-items-end">
-                    <div class="form-check">
-                        <input type="checkbox" name="activo" class="form-check-input" id="activo" value="1" {{ old('activo', true) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="activo">Activo</label>
+<x-ito.shell-page
+    title="Nuevo profesor"
+    subtitle="Datos, cuenta de acceso, bloques y sedes."
+    eyebrow="Profesores"
+>
+    <x-slot:actions>
+        <a href="{{ route('profesores.index') }}" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
+    </x-slot:actions>
+
+    <form action="{{ route('profesores.store') }}" method="POST" class="ito-form">
+        @csrf
+        <x-ito.form-steps
+            :steps="['Datos', 'Cuenta', 'Bloques', 'Sedes']"
+            submit-label="Guardar profesor"
+        >
+            <x-slot:cancel>
+                <a href="{{ route('profesores.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+            </x-slot:cancel>
+
+            <x-ito.form-step :index="0" title="Datos de contacto" help="Nombre y cómo contactarlo.">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required>
+                        @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}">
+                        @error('telefono')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo electrónico</label>
+                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}">
+                        @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check">
+                            <input type="checkbox" name="activo" class="form-check-input" id="activo" value="1" {{ old('activo', true) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="activo">Activo</label>
+                        </div>
                     </div>
                 </div>
-            </div>
-            @include('profesores._form_usuario')
-            @include('profesores._form_bloques', ['bloquesParaAsignar' => $bloquesParaAsignar])
-            @include('profesores._form_sedes_roles', ['sedes' => $sedes ?? collect()])
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{{ route('profesores.index') }}" class="btn btn-secondary">Cancelar</a>
-        </form>
-    </div>
-</div>
+            </x-ito.form-step>
+
+            <x-ito.form-step :index="1" title="Cuenta de ingreso" help="Opcional: usuario y contraseña para el sistema.">
+                @include('profesores._form_usuario')
+            </x-ito.form-step>
+
+            <x-ito.form-step :index="2" title="Bloques" help="En qué clases da.">
+                @include('profesores._form_bloques', ['bloquesParaAsignar' => $bloquesParaAsignar])
+            </x-ito.form-step>
+
+            <x-ito.form-step :index="3" title="Sedes y roles" help="Sedes donde coordina o enseña.">
+                @include('profesores._form_sedes_roles', ['sedes' => $sedes ?? collect()])
+            </x-ito.form-step>
+        </x-ito.form-steps>
+    </form>
+</x-ito.shell-page>
 @endsection
 
 @push('scripts')

@@ -4,107 +4,128 @@
 @section('page-title', 'Pendientes')
 
 @section('content')
-<div class="ito-page">
-    <div class="ito-page-head mb-3">
-        <div>
-            <p class="hub-eyebrow">Operativo</p>
-            <h1 class="ito-page-title">Qué tenés pendiente</h1>
-            <p class="ito-page-sub">Comprobantes, asistencias de hoy{{ $esAdmin ? ' y cuotas del mes' : '' }}.</p>
+<div class="hub hub--operativo">
+    <div class="hub-hero">
+        <div class="hub-hero-main">
+            <p class="hub-eyebrow">Operativo · La Chilinga</p>
+            <h1 class="hub-greeting">Qué <em>necesita</em> tu atención</h1>
+            <p class="hub-lead">Comprobantes, asistencias de hoy{{ $esAdmin ? ' y cuotas del mes' : '' }}.</p>
         </div>
-        <div class="ito-page-actions d-flex flex-wrap gap-2">
-            @if($esAdmin)
+        <div class="ito-page-actions d-flex flex-wrap gap-2 align-self-start">
+            @if($esAdmin && auth()->user()->isAdmin())
                 <a href="{{ route('operativo.cierre-mes') }}" class="btn btn-secondary btn-sm">Cierre de mes</a>
             @endif
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm">Inicio</a>
         </div>
     </div>
 
-    <div class="row g-3">
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>Comprobantes por revisar</strong>
-                    <a href="{{ route('comprobantes-cuota-alumnos.index', ['estado' => 'pendiente']) }}" class="small">Ver todos</a>
+    <div class="hub-panels">
+        <div class="hub-panel">
+            <div class="hub-panel-head">
+                <div>
+                    <div class="hub-panel-title">Comprobantes por revisar</div>
+                    <div class="hub-panel-sub">Cobranza pendiente de aprobación</div>
                 </div>
-                <div class="card-body p-0">
-                    @forelse($comprobantes as $c)
-                        <a href="{{ route('comprobantes-cuota-alumnos.show', $c->id) }}" class="operativo-row">
-                            <div>
-                                <div class="fw-semibold">{{ $c->alumno?->nombre_apellido ?? 'Alumno' }}</div>
-                                <div class="small text-muted">
-                                    #{{ $c->id }} · $ {{ number_format($c->monto_total, 2, ',', '.') }}
-                                    · {{ $c->items->pluck('bloque.nombre')->filter()->unique()->take(2)->implode(', ') }}
-                                </div>
-                            </div>
-                            <span class="badge bg-warning text-dark">Pendiente</span>
-                        </a>
-                    @empty
-                        <p class="text-muted small p-3 mb-0">No hay comprobantes pendientes. Bien.</p>
-                    @endforelse
-                </div>
+                <a href="{{ route('comprobantes-cuota-alumnos.index', ['estado' => 'pendiente']) }}" class="hub-panel-link">Ver todos →</a>
             </div>
-        </div>
-
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>Asistencias de hoy</strong>
-                    <span class="small text-muted">{{ now()->locale('es')->translatedFormat('l d/m') }}</span>
-                </div>
-                <div class="card-body p-0">
-                    @forelse($asistenciasHoy as $row)
-                        @php
-                            $b = $row['bloque'];
-                            $href = $esAdmin
-                                ? route('asistencias.create', ['bloque_id' => $b->id, 'fecha' => now()->toDateString()])
-                                : route('profesor.asistencias.create', ['bloque_id' => $b->id, 'fecha' => now()->toDateString()]);
-                        @endphp
-                        <a href="{{ $href }}" class="operativo-row">
-                            <div>
-                                <div class="fw-semibold">{{ $b->nombre }}</div>
-                                <div class="small text-muted">{{ $b->sede?->nombre }} · {{ $row['marcadas'] }}/{{ $row['alumnos'] }} marcados</div>
-                            </div>
-                            <span class="badge bg-info text-dark">{{ $row['pendientes'] }} faltan</span>
-                        </a>
-                    @empty
-                        <p class="text-muted small p-3 mb-0">Nada pendiente para hoy (o no hay clase).</p>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-
-        @if($esAdmin)
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header"><strong>Cuotas del mes (referencia)</strong></div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-sm mb-0">
-                            <thead>
-                                <tr><th>Cuota</th><th>Bloque / sede</th><th>Pagos registrados</th></tr>
-                            </thead>
-                            <tbody>
-                                @forelse($cuotasPendientes as $row)
-                                    <tr>
-                                        <td>{{ $row['cuota']->nombre }}</td>
-                                        <td class="small text-muted">
-                                            {{ $row['cuota']->bloque?->nombre ?? '—' }}
-                                            @if($row['cuota']->bloque?->sede || $row['cuota']->sede)
-                                                · {{ $row['cuota']->bloque?->sede?->nombre ?? $row['cuota']->sede?->nombre }}
-                                            @endif
-                                        </td>
-                                        <td>{{ $row['pagados'] }} alumno(s)</td>
-                                    </tr>
-                                @empty
-                                    <tr><td colspan="3" class="text-muted text-center">Sin cuotas este mes.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+            @forelse($comprobantes as $c)
+                <a href="{{ route('comprobantes-cuota-alumnos.show', $c->id) }}" class="hub-list-item hub-list-item--link">
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="fw-semibold text-truncate">{{ $c->alumno?->nombre_apellido ?? 'Alumno' }}</div>
+                        <div class="small text-muted">
+                            #{{ $c->id }} · $ {{ number_format($c->monto_total, 2, ',', '.') }}
+                            · {{ $c->items->pluck('bloque.nombre')->filter()->unique()->take(2)->implode(', ') }}
+                        </div>
                     </div>
+                    <span class="hub-kpi-badge is-alert">Pendiente</span>
+                </a>
+            @empty
+                <x-ito.empty
+                    title="Nada por revisar"
+                    description="No hay comprobantes pendientes. Cuando lleguen, aparecen acá."
+                    icon="bi-check2-circle"
+                    :action-href="route('comprobantes-cuota-alumnos.index')"
+                    action-label="Ir a comprobantes"
+                />
+            @endforelse
+        </div>
+
+        <div class="hub-panel">
+            <div class="hub-panel-head">
+                <div>
+                    <div class="hub-panel-title">Asistencias de hoy</div>
+                    <div class="hub-panel-sub">{{ now()->locale('es')->translatedFormat('l d/m') }}</div>
                 </div>
             </div>
+            @forelse($asistenciasHoy as $row)
+                @php
+                    $b = $row['bloque'];
+                    $href = auth()->user()->puedeGestionarOperativo()
+                        ? route('asistencias.create', ['bloque_id' => $b->id, 'fecha' => now()->toDateString()])
+                        : route('profesor.asistencias.create', ['bloque_id' => $b->id, 'fecha' => now()->toDateString()]);
+                @endphp
+                <a href="{{ $href }}" class="hub-list-item hub-list-item--link">
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="fw-semibold">{{ $b->nombre }}</div>
+                        <div class="small text-muted">{{ $b->sede?->nombre }} · {{ $row['marcadas'] }}/{{ $row['alumnos'] }} marcados</div>
+                    </div>
+                    <span class="hub-kpi-badge is-alert">{{ $row['pendientes'] }} faltan</span>
+                </a>
+            @empty
+                <x-ito.empty
+                    title="Lista al día"
+                    description="No hay clases pendientes de asistencia para hoy."
+                    icon="bi-calendar-check"
+                    :action-href="auth()->user()->puedeGestionarOperativo() ? route('asistencias.index') : route('profesor.asistencias.create')"
+                    action-label="Abrir asistencias"
+                />
+            @endforelse
         </div>
-        @endif
     </div>
+
+    @if($esAdmin)
+    <section class="hub-section" aria-labelledby="pend-cuotas">
+        <header class="hub-section-head">
+            <h2 id="pend-cuotas" class="hub-section-title"><span class="hub-section-code">Mes</span> Cuotas (referencia)</h2>
+            <a href="{{ route('cuotas.index') }}" class="hub-panel-link">Ver cuotas →</a>
+        </header>
+        <div class="hub-panel mb-0">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr><th>Cuota</th><th>Bloque / sede</th><th>Pagos registrados</th></tr>
+                    </thead>
+                    <tbody>
+                        @forelse($cuotasPendientes as $row)
+                            <tr>
+                                <td class="fw-semibold">{{ $row['cuota']->nombre }}</td>
+                                <td class="small text-muted">
+                                    {{ $row['cuota']->bloque?->nombre ?? '—' }}
+                                    @if($row['cuota']->bloque?->sede || $row['cuota']->sede)
+                                        · {{ $row['cuota']->bloque?->sede?->nombre ?? $row['cuota']->sede?->nombre }}
+                                    @endif
+                                </td>
+                                <td>{{ $row['pagados'] }} alumno(s)</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3">
+                                    <x-ito.empty
+                                        class="py-3"
+                                        title="Sin cuotas este mes"
+                                        description="Cuando emitas cuotas, vas a ver el avance de cobro acá."
+                                        icon="bi-cash-stack"
+                                        :action-href="route('cuotas.create')"
+                                        action-label="Nueva cuota"
+                                    />
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    @endif
 </div>
 @endsection

@@ -4,30 +4,23 @@
 @section('page-title', 'Calendario')
 
 @section('content')
-<div class="row mb-3 mb-md-4">
-    <div class="col-12">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
-            <div>
-                <h1 class="ito-page-title mb-0 mb-md-2">
-                    <i class="bi bi-calendar-event"></i> Calendario de Eventos
-                </h1>
-                <p class="text-muted small mb-0 mt-1">Las clases fijas salen de los horarios de cada bloque. Para cambiarlos: <em>Bloques → Editar</em> y sumá día y hora.</p>
-            </div>
-            @if(auth()->user() && auth()->user()->isAdmin())
-            <div class="d-flex gap-2">
-                <a href="{{ route('eventos.create') }}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Nuevo </span>Evento
-                </a>
-                <a href="{{ route('shows.create') }}" class="btn btn-secondary">
-                    <i class="bi bi-mic"></i> <span class="d-none d-sm-inline">Nuevo </span>Show
-                </a>
-            </div>
-            @endif
-        </div>
-    </div>
-</div>
+<x-ito.shell-page
+    title="Calendario de eventos"
+    eyebrow="Agenda"
+    subtitle="Las clases fijas salen de los horarios de cada bloque. Para cambiarlos: Bloques → Editar."
+>
+    <x-slot:actions>
+        @if(auth()->user() && auth()->user()->isAdmin())
+        <a href="{{ route('eventos.create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Evento
+        </a>
+        <a href="{{ route('shows.create') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-mic"></i> Show
+        </a>
+        @endif
+    </x-slot:actions>
 
-<div class="card mb-3 mb-md-4">
+<div class="ito-card mb-3 mb-md-4">
     <div class="card-header">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
             <div>
@@ -148,7 +141,7 @@
 </div>
 
 @if($listItems->isNotEmpty())
-<div class="card">
+<div class="ito-card">
     <div class="card-header">
         <h5 class="mb-0">Eventos, shows y talleres fijos — {{ $startDate->locale('es')->translatedFormat('F Y') }}</h5>
     </div>
@@ -195,6 +188,7 @@
     </div>
 </div>
 @endif
+</x-ito.shell-page>
 
 @push('styles')
 <style>

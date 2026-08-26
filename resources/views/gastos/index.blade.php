@@ -41,6 +41,18 @@
         </form>
     </x-slot:toolbar>
 
+    <x-slot:filters>
+        <x-ito.filter-chips
+            :clear-url="route('gastos.index')"
+            :filters="[
+                'sede_id' => 'Sede',
+                'tipo' => 'Tipo',
+                'desde' => 'Desde',
+                'hasta' => 'Hasta',
+            ]"
+        />
+    </x-slot:filters>
+
     <table class="ito-table">
         <thead>
             <tr>
@@ -86,7 +98,17 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="ito-empty">No hay gastos registrados. <a href="{{ route('gastos.create') }}">Registrar el primero</a>.</td></tr>
+                <tr>
+                    <td colspan="7">
+                        <x-ito.empty
+                            title="{{ request()->hasAny(['sede_id','tipo','desde','hasta']) ? 'Sin gastos con estos filtros' : 'No hay gastos' }}"
+                            description="{{ request()->hasAny(['sede_id','tipo','desde','hasta']) ? 'Limpiá filtros o cambiá el período.' : 'Registrá egresos operativos para seguir el mes.' }}"
+                            icon="bi-wallet2"
+                            :action-href="request()->hasAny(['sede_id','tipo','desde','hasta']) ? route('gastos.index') : route('gastos.create')"
+                            :action-label="request()->hasAny(['sede_id','tipo','desde','hasta']) ? 'Limpiar filtros' : 'Nuevo gasto'"
+                        />
+                    </td>
+                </tr>
             @endforelse
         </tbody>
     </table>

@@ -8,19 +8,21 @@ use App\Models\ComprobanteCuotaAlumno;
 use App\Models\Cuota;
 use App\Models\PagoDetalle;
 use App\Models\User;
+use App\Services\AmbitoSedeService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
 
 class OperativoController extends Controller
 {
-    public function pendientes()
+    public function pendientes(AmbitoSedeService $ambito)
     {
         /** @var User $user */
         $user = auth()->user();
         $esAdmin = $user->isAdmin();
+        $filtroSedes = $ambito->idsPara($user);
         $bloqueIds = [];
 
-        if (! $esAdmin && $user->isProfesor()) {
+        if (! $esAdmin && $filtroSedes === null && $user->isProfesor()) {
             $bloqueIds = $user->profesor?->bloqueIdsDondeParticipa()->all() ?? [];
         }
 
@@ -31,7 +33,9 @@ class OperativoController extends Controller
                 ->where('estado', 'pendiente')
                 ->latest()
                 ->limit(20);
-            if (! $esAdmin) {
+            if ($filtroSedes !== null) {
+                $ambito->aplicarComprobantes($q, $filtroSedes);
+            } elseif (! $esAdmin) {
                 $q->whereHas('items', fn ($i) => $i->whereIn('bloque_id', $bloqueIds !== [] ? $bloqueIds : [0]));
             }
             $comprobantes = $q->get();
@@ -41,7 +45,9 @@ class OperativoController extends Controller
         $hoy = now()->toDateString();
         if (Schema::hasTable('bloques') && Schema::hasTable('asistencias')) {
             $bloquesQ = Bloque::query()->where('activo', true)->with('sede');
-            if (! $esAdmin) {
+            if ($filtroSedes !== null) {
+                $ambito->aplicarBloques($bloquesQ, $filtroSedes);
+            } elseif (! $esAdmin) {
                 $bloquesQ->whereIn('id', $bloqueIds !== [] ? $bloqueIds : [0]);
             }
             $bloques = $bloquesQ->orderBy('nombre')->get();
@@ -72,19 +78,26 @@ class OperativoController extends Controller
         }
 
         $cuotasPendientes = collect();
-        if ($esAdmin && Schema::hasTable('cuotas') && Schema::hasTable('pago_detalles')) {
+        $puedeVerCuotas = $esAdmin || $filtroSedes !== null;
+        if ($puedeVerCuotas && Schema::hasTable('cuotas') && Schema::hasTable('pago_detalles')) {
             $mes = (int) now()->month;
             $anio = (int) now()->year;
-            $cuotas = Cuota::query()
+            $cuotasQ = Cuota::query()
                 ->where('activo', true)
                 ->where('mes', $mes)
                 ->where('año', $anio)
                 ->with(['bloque.sede', 'sede'])
                 ->orderBy('nombre')
-                ->limit(12)
-                ->get();
+                ->limit(12);
+            if ($filtroSedes !== null) {
+                $ambito->aplicarCuotas($cuotasQ, $filtroSedes);
+            }
+            $cuotas = $cuotasQ->get();
 
             foreach ($cuotas as $c) {
+                if ($filtroSedes !== null && ! $ambito->cuotaTocaSedes($c, $filtroSedes)) {
+                    continue;
+                }
                 $pagados = PagoDetalle::query()->where('cuota_id', $c->id)->distinct('alumno_id')->count('alumno_id');
                 $cuotasPendientes->push([
                     'cuota' => $c,
@@ -97,7 +110,7 @@ class OperativoController extends Controller
             'comprobantes' => $comprobantes,
             'asistenciasHoy' => $asistenciasHoy,
             'cuotasPendientes' => $cuotasPendientes,
-            'esAdmin' => $esAdmin,
+            'esAdmin' => $esAdmin || $filtroSedes !== null,
         ]);
     }
 

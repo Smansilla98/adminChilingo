@@ -10,6 +10,7 @@
     title="Gira Villa Gesell 2027"
     subtitle="Segunda quincena de enero y primera de febrero · costa atlántica"
     eyebrow="La Chilinga · Gira"
+    :show-table-hint="false"
 >
     <x-slot:actions>
         <a href="{{ route('villa-gesell.inscriptos.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Inscribir alumno</a>

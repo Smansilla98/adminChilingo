@@ -5,9 +5,11 @@
 
 @section('content')
 @include('villa-gesell.partials.nav')
-<div class="card">
-    <div class="card-header">Inscribir alumno · Villa Gesell 2027</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Inscribir alumno"
+    eyebrow="Villa Gesell"
+    subtitle="Inscripción a la gira 2027."
+>
         <form action="{{ route('villa-gesell.inscriptos.store') }}" method="POST">
             @csrf
             @include('villa-gesell.inscriptos._form')
@@ -16,8 +18,7 @@
                 <a href="{{ route('villa-gesell.inscriptos.index') }}" class="btn btn-link">Cancelar</a>
             </div>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
 @include('villa-gesell.inscriptos._modal_alumno')
 @endsection
 

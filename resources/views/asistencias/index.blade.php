@@ -113,7 +113,7 @@
             </a>
             <p class="small text-muted mt-2 mb-0">La planilla del mes está pensada para escritorio.</p>
         </div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <div class="d-none d-md-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
             <div>
                 <strong>{{ $bloque->nombre }}</strong>
                 @if($bloque->sede)
@@ -125,7 +125,7 @@
             </div>
         </div>
 
-        <form action="{{ route($matrixUpdateRoute ?? 'asistencias.matrix.update') }}" method="POST" class="asistencias-matrix-form" id="asistencias-matrix-form">
+        <form action="{{ route($matrixUpdateRoute ?? 'asistencias.matrix.update') }}" method="POST" class="asistencias-matrix-form d-none d-md-block" id="asistencias-matrix-form">
             @csrf
             <input type="hidden" name="bloque_id" value="{{ $bloque->id }}">
             <input type="hidden" name="mes" value="{{ $mes }}">

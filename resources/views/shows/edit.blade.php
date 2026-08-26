@@ -4,9 +4,12 @@
 @section('page-title', 'Editar show')
 
 @section('content')
-<div class="card shadow-sm">
-    <div class="card-header py-3">Editar show</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Editar show"
+    eyebrow="Shows"
+    subtitle="Actualizá el show y los bloques."
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Actualizá el show y los bloques que participan.'])
         <form action="{{ route('shows.update', $show) }}" method="POST">
             @csrf
@@ -60,6 +63,6 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('shows.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

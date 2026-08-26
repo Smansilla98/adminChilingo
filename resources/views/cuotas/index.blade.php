@@ -50,6 +50,18 @@
         </form>
     </x-slot:toolbar>
 
+    <x-slot:filters>
+        <x-ito.filter-chips
+            :clear-url="route('cuotas.index')"
+            :filters="array_filter([
+                'año' => 'Año',
+                'alcance' => $hasAlcance ? 'Alcance' : null,
+                'sede_id' => $hasAlcance ? 'Sede' : null,
+                'bloque_id' => 'Bloque',
+            ])"
+        />
+    </x-slot:filters>
+
     <table class="ito-table">
         <thead>
             <tr>
@@ -104,7 +116,17 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="{{ $hasAlcance ? 9 : 7 }}" class="ito-empty">No hay cuotas. <a href="{{ route('cuotas.create') }}">Crear una</a></td></tr>
+                <tr>
+                    <td colspan="{{ $hasAlcance ? 9 : 7 }}">
+                        <x-ito.empty
+                            title="{{ request()->hasAny(['año','alcance','sede_id','bloque_id']) ? 'Ninguna cuota coincide' : 'No hay cuotas' }}"
+                            description="{{ request()->hasAny(['año','alcance','sede_id','bloque_id']) ? 'Probá limpiar los filtros.' : 'Definí la primera cuota del período para empezar a cobrar.' }}"
+                            icon="bi-cash-stack"
+                            :action-href="request()->hasAny(['año','alcance','sede_id','bloque_id']) ? route('cuotas.index') : route('cuotas.create')"
+                            :action-label="request()->hasAny(['año','alcance','sede_id','bloque_id']) ? 'Limpiar filtros' : 'Nueva cuota'"
+                        />
+                    </td>
+                </tr>
             @endforelse
         </tbody>
     </table>

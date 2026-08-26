@@ -4,21 +4,27 @@
 @section('page-title', 'Inventario — Editar ítem')
 
 @section('content')
-<div class="card">
-    <div class="card-header py-3">Editar ítem de inventario</div>
-    <div class="card-body">
-        @include('partials.form-ayuda-intro', ['text' => 'Actualizá los datos del ítem del inventario.'])
-        <form action="{{ route('inventarios.update', $inventario) }}" method="POST">
-            @csrf
-            @method('PUT')
+<x-ito.shell-page
+    title="Editar ítem"
+    subtitle="{{ $inventario->nombre }}"
+    eyebrow="Inventario"
+>
+    <x-slot:actions>
+        <a href="{{ route('inventarios.show', $inventario) }}" class="btn btn-outline-secondary btn-sm">Ver ficha</a>
+    </x-slot:actions>
+
+    <form action="{{ route('inventarios.update', $inventario) }}" method="POST" class="ito-form">
+        @csrf
+        @method('PUT')
+        <x-ito.form-steps
+            :steps="['Identidad', 'Especificaciones', 'Adquisición']"
+            submit-label="Guardar cambios"
+        >
+            <x-slot:cancel>
+                <a href="{{ route('inventarios.show', $inventario) }}" class="btn btn-outline-secondary">Cancelar</a>
+            </x-slot:cancel>
             @include('inventarios._form', ['item' => $inventario])
-
-            <div class="mt-3">
-                <button type="submit" class="btn btn-primary">Guardar</button>
-                <a href="{{ route('inventarios.index') }}" class="btn btn-secondary">Cancelar</a>
-            </div>
-        </form>
-    </div>
-</div>
+        </x-ito.form-steps>
+    </form>
+</x-ito.shell-page>
 @endsection
-

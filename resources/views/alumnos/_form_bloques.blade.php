@@ -6,47 +6,45 @@
         ? ($alumno->bloques->firstWhere('pivot.es_principal', true)?->id ?? $alumno->bloque_id)
         : null);
 @endphp
-<div class="card mb-3">
-    <div class="card-header">Bloques</div>
-    <div class="card-body">
-        <p class="text-muted small mb-3">Si va a más de una clase, tildá cada bloque. El círculo marca cuál es su grupo principal.</p>
-        @if($bloques->isEmpty())
-        <p class="text-muted mb-0">No hay bloques activos.</p>
-        @else
-        <div class="table-responsive">
-            <table class="table table-sm align-middle">
-                <thead>
-                    <tr>
-                        <th style="width:2.5rem"></th>
-                        <th>Bloque</th>
-                        <th>Sede</th>
-                        <th style="width:6rem" class="text-center">Principal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($bloques as $bloque)
-                    @php
-                        $checked = in_array($bloque->id, array_map('intval', (array) $bloquesSeleccionados), true)
-                            || (empty($bloquesSeleccionados) && isset($alumno) && (int) $alumno->bloque_id === (int) $bloque->id);
-                    @endphp
-                    <tr>
-                        <td>
-                            <input type="checkbox" class="form-check-input bloque-check" name="bloque_ids[]" value="{{ $bloque->id }}" id="bloque_cb_{{ $bloque->id }}" {{ $checked ? 'checked' : '' }}>
-                        </td>
-                        <td><label class="mb-0" for="bloque_cb_{{ $bloque->id }}">{{ $bloque->nombre }}</label></td>
-                        <td class="text-muted">{{ $bloque->sede->nombre ?? '—' }}</td>
-                        <td class="text-center">
-                            <input type="radio" class="form-check-input bloque-principal" name="bloque_principal_id" value="{{ $bloque->id }}" {{ (int) $bloquePrincipal === (int) $bloque->id ? 'checked' : '' }} {{ $checked ? '' : 'disabled' }}>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        @error('bloque_ids')<div class="text-danger small">{{ $message }}</div>@enderror
-        @error('bloque_principal_id')<div class="text-danger small">{{ $message }}</div>@enderror
-        @endif
+<div class="ito-form-section mb-3">
+    <h3 class="ito-form-section-title">Bloques</h3>
+    <p class="ito-form-section-help">Si va a más de una clase, tildá cada bloque. El círculo marca cuál es su grupo principal.</p>
+    @if($bloques->isEmpty())
+    <p class="text-muted mb-0">No hay bloques activos.</p>
+    @else
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th style="width:2.5rem"></th>
+                    <th>Bloque</th>
+                    <th>Sede</th>
+                    <th style="width:6rem" class="text-center">Principal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($bloques as $bloque)
+                @php
+                    $checked = in_array($bloque->id, array_map('intval', (array) $bloquesSeleccionados), true)
+                        || (empty($bloquesSeleccionados) && isset($alumno) && (int) $alumno->bloque_id === (int) $bloque->id);
+                @endphp
+                <tr>
+                    <td>
+                        <input type="checkbox" class="form-check-input bloque-check" name="bloque_ids[]" value="{{ $bloque->id }}" id="bloque_cb_{{ $bloque->id }}" {{ $checked ? 'checked' : '' }}>
+                    </td>
+                    <td><label class="mb-0" for="bloque_cb_{{ $bloque->id }}">{{ $bloque->nombre }}</label></td>
+                    <td class="text-muted">{{ $bloque->sede->nombre ?? '—' }}</td>
+                    <td class="text-center">
+                        <input type="radio" class="form-check-input bloque-principal" name="bloque_principal_id" value="{{ $bloque->id }}" {{ (int) $bloquePrincipal === (int) $bloque->id ? 'checked' : '' }} {{ $checked ? '' : 'disabled' }}>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
+    @error('bloque_ids')<div class="text-danger small">{{ $message }}</div>@enderror
+    @error('bloque_principal_id')<div class="text-danger small">{{ $message }}</div>@enderror
+    @endif
 </div>
 @push('scripts')
 <script>

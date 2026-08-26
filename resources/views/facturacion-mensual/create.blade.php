@@ -4,9 +4,12 @@
 @section('page-title', 'Facturación por mes — Cargar')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Nueva facturación mensual</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Nueva facturación mensual"
+    eyebrow="Facturación"
+    subtitle="Resumen del mes: alumnos y monto."
+>
+
         @include('partials.form-ayuda-intro', ['text' => 'Resumen del mes: cuántos alumnos y cuánto se facturó. La sede es opcional si es para toda la escuela.'])
         <form action="{{ route('facturacion-mensual.store') }}" method="POST">
             @csrf
@@ -58,6 +61,6 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('facturacion-mensual.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

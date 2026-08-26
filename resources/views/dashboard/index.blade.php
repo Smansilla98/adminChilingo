@@ -11,82 +11,42 @@
     $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
     $user = auth()->user();
 
-    $hubModules = array_values(array_filter([
-        [
-            'code' => '01',
-            'label' => 'Académico',
-            'items' => array_values(array_filter([
-                $user->tieneAccesoModulo('admin.alumnos') ? ['href' => route('alumnos.index'), 'icon' => 'bi-people', 'title' => 'Alumnos', 'desc' => 'Altas, bajas y ficha del alumnado'] : null,
-                $user->tieneAccesoModulo('admin.profesores') ? ['href' => route('profesores.index'), 'icon' => 'bi-person-badge', 'title' => 'Profesores', 'desc' => 'Plantel docente y asignación'] : null,
-                $user->tieneAccesoModulo('admin.bloques') ? ['href' => route('bloques.index'), 'icon' => 'bi-collection', 'title' => 'Bloques', 'desc' => 'Grupos, cupos y horarios'] : null,
-                $user->tieneAccesoModulo('admin.sedes') ? ['href' => route('sedes.index'), 'icon' => 'bi-geo-alt', 'title' => 'Sedes', 'desc' => 'Espacios físicos de la escuela'] : null,
-                $user->tieneAccesoModulo('admin.asistencias') ? ['href' => route('asistencias.index'), 'icon' => 'bi-check2-square', 'title' => 'Asistencias', 'desc' => 'Planilla mensual por bloque'] : null,
-                $user->tieneAccesoModulo('calendario') ? ['href' => route('calendario.index'), 'icon' => 'bi-calendar3', 'title' => 'Calendario', 'desc' => 'Agenda de clases y fechas'] : null,
-            ])),
-        ],
-        [
-            'code' => '02',
-            'label' => 'Eventos y shows',
-            'items' => array_values(array_filter([
-                $user->tieneAccesoModulo('admin.eventos') ? ['href' => route('eventos.index'), 'icon' => 'bi-calendar-event', 'title' => 'Eventos', 'desc' => 'Ensayos, muestras y fechas'] : null,
-                $user->tieneAccesoModulo('admin.shows') ? ['href' => route('shows.index'), 'icon' => 'bi-mic', 'title' => 'Shows', 'desc' => 'Presentaciones y logística'] : null,
-            ])),
-        ],
-        [
-            'code' => '02b',
-            'label' => 'Villa Gesell',
-            'items' => array_values(array_filter([
-                $user->tieneAccesoModulo('admin.villa_gesell') ? ['href' => route('villa-gesell.index'), 'icon' => 'bi-sun', 'title' => 'Villa Gesell', 'desc' => 'Gira costa 2027: cupo, tocadas y gastos', 'badge' => 'nuevo'] : null,
-                $user->tieneAccesoModulo('admin.villa_gesell') ? ['href' => route('villa-gesell.inscriptos.index', ['estado' => 'sena']), 'icon' => 'bi-cash-coin', 'title' => 'Seña', 'desc' => 'Quién dejó seña para la gira', 'badge' => 'nuevo'] : null,
-            ])),
-        ],
-        [
-            'code' => '03',
-            'label' => 'Económico',
-            'items' => array_values(array_filter([
-                $user->tieneAccesoModulo('admin.cuotas') ? ['href' => route('cuotas.index'), 'icon' => 'bi-cash-stack', 'title' => 'Cuotas', 'desc' => 'Emisión y montos del mes'] : null,
-                $user->tieneAccesoModulo('admin.pagos') ? ['href' => route('pagos.index'), 'icon' => 'bi-receipt', 'title' => 'Pagos', 'desc' => 'Cobros y detalle por alumno'] : null,
-                $user->tieneAccesoModulo('admin.facturacion_mensual') ? ['href' => route('facturacion-mensual.index'), 'icon' => 'bi-file-earmark-text', 'title' => 'Facturación', 'desc' => 'Resumen mensual de facturación'] : null,
-                $user->tieneAccesoModulo('comprobantes') ? ['href' => route('comprobantes-cuota-alumnos.index'), 'icon' => 'bi-upload', 'title' => 'Comprobantes', 'desc' => 'Revisión de envíos de alumnos', 'badge' => ($comprobantesPendientesCount ?? 0) > 0 ? ($comprobantesPendientesCount.' pend.') : null, 'tone' => 'danger'] : null,
-                $user->tieneAccesoModulo('admin.gastos') ? ['href' => route('gastos.index'), 'icon' => 'bi-wallet2', 'title' => 'Gastos', 'desc' => 'Egresos operativos'] : null,
-                $user->tieneAccesoModulo('admin.reportes') ? ['href' => route('reportes.index'), 'icon' => 'bi-graph-up', 'title' => 'Reportes', 'desc' => 'Indicadores y exportaciones'] : null,
-            ])),
-        ],
-        [
-            'code' => '04',
-            'label' => 'Inventario y compras',
-            'items' => array_values(array_filter([
-                $user->tieneAccesoModulo('admin.inventarios') ? ['href' => route('inventarios.index'), 'icon' => 'bi-box-seam', 'title' => 'Inventarios', 'desc' => 'Instrumentos y stock'] : null,
-                $user->tieneAccesoModulo('admin.plan_compras') ? ['href' => route('plan-compras.index'), 'icon' => 'bi-clipboard-check', 'title' => 'Plan de compras', 'desc' => 'Necesidades y prioridades'] : null,
-                $user->tieneAccesoModulo('admin.ordenes_compra') ? ['href' => route('ordenes-compra.index'), 'icon' => 'bi-cart', 'title' => 'Órdenes de compra', 'desc' => 'Pedidos a proveedores'] : null,
-            ])),
-        ],
-        [
-            'code' => '05',
-            'label' => 'Contenido',
-            'items' => array_values(array_filter([
-                $user->tieneAccesoModulo('programa') ? ['href' => route('programa.index'), 'icon' => 'bi-journal-text', 'title' => 'Programa', 'desc' => 'Currículum por año'] : null,
-                $user->tieneAccesoModulo('programa') ? ['href' => route('programa.partituras.index'), 'icon' => 'bi-file-earmark-music', 'title' => 'Partituras', 'desc' => 'PDFs del cuadernillo por toque'] : null,
-                $user->isAdmin() && $user->tieneAccesoModulo('admin.disenos') ? ['href' => route('disenos.index'), 'icon' => 'bi-palette', 'title' => 'Diseño', 'desc' => 'Piezas gráficas y editor'] : null,
-                $user->isAdmin() ? ['href' => route('biblioteca.admin.index'), 'icon' => 'bi-images', 'title' => 'Biblioteca', 'desc' => 'Moderar material público compartido'] : null,
-            ])),
-        ],
-        [
-            'code' => '06',
-            'label' => 'Configuración',
-            'items' => array_values(array_filter([
-                $user->isAdmin() ? ['href' => route('accesos.index'), 'icon' => 'bi-shield-lock', 'title' => 'Accesos', 'desc' => 'Altas de usuario y permisos'] : null,
-                $user->tieneAccesoModulo('ayuda') ? ['href' => route('ayuda'), 'icon' => 'bi-question-circle', 'title' => 'Ayuda', 'desc' => 'Guías rápidas del sistema'] : null,
-            ])),
-        ],
+    $clasesPendientesSemana = ($bloquesSemanales ?? collect())
+        ->filter(fn ($r) => in_array($r['estado'] ?? '', ['Pendiente', 'Incompleta'], true))
+        ->count();
+    $clasesTomadasSemana = ($bloquesSemanales ?? collect())
+        ->filter(fn ($r) => ($r['estado'] ?? '') === 'Tomada')
+        ->count();
+
+    $atencionExtra = collect($atencionHoy ?? []);
+    if ($clasesPendientesSemana > 0) {
+        $atencionExtra = $atencionExtra->prepend([
+            'href' => route('asistencias.index'),
+            'title' => $clasesPendientesSemana.' clase'.($clasesPendientesSemana === 1 ? '' : 's').' de la semana sin lista completa',
+            'hint' => 'Asistencia',
+        ]);
+    }
+
+    $accionesRapidas = array_values(array_filter([
+        $user->tieneAccesoModulo('admin.asistencias') ? ['href' => route('asistencias.index'), 'icon' => 'bi-check2-square', 'title' => 'Asistencias', 'desc' => 'Pasar lista'] : null,
+        $user->tieneAccesoModulo('admin.alumnos') ? ['href' => route('alumnos.index'), 'icon' => 'bi-people', 'title' => 'Alumnos', 'desc' => 'Buscar ficha'] : null,
+        $user->tieneAccesoModulo('comprobantes') ? ['href' => route('comprobantes-cuota-alumnos.index', ['estado' => 'pendiente']), 'icon' => 'bi-inbox', 'title' => 'Comprobantes', 'desc' => (($comprobantesPendientesCount ?? 0) > 0 ? $comprobantesPendientesCount.' sin revisar' : 'Revisar envíos')] : null,
+        $user->tieneAccesoModulo('admin.pagos') ? ['href' => route('pagos.index'), 'icon' => 'bi-receipt', 'title' => 'Registrar pago', 'desc' => 'Cobro al día'] : null,
+        $user->tieneAccesoModulo('admin.eventos') ? ['href' => route('eventos.index'), 'icon' => 'bi-calendar-event', 'title' => 'Eventos', 'desc' => 'Agenda cercana'] : null,
+        $user->tieneAccesoModulo('admin.villa_gesell') ? ['href' => route('villa-gesell.index'), 'icon' => 'bi-sun', 'title' => 'Villa Gesell', 'desc' => 'Gira 2027'] : null,
     ]));
-    $hubModules = array_values(array_filter($hubModules, fn ($g) => count($g['items']) > 0));
 @endphp
 
-<div class="hub">
+<div class="hub hub--command">
+    @include('partials.hub-hint', [
+        'title' => 'Centro de control',
+        'body' => 'Primero lo urgente (Hoy). Después acciones rápidas. Ctrl+K busca alumno, bloque o módulo.',
+        'helpLabel' => 'Cómo pagar y cobrar',
+    ])
+
     <div class="hub-hero">
         <div class="hub-hero-main">
-            <p class="hub-eyebrow">La Chilinga · tablero de operación</p>
+            <p class="hub-eyebrow">La Chilinga · centro de control</p>
             <h1 class="hub-greeting">
                 {{ $saludo }}, <em>{{ $primerNombre }}</em>.
             </h1>
@@ -106,24 +66,52 @@
                 <dd>{{ $user->etiquetaRol() }}</dd>
             </div>
             <div>
-                <dt>Estado</dt>
-                <dd><span class="hub-status-dot" aria-hidden="true"></span> Operativo</dd>
+                <dt>Semana</dt>
+                <dd>
+                    @if($clasesPendientesSemana > 0)
+                        <span class="hub-status-dot hub-status-dot--alert" aria-hidden="true"></span>
+                        {{ $clasesPendientesSemana }} pendientes
+                    @else
+                        <span class="hub-status-dot hub-status-dot--ok" aria-hidden="true"></span>
+                        Lista al día
+                    @endif
+                </dd>
             </div>
         </dl>
     </div>
 
-    @if(($atencionHoy ?? collect())->isNotEmpty())
-    <section class="hub-section" aria-labelledby="hub-hoy">
+    @if($atencionExtra->isNotEmpty())
+    <section class="hub-section hub-section--priority" aria-labelledby="hub-hoy">
         <header class="hub-section-head">
             <h2 id="hub-hoy" class="hub-section-title"><span class="hub-section-code">Hoy</span> Necesita atención</h2>
         </header>
         <div class="hub-modules">
-            @foreach($atencionHoy as $item)
-            <a class="hub-module" href="{{ $item['href'] }}">
+            @foreach($atencionExtra as $item)
+            <a class="hub-module hub-module--alert" href="{{ $item['href'] }}">
                 <span class="hub-module-icon" aria-hidden="true"><i class="bi bi-lightning"></i></span>
                 <span class="hub-module-body">
                     <span class="hub-module-title">{{ $item['title'] }}</span>
                     <span class="hub-module-desc">{{ $item['hint'] }}</span>
+                </span>
+            </a>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
+    @if(count($accionesRapidas) > 0)
+    <section class="hub-section" aria-labelledby="hub-acciones">
+        <header class="hub-section-head">
+            <h2 id="hub-acciones" class="hub-section-title"><span class="hub-section-code">Hacer</span> Acciones rápidas</h2>
+            <span class="hub-section-count">Uso diario</span>
+        </header>
+        <div class="hub-modules hub-modules--compact">
+            @foreach($accionesRapidas as $item)
+            <a class="hub-module" href="{{ $item['href'] }}">
+                <span class="hub-module-icon" aria-hidden="true"><i class="bi {{ $item['icon'] }}"></i></span>
+                <span class="hub-module-body">
+                    <span class="hub-module-title">{{ $item['title'] }}</span>
+                    <span class="hub-module-desc">{{ $item['desc'] }}</span>
                 </span>
             </a>
             @endforeach
@@ -194,36 +182,127 @@
         </a>
     </div>
 
-    @foreach($hubModules as $group)
-        <section class="hub-section" aria-labelledby="hub-sec-{{ $group['code'] }}">
-            <header class="hub-section-head">
-                <h2 id="hub-sec-{{ $group['code'] }}" class="hub-section-title">
-                    <span class="hub-section-code">{{ $group['code'] }}</span>
-                    {{ $group['label'] }}
-                </h2>
-                <span class="hub-section-count">{{ count($group['items']) }} módulos</span>
-            </header>
-            <div class="hub-modules">
-                @foreach($group['items'] as $item)
-                    <a class="hub-module" href="{{ $item['href'] }}">
-                        <span class="hub-module-icon" aria-hidden="true"><i class="bi {{ $item['icon'] }}"></i></span>
-                        <span class="hub-module-body">
-                            <span class="hub-module-title">{{ $item['title'] }}</span>
-                            <span class="hub-module-desc">{{ $item['desc'] }}</span>
-                            @if(!empty($item['badge']))
-                                <span class="hub-kpi-badge {{ ($item['tone'] ?? '') === 'danger' ? 'is-alert' : '' }}">{{ $item['badge'] }}</span>
-                            @endif
-                        </span>
-                    </a>
-                @endforeach
+    <section class="hub-section" aria-labelledby="hub-semana">
+        <header class="hub-section-head">
+            <h2 id="hub-semana" class="hub-section-title">
+                <span class="hub-section-code">Semana</span>
+                Clases de esta semana
+            </h2>
+            <span class="hub-section-count">{{ $clasesTomadasSemana }} tomadas · {{ $clasesPendientesSemana }} por completar</span>
+        </header>
+        <div class="hub-panel mb-0">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Día / hora</th>
+                            <th>Bloque</th>
+                            <th>Sede</th>
+                            <th>Profesor</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse(($bloquesSemanales ?? collect()) as $row)
+                            @php
+                                $h = $row['horario'];
+                                $fecha = $row['fecha_clase'] ?? null;
+                                $diaLabel = $fecha ? $fecha->locale('es')->translatedFormat('D d/m') : '—';
+                                $horaLabel = $h->hora_inicio ? substr((string) $h->hora_inicio, 0, 5) : '';
+                                $bloqueId = $row['bloque']->id ?? null;
+                                $fechaStr = $fecha ? $fecha->toDateString() : now()->toDateString();
+                            @endphp
+                            <tr>
+                                <td class="text-nowrap">
+                                    <span class="fw-semibold">{{ $diaLabel }}</span>
+                                    @if($horaLabel)<span class="text-muted"> · {{ $horaLabel }}</span>@endif
+                                </td>
+                                <td class="fw-semibold">{{ $row['bloque']->nombre ?? '—' }}</td>
+                                <td class="text-muted">{{ $row['sede']->nombre ?? '—' }}</td>
+                                <td class="text-muted">{{ $row['profesor']->nombre ?? '—' }}</td>
+                                <td>
+                                    <span class="{{ $row['badge_class'] ?? 'badge-pend' }}">{{ $row['estado'] }}</span>
+                                    @if(($row['total_alumnos'] ?? 0) > 0 && ($row['estado'] ?? '') === 'Tomada')
+                                        <span class="small text-muted ms-1">{{ $row['presentes'] }}/{{ $row['total_alumnos'] }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-end">
+                                    @if($bloqueId && in_array($row['estado'] ?? '', ['Pendiente', 'Incompleta'], true))
+                                        <a class="btn btn-sm btn-primary" href="{{ route('asistencias.create', ['bloque_id' => $bloqueId, 'fecha' => $fechaStr]) }}">Pasar lista</a>
+                                    @elseif($bloqueId)
+                                        <a class="hub-panel-link" href="{{ route('asistencias.index', ['bloque_id' => $bloqueId]) }}">Ver →</a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="text-muted py-3">No hay clases programadas esta semana.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </section>
-    @endforeach
+        </div>
+    </section>
+
+    <div class="hub-panels">
+        <div class="hub-panel">
+            <div class="hub-panel-head">
+                <div>
+                    <div class="hub-panel-title">Cobros pendientes</div>
+                    <div class="hub-panel-sub">Cuotas del mes aún abiertas</div>
+                </div>
+                <a href="{{ route('cuotas.index') }}" class="hub-panel-link">Ver todas →</a>
+            </div>
+            @forelse(($cuotasPendientesList ?? collect()) as $fila)
+                <div class="hub-list-item">
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="fw-semibold text-truncate">{{ $fila['alumno'] ?? 'Alumno' }}</div>
+                        <div class="small text-muted">
+                            {{ $fila['sede'] ?? '—' }}
+                            @if(!empty($fila['cuota_nombre'])) · {{ $fila['cuota_nombre'] }}@endif
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-semibold font-monospace">${{ number_format($fila['monto'] ?? 0, 0, ',', '.') }}</div>
+                        @if(!empty($fila['dot_class']))
+                            <span class="hub-kpi-badge is-alert">Vencida</span>
+                        @else
+                            <span class="hub-kpi-badge">Pendiente</span>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <p class="text-muted small mb-0 py-2">No hay cobros pendientes listados.</p>
+            @endforelse
+            @if(($cuotasPendientes ?? 0) > 0)
+                <div class="mt-2">
+                    <a class="btn btn-sm btn-outline-primary" href="{{ route('pagos.create') }}">Registrar pago</a>
+                </div>
+            @endif
+        </div>
+        <div class="hub-panel">
+            <div class="hub-panel-head">
+                <div class="hub-panel-title">Comprobantes sin revisar</div>
+                <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="hub-panel-link">Ir al listado →</a>
+            </div>
+            @forelse(($comprobantesPendientesList ?? collect()) as $comp)
+                <div class="hub-list-item">
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="fw-semibold text-truncate">{{ $comp->alumno?->nombre_apellido ?? 'Alumno' }}</div>
+                        <div class="small text-muted">{{ $comp->created_at?->diffForHumans() ?? '' }}</div>
+                    </div>
+                    <span class="hub-kpi-badge is-alert">Pendiente</span>
+                </div>
+            @empty
+                <p class="text-muted small mb-0 py-2">No hay comprobantes pendientes.</p>
+            @endforelse
+        </div>
+    </div>
 
     <section class="hub-section" aria-labelledby="hub-sec-ops">
         <header class="hub-section-head">
             <h2 id="hub-sec-ops" class="hub-section-title">
-                <span class="hub-section-code">07</span>
+                <span class="hub-section-code">Contexto</span>
                 Operación del mes
             </h2>
         </header>
@@ -272,65 +351,45 @@
             </div>
             <div class="hub-panel">
                 <div class="hub-panel-head">
-                    <div class="hub-panel-title">Comprobantes sin revisar</div>
-                    <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="hub-panel-link">Ir al listado →</a>
-                </div>
-                @forelse(($comprobantesPendientesList ?? collect()) as $comp)
-                    <div class="hub-list-item">
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="fw-semibold text-truncate">{{ $comp->alumno?->nombre_apellido ?? 'Alumno' }}</div>
-                            <div class="small text-muted">{{ $comp->created_at?->diffForHumans() ?? '' }}</div>
-                        </div>
-                        <span class="hub-kpi-badge is-alert">Pendiente</span>
+                    <div>
+                        <div class="hub-panel-title">Bloques — cupo</div>
+                        <div class="hub-panel-sub">Ocupación</div>
                     </div>
-                @empty
-                    <p class="text-muted small mb-0 py-2">No hay comprobantes pendientes.</p>
-                @endforelse
-            </div>
-        </div>
-
-        <div class="hub-panel mb-0">
-            <div class="hub-panel-head">
-                <div>
-                    <div class="hub-panel-title">Bloques — cupo</div>
-                    <div class="hub-panel-sub">Ocupación por bloque activo</div>
+                    <a href="{{ route('bloques.index') }}" class="hub-panel-link">Ver →</a>
                 </div>
-                <a href="{{ route('bloques.index') }}" class="hub-panel-link">Ver bloques →</a>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Bloque</th>
-                            <th>Sede</th>
-                            <th>Profesor</th>
-                            <th>Cupo</th>
-                            <th class="text-end">Alumnos</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse(($bloquesCupo ?? collect()) as $bloque)
-                            @php
-                                $activos = (int) ($bloque->alumnos_activos_count ?? 0);
-                                $cupo = max(1, (int) ($bloque->cupo_maximo ?? $bloque->cupo ?? 30));
-                                $pct = min(100, round(($activos / $cupo) * 100));
-                                $barClass = $pct >= 100 ? 'full' : ($pct >= 75 ? 'warn' : '');
-                            @endphp
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
                             <tr>
-                                <td class="fw-semibold">{{ $bloque->nombre }}</td>
-                                <td class="text-muted">{{ $bloque->sede?->nombre ?? '—' }}</td>
-                                <td class="text-muted">{{ $bloque->profesor?->nombre ?? '—' }}</td>
-                                <td>
-                                    <span class="cupo-bar {{ $barClass }}" aria-hidden="true"><i style="width:{{ $pct }}%"></i></span>
-                                    <span class="small font-monospace">{{ $pct }}%</span>
-                                </td>
-                                <td class="text-end font-monospace">{{ $activos }}/{{ $cupo }}</td>
+                                <th>Bloque</th>
+                                <th>Sede</th>
+                                <th>Cupo</th>
+                                <th class="text-end">Alumnos</th>
                             </tr>
-                        @empty
-                            <tr><td colspan="5" class="text-muted">Sin bloques activos.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @forelse(($bloquesCupo ?? collect()) as $bloque)
+                                @php
+                                    $activos = (int) ($bloque->alumnos_activos_count ?? 0);
+                                    $cupo = max(1, (int) ($bloque->cupo_maximo ?? $bloque->cupo ?? 30));
+                                    $pct = min(100, round(($activos / $cupo) * 100));
+                                    $barClass = $pct >= 100 ? 'full' : ($pct >= 75 ? 'warn' : '');
+                                @endphp
+                                <tr>
+                                    <td class="fw-semibold">{{ $bloque->nombre }}</td>
+                                    <td class="text-muted">{{ $bloque->sede?->nombre ?? '—' }}</td>
+                                    <td>
+                                        <span class="cupo-bar {{ $barClass }}" aria-hidden="true"><i style="width:{{ $pct }}%"></i></span>
+                                        <span class="small font-monospace">{{ $pct }}%</span>
+                                    </td>
+                                    <td class="text-end font-monospace">{{ $activos }}/{{ $cupo }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="text-muted">Sin bloques activos.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>

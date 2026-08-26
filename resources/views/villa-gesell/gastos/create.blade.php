@@ -5,9 +5,12 @@
 
 @section('content')
 @include('villa-gesell.partials.nav')
-<div class="card">
-    <div class="card-header">Gasto de la gira</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Gasto de la gira"
+    eyebrow="Villa Gesell"
+    subtitle="Egreso de la campaña."
+>
+
         <form action="{{ route('villa-gesell.gastos.store') }}" method="POST">
             @csrf
             @include('villa-gesell.gastos._form', ['diasGira' => app(\App\Services\VillaGesellGiraService::class)->config()->cantidadDias()])
@@ -16,6 +19,6 @@
                 <a class="btn btn-link" href="{{ route('villa-gesell.gastos.index') }}">Cancelar</a>
             </div>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

@@ -13,13 +13,13 @@
     $esCurado = collect($acentos)->contains(fn ($a) => strtolower($a['hex']) === strtolower($accentActual));
 @endphp
 
-<div class="apariencia-page">
-    <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
-        <div>
-            <h1 class="h4 mb-1" style="font-family: var(--font-display); font-weight: 800;">Apariencia</h1>
-            <p class="text-muted mb-0 small">Personalizá colores y tipografías. Solo afecta tu sesión; el resto del equipo no cambia.</p>
-        </div>
-    </div>
+<x-ito.shell-page
+    title="Apariencia"
+    eyebrow="Preferencias"
+    subtitle="Colores y tipografías de tu sesión. El resto del equipo no cambia."
+    :flush="true"
+>
+<div class="apariencia-page p-3 p-md-4">
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -41,8 +41,7 @@
         @csrf
 
         <div class="apariencia-controls">
-            <section class="card mb-3">
-                <div class="card-body">
+            <section class="ito-form-section mb-3">
                     <h2 class="h6 mb-1">Color de acento</h2>
                     <p class="text-muted small mb-3">Botones, enlaces activos y detalles. Elegí de la paleta o un hex propio.</p>
 
@@ -78,11 +77,9 @@
                             </div>
                         @endunless
                     </div>
-                </div>
             </section>
 
-            <section class="card mb-3">
-                <div class="card-body">
+            <section class="ito-form-section mb-3">
                     <h2 class="h6 mb-1">Tipografía de títulos</h2>
                     <p class="text-muted small mb-3">Encabezados y nombres de módulo.</p>
                     <div class="apariencia-fonts" role="radiogroup" aria-label="Fuente de títulos">
@@ -97,11 +94,9 @@
                             </label>
                         @endforeach
                     </div>
-                </div>
             </section>
 
-            <section class="card mb-3">
-                <div class="card-body">
+            <section class="ito-form-section mb-3">
                     <h2 class="h6 mb-1">Tipografía de cuerpo</h2>
                     <p class="text-muted small mb-3">Párrafos, tablas y formularios.</p>
                     <div class="apariencia-fonts" role="radiogroup" aria-label="Fuente de cuerpo">
@@ -116,7 +111,6 @@
                             </label>
                         @endforeach
                     </div>
-                </div>
             </section>
 
             <div class="d-flex flex-wrap gap-2 mb-4">
@@ -129,8 +123,7 @@
         </div>
 
         <aside class="apariencia-preview-col">
-            <div class="card apariencia-preview-card sticky-lg-top" style="top: 1rem;">
-                <div class="card-body" id="aparienciaPreview" data-apariencia-preview>
+            <div class="ito-card apariencia-preview-card sticky-lg-top" style="top: 1rem; padding: 16px;" id="aparienciaPreview" data-apariencia-preview>
                     <div class="text-muted small text-uppercase mb-2" style="letter-spacing:.06em;">Vista previa</div>
                     <h3 class="apariencia-preview-title mb-2" data-preview-title>Resumen del mes</h3>
                     <p class="small text-muted mb-3" data-preview-body>Así se ven títulos, texto y el botón principal con tu elección.</p>
@@ -146,7 +139,6 @@
                         <button type="button" class="btn btn-outline-secondary" disabled tabindex="-1">Cancelar</button>
                     </div>
                     <a href="#" class="d-inline-block mt-3 small" data-preview-link onclick="return false;">Ver detalle →</a>
-                </div>
             </div>
         </aside>
     </form>
@@ -155,6 +147,8 @@
         @csrf
     </form>
 </div>
+</x-ito.shell-page>
+
 @endsection
 
 @push('scripts')

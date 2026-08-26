@@ -4,10 +4,11 @@
 @section('page-title', 'Ayuda — Guía de uso')
 
 @section('content')
-<div class="card">
-    <div class="card-body">
-        <h2 class="h5 mb-1">Guía del sistema</h2>
-        <p class="text-muted mb-3">Todo explicado con palabras simples. Si tenés una duda puntual, escribila en el buscador de abajo (por ejemplo: <em>pago</em>, <em>alumno</em>, <em>cuota</em>).</p>
+<x-ito.shell-page
+    title="Guía del sistema"
+    eyebrow="Ayuda"
+    subtitle="Explicado con palabras simples. Buscá por pago, alumno o cuota."
+>
 
         <div class="mb-3">
             <label for="ayudaBuscar" class="form-label">Buscar en esta guía</label>
@@ -333,9 +334,14 @@
                             <li>Si escribís un monto a mano, se reparte entre las filas del pago.</li>
                         </ul>
                         <div class="fw-semibold mb-2">Comprobantes</div>
-                        <ul class="mb-0">
+                        <ul>
                             <li>Revisá lo que mandaron los alumnos y marcá “visto”.</li>
                             <li>El <strong>link público</strong> sirve para que suban el comprobante sin entrar al sistema.</li>
+                        </ul>
+                        <div class="fw-semibold mb-2">WhatsApp a una familia</div>
+                        <ul class="mb-0">
+                            <li>En la ficha del alumno, si hay teléfono, usá <strong>WhatsApp</strong> o <strong>Copiar mensaje</strong> (abre wa.me con un texto listo).</li>
+                            <li>El resumen semanal automático para admins se configura en <strong>Accesos</strong> (teléfono) y Twilio — ver docs/WHATSAPP.md.</li>
                         </ul>
                     </div>
                 </div>
@@ -430,8 +436,8 @@
         <div class="mt-3 small text-muted">
             ¿Algo no te cierra? Volvé al menú, entrá de nuevo a la pantalla o buscá una palabra arriba en el buscador.
         </div>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection
 
 @push('styles')

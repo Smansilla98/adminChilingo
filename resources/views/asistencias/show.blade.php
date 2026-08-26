@@ -4,9 +4,12 @@
 @section('page-title', 'Detalle de asistencia')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Asistencia</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Asistencia"
+    eyebrow="Asistencias"
+    subtitle="Detalle del registro"
+>
+
         <dl class="row">
             <dt class="col-sm-3">Fecha</dt>
             <dd class="col-sm-9">{{ $asistencia->fecha->format('d/m/Y') }}</dd>
@@ -26,6 +29,6 @@
         </dl>
         <a href="{{ route('asistencias.edit', $asistencia) }}" class="btn btn-warning">Editar</a>
         <a href="{{ route('asistencias.index') }}" class="btn btn-secondary">Volver</a>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

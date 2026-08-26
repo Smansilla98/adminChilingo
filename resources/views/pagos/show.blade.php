@@ -4,10 +4,16 @@
 @section('page-title', 'Detalle del pago')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Pago del {{ $pago->fecha_pago->format('d/m/Y') }}</div>
-    <div class="card-body">
-        <dl class="row">
+<x-ito.shell-page
+    title="Pago del {{ $pago->fecha_pago->format('d/m/Y') }}"
+    eyebrow="Pagos"
+    subtitle="Detalle y trazabilidad por alumno"
+>
+    <x-slot:actions>
+        <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{{ route('pagos.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
+    </x-slot:actions>
+        <dl class="ito-dl">
             <dt class="col-sm-3">Monto total</dt>
             <dd class="col-sm-9">$ {{ number_format($pago->monto_total, 2, ',', '.') }}</dd>
             @php
@@ -86,9 +92,6 @@
         @if($primeraNotaAbono)
         <p class="small text-muted mb-0"><strong>Nota sobre el pago al profesor:</strong> {{ $primeraNotaAbono }}</p>
         @endif
-        <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-primary"><i class="bi bi-pencil"></i> Editar</a>
-        <a href="{{ route('pagos.index') }}" class="btn btn-secondary">Volver</a>
-    </div>
-</div>
+</x-ito.shell-page>
 @include('pagos._modal_comprobante')
 @endsection

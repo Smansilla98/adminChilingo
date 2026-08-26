@@ -17,6 +17,22 @@ class InventarioItemController extends Controller
         $tipos = InventarioItem::TIPOS;
         $propietarios = InventarioItem::PROPIETARIOS;
 
+        // Flujo escanear / ir a código → ficha
+        if ($request->filled('codigo')) {
+            $codigo = trim((string) $request->input('codigo'));
+            $hit = InventarioItem::query()->where('codigo', $codigo)->first()
+                ?? InventarioItem::query()->where('codigo', 'like', $codigo)->orderBy('id')->first();
+            if ($hit) {
+                return redirect()
+                    ->route('inventarios.show', $hit)
+                    ->with('success', 'Ítem encontrado: '.$hit->codigo);
+            }
+
+            return redirect()
+                ->route('inventarios.index', $request->except('codigo'))
+                ->with('error', 'No hay ítem con código «'.$codigo.'».');
+        }
+
         try {
             $query = InventarioItem::with(['sede', 'alumno']);
 
@@ -28,6 +44,9 @@ class InventarioItemController extends Controller
             }
             if ($request->filled('propietario_tipo')) {
                 $query->where('propietario_tipo', $request->propietario_tipo);
+            }
+            if ($request->filled('estado')) {
+                $query->where('estado', $request->estado);
             }
             if ($request->filled('q')) {
                 $q = trim((string) $request->q);
@@ -137,13 +156,22 @@ class InventarioItemController extends Controller
             'tipo' => 'required|in:'.implode(',', array_keys(InventarioMovimiento::TIPOS)),
             'nota' => 'nullable|string|max:400',
             'sede_id' => 'nullable|exists:sedes,id',
+            'estado' => 'nullable|in:'.implode(',', array_keys(InventarioItem::ESTADOS)),
         ]);
-        if (($data['tipo'] ?? '') === 'sede' && ! empty($data['sede_id'])) {
+        if (! empty($data['sede_id']) && (int) $data['sede_id'] !== (int) $inventario->sede_id) {
             $inventario->update(['sede_id' => $data['sede_id']]);
+            if (($data['tipo'] ?? '') !== 'sede') {
+                // La ubicación cambió aunque el tipo sea otro (p. ej. reparación en otra sede).
+            }
+        } elseif (($data['tipo'] ?? '') === 'sede' && ! empty($data['sede_id'])) {
+            $inventario->update(['sede_id' => $data['sede_id']]);
+        }
+        if (! empty($data['estado']) && $data['estado'] !== $inventario->estado) {
+            $inventario->update(['estado' => $data['estado']]);
         }
         $this->registrar($inventario, $data['tipo'], $data['nota'] ?? null, $data['sede_id'] ?? $inventario->sede_id);
 
-        return back()->with('success', 'Movimiento registrado.');
+        return back()->with('success', 'Movimiento registrado.'.(! empty($data['estado']) ? ' Estado: '.(InventarioItem::ESTADOS[$data['estado']] ?? $data['estado']).'.' : ''));
     }
 
     private function registrar(InventarioItem $item, string $tipo, ?string $nota, ?int $sedeId = null): void

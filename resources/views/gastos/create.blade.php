@@ -4,84 +4,96 @@
 @section('page-title', 'Nuevo gasto')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Registrar gasto</div>
-    <div class="card-body">
-        @include('partials.form-ayuda-intro', ['text' => 'Anotá un egreso: fecha, monto y de qué se trata. La sede y el bloque son opcionales.'])
-        <form action="{{ route('gastos.store') }}" method="POST">
-            @csrf
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label">Sede</label>
-                    <select name="sede_id" id="sede_id" class="form-select @error('sede_id') is-invalid @enderror">
-                        <option value="">— Sin sede —</option>
-                        @foreach($sedes as $s)
-                        <option value="{{ $s->id }}" {{ old('sede_id') == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
-                        @endforeach
-                    </select>
-                    @error('sede_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+<x-ito.shell-page
+    title="Registrar gasto"
+    subtitle="Egreso en dos pasos: contexto y detalle."
+    eyebrow="Gastos"
+>
+    <x-slot:actions>
+        <a href="{{ route('gastos.index') }}" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
+    </x-slot:actions>
+
+    <form action="{{ route('gastos.store') }}" method="POST" class="ito-form">
+        @csrf
+        <x-ito.form-steps :steps="['Contexto', 'Detalle']" submit-label="Guardar gasto">
+            <x-slot:cancel>
+                <a href="{{ route('gastos.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+            </x-slot:cancel>
+
+            <x-ito.form-step :index="0" title="Contexto" help="Sede, bloque y fecha del egreso.">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Sede</label>
+                        <select name="sede_id" id="sede_id" class="form-select @error('sede_id') is-invalid @enderror">
+                            <option value="">— Sin sede —</option>
+                            @foreach($sedes as $s)
+                            <option value="{{ $s->id }}" {{ old('sede_id') == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
+                            @endforeach
+                        </select>
+                        @error('sede_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Bloque (opcional)</label>
+                        <select name="bloque_id" class="form-select @error('bloque_id') is-invalid @enderror">
+                            <option value="">— Sin bloque —</option>
+                            @foreach($bloques as $b)
+                            <option value="{{ $b->id }}" {{ old('bloque_id') == $b->id ? 'selected' : '' }}>{{ $b->nombre }} ({{ $b->sede?->nombre ?? '-' }})</option>
+                            @endforeach
+                        </select>
+                        @error('bloque_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha *</label>
+                        <input type="date" name="fecha" class="form-control @error('fecha') is-invalid @enderror" value="{{ old('fecha', date('Y-m-d')) }}" required>
+                        @error('fecha')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Bloque (opcional)</label>
-                    <select name="bloque_id" class="form-select @error('bloque_id') is-invalid @enderror">
-                        <option value="">— Sin bloque —</option>
-                        @foreach($bloques as $b)
-                        <option value="{{ $b->id }}" {{ old('bloque_id') == $b->id ? 'selected' : '' }}>{{ $b->nombre }} ({{ $b->sede?->nombre ?? '-' }})</option>
-                        @endforeach
-                    </select>
-                    @error('bloque_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </x-ito.form-step>
+
+            <x-ito.form-step :index="1" title="Detalle" help="Tipo, monto y descripción.">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Tipo *</label>
+                        <select name="tipo" id="tipo_gasto" class="form-select @error('tipo') is-invalid @enderror" required>
+                            @foreach(\App\Models\Gasto::TIPOS as $k => $v)
+                            <option value="{{ $k }}" {{ old('tipo') === $k ? 'selected' : '' }}>{{ $v }}</option>
+                            @endforeach
+                        </select>
+                        @error('tipo')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Subtipo</label>
+                        <select name="subtipo" id="subtipo_gasto" class="form-select @error('subtipo') is-invalid @enderror">
+                            <option value="">— Opcional —</option>
+                        </select>
+                        @error('subtipo')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Monto *</label>
+                        <input type="number" name="monto" class="form-control @error('monto') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto') }}" required>
+                        @error('monto')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" name="descripcion" class="form-control @error('descripcion') is-invalid @enderror" value="{{ old('descripcion') }}" placeholder="Ej. Pago luz marzo">
+                        @error('descripcion')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Proveedor</label>
+                        <input type="text" name="proveedor" class="form-control @error('proveedor') is-invalid @enderror" value="{{ old('proveedor') }}">
+                        @error('proveedor')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Notas</label>
+                        <textarea name="notas" class="form-control @error('notas') is-invalid @enderror" rows="2">{{ old('notas') }}</textarea>
+                        @error('notas')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Fecha *</label>
-                    <input type="date" name="fecha" class="form-control @error('fecha') is-invalid @enderror" value="{{ old('fecha', date('Y-m-d')) }}" required>
-                    @error('fecha')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label">Tipo *</label>
-                    <select name="tipo" id="tipo_gasto" class="form-select @error('tipo') is-invalid @enderror" required>
-                        @foreach(\App\Models\Gasto::TIPOS as $k => $v)
-                        <option value="{{ $k }}" {{ old('tipo') === $k ? 'selected' : '' }}>{{ $v }}</option>
-                        @endforeach
-                    </select>
-                    @error('tipo')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Subtipo</label>
-                    <select name="subtipo" id="subtipo_gasto" class="form-select @error('subtipo') is-invalid @enderror">
-                        <option value="">— Opcional —</option>
-                    </select>
-                    @error('subtipo')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Monto *</label>
-                    <input type="number" name="monto" class="form-control @error('monto') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto') }}" required>
-                    @error('monto')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Descripción</label>
-                    <input type="text" name="descripcion" class="form-control @error('descripcion') is-invalid @enderror" value="{{ old('descripcion') }}" placeholder="Ej. Pago luz marzo">
-                    @error('descripcion')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Proveedor</label>
-                    <input type="text" name="proveedor" class="form-control @error('proveedor') is-invalid @enderror" value="{{ old('proveedor') }}">
-                    @error('proveedor')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Notas</label>
-                <textarea name="notas" class="form-control @error('notas') is-invalid @enderror" rows="2">{{ old('notas') }}</textarea>
-                @error('notas')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{{ route('gastos.index') }}" class="btn btn-secondary">Cancelar</a>
-        </form>
-    </div>
-</div>
+            </x-ito.form-step>
+        </x-ito.form-steps>
+    </form>
+</x-ito.shell-page>
+@endsection
 
 @push('scripts')
 <script>
@@ -108,4 +120,3 @@
 })();
 </script>
 @endpush
-@endsection

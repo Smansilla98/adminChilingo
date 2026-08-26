@@ -6,6 +6,7 @@ use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\Sede;
+use App\Services\AmbitoSedeService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -13,10 +14,15 @@ use Illuminate\Validation\Rule;
 
 class CuotaController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, AmbitoSedeService $ambito)
     {
+        $filtroSedes = $ambito->idsPara(auth()->user());
+
         try {
             $query = Cuota::with(['bloque', 'sede']);
+            if ($filtroSedes !== null) {
+                $ambito->aplicarCuotas($query, $filtroSedes);
+            }
             if ($request->filled('año')) {
                 $query->where('año', $request->año);
             }
@@ -46,8 +52,14 @@ class CuotaController extends Controller
                 $query->where('alcance', $request->alcance);
             }
             $cuotas = $query->orderBy('año', 'desc')->orderBy('mes')->paginate(20);
-            $bloques = Bloque::where('activo', true)->orderBy('nombre')->get();
-            $sedes = Sede::where('activo', true)->orderBy('nombre')->get();
+            $bloquesQ = Bloque::where('activo', true)->orderBy('nombre');
+            $sedesQ = Sede::where('activo', true)->orderBy('nombre');
+            if ($filtroSedes !== null) {
+                $ambito->aplicarBloques($bloquesQ, $filtroSedes);
+                $ambito->aplicarSedesCatalogo($sedesQ, $filtroSedes);
+            }
+            $bloques = $bloquesQ->get();
+            $sedes = $sedesQ->get();
         } catch (QueryException $e) {
             $cuotas = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
             $bloques = collect();
@@ -57,22 +69,35 @@ class CuotaController extends Controller
         return view('cuotas.index', compact('cuotas', 'bloques', 'sedes'));
     }
 
-    public function create()
+    public function create(AmbitoSedeService $ambito)
     {
+        $filtroSedes = $ambito->idsPara(auth()->user());
         try {
-            $bloques = Bloque::where('activo', true)->with(['alumnos' => function ($q) {
+            $bloquesQ = Bloque::where('activo', true)->with(['alumnos' => function ($q) {
                 $q->orderBy('nombre_apellido');
-            }, 'sede'])->orderBy('nombre')->get();
+            }, 'sede'])->orderBy('nombre');
+            if ($filtroSedes !== null) {
+                $ambito->aplicarBloques($bloquesQ, $filtroSedes);
+            }
+            $bloques = $bloquesQ->get();
         } catch (QueryException $e) {
             $bloques = collect();
         }
         try {
-            $sedes = Sede::where('activo', true)->orderBy('nombre')->get();
+            $sedesQ = Sede::where('activo', true)->orderBy('nombre');
+            if ($filtroSedes !== null) {
+                $ambito->aplicarSedesCatalogo($sedesQ, $filtroSedes);
+            }
+            $sedes = $sedesQ->get();
         } catch (QueryException $e) {
             $sedes = collect();
         }
         try {
-            $alumnosActivos = Alumno::where('activo', true)->orderBy('nombre_apellido')->get(['id', 'nombre_apellido', 'sede_id']);
+            $alumnosQ = Alumno::where('activo', true)->orderBy('nombre_apellido');
+            if ($filtroSedes !== null) {
+                $ambito->aplicarAlumnos($alumnosQ, $filtroSedes);
+            }
+            $alumnosActivos = $alumnosQ->get(['id', 'nombre_apellido', 'sede_id']);
         } catch (QueryException $e) {
             $alumnosActivos = collect();
         }

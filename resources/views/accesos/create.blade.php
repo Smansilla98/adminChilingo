@@ -4,19 +4,14 @@
 @section('page-title', 'Nuevo usuario')
 
 @section('content')
-<div class="ito-page">
-    <div class="ito-page-head">
-        <div>
-            <h1 class="ito-page-title">Nuevo usuario</h1>
-            <p class="ito-page-sub">Alta de cuenta para entrar al sistema</p>
-        </div>
-        <div class="ito-page-actions">
-            <a href="{{ route('accesos.index') }}" class="btn btn-secondary btn-sm">Volver a accesos</a>
-        </div>
-    </div>
-
-    <div class="ito-card">
-        <div class="p-3 p-md-4">
+<x-ito.shell-page
+    title="Nuevo usuario"
+    eyebrow="Accesos"
+    subtitle="Alta de cuenta para entrar al sistema"
+>
+    <x-slot:actions>
+        <a href="{{ route('accesos.index') }}" class="btn btn-secondary btn-sm">Volver a accesos</a>
+    </x-slot:actions>
             @include('partials.form-ayuda-intro', ['text' => 'Creá la cuenta de login. Si es docente, podés generar la ficha de profesor o engancharla a alguien que ya está en el plantel.'])
             <form action="{{ route('accesos.store') }}" method="POST">
                 @csrf
@@ -92,9 +87,7 @@
                     <a href="{{ route('accesos.index') }}" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
-        </div>
-    </div>
-</div>
+</x-ito.shell-page>
 @endsection
 
 @push('scripts')

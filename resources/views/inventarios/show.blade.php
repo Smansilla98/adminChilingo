@@ -4,15 +4,16 @@
 @section('page-title', 'Inventario — Detalle')
 
 @section('content')
-<div class="card">
-    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <div>{{ $item->nombre }}</div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('inventarios.edit', $item) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Editar</a>
-            <a href="{{ route('inventarios.index') }}" class="btn btn-sm btn-outline-secondary">Volver</a>
-        </div>
-    </div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="{{ $item->nombre }}"
+    subtitle="Detalle de inventario"
+    eyebrow="Inventario"
+>
+    <x-slot:actions>
+        <a href="{{ route('inventarios.edit', $item) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{{ route('inventarios.index') }}" class="btn btn-sm btn-outline-secondary">Volver</a>
+    </x-slot:actions>
+
         <div class="row g-3">
             <div class="col-md-4">
                 <div class="text-muted small">Sede</div>
@@ -35,7 +36,21 @@
                 <div class="text-muted small">Código / etiqueta</div>
                 <div class="fw-semibold font-monospace">{{ $item->codigo ?? '—' }}</div>
                 @if($item->codigo)
-                    <a class="small" href="{{ route('inventario.publico', $item->codigo) }}">Ficha pública (QR / URL)</a>
+                    @php $urlPublica = route('inventario.publico', $item->codigo); @endphp
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                        <img
+                            src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&amp;data={{ urlencode($urlPublica) }}"
+                            alt="QR de {{ $item->codigo }}"
+                            width="120"
+                            height="120"
+                            class="border rounded bg-white p-1"
+                            loading="lazy"
+                        >
+                        <div class="d-flex flex-column gap-1">
+                            <a class="small" href="{{ $urlPublica }}">Ficha pública</a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-copy-url="{{ $urlPublica }}">Copiar URL</button>
+                        </div>
+                    </div>
                 @endif
             </div>
             <div class="col-md-4">
@@ -81,8 +96,8 @@
 
         @if(\Illuminate\Support\Facades\Schema::hasTable('inventario_movimientos'))
         <hr>
-        <h2 class="h6">Trazabilidad</h2>
-        <p class="small text-muted">Ingreso, sede, reparación, evento, retorno. No es un CRUD: es el recorro del instrumento.</p>
+        <h2 class="h6" id="mov-rapido">Actualizar ahora</h2>
+        <p class="small text-muted">Flujo típico tras escanear: estado → sede → registrar.</p>
         <form method="POST" action="{{ route('inventarios.movimientos.store', $item) }}" class="row g-2 align-items-end mb-3">
             @csrf
             <div class="col-md-3">
@@ -93,8 +108,17 @@
                     @endforeach
                 </select>
             </div>
+            <div class="col-md-2">
+                <label class="form-label" for="mov-estado">Estado</label>
+                <select id="mov-estado" name="estado" class="form-select">
+                    <option value="">Sin cambio</option>
+                    @foreach(\App\Models\InventarioItem::ESTADOS as $k => $lab)
+                        <option value="{{ $k }}" @selected($item->estado === $k)>{{ $lab }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="col-md-3">
-                <label class="form-label" for="mov-sede">Sede (si cambia)</label>
+                <label class="form-label" for="mov-sede">Sede (ubicación)</label>
                 <select id="mov-sede" name="sede_id" class="form-select">
                     <option value="">—</option>
                     @foreach($sedes ?? [] as $s)
@@ -102,9 +126,9 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-2">
                 <label class="form-label" for="mov-nota">Nota</label>
-                <input id="mov-nota" type="text" name="nota" class="form-control" maxlength="400" placeholder="Ej. ensayo en Palomar">
+                <input id="mov-nota" type="text" name="nota" class="form-control" maxlength="400" placeholder="Ej. roto en ensayo">
             </div>
             <div class="col-md-2">
                 <button class="btn btn-primary w-100" type="submit">Registrar</button>
@@ -126,7 +150,24 @@
             <p class="text-muted small mb-0">Todavía no hay movimientos. El alta ya quedó registrada al crear el ítem.</p>
         @endif
         @endif
-    </div>
-</div>
+</x-ito.shell-page>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    document.querySelectorAll('[data-copy-url]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const url = btn.getAttribute('data-copy-url');
+            if (!url || !navigator.clipboard) return;
+            navigator.clipboard.writeText(url).then(function () {
+                const prev = btn.textContent;
+                btn.textContent = 'Copiado';
+                setTimeout(function () { btn.textContent = prev; }, 1600);
+            });
+        });
+    });
+})();
+</script>
+@endpush
 

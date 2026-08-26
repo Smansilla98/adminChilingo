@@ -4,9 +4,11 @@
 @section('page-title', 'Editar cuota')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Editar cuota</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Editar cuota"
+    eyebrow="Cuotas"
+    subtitle="Corregí el monto o el alcance."
+>
         @include('partials.form-ayuda-intro', ['text' => 'Corregí el monto o para quién aplica la cuota.'])
         <form action="{{ route('cuotas.update', $cuota) }}" method="POST" id="formCuota">
             @csrf
@@ -114,8 +116,7 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('cuotas.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
 
 @push('scripts')
 <script type="application/json" id="bloquesAlumnosJson">

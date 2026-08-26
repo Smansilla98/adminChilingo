@@ -4,9 +4,12 @@
 @section('page-title', 'Cargar comprobante de un alumno')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Carga interna</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Cargar comprobante"
+    eyebrow="Comprobantes"
+    subtitle="Carga interna si te lo alcanzaron en clase."
+>
+
         <p class="text-muted">Las familias envían el comprobante por el link público (con DNI). Vos también podés cargarlo acá si te lo alcanzaron en clase.</p>
         <form action="{{ route('comprobantes-cuota-alumnos.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -57,6 +60,6 @@
             <button type="submit" class="btn btn-primary">Guardar comprobante</button>
             <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="btn btn-outline-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

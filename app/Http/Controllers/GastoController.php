@@ -5,20 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Bloque;
 use App\Models\Gasto;
 use App\Models\Sede;
+use App\Services\AmbitoSedeService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
 class GastoController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, AmbitoSedeService $ambito)
     {
         $gastos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25);
         $sedes = collect();
+        $filtroSedes = $ambito->idsPara(auth()->user());
 
         if (Schema::hasTable('gastos')) {
             try {
                 $query = Gasto::with(['sede', 'bloque', 'creador'])->orderByDesc('fecha')->orderByDesc('id');
+                if ($filtroSedes !== null) {
+                    $ambito->aplicarGastos($query, $filtroSedes);
+                }
 
                 if ($request->filled('sede_id')) {
                     $query->where('sede_id', $request->sede_id);
@@ -40,7 +45,11 @@ class GastoController extends Controller
         }
         if (Schema::hasTable('sedes')) {
             try {
-                $sedes = Sede::orderBy('nombre')->get();
+                $sedesQ = Sede::orderBy('nombre');
+                if ($filtroSedes !== null) {
+                    $ambito->aplicarSedesCatalogo($sedesQ, $filtroSedes);
+                }
+                $sedes = $sedesQ->get();
             } catch (QueryException $e) {
                 // mantener collect()
             }
@@ -49,20 +58,29 @@ class GastoController extends Controller
         return view('gastos.index', compact('gastos', 'sedes'));
     }
 
-    public function create(Request $request)
+    public function create(Request $request, AmbitoSedeService $ambito)
     {
         $sedes = collect();
         $bloques = collect();
+        $filtroSedes = $ambito->idsPara(auth()->user());
         if (Schema::hasTable('sedes')) {
             try {
-                $sedes = Sede::orderBy('nombre')->get();
+                $sedesQ = Sede::orderBy('nombre');
+                if ($filtroSedes !== null) {
+                    $ambito->aplicarSedesCatalogo($sedesQ, $filtroSedes);
+                }
+                $sedes = $sedesQ->get();
             } catch (QueryException $e) {
                 // mantener collect()
             }
         }
         if (Schema::hasTable('bloques')) {
             try {
-                $bloques = Bloque::where('activo', true)->orderBy('sede_id')->orderBy('nombre')->get();
+                $bloquesQ = Bloque::where('activo', true)->orderBy('sede_id')->orderBy('nombre');
+                if ($filtroSedes !== null) {
+                    $ambito->aplicarBloques($bloquesQ, $filtroSedes);
+                }
+                $bloques = $bloquesQ->get();
             } catch (QueryException $e) {
                 // mantener collect()
             }

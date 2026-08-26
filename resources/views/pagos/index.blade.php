@@ -12,13 +12,16 @@
     <x-slot:toolbar>
         <form method="GET" class="ito-toolbar-filters w-100 d-flex flex-wrap align-items-end gap-2">
             <div class="ito-field">
-                <label>Alumno</label>
-                <select name="alumno_id" class="form-select">
-                    <option value="">Todos</option>
-                    @foreach($alumnos as $a)
-                        <option value="{{ $a->id }}" @selected(request('alumno_id') == $a->id)>{{ $a->nombre_apellido }}</option>
-                    @endforeach
-                </select>
+                <label for="filtro-alumno-pago">Alumno</label>
+                <input
+                    id="filtro-alumno-pago"
+                    type="search"
+                    name="alumno"
+                    class="form-control"
+                    value="{{ request('alumno') }}"
+                    placeholder="Nombre, DNI o teléfono"
+                    autocomplete="off"
+                >
             </div>
             <div class="ito-field">
                 <label>Cuota</label>
@@ -40,6 +43,18 @@
             <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
         </form>
     </x-slot:toolbar>
+
+    <x-slot:filters>
+        <x-ito.filter-chips
+            :clear-url="route('pagos.index')"
+            :filters="[
+                'alumno' => 'Alumno',
+                'cuota_id' => 'Cuota',
+                'desde' => 'Desde',
+                'hasta' => 'Hasta',
+            ]"
+        />
+    </x-slot:filters>
 
     <table class="ito-table">
         <thead>
@@ -91,7 +106,17 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="8" class="ito-empty">No hay pagos. <a href="{{ route('pagos.create') }}">Registrar uno</a></td></tr>
+                <tr>
+                    <td colspan="8">
+                        <x-ito.empty
+                            title="{{ request()->hasAny(['alumno','cuota_id','desde','hasta']) ? 'Sin pagos con estos filtros' : 'Todavía no hay pagos' }}"
+                            description="{{ request()->hasAny(['alumno','cuota_id','desde','hasta']) ? 'Limpiá los filtros o ampliá el rango de fechas.' : 'Registrá el primer cobro para empezar la trazabilidad.' }}"
+                            icon="bi-receipt"
+                            :action-href="request()->hasAny(['alumno','cuota_id','desde','hasta']) ? route('pagos.index') : route('pagos.create')"
+                            :action-label="request()->hasAny(['alumno','cuota_id','desde','hasta']) ? 'Limpiar filtros' : 'Registrar pago'"
+                        />
+                    </td>
+                </tr>
             @endforelse
         </tbody>
     </table>

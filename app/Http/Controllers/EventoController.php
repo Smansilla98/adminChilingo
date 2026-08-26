@@ -18,10 +18,14 @@ class EventoController extends Controller
         try {
             /** @var \App\Models\User|null $user */
             $user = auth()->user();
+            $ambito = app(\App\Services\AmbitoSedeService::class);
+            $filtroSedes = $ambito->idsPara($user);
 
             $query = Evento::with(['sede', 'profesor', 'bloque', 'creador']);
 
-            if ($user && $user->isProfesor() && ! $user->isAdmin()) {
+            if ($filtroSedes !== null) {
+                $ambito->aplicarEventos($query, $filtroSedes);
+            } elseif ($user && $user->isProfesor() && ! $user->isAdmin()) {
                 $prof = $user->profesor;
                 if ($prof) {
                     $bloqueIds = Bloque::query()

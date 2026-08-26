@@ -4,14 +4,12 @@
 @section('page-title', $show->titulo)
 
 @section('content')
-<div class="card shadow-sm">
-    <div class="card-header py-3">
-        {{ $show->fecha->format('d/m/Y') }}
-        @if($show->hora_inicio)
-            {{ $show->hora_inicio->format('H:i') }}
-        @endif
-    </div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="{{ $show->titulo }}"
+    eyebrow="Shows"
+    subtitle="{{ $show->fecha->format('d/m/Y') }}"
+>
+
         <dl class="row mb-0">
             <dt class="col-sm-3">Lugar</dt>
             <dd class="col-sm-9">{{ $show->lugar ?? '—' }}</dd>
@@ -33,6 +31,6 @@
         </dl>
         <a href="{{ route('shows.edit', $show) }}" class="btn btn-primary btn-sm">Editar</a>
         <a href="{{ route('shows.index') }}" class="btn btn-secondary btn-sm">Volver</a>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

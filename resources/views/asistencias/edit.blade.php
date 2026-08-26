@@ -4,9 +4,12 @@
 @section('page-title', 'Editar asistencia')
 
 @section('content')
-<div class="card">
-    <div class="card-header">Editar tipo de asistencia</div>
-    <div class="card-body">
+<x-ito.shell-page
+    title="Editar asistencia"
+    eyebrow="Asistencias"
+    subtitle="Cambiá el tipo y guardá."
+>
+
         <form action="{{ route('asistencias.update', $asistencia) }}" method="POST">
             @csrf
             @method('PUT')
@@ -27,6 +30,6 @@
             <button type="submit" class="btn btn-primary">Guardar</button>
             <a href="{{ route('asistencias.index') }}" class="btn btn-secondary">Cancelar</a>
         </form>
-    </div>
-</div>
+</x-ito.shell-page>
+
 @endsection

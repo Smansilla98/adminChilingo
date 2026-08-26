@@ -4,16 +4,16 @@
 @section('page-title', $sede->nombre)
 
 @section('content')
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Sede: {{ $sede->nombre }}</h5>
-        <div>
-            <a href="{{ route('sedes.edit', $sede) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
-            <a href="{{ route('sedes.index') }}" class="btn btn-secondary btn-sm">Volver</a>
-        </div>
-    </div>
-    <div class="card-body">
-        <dl class="row mb-0">
+<x-ito.shell-page
+    title="{{ $sede->nombre }}"
+    eyebrow="Sedes"
+    subtitle="Ficha de la sede"
+>
+    <x-slot:actions>
+        <a href="{{ route('sedes.edit', $sede) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{{ route('sedes.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
+    </x-slot:actions>
+        <dl class="ito-dl mb-0">
             <dt class="col-sm-3">Nombre</dt>
             <dd class="col-sm-9">{{ $sede->nombre }}</dd>
             <dt class="col-sm-3">Dirección</dt>
@@ -63,6 +63,5 @@
         @else
         <p class="text-muted small">Sin eventos en esta sede.</p>
         @endif
-    </div>
-</div>
+</x-ito.shell-page>
 @endsection
