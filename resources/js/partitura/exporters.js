@@ -1,7 +1,7 @@
 /**
  * Exportaciones: PNG, PDF, MusicXML y MIDI.
  */
-import { instrumentoPorId, GOLPES } from './instruments.js';
+import { instrumentoPorId, GOLPES, midiDeGolpe } from './instruments.js';
 import { TPQ, ticksDeNota, expandirTimeline, ticksDeCompas } from './model.js';
 
 /* ------------------------------------------------------------------ imágenes */
@@ -198,10 +198,15 @@ function notaXML(n, def) {
         const g = GOLPES[n.stroke] || GOLPES.nota;
         const cabezas = { x: 'x', circled: 'circle-x', triangle: 'triangle', diamond: 'diamond', slash: 'slash', normal: 'normal' };
         s += `        <notehead>${cabezas[g.cabeza] || 'normal'}</notehead>\n`;
+        const parts = [];
         if (g.articulacion === 'a>' || g.articulacion === 'a^' || g.articulacion === 'a-') {
             const art = g.articulacion === 'a>' ? 'accent' : g.articulacion === 'a^' ? 'strong-accent' : 'tenuto';
-            s += `        <notations><articulations><${art}/></articulations></notations>\n`;
+            parts.push(`<articulations><${art}/></articulations>`);
         }
+        if (n.digitacion === 'D' || n.digitacion === 'I') {
+            parts.push(`<technical><fingering>${n.digitacion}</fingering></technical>`);
+        }
+        if (parts.length) s += `        <notations>${parts.join('')}</notations>\n`;
     }
     s += '      </note>\n';
     return s;
@@ -229,9 +234,10 @@ export function generarMIDI(score) {
             (m.voces[cfg.id] || []).forEach((n) => {
                 if (!n.rest) {
                     const golpe = GOLPES[n.stroke] || GOLPES.nota;
+                    const noteMidi = midiDeGolpe(cfg.id, n.stroke);
                     const vel = Math.max(20, Math.min(127, Math.round(96 * golpe.gain * (cfg.volume || 1))));
-                    eventos.push({ t: cursor + local, on: true, note: def.midi, vel });
-                    eventos.push({ t: cursor + local + 6, on: false, note: def.midi, vel: 0 });
+                    eventos.push({ t: cursor + local, on: true, note: noteMidi, vel });
+                    eventos.push({ t: cursor + local + 6, on: false, note: noteMidi, vel: 0 });
                 }
                 local += ticksDeNota(n);
             });

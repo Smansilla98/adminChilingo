@@ -217,6 +217,13 @@ function construirNota(n, instDef) {
     if (n.stroke === 'flam') {
         note.addModifier(new Annotation('fl').setFont('Inter', 9, 'italic').setVerticalJustification(Annotation.VerticalJustify.TOP));
     }
+    if (n.digitacion === 'D' || n.digitacion === 'I') {
+        note.addModifier(
+            new Annotation(n.digitacion)
+                .setFont('Inter', 11, 'bold')
+                .setVerticalJustification(Annotation.VerticalJustify.BOTTOM)
+        );
+    }
     if (n.dyn) {
         note.addModifier(
             new Annotation(n.dyn).setFont('Times New Roman', 13, 'bold italic').setVerticalJustification(Annotation.VerticalJustify.BOTTOM)

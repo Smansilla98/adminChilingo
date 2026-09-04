@@ -66,10 +66,11 @@ y da clases en cárceles (Ezeiza) como ONG.
 > 1. La partitura es **guía de bloque, no evaluación**. Nada en la UI debe leerse como
 >    corrección, puntaje, nivel alcanzado o "ejecución correcta". No hay feedback de
 >    acierto/error, no hay progreso obligatorio.
-> 2. El editor **ordena el toque**, no la técnica. Por eso el modelo describe *qué golpe
->    y cuándo* (`nota`, `acentuado`, `tapado`, `chapa`, `abierto`, `slap`, `palma`,
->    `dedo`, `agudo`, `flam`) y **no** manos (R/L), digitación, ni sticking. Nunca
->    agregar campos de técnica.
+> 2. El editor **ordena el toque** y describe *qué golpe y cuándo*
+>    (`nota`, `acentuado`, `tapado`, `chapa`, `abierto`, `slap`, `palma`,
+>    `dedo`, `agudo`, `flam`). La **digitación D/I** es opcional y solo
+>    pedagógica (ejercicios tipo Timbal Bahiano): no evalúa técnica ni
+>    sticking obligatorio. No usar digitación como corrección ni puntaje.
 > 3. El "programa por año" que ya está en `ProgramaRitmosSeeder` (1° a 6°, con ritmos
 >    opcionales) hay que leerlo como **orden de repertorio del cuadernillo**, no como
 >    niveles de alumnos ni como habilitación para avanzar. La UI no debe decir "año 3

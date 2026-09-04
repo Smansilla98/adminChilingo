@@ -8,7 +8,7 @@ import {
     DURACIONES, ops, normalizarPartitura, clonar, resumen, notaDe, vozDe,
     ticksDeCompas, ticksDeVoz, crearPartitura,
 } from './model.js';
-import { INSTRUMENTOS, instrumentoPorId, golpesDe, GOLPES, DINAMICAS, MARCAS_TEXTO } from './instruments.js';
+import { INSTRUMENTOS, instrumentoPorId, golpesDe, GOLPES, DINAMICAS, MARCAS_TEXTO, DIGITACIONES } from './instruments.js';
 import { renderScore } from './renderer.js';
 import { MotorAudio } from './audio.js';
 import { exportarPNG, exportarPDF, exportarMusicXML, exportarMIDI } from './exporters.js';
@@ -202,9 +202,17 @@ export class EditorPartitura {
                 </div>
             </div>
             <div class="pt-pal-block">
+                <h3>Manos</h3>
+                <div class="pt-pal-grid">
+                    ${DIGITACIONES.map((d) => `<button class="pt-chip" data-digitacion="${d.id}" title="${d.label} (${d.id})"><span class="pt-chip-sym">${d.short}</span><small>${d.label}</small></button>`).join('')}
+                    <button class="pt-chip" data-digitacion="" title="Quitar digitación">✕</button>
+                </div>
+                <p class="pt-muted" style="font-size:.72rem;margin:.35rem 0 0">D = derecha · I = izquierda (debajo del pentagrama)</p>
+            </div>
+            <div class="pt-pal-block">
                 <h3>Grupos</h3>
                 <div class="pt-pal-grid">
-                    <button class="pt-chip pt-chip-wide" data-a="tuplet-3" title="Tresillo (Ctrl+3)">Tresillo 3</button>
+                    <button class="pt-chip pt-chip-wide" data-a="tuplet-3" title="Tresillo de corchea (Ctrl+3)">Tresillo 3</button>
                     <button class="pt-chip pt-chip-wide" data-a="tuplet-6" title="Sextillo (Ctrl+6)">Sextillo 6</button>
                 </div>
             </div>
@@ -346,8 +354,9 @@ export class EditorPartitura {
                 <dt>Nota</dt><dd>${s.noteIdx + 1} de ${(vozDe(this.score, s) || []).length}</dd>
                 <dt>Figura</dt><dd>${esc(DURACIONES.find((d) => d.code === nota.dur)?.label || nota.dur)}${'.'.repeat(nota.dots)}</dd>
                 <dt>Tipo</dt><dd>${nota.rest ? 'Silencio' : esc(GOLPES[nota.stroke]?.label || nota.stroke)}</dd>
+                <dt>Mano</dt><dd>${nota.digitacion === 'D' ? 'Derecha (D)' : nota.digitacion === 'I' ? 'Izquierda (I)' : '—'}</dd>
                 <dt>Dinámica</dt><dd>${nota.dyn || '—'}</dd>
-                <dt>Grupo</dt><dd>${nota.tuplet ? `${nota.tuplet.num}:${nota.tuplet.den}` : '—'}</dd>
+                <dt>Grupo</dt><dd>${nota.tuplet ? `${nota.tuplet.num}:${nota.tuplet.den}${nota.tuplet.num === 3 ? ' (tresillo)' : ''}` : '—'}</dd>
             </dl>
             <div class="pt-kv-bar ${usado === cap ? 'ok' : 'warn'}">
                 <span>Compás ${usado === cap ? 'completo' : 'incompleto'}</span><b>${usado}/${cap}</b>
@@ -462,7 +471,7 @@ export class EditorPartitura {
     }
 
     onClick(e) {
-        const btn = e.target.closest('[data-a],[data-stroke],[data-dyn],[data-dur],[data-marca]');
+        const btn = e.target.closest('[data-a],[data-stroke],[data-dyn],[data-dur],[data-marca],[data-digitacion]');
         if (!btn) return;
         const a = btn.dataset.a;
         const secRow = btn.closest('[data-section]');
@@ -471,6 +480,10 @@ export class EditorPartitura {
         if (btn.dataset.dur) return this.aplicarDuracion(btn.dataset.dur);
         if (btn.dataset.stroke) return this.editar(() => ops.setGolpe(this.score, this.sel, btn.dataset.stroke), btn.dataset.stroke);
         if (btn.dataset.dyn) return this.editar(() => ops.setDinamica(this.score, this.sel, btn.dataset.dyn));
+        if (btn.hasAttribute('data-digitacion')) {
+            const dig = btn.dataset.digitacion || null;
+            return this.editar(() => ops.setDigitacion(this.score, this.sel, dig));
+        }
         if (btn.dataset.marca) {
             const marca = MARCAS_TEXTO.find((m) => m.id === btn.dataset.marca);
             return this.editarCompas((m) => { m.texto = marca ? marca.texto : null; });
@@ -642,6 +655,14 @@ export class EditorPartitura {
 
             const stroke = this.teclasGolpe?.[e.key.toLowerCase()];
             if (stroke) { e.preventDefault(); return this.editar(() => ops.setGolpe(this.score, this.sel, stroke), stroke); }
+            if (e.key.toLowerCase() === 'd' && !mod) {
+                e.preventDefault();
+                return this.editar(() => ops.setDigitacion(this.score, this.sel, 'D'));
+            }
+            if (e.key.toLowerCase() === 'i' && !mod) {
+                e.preventDefault();
+                return this.editar(() => ops.setDigitacion(this.score, this.sel, 'I'));
+            }
         });
     }
 

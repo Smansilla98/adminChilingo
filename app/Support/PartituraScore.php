@@ -198,6 +198,9 @@ class PartituraScore
      */
     public static function nota(array $attrs = []): array
     {
+        $dig = $attrs['digitacion'] ?? null;
+        $digitacion = ($dig === 'D' || $dig === 'I') ? $dig : null;
+
         return [
             'id' => (string) ($attrs['id'] ?? 'n'.substr(md5(uniqid('', true)), 0, 10)),
             'dur' => $attrs['dur'] ?? 'q',
@@ -206,6 +209,7 @@ class PartituraScore
             'stroke' => $attrs['stroke'] ?? 'nota',
             'dyn' => $attrs['dyn'] ?? null,
             'tuplet' => $attrs['tuplet'] ?? null,
+            'digitacion' => $digitacion,
         ];
     }
 
@@ -348,11 +352,27 @@ class PartituraScore
             if (! is_array($n)) {
                 continue;
             }
-            $dur = array_key_exists((string) ($n['dur'] ?? ''), self::DURACIONES) ? (string) $n['dur'] : 'q';
+            $dur = array_key_exists((string) ($n['dur'] ?? $n['figura'] ?? ''), self::DURACIONES)
+                ? (string) ($n['dur'] ?? $n['figura'])
+                : 'q';
             $rest = ! empty($n['rest']);
-            $stroke = in_array((string) ($n['stroke'] ?? ''), self::GOLPES, true)
-                ? (string) $n['stroke']
+            $strokeRaw = (string) ($n['stroke'] ?? $n['tipoGolpe'] ?? '');
+            $stroke = in_array($strokeRaw, self::GOLPES, true)
+                ? $strokeRaw
                 : (self::GOLPE_DEFAULT[$instId] ?? 'nota');
+            // Alias plano → stroke interno
+            $alias = [
+                'abierto' => $instId === 'timbal' ? 'abierto' : 'nota',
+                'slap' => 'slap',
+                'tapado' => $instId === 'timbal' ? 'slap' : 'tapado',
+                'chapa' => 'chapa',
+                'palma' => 'palma',
+                'acentuado' => 'acentuado',
+                'presionado' => 'presionado',
+            ];
+            if (! in_array($strokeRaw, self::GOLPES, true) && isset($alias[$strokeRaw])) {
+                $stroke = $alias[$strokeRaw];
+            }
             $tuplet = null;
             if (is_array($n['tuplet'] ?? null)) {
                 $tnum = (int) ($n['tuplet']['num'] ?? 0);
@@ -364,6 +384,12 @@ class PartituraScore
                         'den' => min(12, $tden),
                     ];
                 }
+            } elseif (! empty($n['isTresillo'])) {
+                $tuplet = [
+                    'id' => (string) ($n['tupletId'] ?? 't'.substr(md5(uniqid('', true)), 0, 8)),
+                    'num' => 3,
+                    'den' => 2,
+                ];
             }
             $nota = self::nota([
                 'id' => $n['id'] ?? null,
@@ -373,6 +399,7 @@ class PartituraScore
                 'stroke' => $rest ? 'nota' : $stroke,
                 'dyn' => in_array((string) ($n['dyn'] ?? ''), self::DINAMICAS, true) ? (string) $n['dyn'] : null,
                 'tuplet' => $tuplet,
+                'digitacion' => $rest ? null : ($n['digitacion'] ?? null),
             ]);
             $t = self::ticksDeNota($nota);
             if ($acum + $t > $capacidad) {

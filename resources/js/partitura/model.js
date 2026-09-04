@@ -3,7 +3,10 @@
  *
  * Unidad de tiempo: ticks, TPQ = 48 por negra (divisible por 3 y 4 → tresillos y semicorcheas).
  */
-import { INSTRUMENTOS, INSTRUMENTOS_DEFAULT, instrumentoPorId, golpeDefault, GOLPES } from './instruments.js';
+import {
+    INSTRUMENTOS, INSTRUMENTOS_DEFAULT, instrumentoPorId, golpeDefault, GOLPES,
+    resolverStroke, tipoGolpeDe,
+} from './instruments.js';
 
 export const VERSION = 4;
 export const TPQ = 48;
@@ -50,8 +53,19 @@ export function ticksDeVoz(voz) {
     return (voz || []).reduce((sum, n) => sum + ticksDeNota(n), 0);
 }
 
-export function crearNota({ dur = 'q', dots = 0, rest = false, stroke = 'nota', dyn = null, tuplet = null } = {}) {
-    return { id: nextId(), dur, dots, rest, stroke, dyn, tuplet };
+export function crearNota({
+    dur = 'q', dots = 0, rest = false, stroke = 'nota', dyn = null, tuplet = null, digitacion = null,
+} = {}) {
+    return {
+        id: nextId(),
+        dur,
+        dots,
+        rest,
+        stroke,
+        dyn,
+        tuplet,
+        digitacion: digitacion === 'D' || digitacion === 'I' ? digitacion : null,
+    };
 }
 
 /** Descompone una cantidad de ticks en silencios "limpios". */
@@ -144,9 +158,13 @@ function instrumentoConfig(id) {
 
 function normNota(raw, instId) {
     if (!raw || typeof raw !== 'object') return null;
-    const dur = DUR_TICKS[raw.dur] ? raw.dur : 'q';
+    // Alias plano del requisito: figura / tipoGolpe / isTresillo
+    const durCode = raw.dur || raw.figura;
+    const dur = DUR_TICKS[durCode] ? durCode : 'q';
     const rest = !!raw.rest;
-    let stroke = typeof raw.stroke === 'string' && GOLPES[raw.stroke] ? raw.stroke : golpeDefault(instId);
+    const strokeRaw = raw.stroke || raw.tipoGolpe;
+    let stroke = resolverStroke(strokeRaw, instId);
+    if (!GOLPES[stroke]) stroke = golpeDefault(instId);
     if (rest) stroke = 'nota';
     let tuplet = null;
     if (raw.tuplet && typeof raw.tuplet === 'object') {
@@ -155,7 +173,10 @@ function normNota(raw, instId) {
         if (num > 1 && den > 0) {
             tuplet = { id: String(raw.tuplet.id || nextId('t')), num, den };
         }
+    } else if (raw.isTresillo === true) {
+        tuplet = { id: String(raw.tupletId || nextId('t')), num: 3, den: 2 };
     }
+    const dig = raw.digitacion === 'D' || raw.digitacion === 'I' ? raw.digitacion : null;
     return {
         id: String(raw.id || nextId()),
         dur,
@@ -164,6 +185,28 @@ function normNota(raw, instId) {
         stroke,
         dyn: typeof raw.dyn === 'string' && raw.dyn ? raw.dyn : null,
         tuplet,
+        digitacion: rest ? null : dig,
+    };
+}
+
+/**
+ * Vista plana de una nota (API / docs del requisito).
+ * El modelo canónico sigue siendo v4 anidado en voces[instrumento].
+ * @param {string} instId
+ * @param {object} nota
+ */
+export function notaAGolpePlano(instId, nota) {
+    return {
+        instrumento: instId,
+        figura: nota.dur,
+        isTresillo: !!(nota.tuplet && nota.tuplet.num === 3 && nota.tuplet.den === 2),
+        tipoGolpe: tipoGolpeDe(nota.stroke) || nota.stroke,
+        digitacion: nota.digitacion || null,
+        // Campos extendidos útiles para round-trip
+        stroke: nota.stroke,
+        tuplet: nota.tuplet,
+        rest: !!nota.rest,
+        dyn: nota.dyn || null,
     };
 }
 
@@ -282,8 +325,12 @@ export const ops = {
         const nota = notaDe(score, sel);
         if (!nota) return false;
         nota.rest = !nota.rest;
-        if (nota.rest) nota.dyn = null;
-        else nota.stroke = golpeDefault(sel.instId);
+        if (nota.rest) {
+            nota.dyn = null;
+            nota.digitacion = null;
+        } else {
+            nota.stroke = golpeDefault(sel.instId);
+        }
         return true;
     },
 
@@ -291,7 +338,16 @@ export const ops = {
         const nota = notaDe(score, sel);
         if (!nota) return false;
         nota.rest = false;
-        nota.stroke = stroke;
+        nota.stroke = resolverStroke(stroke, sel.instId);
+        return true;
+    },
+
+    /** Digitación D / I debajo del pentagrama (ejercicios pedagógicos). */
+    setDigitacion(score, sel, dig) {
+        const nota = notaDe(score, sel);
+        if (!nota || nota.rest) return false;
+        const next = dig === 'D' || dig === 'I' ? dig : null;
+        nota.digitacion = nota.digitacion === next ? null : next;
         return true;
     },
 
@@ -332,7 +388,9 @@ export const ops = {
             const first = voz.findIndex((n) => n.tuplet?.id === gid);
             const count = voz.filter((n) => n.tuplet?.id === gid).length;
             const base = voz[first];
-            voz.splice(first, count, crearNota({ dur: base.dur, dots: 0, rest: base.rest, stroke: base.stroke }));
+            voz.splice(first, count, crearNota({
+                dur: base.dur, dots: 0, rest: base.rest, stroke: base.stroke, digitacion: base.digitacion,
+            }));
             reajustar(score, sel);
             return true;
         }
@@ -343,6 +401,7 @@ export const ops = {
                 dots: 0,
                 rest: i === 0 ? nota.rest : false,
                 stroke: nota.stroke,
+                digitacion: i === 0 ? nota.digitacion : null,
                 tuplet: { id: gid, num, den },
             })
         );
