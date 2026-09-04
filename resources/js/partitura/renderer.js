@@ -1,23 +1,21 @@
 /**
- * Render estilo Cuadernillo de Toques (VexFlow 4).
- * Igual al PDF: 1 línea, clave de percusión, C en 4/4, plicas arriba,
- * barras planas por tiempo (Equivalencias: 2 corcheas / 4 semis / 8 fusas),
- * acentos abajo. Solo voces que tocan en la sección.
+ * Render VexFlow 4 — pentagramas de 5 líneas, clave de percusión, barras de compás.
+ * Redoblante y Repique comparten un único sistema. Las voces de un mismo
+ * compás se formatean juntas (Formatter.joinVoices) para alinear la coordenada X.
  */
 import {
     Renderer, Stave, StaveNote, GhostNote, Beam, Tuplet, Formatter, Articulation,
-    Barline, Volta, Annotation, Dot, Fraction,
+    Barline, Volta, Annotation, Dot, Fraction, Voice,
 } from 'vexflow';
-import { instrumentoPorId, cabezaVexflow, GOLPES, esUnisono } from './instruments.js';
+import { instrumentoPorId, cabezaVexflow, GOLPES, esUnisono, sistemasVisuales } from './instruments.js';
 import { TPQ, ticksDeNota } from './model.js';
 
-const LABEL_W = 118;
-const STAVE_H = 56;
-const LINE_PAD_TOP = 36;
-const LINE_PAD_BOTTOM = 24;
-const MIN_MEASURE_W = 170;
-/** Todas las notas sobre la línea central del pentagrama de 1 línea. */
-const PITCH = 'b/4';
+const LABEL_W = 132;
+const STAVE_H = 94;
+const LINE_PAD_TOP = 28;
+const LINE_PAD_BOTTOM = 22;
+const MIN_MEASURE_W = 180;
+const LINE_SPACING = 10;
 
 /**
  * @param {HTMLElement} host
@@ -75,26 +73,16 @@ function instrumentosDeSeccion(sec, todos) {
     );
 }
 
-function configurarUnaLinea(stave) {
-    // Línea central visible (como el cuadernillo: pauta de una línea)
-    stave.setConfigForLines([
-        { visible: false },
-        { visible: false },
-        { visible: true },
-        { visible: false },
-        { visible: false },
-    ]);
-}
-
 function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes) {
     const wrap = document.createElement('div');
     wrap.className = 'pt-line';
     wrap.dataset.section = String(si);
 
+    const sistemas = sistemasVisuales(instrumentos);
     const width = anchoPagina - 12;
     const usable = width - LABEL_W - 24;
     const measureW = Math.max(MIN_MEASURE_W, Math.floor(usable / idxs.length));
-    const height = LINE_PAD_TOP + instrumentos.length * STAVE_H + LINE_PAD_BOTTOM;
+    const height = LINE_PAD_TOP + sistemas.length * STAVE_H + LINE_PAD_BOTTOM;
 
     const renderer = new Renderer(wrap, Renderer.Backends.SVG);
     renderer.resize(width, height);
@@ -103,33 +91,37 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     ctx.setFillStyle('#111');
     ctx.setStrokeStyle('#111');
 
-    const staves = [];
+    const ts = score.timeSignature || { num: 4, den: 4 };
+    const voiceTime = { num_beats: ts.num, beat_value: ts.den };
 
-    instrumentos.forEach((inst, di) => {
-        let x = LABEL_W;
-        const y = LINE_PAD_TOP + di * STAVE_H - 10;
+    idxs.forEach((mi, k) => {
+        const m = sec.measures[mi];
+        const x = LABEL_W + k * measureW;
+        const vocesFmt = [];
+        const sistemasStave = [];
 
-        ctx.save();
-        ctx.setFont('Times New Roman', 11, 'italic');
-        ctx.fillText(etiquetaInstrumento(inst.def), 4, y + 26);
-        ctx.restore();
+        sistemas.forEach((sis, di) => {
+            const y = LINE_PAD_TOP + di * STAVE_H;
+            if (k === 0) {
+                ctx.save();
+                ctx.setFont('Times New Roman', 12, 'italic');
+                ctx.fillText(sis.label, 4, y + 48);
+                ctx.restore();
+            }
 
-        idxs.forEach((mi, k) => {
-            const m = sec.measures[mi];
             const stave = new Stave(x, y, measureW, {
-                spacing_between_lines_px: 10,
-                space_above_staff_ln: 1.2,
-                space_below_staff_ln: 1.2,
+                num_lines: 5,
+                spacing_between_lines_px: LINE_SPACING,
+                space_above_staff_ln: 1.6,
+                space_below_staff_ln: 1.4,
+                fill_style: '#111',
             });
-            configurarUnaLinea(stave);
+            stave.setStyle({ fillStyle: '#111', strokeStyle: '#111' });
 
             if (k === 0) {
                 stave.addClef('percussion');
-                if (score.timeSignature.num === 4 && score.timeSignature.den === 4) {
-                    stave.addTimeSignature('C');
-                } else {
-                    stave.addTimeSignature(`${score.timeSignature.num}/${score.timeSignature.den}`);
-                }
+                if (ts.num === 4 && ts.den === 4) stave.addTimeSignature('C');
+                else stave.addTimeSignature(`${ts.num}/${ts.den}`);
             }
             if (m.repeatBegin) stave.setBegBarType(Barline.type.REPEAT_BEGIN);
             if (m.repeatEnd) stave.setEndBarType(Barline.type.REPEAT_END);
@@ -143,51 +135,76 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             }
 
             stave.setContext(ctx).draw();
-            staves.push({ stave, di, mi });
+            sistemasStave.push({ sis, stave, di, y });
 
-            const voz = m.voces[inst.def.id] || [];
-            const notas = [];
-            const tuplets = [];
-            let grupoActual = null;
-            let grupoNotas = [];
+            sis.members.forEach((inst, vi) => {
+                const vozData = m.voces[inst.def.id] || [];
+                const stem = sis.compartido ? (vi === 0 ? 1 : -1) : 1;
+                const pitch = inst.def.pitch || 'b/4';
+                const built = [];
+                const tuplets = [];
+                let grupoActual = null;
+                let grupoNotas = [];
 
-            voz.forEach((n, ni) => {
-                const vfNote = construirNota(n);
-                notas.push({ vf: vfNote, data: n, idx: ni });
+                const tickables = (vozData.length ? vozData : [{ dur: 'w', rest: true, dots: 0, stroke: 'nota' }]).map((n, ni) => {
+                    const vf = construirNota(n, pitch, stem);
+                    built.push({ vf, data: n, idx: ni, instId: inst.def.id });
+                    const gid = n.tuplet?.id || null;
+                    if (gid !== grupoActual) {
+                        if (grupoActual && grupoNotas.length > 1) tuplets.push(nuevoTuplet(grupoNotas));
+                        grupoActual = gid;
+                        grupoNotas = [];
+                    }
+                    if (gid) grupoNotas.push({ vf, data: n });
+                    return vf;
+                });
+                if (grupoActual && grupoNotas.length > 1) tuplets.push(nuevoTuplet(grupoNotas));
 
-                const gid = n.tuplet?.id || null;
-                if (gid !== grupoActual) {
-                    if (grupoActual && grupoNotas.length > 1) tuplets.push(nuevoTuplet(grupoNotas));
-                    grupoActual = gid;
-                    grupoNotas = [];
+                const voice = new Voice(voiceTime).setMode(Voice.Mode.SOFT);
+                try {
+                    voice.addTickables(tickables);
+                } catch (e) {
+                    console.warn('Partitura: voz no encaja en el compás', e);
                 }
-                if (gid) grupoNotas.push({ vf: vfNote, data: n });
+                voice.setStave(stave);
+                vocesFmt.push({ voice, stave, built, tuplets, instId: inst.def.id });
             });
-            if (grupoActual && grupoNotas.length > 1) tuplets.push(nuevoTuplet(grupoNotas));
+        });
 
-            const vfNotas = notas.map((n) => n.vf);
+        const voices = vocesFmt.map((v) => v.voice);
+        if (voices.length) {
             try {
-                Formatter.FormatAndDraw(ctx, stave, vfNotas, { auto_beam: false, align_rests: true });
+                const fmt = new Formatter();
+                fmt.joinVoices(voices);
+                const first = sistemasStave[0]?.stave;
+                if (first) fmt.formatToStave(voices, first);
+                else fmt.format(voices, measureW - (k === 0 ? 56 : 16));
             } catch (e) {
-                console.warn('Partitura: compás no formateable', e);
+                console.warn('Partitura: formato conjunto falló', e);
             }
+        }
 
+        vocesFmt.forEach(({ voice, stave, built, tuplets, instId }) => {
+            try {
+                voice.draw(ctx, stave);
+            } catch (e) {
+                console.warn('Partitura: no se pudo dibujar la voz', e);
+            }
+            const vfNotas = built.map((b) => b.vf);
             const beams = Beam.generateBeams(vfNotas, {
                 beam_rests: false,
                 maintain_stem_directions: true,
-                flat_beams: true,
-                flat_beam_offset: 12,
-                groups: gruposDeBeam(score.timeSignature),
+                groups: gruposDeBeam(ts),
             });
             beams.forEach((b) => b.setContext(ctx).draw());
             tuplets.forEach((t) => t.setContext(ctx).draw());
 
-            notas.forEach(({ vf, data, idx }) => {
+            built.forEach(({ vf, data, idx }) => {
                 const box = cajaDeNota(vf, stave);
                 hits.push({
                     sectionIdx: si,
                     measureIdx: mi,
-                    instId: inst.def.id,
+                    instId,
                     noteIdx: idx,
                     noteId: data.id,
                     rest: data.rest,
@@ -195,45 +212,40 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                     ...box,
                 });
             });
-
-            if (di === 0) {
-                measureBoxes.push({
-                    sectionIdx: si,
-                    measureIdx: mi,
-                    lineEl: wrap,
-                    x: stave.getX(),
-                    y: LINE_PAD_TOP - 14,
-                    w: measureW,
-                    h: instrumentos.length * STAVE_H + 4,
-                });
-            }
-
-            x += measureW;
         });
+
+        const top = sistemasStave[0];
+        if (top) {
+            measureBoxes.push({
+                sectionIdx: si,
+                measureIdx: mi,
+                lineEl: wrap,
+                x: top.stave.getX(),
+                y: LINE_PAD_TOP - 8,
+                w: measureW,
+                h: sistemas.length * STAVE_H + 8,
+                sistemas: sistemas.map((s) => s.id),
+            });
+        }
     });
 
-    // Sin bracket ni barra izquierda: el cuadernillo no los usa.
     return wrap;
 }
 
-function etiquetaInstrumento(def) {
-    if (esUnisono(def.id)) return 'Todos';
-    return def.label;
-}
-
-function construirNota(n) {
+function construirNota(n, pitch, stem) {
     const dur = n.dur + (n.rest ? 'r' : '');
 
     if (n.rest) {
-        const rest = new StaveNote({ keys: [PITCH], duration: dur, align_center: true });
+        const rest = new StaveNote({ keys: [pitch], duration: dur, align_center: true, clef: 'percussion' });
         aplicarPuntillos(rest, n.dots);
         return rest;
     }
 
     const note = new StaveNote({
-        keys: [cabezaVexflow(PITCH, n.stroke)],
+        keys: [cabezaVexflow(pitch, n.stroke)],
         duration: dur,
-        stem_direction: 1,
+        stem_direction: stem || 1,
+        clef: 'percussion',
     });
     aplicarPuntillos(note, n.dots);
 
@@ -280,7 +292,6 @@ function nuevoTuplet(grupo) {
     );
 }
 
-/** Barras por 1 tiempo (= negra), como en la hoja Equivalencias. */
 function gruposDeBeam(ts) {
     if (ts.den === 8 && ts.num % 3 === 0) return [new Fraction(3, 8)];
     return [new Fraction(1, 4)];
@@ -290,7 +301,7 @@ function cajaDeNota(vf, stave) {
     try {
         const bb = vf.getBoundingBox();
         if (bb) return { x: bb.getX(), y: bb.getY(), w: Math.max(12, bb.getW()), h: Math.max(24, bb.getH()) };
-    } catch (e) { /* fallback */ }
+    } catch { /* fallback */ }
     const x = typeof vf.getAbsoluteX === 'function' ? vf.getAbsoluteX() : stave.getX();
     return { x: x - 8, y: stave.getYForTopText(1), w: 16, h: 36 };
 }
@@ -299,4 +310,4 @@ function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-export { LABEL_W, STAVE_H, TPQ, ticksDeNota, GhostNote };
+export { LABEL_W, STAVE_H, TPQ, ticksDeNota, GhostNote, sistemasVisuales };

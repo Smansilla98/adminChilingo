@@ -1,12 +1,11 @@
 /**
- * Motor de audio: samples multi-técnica (si existen) + síntesis WebAudio con filtros.
- * El timing de tresillos usa ticksDeNota (TPQ divisible por 3) — equivalente a Tone.js Transport.
+ * Sampler de percusión + scheduler sobre AudioContext.currentTime.
+ * No usa OscillatorNode para simular tambores. El metrónomo sí es un click sintético.
  */
+import { UNISONO, vocesDeUnisono, MAPA_SAMPLES } from './instruments.js';
 import {
-    instrumentoPorId, GOLPES, UNISONO, vocesDeUnisono,
-    midiDeGolpe, freqDeMidi, filtroDeGolpe,
-} from './instruments.js';
-import { TPQ, ticksDeNota, expandirTimeline, ticksDeCompas } from './model.js';
+    TPQ, ticksDeCompas, expandirTimeline, eventosMusicales, segundosDeTicks,
+} from './model.js';
 import { bancoSamples } from './samples.js';
 
 export class MotorAudio {
@@ -18,11 +17,19 @@ export class MotorAudio {
         this.metronomo = false;
         this.metroGain = 0.5;
         this.playing = false;
+        this.paused = false;
         this.stopFlag = false;
-        this._timer = null;
-        this.onMeasure = null;
+        this.onClock = null;
         this.onStop = null;
-        this._samplesReady = false;
+        this.onLoad = null;
+        this.onReady = null;
+        this._sources = [];
+        this._raf = 0;
+        this._t0 = 0;
+        this._offset = 0;
+        this._duration = 0;
+        this._measureStarts = [];
+        this.estadoSamples = { listos: 0, faltan: 0, total: 0, missing: [] };
     }
 
     async asegurarContexto() {
@@ -37,15 +44,15 @@ export class MotorAudio {
         return this.ctx;
     }
 
-    /**
-     * Precarga samples para los instrumentos del score (no bloquea si faltan archivos).
-     * @param {object} score
-     */
     async precargarSamples(score) {
         await this.asegurarContexto();
-        const ids = (score?.instruments || []).map((i) => i.id).filter((id) => id !== UNISONO);
-        await bancoSamples.precargar(this.ctx, ids.length ? ids : ['timbal', 'redoblante', 'surdo_grave']);
-        this._samplesReady = true;
+        if (this.onLoad) this.onLoad('Cargando sonidos...');
+        const ids = (score?.instruments || []).map((i) => i.id).filter((id) => id !== UNISONO && MAPA_SAMPLES[id]);
+        const extra = Object.keys(MAPA_SAMPLES);
+        const set = [...new Set(ids.length ? ids : extra)];
+        this.estadoSamples = await bancoSamples.precargar(this.ctx, set);
+        if (this.onReady) this.onReady(this.estadoSamples);
+        return this.estadoSamples;
     }
 
     canalDe(instId) {
@@ -68,136 +75,19 @@ export class MotorAudio {
         });
     }
 
-    /** Golpe suelto (preview al editar). */
     async golpe(instId, strokeId, when = 0, velocidad = 1) {
         await this.asegurarContexto();
-        if (!this._samplesReady) {
-            // Precarga lazy del instrumento tocado
-            bancoSamples.precargar(this.ctx, [instId]).catch(() => {});
-        }
-        this._golpe(instId, strokeId, when ? when : this.ctx.currentTime + 0.01, velocidad);
+        if (!bancoSamples.ready) await bancoSamples.precargar(this.ctx, [instId]);
+        const t = when || this.ctx.currentTime + 0.01;
+        this._dispararGolpe(instId, strokeId, t, velocidad);
     }
 
-    _golpe(instId, strokeId, t, velocidad = 1) {
-        const inst = instrumentoPorId(instId);
-        if (!inst) return;
-        const golpe = GOLPES[strokeId] || GOLPES.nota;
-        const out = this.canalDe(instId);
-        const ctx = this.ctx;
-        const vel = velocidad * golpe.gain;
-
-        // 1) Sample real si está cargado
-        if (bancoSamples.disparar(ctx, out, instId, strokeId, t, vel)) return;
-
-        // 2) Síntesis diferenciada por técnica + filtro
-        if (inst.familia === 'metal' || golpe.timbre === 'aro') {
-            this._metalico(ctx, out, inst, golpe, strokeId, t, vel);
-            if (inst.familia === 'membrana' && golpe.timbre === 'aro') {
-                this._membrana(ctx, out, inst, golpe, strokeId, t, vel * 0.28);
-            }
-            return;
-        }
-        if (inst.familia === 'mano' || golpe.timbre === 'palma') {
-            this._ruido(ctx, out, t, vel, golpe.timbre === 'palma' ? 900 : 1600, 0.1, filtroDeGolpe(strokeId));
-            return;
-        }
-        this._membrana(ctx, out, inst, golpe, strokeId, t, vel);
-        if (golpe.timbre === 'golpe') this._ruido(ctx, out, t, vel * 0.22, 2200, 0.03, filtroDeGolpe(strokeId));
-        if (strokeId === 'flam') this._membrana(ctx, out, inst, golpe, strokeId, Math.max(0, t - 0.035), vel * 0.5);
-    }
-
-    _membrana(ctx, out, inst, golpe, strokeId, t, vel) {
-        const apagado = golpe.timbre === 'apagado';
-        const midi = midiDeGolpe(inst.id, strokeId);
-        const f0 = freqDeMidi(midi) * (inst.familia === 'membrana' ? 0.55 : 1);
-        // Preferir freq del instrumento como ancla grave, modulada por MIDI
-        const base = (inst.freq + f0) / 2;
-        const dur = apagado ? 0.11 : Math.max(0.16, 26 / Math.max(40, base));
-        const osc = ctx.createOscillator();
-        const g = ctx.createGain();
-        const filtro = ctx.createBiquadFilter();
-        const cfg = filtroDeGolpe(strokeId);
-        if (cfg) {
-            filtro.type = cfg.type;
-            filtro.frequency.value = cfg.freq;
-            filtro.Q.value = cfg.Q;
-        } else {
-            filtro.type = 'lowpass';
-            filtro.frequency.value = 3200;
-        }
-
-        osc.type = 'sine';
-        const fStart = base * (golpe.id === 'agudo' ? 2.1 : 1.9);
-        osc.frequency.setValueAtTime(fStart, t);
-        osc.frequency.exponentialRampToValueAtTime(Math.max(35, base), t + Math.min(0.09, dur * 0.6));
-        g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(Math.min(1, 0.85 * vel), t + 0.004);
-        g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
-        osc.connect(filtro).connect(g).connect(out);
-        osc.start(t);
-        osc.stop(t + dur + 0.02);
-
-        const osc2 = ctx.createOscillator();
-        const g2 = ctx.createGain();
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(base * 2.7, t);
-        g2.gain.setValueAtTime(0, t);
-        g2.gain.linearRampToValueAtTime(0.18 * vel, t + 0.003);
-        g2.gain.exponentialRampToValueAtTime(0.0005, t + dur * 0.5);
-        osc2.connect(g2).connect(out);
-        osc2.start(t);
-        osc2.stop(t + dur);
-    }
-
-    _metalico(ctx, out, inst, golpe, strokeId, t, vel) {
-        const midi = midiDeGolpe(inst.id, strokeId);
-        const base = inst.familia === 'metal' ? inst.freq : freqDeMidi(midi) * 1.8;
-        const filtro = ctx.createBiquadFilter();
-        const cfg = filtroDeGolpe(strokeId) || { type: 'highpass', freq: 1600, Q: 0.7 };
-        filtro.type = cfg.type;
-        filtro.frequency.value = cfg.freq;
-        filtro.Q.value = cfg.Q;
-        const bus = ctx.createGain();
-        bus.gain.value = 1;
-        bus.connect(filtro).connect(out);
-
-        [1, 1.51, 2.03].forEach((mult, i) => {
-            const osc = ctx.createOscillator();
-            const g = ctx.createGain();
-            osc.type = 'square';
-            osc.frequency.value = base * mult;
-            const dur = inst.familia === 'metal' ? 0.35 : 0.09;
-            g.gain.setValueAtTime(0, t);
-            g.gain.linearRampToValueAtTime((0.22 / (i + 1)) * vel, t + 0.002);
-            g.gain.exponentialRampToValueAtTime(0.0004, t + dur);
-            osc.connect(g).connect(bus);
-            osc.start(t);
-            osc.stop(t + dur + 0.02);
-        });
-        this._ruido(ctx, out, t, vel * 0.4, 3800, 0.05, cfg);
-    }
-
-    _ruido(ctx, out, t, vel, freq, dur, filtroCfg = null) {
-        const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
-        const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
-        const hp = ctx.createBiquadFilter();
-        if (filtroCfg) {
-            hp.type = filtroCfg.type;
-            hp.frequency.value = filtroCfg.freq;
-            hp.Q.value = filtroCfg.Q;
-        } else {
-            hp.type = 'bandpass';
-            hp.frequency.value = freq;
-            hp.Q.value = 0.8;
-        }
-        const g = ctx.createGain();
-        g.gain.value = 0.5 * vel;
-        src.connect(hp).connect(g).connect(out);
-        src.start(t);
+    _dispararGolpe(instId, strokeId, t, velocidad = 1) {
+        const dest = instId === UNISONO ? null : instId;
+        if (!dest) return null;
+        const src = bancoSamples.disparar(this.ctx, this.canalDe(dest), dest, strokeId, t, velocidad);
+        if (src) this._sources.push(src);
+        return src;
     }
 
     _click(t, fuerte) {
@@ -212,22 +102,57 @@ export class MotorAudio {
         osc.connect(g).connect(this.master);
         osc.start(t);
         osc.stop(t + 0.06);
+        this._sources.push(osc);
     }
 
     /**
-     * Reproduce la partitura completa (o desde una parte / compás).
-     * Tresillos: cada nota aporta ticksDeNota (base * den/num) → no se desfasa del pulso.
      * @param {object} score
-     * @param {{ desde?: {sectionIdx:number, measureIdx:number}, soloSeccion?: number|null, loop?: boolean }} [opts]
+     * @param {{ desde?: {sectionIdx:number, measureIdx:number}, soloSeccion?: number|null, loop?: boolean, offsetSec?: number }} [opts]
      */
     async play(score, opts = {}) {
         await this.asegurarContexto();
-        this.stop();
+        this._cortarFuentes();
+        if (this._raf) cancelAnimationFrame(this._raf);
+        this._raf = 0;
+        this.stopFlag = false;
+        this.paused = false;
         await this.precargarSamples(score);
         this.aplicarMixer(score);
-        this.playing = true;
-        this.stopFlag = false;
 
+        const plan = this._planificar(score, opts);
+        if (!plan.eventos.length && !plan.measureStarts.length) {
+            this.playing = false;
+            return;
+        }
+
+        const lookahead = 0.08;
+        this._t0 = this.ctx.currentTime + lookahead - (opts.offsetSec || 0);
+        this._offset = opts.offsetSec || 0;
+        this._duration = plan.duration;
+        this._measureStarts = plan.measureStarts;
+        this._loop = !!opts.loop;
+        this._playOpts = opts;
+        this._score = score;
+        this.playing = true;
+
+        plan.eventos.forEach((ev) => {
+            if (ev.musicalSec + 0.0005 < this._offset) return;
+            const t = this._t0 + ev.musicalSec;
+            if (t < this.ctx.currentTime - 0.02) return;
+            if (ev.tipo === 'nota') {
+                const destinos = ev.instrument === UNISONO ? vocesDeUnisono(score) : [ev.instrument];
+                destinos.forEach((id) => this._dispararGolpe(id, ev.articulation, t, ev.velocity));
+            } else if (ev.tipo === 'click') {
+                this._click(t, ev.fuerte);
+            }
+        });
+
+        this._tickClock();
+    }
+
+    _planificar(score, opts) {
+        const bpm = score.tempo || 100;
+        const cap = ticksDeCompas(score.timeSignature);
         let timeline = expandirTimeline(score);
         if (opts.soloSeccion !== null && opts.soloSeccion !== undefined) {
             timeline = timeline.filter((s) => s.sectionIdx === opts.soloSeccion);
@@ -236,99 +161,137 @@ export class MotorAudio {
             const i = timeline.findIndex((s) => s.sectionIdx === opts.desde.sectionIdx && s.measureIdx === opts.desde.measureIdx);
             if (i > 0) timeline = timeline.slice(i);
         }
-        if (!timeline.length) {
-            this.playing = false;
-            return;
-        }
 
-        const segNegra = 60 / (score.tempo || 100);
-        const segTick = segNegra / TPQ;
-        const capacidad = ticksDeCompas(score.timeSignature);
-        const unisono = vocesDeUnisono(score);
-        const t0 = this.ctx.currentTime + 0.12;
-        let cursor = 0;
-        const eventos = [];
-
+        const measureStarts = [];
+        let cursorTick = 0;
         timeline.forEach((pos) => {
-            const m = score.sections[pos.sectionIdx].measures[pos.measureIdx];
-            eventos.push({ tipo: 'compas', t: t0 + cursor * segTick, pos });
-            if (this.metronomo) {
-                const porPulso = Math.round((TPQ * 4) / score.timeSignature.den);
-                for (let p = 0; p < score.timeSignature.num; p++) {
-                    eventos.push({ tipo: 'click', t: t0 + (cursor + p * porPulso) * segTick, fuerte: p === 0 });
-                }
-            }
-            score.instruments.forEach((cfg) => {
-                const destinos = cfg.id === UNISONO ? unisono : [cfg.id];
-                if (cfg.id === UNISONO && (cfg.mute || (score.instruments.some((i) => i.solo) && !cfg.solo))) return;
-                let local = 0;
-                (m.voces[cfg.id] || []).forEach((n) => {
-                    if (!n.rest) {
-                        destinos.forEach((instId) => {
-                            eventos.push({
-                                tipo: 'nota',
-                                t: t0 + (cursor + local) * segTick,
-                                instId,
-                                stroke: n.stroke,
-                                vel: (n.dyn ? dinamicaVel(n.dyn) : 1) * (destinos.length > 1 ? 0.85 : 1),
-                            });
-                        });
-                    }
-                    local += ticksDeNota(n);
-                });
+            measureStarts.push({
+                sectionIdx: pos.sectionIdx,
+                measureIdx: pos.measureIdx,
+                musicalSec: segundosDeTicks(cursorTick, bpm),
+                duration: segundosDeTicks(cap, bpm),
+                startTick: cursorTick,
             });
-            cursor += capacidad;
+            cursorTick += cap;
         });
 
-        const finT = t0 + cursor * segTick;
-        eventos.sort((a, b) => a.t - b.t);
+        const full = expandirTimeline(score);
+        const firstAbs = timeline.length
+            ? Math.max(0, full.findIndex((s) => s.sectionIdx === timeline[0].sectionIdx && s.measureIdx === timeline[0].measureIdx)) * cap
+            : 0;
 
-        let i = 0;
-        const tick = () => {
-            if (this.stopFlag) return;
-            const horizonte = this.ctx.currentTime + 0.35;
-            while (i < eventos.length && eventos[i].t <= horizonte) {
-                const ev = eventos[i];
-                if (ev.tipo === 'nota') this._golpe(ev.instId, ev.stroke, ev.t, ev.vel);
-                else if (ev.tipo === 'click') this._click(ev.t, ev.fuerte);
-                else if (ev.tipo === 'compas' && this.onMeasure) {
-                    const delay = Math.max(0, (ev.t - this.ctx.currentTime) * 1000);
-                    setTimeout(() => {
-                        if (!this.stopFlag) this.onMeasure(ev.pos);
-                    }, delay);
+        const eventosRebase = eventosMusicales(score)
+            .filter((ev) => {
+                if (opts.soloSeccion !== null && opts.soloSeccion !== undefined && ev.sectionIdx !== opts.soloSeccion) return false;
+                return ev.absTick >= firstAbs;
+            })
+            .map((ev) => ({
+                tipo: 'nota',
+                musicalSec: segundosDeTicks(ev.absTick + ev.tickLocal - firstAbs, bpm),
+                instrument: ev.instrument,
+                articulation: ev.articulation,
+                velocity: ev.velocity,
+                sectionIdx: ev.sectionIdx,
+                measureIdx: ev.measureIdx,
+            }));
+
+        const clicks = [];
+        if (this.metronomo) {
+            const porPulso = Math.round((TPQ * 4) / (score.timeSignature.den || 4));
+            timeline.forEach((pos, mi) => {
+                for (let p = 0; p < (score.timeSignature.num || 4); p++) {
+                    clicks.push({
+                        tipo: 'click',
+                        musicalSec: segundosDeTicks(mi * cap + p * porPulso, bpm),
+                        fuerte: p === 0,
+                    });
                 }
-                i += 1;
-            }
-            if (i >= eventos.length && this.ctx.currentTime > finT) {
-                this.playing = false;
-                if (opts.loop && !this.stopFlag) {
-                    this.play(score, opts);
+            });
+        }
+
+        return {
+            eventos: [...eventosRebase, ...clicks],
+            measureStarts,
+            duration: segundosDeTicks(cursorTick, bpm),
+        };
+    }
+
+    _tickClock() {
+        if (this._raf) cancelAnimationFrame(this._raf);
+        const loop = () => {
+            if (this.stopFlag || this.paused || !this.playing) return;
+            const musicalSec = Math.max(0, this.ctx.currentTime - this._t0);
+            const pos = this.posicionDe(musicalSec);
+            if (this.onClock) this.onClock({ musicalSec, ...pos });
+            if (musicalSec >= this._duration) {
+                if (this._loop && this._score) {
+                    this.play(this._score, { ...this._playOpts, offsetSec: 0 });
                     return;
                 }
+                this.playing = false;
                 if (this.onStop) this.onStop();
                 return;
             }
-            this._timer = setTimeout(tick, 90);
+            this._raf = requestAnimationFrame(loop);
         };
-        tick();
+        this._raf = requestAnimationFrame(loop);
+    }
+
+    posicionDe(musicalSec) {
+        const starts = this._measureStarts;
+        if (!starts.length) return { sectionIdx: 0, measureIdx: 0, frac: 0 };
+        let cur = starts[0];
+        for (const m of starts) {
+            if (musicalSec >= m.musicalSec) cur = m;
+            else break;
+        }
+        const frac = cur.duration > 0 ? Math.min(1, Math.max(0, (musicalSec - cur.musicalSec) / cur.duration)) : 0;
+        return { sectionIdx: cur.sectionIdx, measureIdx: cur.measureIdx, frac };
+    }
+
+    musicalAhora() {
+        if (!this.ctx || !this.playing) return this._offset;
+        if (this.paused) return this._offset;
+        return Math.max(0, this.ctx.currentTime - this._t0);
+    }
+
+    pause() {
+        if (!this.playing || this.paused) return;
+        this._offset = this.musicalAhora();
+        this.paused = true;
+        this.playing = false;
+        this._cortarFuentes();
+        if (this._raf) cancelAnimationFrame(this._raf);
+        this._raf = 0;
+    }
+
+    async resume(score, opts = {}) {
+        if (!this.paused) return this.play(score, opts);
+        return this.play(score, { ...opts, offsetSec: this._offset });
     }
 
     stop() {
         this.stopFlag = true;
         this.playing = false;
-        if (this._timer) clearTimeout(this._timer);
-        this._timer = null;
-        if (this.ctx && this.master) {
-            const t = this.ctx.currentTime;
-            this.master.gain.cancelScheduledValues(t);
-            this.master.gain.setValueAtTime(this.master.gain.value, t);
-            this.master.gain.linearRampToValueAtTime(0, t + 0.02);
-            this.master.gain.linearRampToValueAtTime(0.9, t + 0.09);
-        }
+        this.paused = false;
+        this._offset = 0;
+        this._cortarFuentes();
+        if (this._raf) cancelAnimationFrame(this._raf);
+        this._raf = 0;
         if (this.onStop) this.onStop();
     }
-}
 
-function dinamicaVel(dyn) {
-    return { pp: 0.35, p: 0.55, mp: 0.72, mf: 0.9, f: 1.1, ff: 1.3 }[dyn] || 1;
+    _cortarFuentes() {
+        const t = this.ctx ? this.ctx.currentTime : 0;
+        this._sources.forEach((src) => {
+            try { src.stop(t); } catch { /* ya detenida */ }
+        });
+        this._sources = [];
+        if (this.ctx && this.master) {
+            this.master.gain.cancelScheduledValues(t);
+            this.master.gain.setValueAtTime(this.master.gain.value, t);
+            this.master.gain.linearRampToValueAtTime(0.0001, t + 0.02);
+            this.master.gain.linearRampToValueAtTime(0.9, t + 0.08);
+        }
+    }
 }

@@ -207,12 +207,100 @@ export function notaAGolpePlano(instId, nota) {
         isTresillo: !!(nota.tuplet && nota.tuplet.num === 3 && nota.tuplet.den === 2),
         tipoGolpe: tipoGolpeDe(nota.stroke) || nota.stroke,
         digitacion: nota.digitacion || null,
-        // Campos extendidos útiles para round-trip
         stroke: nota.stroke,
         tuplet: nota.tuplet,
         rest: !!nota.rest,
         dyn: nota.dyn || null,
     };
+}
+
+const DYN_VEL = { pp: 0.35, p: 0.55, mp: 0.72, mf: 0.9, f: 1.1, ff: 1.3 };
+
+/** Ticks de una negra según el denominador del compás. */
+export function ticksPorBeat(timeSignature) {
+    const den = timeSignature?.den || 4;
+    return Math.round((TPQ * 4) / den);
+}
+
+/**
+ * Posición musical dentro del compás (1-based beat).
+ * subdivision = ticks restantes dentro del beat (0 = ataque en el tiempo).
+ */
+export function tickAPosicion(tickLocal, timeSignature) {
+    const tpB = ticksPorBeat(timeSignature);
+    const t = Math.max(0, Math.round(tickLocal));
+    const beat0 = Math.floor(t / tpB);
+    return {
+        beat: beat0 + 1,
+        subdivision: t - beat0 * tpB,
+        ticksPorBeat: tpB,
+    };
+}
+
+export function velocidadDeNota(nota) {
+    const golpe = GOLPES[nota.stroke] || GOLPES.nota;
+    const dyn = nota.dyn ? (DYN_VEL[nota.dyn] || 1) : 1;
+    return dyn * (golpe.gain || 1);
+}
+
+/**
+ * Eventos musicales planos derivados del score v4 (misma fuente que el render).
+ * Respeta repeatX y barras de repetición vía expandirTimeline.
+ *
+ * @returns {Array<{
+ *   instrument: string, articulation: string, measure: number,
+ *   beat: number, subdivision: number, velocity: number,
+ *   sectionIdx: number, measureIdx: number, tickLocal: number,
+ *   absTick: number, noteId: string, dyn: string|null
+ * }>}
+ */
+export function eventosMusicales(score) {
+    const ts = score.timeSignature || { num: 4, den: 4 };
+    const cap = ticksDeCompas(ts);
+    const timeline = expandirTimeline(score);
+    const out = [];
+    let absTick = 0;
+    let measureOrdinal = 0;
+    timeline.forEach((pos) => {
+        measureOrdinal += 1;
+        const m = score.sections[pos.sectionIdx]?.measures[pos.measureIdx];
+        if (!m) return;
+        Object.entries(m.voces || {}).forEach(([instId, voz]) => {
+            let local = 0;
+            (voz || []).forEach((n) => {
+                const dur = ticksDeNota(n);
+                if (!n.rest) {
+                    const p = tickAPosicion(local, ts);
+                    out.push({
+                        instrument: instId,
+                        articulation: n.stroke,
+                        measure: measureOrdinal,
+                        beat: p.beat,
+                        subdivision: p.subdivision,
+                        velocity: velocidadDeNota(n),
+                        sectionIdx: pos.sectionIdx,
+                        measureIdx: pos.measureIdx,
+                        tickLocal: local,
+                        absTick,
+                        noteId: n.id,
+                        dyn: n.dyn || null,
+                    });
+                }
+                local += dur;
+            });
+        });
+        absTick += cap;
+    });
+    return out;
+}
+
+/** Segundos de una negra al BPM dado. */
+export function duracionNegra(bpm) {
+    return 60 / Math.max(1, Number(bpm) || 100);
+}
+
+export function segundosDeTicks(ticks, bpm) {
+    return ticks * (duracionNegra(bpm) / TPQ);
 }
 
 /** @param {unknown} raw */

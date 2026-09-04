@@ -20,7 +20,7 @@ export class VisorPartitura {
         this.controles = opts.controles !== false;
         this.zoom = opts.zoom || 1;
         this.audio = new MotorAudio();
-        this.audio.onMeasure = (pos) => this.playhead(pos);
+        this.audio.onClock = (pos) => this.playhead(pos);
         this.audio.onStop = () => this.finTransporte();
         this.construir();
         this.render();
@@ -39,6 +39,7 @@ export class VisorPartitura {
                 ${this.controles
                     ? `<div class="pt-viewer-actions">
                         <button class="pt-btn pt-btn-play" data-a="play" title="Reproducir">▶</button>
+                        <button class="pt-btn" data-a="pause" title="Pausa">❚❚</button>
                         <button class="pt-btn" data-a="stop" title="Detener">■</button>
                         <button class="pt-btn pt-toggle" data-a="metro" title="Metrónomo">𝅘𝅥</button>
                         <button class="pt-btn" data-a="zoom-out">−</button>
@@ -73,8 +74,13 @@ export class VisorPartitura {
         switch (btn.dataset.a) {
             case 'play':
                 btn.classList.add('on');
-                this.audio.play(this.score, {}).catch(() => this.finTransporte());
+                if (this.audio.paused) {
+                    this.audio.resume(this.score, {}).catch(() => this.finTransporte());
+                } else {
+                    this.audio.play(this.score, {}).catch(() => this.finTransporte());
+                }
                 return;
+            case 'pause': return this.audio.pause();
             case 'stop': return this.audio.stop();
             case 'metro': btn.classList.toggle('on'); this.audio.metronomo = btn.classList.contains('on'); return;
             case 'zoom-in': this.zoom = Math.min(2, this.zoom + 0.15); return this.render();
@@ -91,10 +97,11 @@ export class VisorPartitura {
         const box = (this.measureBoxes || []).find((b) => b.sectionIdx === pos.sectionIdx && b.measureIdx === pos.measureIdx);
         if (!box) return;
         const el = document.createElement('div');
-        el.className = 'pt-play-box';
-        el.style.left = `${box.x}px`;
+        el.className = 'pt-play-box pt-play-cursor';
+        const frac = Number.isFinite(pos.frac) ? pos.frac : 0;
+        el.style.left = `${box.x + frac * box.w}px`;
         el.style.top = `${box.y}px`;
-        el.style.width = `${box.w}px`;
+        el.style.width = '2px';
         el.style.height = `${box.h}px`;
         box.lineEl.appendChild(el);
     }

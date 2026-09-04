@@ -1,10 +1,11 @@
 /**
- * Cargador multi-sample por (instrumento, golpe).
- * Busca /sounds/perc/{inst}_{stroke}.wav|mp3; si no hay archivo, el MotorAudio usa síntesis + filtros.
+ * Banco de samples reales: AudioBuffer por (instrumento, articulación).
+ * Sin fallback a otra articulación ni pitch MIDI: la correspondencia es 1:1.
  */
-import { GOLPES, midiDeGolpe } from './instruments.js';
+import { MAPA_SAMPLES, nombreArchivoSample } from './instruments.js';
 
 const EXT = ['wav', 'mp3', 'ogg'];
+export const SAMPLES_BASE = '/sounds/perc';
 
 export class BancoSamples {
     constructor() {
@@ -13,85 +14,95 @@ export class BancoSamples {
         /** @type {Set<string>} */
         this.missing = new Set();
         this.ready = false;
+        this.loading = false;
     }
 
     clave(instId, strokeId) {
         return `${instId}__${strokeId}`;
     }
 
+    urlsDe(instId, strokeId) {
+        const base = nombreArchivoSample(instId, strokeId);
+        return EXT.map((ext) => `${SAMPLES_BASE}/${base}.${ext}`);
+    }
+
+    catalogoRequerido() {
+        const pares = [];
+        Object.entries(MAPA_SAMPLES).forEach(([instId, strokes]) => {
+            strokes.forEach((stroke) => pares.push({ instId, stroke, archivo: nombreArchivoSample(instId, stroke) }));
+        });
+        return pares;
+    }
+
     /**
-     * Precarga samples para los instrumentos del score.
      * @param {AudioContext} ctx
-     * @param {string[]} instIds
+     * @param {string[]} [instIds]
      */
-    async precargar(ctx, instIds = []) {
-        const strokes = Object.keys(GOLPES);
+    async precargar(ctx, instIds = Object.keys(MAPA_SAMPLES)) {
+        this.loading = true;
         const jobs = [];
         instIds.forEach((instId) => {
-            strokes.forEach((stroke) => {
-                jobs.push(this._cargarUno(ctx, instId, stroke));
-            });
+            const strokes = MAPA_SAMPLES[instId];
+            if (!strokes) return;
+            strokes.forEach((stroke) => jobs.push(this._cargarUno(ctx, instId, stroke)));
         });
         await Promise.allSettled(jobs);
         this.ready = true;
+        this.loading = false;
+        return this.estado();
     }
 
     async _cargarUno(ctx, instId, strokeId) {
         const key = this.clave(instId, strokeId);
         if (this.buffers.has(key) || this.missing.has(key)) return;
-        for (const ext of EXT) {
-            const url = `/sounds/perc/${instId}_${strokeId}.${ext}`;
+        for (const url of this.urlsDe(instId, strokeId)) {
             try {
                 const res = await fetch(url, { method: 'GET' });
                 if (!res.ok) continue;
                 const arr = await res.arrayBuffer();
                 const buf = await ctx.decodeAudioData(arr.slice(0));
                 this.buffers.set(key, buf);
+                this.missing.delete(key);
                 return;
             } catch {
-                /* probar siguiente extensión */
+                /* siguiente extensión */
             }
         }
         this.missing.add(key);
     }
 
-    /**
-     * @param {string} instId
-     * @param {string} strokeId
-     * @returns {AudioBuffer|null}
-     */
     obtener(instId, strokeId) {
-        const exact = this.buffers.get(this.clave(instId, strokeId));
-        if (exact) return exact;
-        // Fallback: mismo instrumento, golpe "nota" o "abierto"
-        for (const alt of ['nota', 'abierto']) {
-            const b = this.buffers.get(this.clave(instId, alt));
-            if (b) return b;
-        }
-        return null;
+        return this.buffers.get(this.clave(instId, strokeId)) || null;
+    }
+
+    tiene(instId, strokeId) {
+        return this.buffers.has(this.clave(instId, strokeId));
+    }
+
+    estado() {
+        const req = this.catalogoRequerido();
+        const faltan = req.filter(({ instId, stroke }) => this.missing.has(this.clave(instId, stroke)));
+        const listos = req.filter(({ instId, stroke }) => this.buffers.has(this.clave(instId, stroke)));
+        return { listos: listos.length, faltan: faltan.length, total: req.length, missing: faltan };
     }
 
     /**
-     * Dispara un sample si existe.
-     * @returns {boolean} true si se reprodujo sample
+     * Dispara el sample exacto. Sin sample → false (no sustituye otra articulación).
+     * @returns {AudioBufferSourceNode|null}
      */
     disparar(ctx, out, instId, strokeId, t, vel = 1) {
         const buf = this.obtener(instId, strokeId);
-        if (!buf) return false;
+        if (!buf) return null;
         const src = ctx.createBufferSource();
         src.buffer = buf;
-        // Pitch leve según MIDI relativo (mantiene afinación percibida entre técnicas)
-        const midi = midiDeGolpe(instId, strokeId);
-        const midiBase = midiDeGolpe(instId, strokeId === 'abierto' ? 'abierto' : 'nota');
-        const rate = 2 ** ((midi - midiBase) / 12);
-        src.playbackRate.value = Math.min(1.6, Math.max(0.7, rate));
         const g = ctx.createGain();
+        const amp = Math.min(1.2, Math.max(0.05, 0.95 * vel));
         g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(Math.min(1.2, 0.95 * vel), t + 0.004);
-        g.gain.exponentialRampToValueAtTime(0.0008, t + Math.max(0.12, buf.duration));
+        g.gain.linearRampToValueAtTime(amp, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0008, t + Math.max(0.08, buf.duration));
         src.connect(g).connect(out);
         src.start(t);
-        return true;
+        return src;
     }
 }
 

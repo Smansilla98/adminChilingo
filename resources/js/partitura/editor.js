@@ -46,8 +46,13 @@ export class EditorPartitura {
         this.dirty = false;
         this.guardando = false;
         this.audio = new MotorAudio();
-        this.audio.onMeasure = (pos) => this.marcarPlayhead(pos);
+        this.audio.onClock = (pos) => this.marcarPlayhead(pos);
         this.audio.onStop = () => this.finTransporte();
+        this.audio.onLoad = (msg) => this.aviso(msg);
+        this.audio.onReady = (st) => {
+            const extra = st.faltan ? ` · ${st.faltan} samples faltan` : '';
+            this.aviso(`Listo para reproducir${extra}`);
+        };
 
         this.construir();
         this.bindTeclado();
@@ -68,6 +73,7 @@ export class EditorPartitura {
                 </div>
                 <div class="pt-tb-group">
                     <button class="pt-btn pt-btn-play" data-a="play" title="Reproducir (Espacio)">▶</button>
+                    <button class="pt-btn" data-a="pause" title="Pausa">❚❚</button>
                     <button class="pt-btn" data-a="stop" title="Detener">■</button>
                     <button class="pt-btn pt-toggle" data-a="loop" title="Loop">↻</button>
                     <button class="pt-btn pt-toggle" data-a="metro" title="Metrónomo">𝅘𝅥</button>
@@ -308,10 +314,11 @@ export class EditorPartitura {
         const box = this.measureBoxes.find((b) => b.sectionIdx === pos.sectionIdx && b.measureIdx === pos.measureIdx);
         if (!box) return;
         const el = document.createElement('div');
-        el.className = 'pt-play-box';
-        el.style.left = `${box.x}px`;
+        el.className = 'pt-play-box pt-play-cursor';
+        const frac = Number.isFinite(pos.frac) ? pos.frac : 0;
+        el.style.left = `${box.x + frac * box.w}px`;
         el.style.top = `${box.y}px`;
-        el.style.width = `${box.w}px`;
+        el.style.width = '2px';
         el.style.height = `${box.h}px`;
         box.lineEl.appendChild(el);
     }
@@ -491,6 +498,7 @@ export class EditorPartitura {
 
         switch (a) {
             case 'play': return this.play();
+            case 'pause': return this.audio.pause();
             case 'stop': return this.audio.stop();
             case 'loop': btn.classList.toggle('on'); this.loop = btn.classList.contains('on'); return;
             case 'metro': btn.classList.toggle('on'); this.audio.metronomo = btn.classList.contains('on'); return;
@@ -803,6 +811,13 @@ export class EditorPartitura {
     async play(opts = {}) {
         this.root.querySelector('.pt-btn-play')?.classList.add('on');
         try {
+            if (this.audio.paused) {
+                await this.audio.resume(this.score, {
+                    loop: !!this.loop,
+                    soloSeccion: opts.soloSeccion ?? null,
+                });
+                return;
+            }
             await this.audio.play(this.score, {
                 loop: !!this.loop,
                 soloSeccion: opts.soloSeccion ?? null,

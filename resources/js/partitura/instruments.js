@@ -71,7 +71,7 @@ export const GOLPES = {
     tapado: {
         id: 'tapado', label: 'Tapado', short: '—',
         // Surdos: óvalo + guión arriba (Nomenclatura).
-        cabeza: 'normal', articulacion: 'a-', pos: 3, gain: 0.6, timbre: 'apagado', tipoGolpe: 'slap',
+        cabeza: 'normal', articulacion: 'a-', pos: 3, gain: 0.6, timbre: 'apagado', tipoGolpe: 'tapado',
     },
     presionado: {
         id: 'presionado', label: 'Presionado', short: '=',
@@ -109,13 +109,80 @@ export const GOLPES = {
 export const TIPO_GOLPE_A_STROKE = {
     abierto: 'abierto',
     slap: 'slap',
-    tapado: 'slap',
+    tapado: 'tapado',
     chapa: 'chapa',
     palma: 'palma',
     acentuado: 'acentuado',
     presionado: 'presionado',
     nota: 'nota',
+    normal: 'nota',
 };
+
+/**
+ * Articulación de archivo de sample (1:1 con el golpe).
+ * `nota` (golpe pleno) se publica como `normal` en el nombre de archivo.
+ */
+export const ARTICULACION_SAMPLE = {
+    nota: 'normal',
+    acentuado: 'acentuado',
+    chapa: 'chapa',
+    tapado: 'tapado',
+    abierto: 'abierto',
+    slap: 'slap',
+    palma: 'palma',
+    presionado: 'presionado',
+    dedo: 'dedo',
+    agudo: 'agudo',
+};
+
+/** Samples requeridos por instrumento (sin fallback a otra articulación). */
+export const MAPA_SAMPLES = {
+    surdo_grave: ['nota', 'chapa', 'tapado'],
+    surdo_medio: ['nota', 'chapa', 'tapado'],
+    surdo_agudo: ['nota', 'chapa', 'tapado'],
+    redoblante: ['nota', 'acentuado', 'chapa'],
+    timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo'],
+    repique: ['nota', 'acentuado', 'chapa', 'agudo'],
+};
+
+export function nombreArchivoSample(instId, strokeId) {
+    const art = ARTICULACION_SAMPLE[strokeId] || strokeId;
+    return `${instId}_${art}`;
+}
+
+/**
+ * Agrupa instrumentos en sistemas de pentagrama.
+ * Redoblante y Repique comparten un único pentagrama de 5 líneas.
+ */
+export function sistemasVisuales(insts) {
+    const byId = {};
+    insts.forEach((x) => { byId[x.def.id] = x; });
+    const seen = new Set();
+    const out = [];
+    const push = (ids, label) => {
+        const members = ids.map((id) => byId[id]).filter(Boolean);
+        if (!members.length) return;
+        members.forEach((m) => seen.add(m.def.id));
+        out.push({
+            id: ids.join('+'),
+            label: label || members.map((m) => m.def.label).join(' / '),
+            members,
+            compartido: members.length > 1,
+        });
+    };
+    push(['todos']);
+    push(['surdo_grave']);
+    push(['surdo_agudo']);
+    push(['surdo_medio']);
+    push(['redoblante', 'repique'], 'Redoblante / Repique');
+    push(['timbal']);
+    push(['agogo']);
+    push(['palmas']);
+    insts.forEach((x) => {
+        if (!seen.has(x.def.id)) push([x.def.id]);
+    });
+    return out;
+}
 
 /** Digitación pedagógica (ejercicios tipo Timbal Bahiano). */
 export const DIGITACIONES = [
