@@ -86,7 +86,7 @@ export class EditorPartitura {
                     </label>
                 </div>
                 <div class="pt-tb-group pt-tb-dur" data-zone="duraciones">
-                    ${DURACIONES.map((d) => `<button class="pt-btn pt-dur" data-dur="${d.code}" title="${d.label} (${d.tecla})">${figuraSvg(d.code)}<em>${d.tecla}</em></button>`).join('')}
+                    ${DURACIONES.map((d) => `<button class="pt-btn pt-dur" data-dur="${d.code}" title="${d.label} = ${d.tiempos} tiempo${d.tiempos === 1 ? '' : 's'} (${d.tecla})">${figuraSvg(d.code)}<em>${d.tecla}</em></button>`).join('')}
                     <button class="pt-btn pt-dot" data-a="dot" title="Puntillo (.)">.</button>
                     <button class="pt-btn pt-rest" data-a="rest" title="Silencio (R)">𝄽</button>
                 </div>

@@ -1,14 +1,13 @@
-"""Muñequitos I — Cuadernillo (PDF pág. 53-57).
+"""Muñequitos I — Cuadernillo págs. 50-54 (PDF págs. 53-57).
 
-Recopilación: Luciano Molina - Pablo Cuffia (Bloque Lunes Saavedra).
-El cuadernillo escribe "Surdo Base" (surdo grave) y "Surdo Melodía"
-(surdo agudo). Los pasajes de fusas/tresillos del timbal y del redoblante se
-transcriben aproximando la lectura más probable del escaneo.
+Surdo Base = surdo_grave · Surdo Melodía = surdo_agudo.
+Densidades (tresillos/fusas) → revisar; sin inventar xx-x.
 """
 from dsl import compas, score, seccion
 
 TITULO = 'Muñequitos I'
 MATCH = {'año': 4, 'orden': 5, 'nombre': 'Muñequitos I'}
+PDF_PAGES = [53, 54, 55, 56, 57]
 
 INSTS = ['surdo_grave', 'surdo_agudo', 'redoblante', 'repique', 'timbal']
 V = '----------------'
@@ -22,10 +21,11 @@ def c(sb=V, sme=V, re=V, rp=V, ti=V, **kw):
 # ------------------------------------------------------------- Introducción
 introduccion = [
     c(rp='xxxxxxxxxxxxxxxx',
-      texto='Introducción — repique cresc. p → f', dyn='p'),
+      texto='Introducción — repique cresc. p → f — … revisar con la escuela',
+      dyn='p'),
     c(ti='------x-o=o=----', rp='xxxxxxxxxxxxxxxx', dyn='f'),
-    c(ti='-x=-x-xxx-x-xxx-', rp='xxxxxxxxxxxxxxxx', dyn='p'),
-    c(ti='x-x-xxx-x-x-xxx-', rp='xx-xxxxxxx-x----'),
+    c(ti='-x=-x-xxxx-xxxx-', rp='xxxxxxxxxxxxxxxx', dyn='p'),
+    c(ti='x=x=xxxx-x=xxxx-', rp='xxxxxxxxxxxx----'),
 ]
 
 llamada_intro = [
@@ -45,30 +45,33 @@ acompanamiento_intro = [
 ]
 
 # ------------------------------------------------------------------ Toque 1
-T1_SB = '----x=--x-x---x-'
-T1_SME = 'x-xxxxxx--xxxx--'
+# Base/melodía: figuras de escuela (corcheas / grupos); HI densos → revisar
+T1_SB = '----x=--x=----x-'
+T1_SME = 'xxxxxxxx--xxxx--'
 T1_RE = 'x>>-x>>-x>>-x>>-'
-T1_TI = 'x-oox-oox-oox-oo'
+T1_TI = 'x=oox=oox=oox=oo'
 T1_RP = '-x=--x=--x=--x=-'
 
 
 def toque_1(texto='Toque 1 (x4)'):
     return [
         c(sb=T1_SB, sme=T1_SME, re=T1_RE, ti=T1_TI, rp=T1_RP,
-          repeat_begin=True, texto=texto, dyn='mf'),
-        c(sb='--x---x---x-x=--', sme='x-xxxx--x-xxxx--',
-          re='x>>-x>>-x>>-x>>-', ti='x-oox-oox-oox-oo', rp=T1_RP),
-        c(sb='-x--x---x---x=--', sme='xx-x----x-xxxx--',
-          re='x>>-x>>-x>>-x>>-', ti='x-oox-oox-oox-oo', rp=T1_RP),
-        c(sb='-x--x-----x-x=--', sme='x-x-----x-x-x=--',
-          re='x>>-x>>-x>>-x>>-', ti='x-oox-oox-oox-oo', rp=T1_RP,
+          repeat_begin=True,
+          texto=texto + ' — … revisar con la escuela', dyn='mf'),
+        c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
+          re=T1_RE, ti=T1_TI, rp=T1_RP),
+        c(sb='-x--x---x---x=--', sme='xxxx----xxxxxx--',
+          re=T1_RE, ti=T1_TI, rp=T1_RP),
+        c(sb='-x--x-----x=x=--', sme='x=x=----x=x=x=--',
+          re=T1_RE, ti=T1_TI, rp=T1_RP,
           repeat_end=True),
     ]
 
 
 corte = [
-    c(rp='x-x-x=--x=x-x=--', texto='Corte — repique', dyn='f'),
-    c(rp='xxxx-x=-x-x-x=--'),
+    c(rp='x=x=x=--x=x=x=--',
+      texto='Corte — repique — … revisar con la escuela', dyn='f'),
+    c(rp='xxxx-x=-x=x=x=--'),
 ]
 
 # ------------------------------------------------------------------ Toque 2
@@ -78,83 +81,85 @@ T2_RP = '-x=--x=--x=--x=-'
 
 def toque_2(texto='Toque 2 (x4)'):
     return [
-        c(sb='----x=--x-x---x-', sme='x-xxxxxx--xxxx--',
-          re=T2_RE, rp=T2_RP,
+        c(sb=T1_SB, sme=T1_SME, re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)',
-          repeat_begin=True, texto=texto, dyn='mf'),
-        c(sb='--x---x---x-x=--', sme='x-xxxx--x-xxxx--',
+          repeat_begin=True,
+          texto=texto + ' — … revisar con la escuela', dyn='mf'),
+        c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
           re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
-        c(sb='-x--x---x---x=--', sme='xx-x----x-xxxx--',
+        c(sb='-x--x---x---x=--', sme='xxxx----xxxxxx--',
           re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
-        c(sb='-x--x-----x-x=--', sme='x-x-----x-x-x=--',
+        c(sb='-x--x-----x=x=--', sme='x=x=----x=x=x=--',
           re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(oxo)3(xoo)3(xxo)',
-          texto='Variación de timbal en la 4ta vuelta', repeat_end=True),
+          texto='Variación de timbal en la 4ta vuelta — … revisar',
+          repeat_end=True),
     ]
 
 
 # ---------------------------------------------------------------- Variación
 variacion = [
-    c(sme='x-xxxx--x-xxxx--', re='x>>-x>>-x>>-x>>-',
+    c(sme='xxxxxx--xxxxxx--', re=T2_RE,
       ti='x=--o=--x=--o=--',
-      repeat_begin=True, texto='Variación (surdo melodía y redoblante)',
-      dyn='mf'),
-    c(sme='x-xxxx--xx-xxx--', re='x>>-x>>-x>>-x>>-',
+      repeat_begin=True,
+      texto='Variación — … revisar con la escuela', dyn='mf'),
+    c(sme='xxxxxx--xxxx----', re=T2_RE,
       ti='x=--o=--x=--o=--', repeat_end=True),
 ]
 
 # -------------------------------------------------------- Llamada intermedia
 llamada_intermedia = [
-    c(rp='xxxxxxxxxxxx----', texto='Llamada intermedia', dyn='f'),
+    c(rp='xxxxxxxxxxxx----',
+      texto='Llamada intermedia — … revisar con la escuela', dyn='f'),
     c(rp='xxxxxxxxxxxx----'),
     c(rp='o==============='),
     c(rp='x=------x=------'),
-    c(rp='x=------x-x-x---'),
+    c(rp='x=------x=x=x=--'),
     c(sme='xxxxxxxxxxxxxxxx', sb='----------------',
       texto='Surdo melodía en fusas / surdo base en silencio', dyn='f'),
     c(sme='xxxxxxxxxxxxxxxx'),
-    c(sme='xxxxxxxx----x-x-', sb='------------x-x-'),
-    c(re='x>>-x>>-x>>-x>>-', ti='x-oox-oox-oox-oo',
+    c(sme='xxxxxxxx----x=x=', sb='------------x=x='),
+    c(re=T2_RE, ti=T1_TI,
       texto='Redoblante y timbal sobre la llamada'),
-    c(re='x>>-x>>-x>>-x>>-', ti='x-oox-oox-oox-oo'),
+    c(re=T2_RE, ti=T1_TI),
 ]
 
 # ------------------------------------------------------------------ Toque 3
 def toque_3(texto='Toque 3 (x2)'):
     return [
-        c(sb='----x=--x-x---x-', sme='x-xxxxxxxx-xxx--',
-          re='x>>-x>>-x>>-x>>-', rp='-x=--x=--x=--x=-',
+        c(sb=T1_SB, sme='xxxxxxxxxxxxxxxx',
+          re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)',
-          repeat_begin=True, texto=texto, dyn='mf'),
-        c(sb='--x---x---x-x=--', sme='x-xxxx--x-xxxx--',
-          re='x>>-x>>-x>>-x>>-', rp='-x=--x=--x=--x=-',
+          repeat_begin=True,
+          texto=texto + ' — … revisar con la escuela', dyn='mf'),
+        c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
+          re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
-        c(sb='-x--x---x---x=--', sme='xx-x----x-xxxx--',
-          re='x>>-x>>-x>>-x>>-', rp='-x=--x=--x=--x=-',
+        c(sb='-x--x---x---x=--', sme='xxxx----xxxxxx--',
+          re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
-        c(sb='-x--x-----x-x=--', sme='x-x-----x-x-x=--',
-          re='x>>-x>>-x>>-x>>>', rp='-x=--x=--x=-x-x-',
+        c(sb='-x--x-----x=x=--', sme='x=x=----x=x=x=--',
+          re='x>>-x>>-x>>-x>>>', rp='-x=--x=--x=-x=x-',
           ti='3(xoo)3(oxo)3(xoo)3(xxo)', repeat_end=True),
     ]
 
 
 # ------------------------------------------------------------- Llamada final
 llamada_final = [
-    c(rp='3(xxx)3(xxx)--------', ti='----------x-xx--',
-      re='x>>-x>>-x>>-x>>-', sb='----x=--x-x---x-',
-      sme='x-xxxxxxxx-xxx--',
-      texto='Llamada final', dyn='f'),
+    c(rp='3(xxx)3(xxx)--------', ti='----------xxxx--',
+      re=T2_RE, sb=T1_SB, sme='xxxxxxxxxxxxxxxx',
+      texto='Llamada final — … revisar con la escuela', dyn='f'),
     c(rp='--------3(xxx)3(xxx)', ti='o===============',
-      re='x>>-x>>-x>>-x>>-', sb='--x---x---x-x=--',
-      sme='x-xxxx--x-xxxx--'),
-    c(rp='-x-x-x-x-x-x-x-x', ti='xx-xxx-xoo-xoo--',
-      re='x>>-x>>-x>>-x>>-', sb='-x--x---x---x=--',
-      sme='xx-x----x-xxxx--'),
-    c(rp='-x-x-x-x-x-x-x--', ti='oo-x-x--x-x-x=--',
-      re='x>>-x>>-x>>>x->-', sb='-x--x-----x-x=--',
-      sme='x-x-----x-x-x=--'),
+      re=T2_RE, sb='--x---x---x=x=--',
+      sme='xxxxxx--xxxxxx--'),
+    c(rp='-x=-x=-x=-x=-x=-', ti='xxxx----oo--oo--',
+      re=T2_RE, sb='-x--x---x---x=--',
+      sme='xxxx----xxxxxx--'),
+    c(rp='-x=-x=-x=-x=----', ti='oo--x=--x=x=x=--',
+      re='x>>-x>>-x>>>x->-', sb='-x--x-----x=x=--',
+      sme='x=x=----x=x=x=--'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [

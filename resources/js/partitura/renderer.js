@@ -1,23 +1,23 @@
 /**
- * Render de partitura estilo Cuadernillo de Toques (VexFlow 4).
- * - Clave de percusión + C en 4/4
- * - Plicas arriba, barras planas por negra (4 semis / 2 corcheas)
- * - Altura de nota según instrumento (como en el PDF)
- * - Solo pentagramas que tocan en la sección
- * - Acentos debajo; digitación D/I debajo
+ * Render estilo Cuadernillo de Toques (VexFlow 4).
+ * Igual al PDF: 1 línea, clave de percusión, C en 4/4, plicas arriba,
+ * barras planas por tiempo (Equivalencias: 2 corcheas / 4 semis / 8 fusas),
+ * acentos abajo. Solo voces que tocan en la sección.
  */
 import {
     Renderer, Stave, StaveNote, GhostNote, Beam, Tuplet, Formatter, Articulation,
-    Barline, Volta, StaveConnector, Annotation, Dot, Fraction,
+    Barline, Volta, Annotation, Dot, Fraction,
 } from 'vexflow';
 import { instrumentoPorId, cabezaVexflow, GOLPES, esUnisono } from './instruments.js';
 import { TPQ, ticksDeNota } from './model.js';
 
-const LABEL_W = 108;
-const STAVE_H = 72;
-const LINE_PAD_TOP = 40;
-const LINE_PAD_BOTTOM = 28;
-const MIN_MEASURE_W = 160;
+const LABEL_W = 118;
+const STAVE_H = 56;
+const LINE_PAD_TOP = 36;
+const LINE_PAD_BOTTOM = 24;
+const MIN_MEASURE_W = 170;
+/** Todas las notas sobre la línea central del pentagrama de 1 línea. */
+const PITCH = 'b/4';
 
 /**
  * @param {HTMLElement} host
@@ -69,14 +69,21 @@ export function renderScore(host, score, opts = {}) {
     return { hits, measureBoxes };
 }
 
-/** Solo instrumentos que tienen al menos un golpe (no silencio) en la sección. */
 function instrumentosDeSeccion(sec, todos) {
-    return todos.filter(({ def }) => {
-        if (esUnisono(def.id)) {
-            return sec.measures.some((m) => (m.voces[def.id] || []).some((n) => !n.rest));
-        }
-        return sec.measures.some((m) => (m.voces[def.id] || []).some((n) => !n.rest));
-    });
+    return todos.filter(({ def }) =>
+        sec.measures.some((m) => (m.voces[def.id] || []).some((n) => !n.rest))
+    );
+}
+
+function configurarUnaLinea(stave) {
+    // Línea central visible (como el cuadernillo: pauta de una línea)
+    stave.setConfigForLines([
+        { visible: false },
+        { visible: false },
+        { visible: true },
+        { visible: false },
+        { visible: false },
+    ]);
 }
 
 function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes) {
@@ -93,32 +100,31 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     renderer.resize(width, height);
     const ctx = renderer.getContext();
     ctx.setFont('Times New Roman', 11, '');
-    ctx.setFillStyle('#1a1410');
-    ctx.setStrokeStyle('#1a1410');
+    ctx.setFillStyle('#111');
+    ctx.setStrokeStyle('#111');
 
     const staves = [];
 
     instrumentos.forEach((inst, di) => {
         let x = LABEL_W;
-        const y = LINE_PAD_TOP + di * STAVE_H - 14;
+        const y = LINE_PAD_TOP + di * STAVE_H - 10;
 
         ctx.save();
         ctx.setFont('Times New Roman', 11, 'italic');
-        ctx.setFillStyle('#1a1410');
-        ctx.fillText(etiquetaInstrumento(inst.def), 4, y + 28);
+        ctx.fillText(etiquetaInstrumento(inst.def), 4, y + 26);
         ctx.restore();
 
         idxs.forEach((mi, k) => {
             const m = sec.measures[mi];
             const stave = new Stave(x, y, measureW, {
                 spacing_between_lines_px: 10,
-                space_above_staff_ln: 1,
-                space_below_staff_ln: 1,
+                space_above_staff_ln: 1.2,
+                space_below_staff_ln: 1.2,
             });
+            configurarUnaLinea(stave);
 
             if (k === 0) {
                 stave.addClef('percussion');
-                // Cuadernillo: C en 4/4
                 if (score.timeSignature.num === 4 && score.timeSignature.den === 4) {
                     stave.addTimeSignature('C');
                 } else {
@@ -132,8 +138,8 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             if (di === 0 && m.ending) {
                 stave.setVoltaType(Volta.type.BEGIN_END, `${m.ending}.`, 0);
             }
-            if (di === 0 && m.texto && m.texto !== 'Todos' && m.texto !== 'Toque') {
-                stave.setText(m.texto, 3, { shift_y: -10, justification: 1 });
+            if (di === 0 && m.texto && !['Todos', 'Toque', 'Llamada intermedia'].includes(m.texto)) {
+                stave.setText(m.texto, 3, { shift_y: -8, justification: 1 });
             }
 
             stave.setContext(ctx).draw();
@@ -146,7 +152,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             let grupoNotas = [];
 
             voz.forEach((n, ni) => {
-                const vfNote = construirNota(n, inst.def);
+                const vfNote = construirNota(n);
                 notas.push({ vf: vfNote, data: n, idx: ni });
 
                 const gid = n.tuplet?.id || null;
@@ -166,17 +172,14 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 console.warn('Partitura: compás no formateable', e);
             }
 
-            // Barras como el cuadernillo: por negra, sin atravesar silencios
             const beams = Beam.generateBeams(vfNotas, {
                 beam_rests: false,
                 maintain_stem_directions: true,
                 flat_beams: true,
-                flat_beam_offset: 10,
+                flat_beam_offset: 12,
                 groups: gruposDeBeam(score.timeSignature),
             });
-            beams.forEach((b) => {
-                b.setContext(ctx).draw();
-            });
+            beams.forEach((b) => b.setContext(ctx).draw());
             tuplets.forEach((t) => t.setContext(ctx).draw());
 
             notas.forEach(({ vf, data, idx }) => {
@@ -199,9 +202,9 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                     measureIdx: mi,
                     lineEl: wrap,
                     x: stave.getX(),
-                    y: LINE_PAD_TOP - 18,
+                    y: LINE_PAD_TOP - 14,
                     w: measureW,
-                    h: instrumentos.length * STAVE_H + 6,
+                    h: instrumentos.length * STAVE_H + 4,
                 });
             }
 
@@ -209,14 +212,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
         });
     });
 
-    const primeros = staves.filter((s) => s.mi === idxs[0]);
-    if (primeros.length > 1) {
-        const top = primeros[0].stave;
-        const bottom = primeros[primeros.length - 1].stave;
-        new StaveConnector(top, bottom).setType(StaveConnector.type.BRACKET).setContext(ctx).draw();
-        new StaveConnector(top, bottom).setType(StaveConnector.type.SINGLE_LEFT).setContext(ctx).draw();
-    }
-
+    // Sin bracket ni barra izquierda: el cuadernillo no los usa.
     return wrap;
 }
 
@@ -225,36 +221,25 @@ function etiquetaInstrumento(def) {
     return def.label;
 }
 
-/** Altura en el pentagrama: igual que el cuadernillo (grave abajo, agudo más arriba). */
-function pitchDe(instDef) {
-    return instDef?.pitch || 'b/4';
-}
-
-function construirNota(n, instDef) {
-    const pitch = pitchDe(instDef);
+function construirNota(n) {
     const dur = n.dur + (n.rest ? 'r' : '');
 
     if (n.rest) {
-        const rest = new StaveNote({
-            keys: [pitch],
-            duration: dur,
-            align_center: true,
-        });
+        const rest = new StaveNote({ keys: [PITCH], duration: dur, align_center: true });
         aplicarPuntillos(rest, n.dots);
         return rest;
     }
 
     const note = new StaveNote({
-        keys: [cabezaVexflow(pitch, n.stroke)],
+        keys: [cabezaVexflow(PITCH, n.stroke)],
         duration: dur,
-        stem_direction: 1, // siempre arriba, como el cuadernillo
+        stem_direction: 1,
     });
     aplicarPuntillos(note, n.dots);
 
     const golpe = GOLPES[n.stroke];
     if (golpe?.articulacion) {
-        // Acentos y tenutos debajo (como Redoblante del PDF)
-        const pos = golpe.articulacion === 'a>' || golpe.articulacion === 'a-' ? 4 : (golpe.pos || 4);
+        const pos = (golpe.articulacion === 'a>' || golpe.articulacion === 'a-') ? 4 : (golpe.pos || 4);
         note.addModifier(new Articulation(golpe.articulacion).setPosition(pos));
     }
     if (n.stroke === 'flam') {
@@ -267,14 +252,14 @@ function construirNota(n, instDef) {
     if (n.digitacion === 'D' || n.digitacion === 'I') {
         note.addModifier(
             new Annotation(n.digitacion)
-                .setFont('Times New Roman', 12, 'bold')
+                .setFont('Times New Roman', 11, 'bold')
                 .setVerticalJustification(Annotation.VerticalJustify.BOTTOM)
         );
     }
     if (n.dyn) {
         note.addModifier(
             new Annotation(n.dyn)
-                .setFont('Times New Roman', 12, 'bold italic')
+                .setFont('Times New Roman', 11, 'bold italic')
                 .setVerticalJustification(Annotation.VerticalJustify.BOTTOM)
         );
     }
@@ -295,8 +280,8 @@ function nuevoTuplet(grupo) {
     );
 }
 
+/** Barras por 1 tiempo (= negra), como en la hoja Equivalencias. */
 function gruposDeBeam(ts) {
-    // Una barra por negra → 4 semis o 2 corcheas, como el cuadernillo
     if (ts.den === 8 && ts.num % 3 === 0) return [new Fraction(3, 8)];
     return [new Fraction(1, 4)];
 }
@@ -307,7 +292,7 @@ function cajaDeNota(vf, stave) {
         if (bb) return { x: bb.getX(), y: bb.getY(), w: Math.max(12, bb.getW()), h: Math.max(24, bb.getH()) };
     } catch (e) { /* fallback */ }
     const x = typeof vf.getAbsoluteX === 'function' ? vf.getAbsoluteX() : stave.getX();
-    return { x: x - 8, y: stave.getYForTopText(1), w: 16, h: 44 };
+    return { x: x - 8, y: stave.getYForTopText(1), w: 16, h: 36 };
 }
 
 function escapeHtml(s) {

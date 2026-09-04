@@ -1,23 +1,32 @@
-"""Ochosi — Cuadernillo (PDF pág. 10)."""
+"""Ochosi — Cuadernillo pág. 7 (PDF pág. 10).
+
+Transcripción literal del PDF (figuras = escritura de la escuela).
+"""
 from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti
 
 TITULO = 'Ochosi'
 MATCH = {'año': 1, 'orden': 2, 'nombre': 'Ochosi'}
+PDF_PAGES = [10]
 
+# Toque
+# Grave: negras 1 y 3 · Agudo: negras 2 y 4
+# Medio: (corchea c/punto + semi · corchea + corchea acentuada) × 2
+# Redo/Repi: 16 semis, acento en 1ª de cada tiempo
+# Timbal: (abierto c/punto + semi · abierto + nota) × 2
 TOQUE = {
     'surdo_grave': 'x===----x===----',
     'surdo_agudo': '----x===----x===',
     'surdo_medio': 'x==xx=>=x==xx=>=',
-    'redoblante': '>xx>xx>x>xx>xx>x',
-    'repique': '>x>x>xxx>x>x>xxx',
-    'timbal': 'o==oo=s=o==oo=ss',
+    'redoblante': '>xxx>xxx>xxx>xxx',
+    'repique': '>xxx>xxx>xxx>xxx',
+    'timbal': 'o==ox=o=o==ox=o=',
 }
 
-# --- Llamada: redoblante/timbal/repique en los tiempos 1-2, surdos en 3-4
+# Llamada: HI 4 corcheas + sil. blanca; Surdos sil. blanca + 4 corcheas
 llamada = [
     compas({'redoblante': 'x=x=x=x=--------', 'timbal': 'x=x=x=x=--------',
             'repique': 'x=x=x=x=--------',
-            **tutti('--------xx-x-xx=', SURDOS)},
+            **tutti('--------x=x=x=x=', SURDOS)},
            texto='Llamada', dyn='f'),
 ]
 
@@ -27,18 +36,21 @@ toque = [
 ]
 
 variacion = [
-    compas({**TOQUE, 'repique': 'xxxx>xxxxxxx>xxx'},
-           repeat_begin=True, repeat_end=True, texto='Variación de Repique'),
+    compas({**TOQUE, 'repique': '>xxx>xxx>xxx>x>x'},
+           repeat_begin=True, repeat_end=True,
+           texto='Variación de Repique — … revisar con la escuela'),
 ]
 
+# Llamada final: HI negras 2 y 4; Surdos 4 corcheas + sil. blanca · redonda
 llamada_final = [
     compas({'redoblante': '----x===----x===', 'timbal': '----x===----x===',
             'repique': '----x===----x===',
             **tutti('x=x=x=x=--------', SURDOS)},
            texto='Llamada final', dyn='f'),
-    compas({'redoblante': '----x===-x==x===', 'timbal': '----x===-x==x===',
-            'repique': '----x===-x==x===',
-            **tutti('x===============', SURDOS)}),
+    compas({'redoblante': '----x===x=======', 'timbal': '----x===x=======',
+            'repique': '----x===x=======',
+            **tutti('x===============', SURDOS)},
+           texto='Llamada final — … revisar con la escuela (cierre HI)'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 84, INSTS, [

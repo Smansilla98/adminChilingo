@@ -1,7 +1,9 @@
 /**
  * Modelo de partitura v4 — percusión multi-instrumento, duraciones reales.
  *
- * Unidad de tiempo: ticks, TPQ = 48 por negra (divisible por 3 y 4 → tresillos y semicorcheas).
+ * Fuente de duraciones: hoja «Equivalencias» del Cuadernillo de Toques
+ * (database/data/partituras-v4/revision/EQUIVALENCIAS.md).
+ * Unidad: ticks; TPQ = 48 por negra (= 1 tiempo).
  */
 import {
     INSTRUMENTOS, INSTRUMENTOS_DEFAULT, instrumentoPorId, golpeDefault, GOLPES,
@@ -11,14 +13,17 @@ import {
 export const VERSION = 4;
 export const TPQ = 48;
 
-/** Duraciones soportadas (código VexFlow → ticks). */
+/**
+ * Figuras del cuadernillo (Equivalencias).
+ * `tiempos` = negras en 4/4. Barras: 2 corcheas / 4 semis / 8 fusas por tiempo.
+ */
 export const DURACIONES = [
-    { code: 'w', label: 'Redonda', ticks: TPQ * 4, tecla: '1' },
-    { code: 'h', label: 'Blanca', ticks: TPQ * 2, tecla: '2' },
-    { code: 'q', label: 'Negra', ticks: TPQ, tecla: '3' },
-    { code: '8', label: 'Corchea', ticks: TPQ / 2, tecla: '4' },
-    { code: '16', label: 'Semicorchea', ticks: TPQ / 4, tecla: '5' },
-    { code: '32', label: 'Fusa', ticks: TPQ / 8, tecla: '6' },
+    { code: 'w', label: 'Redonda', tiempos: 4, ticks: TPQ * 4, tecla: '1' },
+    { code: 'h', label: 'Blanca', tiempos: 2, ticks: TPQ * 2, tecla: '2' },
+    { code: 'q', label: 'Negra', tiempos: 1, ticks: TPQ, tecla: '3' },
+    { code: '8', label: 'Corchea', tiempos: 0.5, ticks: TPQ / 2, tecla: '4' },
+    { code: '16', label: 'Semicorchea', tiempos: 0.25, ticks: TPQ / 4, tecla: '5' },
+    { code: '32', label: 'Fusa', tiempos: 0.125, ticks: TPQ / 8, tecla: '6' },
 ];
 
 const DUR_TICKS = DURACIONES.reduce((acc, d) => ({ ...acc, [d.code]: d.ticks }), {});

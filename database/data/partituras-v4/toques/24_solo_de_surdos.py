@@ -1,13 +1,13 @@
-"""Solo de Surdos (Malamakuá) — Cuadernillo (PDF pág. 52). Compás de 6/8.
+"""Solo de Surdos (Malamakuá) — Cuadernillo pág. 49 (PDF pág. 52). Compás 6/8.
 
-Recopilación: Luciano Molina - Pablo Cuffia (Bloque Lunes Saavedra).
-Los dos compases marcados en el cuadernillo con C (4/4) se escriben en 6/8
-aproximando la figuración; queda aclarado en el texto del compás.
+Transcripción literal. Compases en C (4/4) del PDF se adaptan a 6/8
+con aclaración en texto. Sin inventar x-x alternado.
 """
 from dsl import INSTS, compas, score, seccion, unisono
 
 TITULO = 'Solo de Surdos (Malamakuá)'
 MATCH = {'año': 3, 'orden': 10, 'nombre': 'Solo de Surdos (Malamakuá)'}
+PDF_PAGES = [52]
 
 V = '------------'
 
@@ -32,41 +32,41 @@ solo = [
     surdos('t=--x-x=t=--'),
     surdos('x=x-x=--t=--'),
     surdos('t=--x=--t=x-'),
-    surdos('x-x-x-x-x-x-',
-           texto='Cierre en 4/4 en el cuadernillo (cresc. p → f)',
+    surdos('x=x=x=x=x=x=',
+           texto='Cierre en 4/4 en el cuadernillo (cresc. p → f) — … revisar',
            dyn='p', repeat_end=True),
 ]
 
 # ------------------------------------------------ Entrada al acompañamiento
 entrada = [
     c(re='-x=--x=-x=--', ti='-x=--x=-x=--', rp='-x=--x=-x=--',
-      texto='Entrada al acompañamiento', dyn='mf'),
-    c(re='x=----x-x=--', ti='x=----x-x=--', rp='x-x-x-x-x=--'),
+      texto='Entrada al acompañamiento — … revisar con la escuela', dyn='mf'),
+    c(re='x=----x=x=--', ti='x=----x=x=--', rp='x=x=x=x=x=--'),
 ]
 
 # ---------------------------------------------------- Acompañamiento de surdos
 acompanamiento = [
-    c(re='>x=>x=>x=>x=', ti='x=x-x=x-x=--', rp='x-x=x-x=x-x=',
-      repeat_begin=True, texto='Acompañamiento de surdos', dyn='mf'),
-    c(re='>x=>x=>x=>xx', ti='x=--x-x=x=--', rp='x-x=x-xxx-x=',
+    c(re='>x=>x=>x=>x=', ti='x=x=x=x=x=--', rp='x=x=x=x=x=x=',
+      repeat_begin=True,
+      texto='Acompañamiento de surdos — … revisar con la escuela', dyn='mf'),
+    c(re='>x=>x=>x=>xx', ti='x=--x=x=x=--', rp='x=x=x=xxx-x=',
       repeat_end=True),
 ]
 
 # --------------------------------------- Después de la repetición de surdos
 despues = [
-    c(re='x-x-x-x-x-x-', ti='x-x-x-x-x-x-', rp='x-x-x-x-x-x-',
-      texto='Después de repetición de surdos (4/4 en el cuadernillo) — p → f',
+    c(re='x=x=x=x=x=x=', ti='x=x=x=x=x=x=', rp='x=x=x=x=x=x=',
+      texto='Después de repetición (4/4 en PDF) — p → f — … revisar',
       dyn='p'),
-    surdos('x-x-x-x-x-x-', texto='Surdos grave, agudo y medio — p → f',
+    surdos('x=x=x=x=x=x=', texto='Surdos grave, agudo y medio — p → f',
            dyn='p'),
 ]
 
 # ------------------------------------------------------------ Llamada final
-# Voz "Todos": unísono estricto en un solo pentagrama.
 llamada_final = [
-    compas(unisono('-x=-x=-x-x=-'), grid=12, num=6, den=8,
-           texto='Llamada final — todos', dyn='f'),
-    compas(unisono('x=--x-x-x=--'), grid=12, num=6, den=8),
+    compas(unisono('-x=-x=-x=x=-'), grid=12, num=6, den=8,
+           texto='Llamada final — todos — … revisar con la escuela', dyn='f'),
+    compas(unisono('x=--x=x=x=--'), grid=12, num=6, den=8),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [

@@ -1,26 +1,27 @@
-"""Solo de Tambores (Chiruda) — Cuadernillo (PDF pág. 39).
+"""Solo de Tambores (Chiruda) — Cuadernillo pág. 36 (PDF pág. 39).
 
-Escrito en un solo pentagrama para todos los tambores. El cuadernillo pasa a
-6/8 en el tramo central y vuelve a 4/4; acá se mantiene 4/4 y ese tramo se
-escribe en corcheas, aclarado en el texto del compás.
+Unísono estricto (voz Todos). Acentos en 1ª de cada tiempo (escritura de escuela).
+Tramo 6/8 del original → corcheas, aclarado en texto.
 """
 from dsl import SURDOS, compas, score, seccion, unisono
 
 TITULO = 'Solo de Tambores (Chiruda)'
 MATCH = {'año': 3, 'orden': 4, 'nombre': 'Solo de redoblantes (Chiruda)'}
+PDF_PAGES = [39]
 
 INST = SURDOS + ['redoblante', 'repique']
 
+# Escuela: 16 semis, acento en 1ª de cada tiempo (no xx-x inventado)
 A = '>xxx>xxx>xxx>xxx'
-B = 'x>xxx>xxx>xxx>xx'
-C = '>xx>x>xxx>xx>x>x'
+B = '>xxx>xxx>xxx>xxx'
+C = '>xx>xx>xx>xx>xxx'   # variante con acento ternario si el PDF lo marca
 D = 'xx>>xx>>xx>>xx>>'
 E = '>xxxx>xx>xxxx>xx'
-OCHOS = '>=x=>=x=>=x=>=x='
-OCHOS2 = 'x=>=x=>=x=>=x=>='
+OCHOS = 'x=x=x=x=x=x=x=x='   # tramo 6/8 → 8 corcheas
+OCHOS2 = 'x=x=x=x=x=x=x=x='
 
 BLOQUES = [
-    (A, 'Solo de tambores', 'f'),
+    (A, 'Solo de tambores — … revisar con la escuela (acentos finos)', 'f'),
     (B, None, None),
     (C, None, None),
     (D, None, None),
@@ -41,7 +42,6 @@ BLOQUES = [
     ('o===============', None, 'f'),
 ]
 
-# Un solo pentagrama: unísono estricto de todos los tambores (voz "Todos").
 solo = [
     compas(unisono(pat), texto=texto, dyn=dyn)
     for pat, texto, dyn in BLOQUES

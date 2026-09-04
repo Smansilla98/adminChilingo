@@ -1,13 +1,13 @@
-"""La Meta — Cuadernillo (PDF pág. 43-49).
+"""La Meta — Cuadernillo págs. 40-46 (PDF págs. 43-49).
 
-Recopilación: Luciano Molina - Pablo Cuffia (Bloque Lunes Saavedra).
-Las llamadas y cortes están escritos con sextillos muy densos: se transcribe
-la lectura más probable, aproximando los pasajes ilegibles del escaneo.
+Transcripción literal donde se lee. Sextillos/llamadas densas del escaneo
+→ texto='… revisar con la escuela' (no inventar xx-x).
 """
 from dsl import INSTS, VACIO, compas, score, seccion
 
 TITULO = 'La Meta'
 MATCH = {'año': 4, 'orden': 2, 'nombre': 'La Meta'}
+PDF_PAGES = [43, 44, 45, 46, 47, 48, 49]
 
 V = VACIO
 
@@ -23,7 +23,7 @@ MARCHA = '--t---t---t---t-'
 introduccion_1 = [
     c(ti='6(x-x-xo)6(x-x-xo)6(xxxx-x)6(o-x-x-)',
       sg=MARCHA, sa=MARCHA, sm=MARCHA, re=MARCHA, rp=MARCHA,
-      texto='Introducción 1 — timbal en sextillos, resto marcando', dyn='mf'),
+      texto='Introducción 1 — … revisar con la escuela (sextillos)', dyn='mf'),
     c(ti='6(x-xx-x)6(x-x-xo)6(xxxxxx)6(x-x-x-)',
       sg=MARCHA, sa=MARCHA, sm=MARCHA, re=MARCHA, rp=MARCHA),
 ]
@@ -33,7 +33,7 @@ llamada_timbal = [
     c(rp='6(-x-x-x)6(-xx-xx)6(xx-xxx)6(x-xx-x)',
       sm='--x---x-----6(xxx-x-)',
       sg=MARCHA, sa=MARCHA,
-      texto='Llamada (sobre timbal)', dyn='f'),
+      texto='Llamada (sobre timbal) — … revisar con la escuela', dyn='f'),
     c(rp='6(-x-x-x)6(x-xx-x)6(xxx-xx)6(x-x---)',
       sm='--x-6(xxx---)--x---x-',
       sg=MARCHA, sa=MARCHA),
@@ -51,7 +51,7 @@ corte_1 = [
       re='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
       rp='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
       ti='6(x-oxox)6(xoxox-)6(x-oxox)6(xoxox-)',
-      texto='Corte — todos en sextillos', dyn='f'),
+      texto='Corte — … revisar con la escuela (sextillos)', dyn='f'),
     c(sg='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
       sa='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
       sm='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',

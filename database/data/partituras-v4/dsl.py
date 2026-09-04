@@ -1,9 +1,22 @@
 #!/usr/bin/env python3
 """DSL de grilla para escribir las partituras del Cuadernillo en el modelo v4.
 
-Modelo v4: TPQ = 48 ticks por negra. Cada compás es una lista de notas por
-instrumento (`voces`). Este DSL escribe cada compás como una grilla de
-semicorcheas (16 por compás de 4/4) o de fusas (`grid=32`).
+Fuente de duraciones: hoja «Equivalencias» del Cuadernillo
+(revision/EQUIVALENCIAS.md). TPQ = 48 ticks = 1 negra = 1 tiempo.
+
+Grilla por defecto = 16 → cada celda es una SEMICORCHEA (1/4 tiempo).
+Con `grid=32` cada celda es una FUSA (1/8 tiempo).
+
+Equivalencias → tokens (grilla 16)
+----------------------------------
+  Redonda  4 tiempos   x===============     silencio ----------------
+  Blanca   2 tiempos   x=======             silencio --------
+  Negra    1 tiempo    x===                 silencio ----
+  Corchea  1/2         x=                   silencio --
+  Semicorchea 1/4      x                    silencio -
+  Fusa     1/8         (usar grid=32)
+
+Barras (como en la hoja): 2 corcheas / 4 semis / 8 fusas por tiempo.
 
 Tokens
 ------
@@ -19,22 +32,28 @@ Tokens
 
 Convenciones del Cuadernillo respetadas por este DSL
 ----------------------------------------------------
-* Los nombres de sección se imprimen en MAYÚSCULAS (lo hace `seccion()`), igual
-  que los encabezados del cuadernillo. La cantidad de compases la muestra el
-  renderer al lado del nombre, no se escribe en el nombre.
-* La voz "Todos" del cuadernillo es un **unísono estricto**: se escribe una sola
-  vez, con `unisono(pat)` sobre el instrumento virtual `todos`, y no se replica
-  en los pentagramas de cada instrumento. `score()` agrega `todos` a la lista de
-  instrumentos cuando alguna voz lo usa.
+* No inventar `xx-x`: si el PDF muestra corcheas o grupos de 4 semis, escribirlos
+  con las figuras de Equivalencias (`x=` / `xxxx`), no con silencios inventados.
+* Preferir la figura más grande que represente la duración exacta.
+* Los nombres de sección se imprimen en MAYÚSCULAS (lo hace `seccion()`).
+* La voz "Todos" es unísono estricto vía `unisono(...)` / instrumento `todos`.
 * `×N` va en `section.repeatX`, nunca expandido en compases reales.
-* Tempos: el repertorio de La Chilinga se toca entre ~80 y ~90 bpm (percusión de
-  calle, tempo de marcha). Ningún toque debería salir de esa franja salvo que el
-  cuadernillo indique otra cosa.
+* Tempos: ~80–90 bpm salvo indicación del cuadernillo.
 """
 import json
 import os
 
-TPQ = 48
+TPQ = 48  # 1 negra = 1 tiempo (Equivalencias)
+
+# Nombre escuela → (código v4, tiempos, celdas en grilla 16)
+EQUIVALENCIAS = {
+    'redonda': ('w', 4, 16),
+    'blanca': ('h', 2, 8),
+    'negra': ('q', 1, 4),
+    'corchea': ('8', 0.5, 2),
+    'semicorchea': ('16', 0.25, 1),
+    'fusa': ('32', 0.125, None),  # requiere grid=32
+}
 
 STROKES = {
     'x': 'nota', '>': 'acentuado', 'c': 'chapa', 't': 'tapado', 'o': 'abierto',
@@ -42,7 +61,7 @@ STROKES = {
     'r': 'presionado',
 }
 
-# ticks -> (duración, puntillos)
+# ticks -> (duración, puntillos) — derivado de Equivalencias + puntillos
 TICKS_DUR = {
     6: ('32', 0), 9: ('32', 1), 12: ('16', 0), 18: ('16', 1), 21: ('16', 2),
     24: ('8', 0), 36: ('8', 1), 42: ('8', 2), 48: ('q', 0), 72: ('q', 1),

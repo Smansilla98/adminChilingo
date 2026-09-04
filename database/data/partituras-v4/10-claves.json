@@ -18,12 +18,12 @@
   ],
   "sections": [
     {
-      "id": "s3820",
+      "id": "s3870",
       "name": "CLAVE DE SON 3-2",
       "repeatX": 2,
       "measures": [
         {
-          "id": "m3812",
+          "id": "m3862",
           "repeatBegin": true,
           "repeatEnd": false,
           "ending": null,
@@ -31,466 +31,26 @@
           "voces": {
             "agogo": [
               {
-                "id": "n3813",
-                "dur": "q",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3814",
-                "dur": "q",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3815",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        },
-        {
-          "id": "m3816",
-          "repeatBegin": false,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": null,
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3817",
-                "dur": "q",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3818",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3819",
-                "dur": "h",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "s3829",
-      "name": "CLAVE DE SON 2-3",
-      "repeatX": 2,
-      "measures": [
-        {
-          "id": "m3821",
-          "repeatBegin": true,
-          "repeatEnd": false,
-          "ending": null,
-          "texto": "Clave de Son (2-3)",
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3822",
-                "dur": "q",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3823",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3824",
-                "dur": "h",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        },
-        {
-          "id": "m3825",
-          "repeatBegin": false,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": null,
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3826",
-                "dur": "q",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3827",
-                "dur": "q",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3828",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "s3838",
-      "name": "CLAVE DE SON (1 COMPÁS)",
-      "repeatX": 2,
-      "measures": [
-        {
-          "id": "m3830",
-          "repeatBegin": true,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": "Clave de Son en 1 compás",
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3831",
-                "dur": "8",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3832",
-                "dur": "8",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3833",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3834",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3835",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3836",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3837",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "s3846",
-      "name": "CLAVE DE SON 2-3 (1 COMPÁS)",
-      "repeatX": 2,
-      "measures": [
-        {
-          "id": "m3839",
-          "repeatBegin": true,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": "Clave de Son 2-3 en 1 compás",
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3840",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3841",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3842",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3843",
-                "dur": "8",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3844",
-                "dur": "8",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3845",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "s3855",
-      "name": "CLAVE DE RUMBA 3-2",
-      "repeatX": 2,
-      "measures": [
-        {
-          "id": "m3847",
-          "repeatBegin": true,
-          "repeatEnd": false,
-          "ending": null,
-          "texto": "Clave de Rumba (3-2)",
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3848",
-                "dur": "q",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3849",
-                "dur": "h",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3850",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        },
-        {
-          "id": "m3851",
-          "repeatBegin": false,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": null,
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3852",
-                "dur": "q",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3853",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3854",
-                "dur": "h",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "s3864",
-      "name": "CLAVE DE RUMBA 2-3",
-      "repeatX": 2,
-      "measures": [
-        {
-          "id": "m3856",
-          "repeatBegin": true,
-          "repeatEnd": false,
-          "ending": null,
-          "texto": "Clave de Rumba (2-3)",
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3857",
-                "dur": "q",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3858",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3859",
-                "dur": "h",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        },
-        {
-          "id": "m3860",
-          "repeatBegin": false,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": null,
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3861",
-                "dur": "q",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3862",
-                "dur": "h",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
                 "id": "n3863",
-                "dur": "8",
+                "dur": "q",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3864",
+                "dur": "q",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3865",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -499,44 +59,28 @@
               }
             ]
           }
-        }
-      ]
-    },
-    {
-      "id": "s3871",
-      "name": "CLAVE DE RUMBA (1 COMPÁS)",
-      "repeatX": 2,
-      "measures": [
+        },
         {
-          "id": "m3865",
-          "repeatBegin": true,
+          "id": "m3866",
+          "repeatBegin": false,
           "repeatEnd": true,
           "ending": null,
-          "texto": "Clave de Rumba en 1 compás",
+          "texto": null,
           "voces": {
             "agogo": [
-              {
-                "id": "n3866",
-                "dur": "8",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
               {
                 "id": "n3867",
                 "dur": "q",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n3868",
-                "dur": "8",
-                "dots": 1,
+                "dur": "q",
+                "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
@@ -544,16 +88,7 @@
               },
               {
                 "id": "n3869",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3870",
-                "dur": "q",
+                "dur": "h",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -567,20 +102,20 @@
     },
     {
       "id": "s3879",
-      "name": "CLAVE DE RUMBA 2-3 (1 COMPÁS)",
+      "name": "CLAVE DE SON 2-3",
       "repeatX": 2,
       "measures": [
         {
-          "id": "m3872",
+          "id": "m3871",
           "repeatBegin": true,
-          "repeatEnd": true,
+          "repeatEnd": false,
           "ending": null,
-          "texto": "Clave de Rumba 2-3 en 1 compás",
+          "texto": "Clave de Son (2-3)",
           "voces": {
             "agogo": [
               {
-                "id": "n3873",
-                "dur": "8",
+                "id": "n3872",
+                "dur": "q",
                 "dots": 0,
                 "rest": true,
                 "stroke": "nota",
@@ -588,16 +123,7 @@
                 "tuplet": null
               },
               {
-                "id": "n3874",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3875",
+                "id": "n3873",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -606,8 +132,28 @@
                 "tuplet": null
               },
               {
+                "id": "n3874",
+                "dur": "h",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        },
+        {
+          "id": "m3875",
+          "repeatBegin": false,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": null,
+          "voces": {
+            "agogo": [
+              {
                 "id": "n3876",
-                "dur": "8",
+                "dur": "q",
                 "dots": 1,
                 "rest": false,
                 "stroke": "nota",
@@ -617,7 +163,7 @@
               {
                 "id": "n3877",
                 "dur": "q",
-                "dots": 0,
+                "dots": 1,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
@@ -625,7 +171,7 @@
               },
               {
                 "id": "n3878",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -639,21 +185,21 @@
     },
     {
       "id": "s3888",
-      "name": "CLAVE DE SAMBA 3-2",
+      "name": "CLAVE DE SON (1 COMPÁS)",
       "repeatX": 2,
       "measures": [
         {
           "id": "m3880",
           "repeatBegin": true,
-          "repeatEnd": false,
+          "repeatEnd": true,
           "ending": null,
-          "texto": "Clave de Samba (3-2)",
+          "texto": "Clave de Son en 1 compás",
           "voces": {
             "agogo": [
               {
                 "id": "n3881",
-                "dur": "q",
-                "dots": 0,
+                "dur": "8",
+                "dots": 1,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
@@ -661,7 +207,7 @@
               },
               {
                 "id": "n3882",
-                "dur": "q",
+                "dur": "8",
                 "dots": 1,
                 "rest": false,
                 "stroke": "nota",
@@ -670,27 +216,16 @@
               },
               {
                 "id": "n3883",
-                "dur": "q",
-                "dots": 1,
+                "dur": "8",
+                "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              }
-            ]
-          }
-        },
-        {
-          "id": "m3884",
-          "repeatBegin": false,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": null,
-          "voces": {
-            "agogo": [
+              },
               {
-                "id": "n3885",
-                "dur": "q",
+                "id": "n3884",
+                "dur": "8",
                 "dots": 0,
                 "rest": true,
                 "stroke": "nota",
@@ -698,8 +233,17 @@
                 "tuplet": null
               },
               {
+                "id": "n3885",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
                 "id": "n3886",
-                "dur": "q",
+                "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -708,6 +252,161 @@
               },
               {
                 "id": "n3887",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3896",
+      "name": "CLAVE DE SON 2-3 (1 COMPÁS)",
+      "repeatX": 2,
+      "measures": [
+        {
+          "id": "m3889",
+          "repeatBegin": true,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": "Clave de Son 2-3 en 1 compás",
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3890",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3891",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3892",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3893",
+                "dur": "8",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3894",
+                "dur": "8",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3895",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3905",
+      "name": "CLAVE DE RUMBA 3-2",
+      "repeatX": 2,
+      "measures": [
+        {
+          "id": "m3897",
+          "repeatBegin": true,
+          "repeatEnd": false,
+          "ending": null,
+          "texto": "Clave de Rumba (3-2)",
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3898",
+                "dur": "q",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3899",
+                "dur": "h",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3900",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        },
+        {
+          "id": "m3901",
+          "repeatBegin": false,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": null,
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3902",
+                "dur": "q",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3903",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3904",
                 "dur": "h",
                 "dots": 0,
                 "rest": false,
@@ -721,20 +420,20 @@
       ]
     },
     {
-      "id": "s3897",
-      "name": "CLAVE DE SAMBA 2-3",
+      "id": "s3914",
+      "name": "CLAVE DE RUMBA 2-3",
       "repeatX": 2,
       "measures": [
         {
-          "id": "m3889",
+          "id": "m3906",
           "repeatBegin": true,
           "repeatEnd": false,
           "ending": null,
-          "texto": "Clave de Samba (2-3)",
+          "texto": "Clave de Rumba (2-3)",
           "voces": {
             "agogo": [
               {
-                "id": "n3890",
+                "id": "n3907",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -743,7 +442,7 @@
                 "tuplet": null
               },
               {
-                "id": "n3891",
+                "id": "n3908",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -752,7 +451,7 @@
                 "tuplet": null
               },
               {
-                "id": "n3892",
+                "id": "n3909",
                 "dur": "h",
                 "dots": 0,
                 "rest": false,
@@ -764,7 +463,7 @@
           }
         },
         {
-          "id": "m3893",
+          "id": "m3910",
           "repeatBegin": false,
           "repeatEnd": true,
           "ending": null,
@@ -772,8 +471,17 @@
           "voces": {
             "agogo": [
               {
-                "id": "n3894",
+                "id": "n3911",
                 "dur": "q",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3912",
+                "dur": "h",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -781,79 +489,7 @@
                 "tuplet": null
               },
               {
-                "id": "n3895",
-                "dur": "q",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3896",
-                "dur": "q",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "s3904",
-      "name": "CLAVE DE SAMBA (1 COMPÁS)",
-      "repeatX": 2,
-      "measures": [
-        {
-          "id": "m3898",
-          "repeatBegin": true,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": "Clave de Samba en 1 compás",
-          "voces": {
-            "agogo": [
-              {
-                "id": "n3899",
-                "dur": "8",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3900",
-                "dur": "8",
-                "dots": 1,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3901",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3902",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n3903",
+                "id": "n3913",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -867,20 +503,47 @@
       ]
     },
     {
-      "id": "s3912",
-      "name": "CLAVE DE SAMBA 2-3 (1 COMPÁS)",
+      "id": "s3922",
+      "name": "CLAVE DE RUMBA (1 COMPÁS)",
       "repeatX": 2,
       "measures": [
         {
-          "id": "m3905",
+          "id": "m3915",
           "repeatBegin": true,
           "repeatEnd": true,
           "ending": null,
-          "texto": "Clave de Samba 2-3 en 1 compás",
+          "texto": "Clave de Rumba en 1 compás — … revisar con la escuela",
           "voces": {
             "agogo": [
               {
-                "id": "n3906",
+                "id": "n3916",
+                "dur": "8",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3917",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3918",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3919",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -889,7 +552,61 @@
                 "tuplet": null
               },
               {
-                "id": "n3907",
+                "id": "n3920",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3921",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3930",
+      "name": "CLAVE DE RUMBA 2-3 (1 COMPÁS)",
+      "repeatX": 2,
+      "measures": [
+        {
+          "id": "m3923",
+          "repeatBegin": true,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": "Clave de Rumba 2-3 en 1 compás",
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3924",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3925",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3926",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -898,7 +615,299 @@
                 "tuplet": null
               },
               {
-                "id": "n3908",
+                "id": "n3927",
+                "dur": "8",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3928",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3929",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3939",
+      "name": "CLAVE DE SAMBA 3-2",
+      "repeatX": 2,
+      "measures": [
+        {
+          "id": "m3931",
+          "repeatBegin": true,
+          "repeatEnd": false,
+          "ending": null,
+          "texto": "Clave de Samba (3-2)",
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3932",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3933",
+                "dur": "q",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3934",
+                "dur": "q",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        },
+        {
+          "id": "m3935",
+          "repeatBegin": false,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": null,
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3936",
+                "dur": "q",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3937",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3938",
+                "dur": "h",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3948",
+      "name": "CLAVE DE SAMBA 2-3",
+      "repeatX": 2,
+      "measures": [
+        {
+          "id": "m3940",
+          "repeatBegin": true,
+          "repeatEnd": false,
+          "ending": null,
+          "texto": "Clave de Samba (2-3)",
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3941",
+                "dur": "q",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3942",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3943",
+                "dur": "h",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        },
+        {
+          "id": "m3944",
+          "repeatBegin": false,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": null,
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3945",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3946",
+                "dur": "q",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3947",
+                "dur": "q",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3955",
+      "name": "CLAVE DE SAMBA (1 COMPÁS)",
+      "repeatX": 2,
+      "measures": [
+        {
+          "id": "m3949",
+          "repeatBegin": true,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": "Clave de Samba en 1 compás",
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3950",
+                "dur": "8",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3951",
+                "dur": "8",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3952",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3953",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3954",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3963",
+      "name": "CLAVE DE SAMBA 2-3 (1 COMPÁS)",
+      "repeatX": 2,
+      "measures": [
+        {
+          "id": "m3956",
+          "repeatBegin": true,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": "Clave de Samba 2-3 en 1 compás",
+          "voces": {
+            "agogo": [
+              {
+                "id": "n3957",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3958",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n3959",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -907,7 +916,7 @@
                 "tuplet": null
               },
               {
-                "id": "n3909",
+                "id": "n3960",
                 "dur": "8",
                 "dots": 1,
                 "rest": false,
@@ -916,7 +925,7 @@
                 "tuplet": null
               },
               {
-                "id": "n3910",
+                "id": "n3961",
                 "dur": "8",
                 "dots": 1,
                 "rest": false,
@@ -925,7 +934,7 @@
                 "tuplet": null
               },
               {
-                "id": "n3911",
+                "id": "n3962",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,

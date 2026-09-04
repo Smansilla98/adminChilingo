@@ -1,10 +1,15 @@
-"""Malambo en Comparsa — Cuadernillo (PDF pág. 34). Compás de 6/8."""
+"""Malambo en Comparsa — Cuadernillo pág. 31 (PDF pág. 34). Compás de 6/8.
+
+Transcripción literal del PDF (figuras = escritura de la escuela).
+Grilla de 12 (2 celdas = corchea en 6/8).
+"""
 from dsl import INSTS, compas, score, seccion
 
 TITULO = 'Malambo en Comparsa'
 MATCH = {'año': 2, 'orden': 9, 'nombre': 'Malambo en Comparsa'}
+PDF_PAGES = [34]
 
-V = '------------'          # 6/8 → grilla de 12 semicorcheas
+V = '------------'
 
 
 def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
@@ -13,28 +18,35 @@ def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
                   grid=12, num=6, den=8, **kw)
 
 
-# --------------------------------------- Llamada inicial, intermedia y final
-LL_RP = ['--x===x=x=x=', '--x===x=x=x=', '--x===x=x=x=', V, '--x===x=x-x-']
-LL_SU = [V, 'x=====------', 'x=====------', 'x-x-x=------', 'x=====------']
+# --- LLAMADA
+# Repique: sil.corchea · corchea · sil.corchea · 3 corcheas  → --x=--x=x=x=
+# m4 silencio · m5: (sil.corchea · corchea) × 3
+# Surdos: m2–m3 grave negra c/punto; m4 frase por altura; m5 medio
+LL_RP = ['--x=--x=x=x=', '--x=--x=x=x=', '--x=--x=x=x=', V, '--x=--x=--x=']
+LL_SG = [V, 'x=====------', 'x=====------', 'x=--x=------', V]
+LL_SM = [V, V, V, '----x=--x=--', 'x=====------']
+LL_SA = [V, V, V, '------x=----', V]
 
-def llamada():
+
+def llamada(texto='Llamada inicial, intermedia y final'):
     return [
-        c(rp=LL_RP[i], sg=LL_SU[i], sa=LL_SU[i], sm=LL_SU[i],
-          texto='Llamada inicial, intermedia y final' if i == 0 else None,
+        c(rp=LL_RP[i], sg=LL_SG[i], sa=LL_SA[i], sm=LL_SM[i],
+          texto=texto if i == 0 else None,
           dyn='f' if i == 0 else None)
         for i in range(5)
     ]
 
-# ------------------------------------------------------------------------ Toque
+
+# --- TOQUE
 SU = 't=-xt=x=x=--'
 SU2 = 't=-xt=x=x-x-'
 RE = '>xx>xx>xx>xx'
 TI = 'xxx-xxx-xx--'
-RP = '------x====='
 
 toque = [
-    c(sg=SU, sa=SU, sm=SU, re=RE, rp=RP, ti=TI,
-      repeat_begin=True, texto='Toque', dyn='mf'),
+    c(sg=SU, sa=SU, sm=SU, re=RE, rp='------x=====', ti=TI,
+      repeat_begin=True,
+      texto='Toque — … revisar con la escuela (timbal/repique)', dyn='mf'),
     c(sg=SU2, sa=SU2, sm=SU2, re=RE, rp='--x---x=====', ti=TI,
       repeat_end=True),
 ]
@@ -42,5 +54,5 @@ toque = [
 SCORE = score(TITULO, 'La Chilinga', 90, INSTS, [
     seccion('Llamada inicial', llamada(), 1),
     seccion('Toque', toque, 8),
-    seccion('Llamada final', llamada(), 1),
+    seccion('Llamada final', llamada('Llamada final'), 1),
 ], num=6, den=8)

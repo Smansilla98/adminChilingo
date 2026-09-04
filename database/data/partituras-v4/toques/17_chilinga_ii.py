@@ -1,39 +1,45 @@
-"""Chilinga II — Cuadernillo (PDF pág. 36).
+"""Chilinga II — Cuadernillo pág. 33 (PDF pág. 36).
 
-El toque está escrito con figuración densa (fusas y grupos de seis); la
-transcripción usa grilla de fusas (grid=32) y aproxima los pasajes más densos.
+Transcripción literal del PDF: semis de a 4 (grilla 16), no fusas inventadas.
+Golpes abajo/arriba de la línea y acentos finos: revisar con la escuela.
 """
 from dsl import INSTS, compas, score, seccion
 
 TITULO = 'Chilinga II'
 MATCH = {'año': 5, 'orden': 2, 'nombre': 'Chilinga II'}
+PDF_PAGES = [36]
 
-V = '-' * 32
+# Surdos: 16 semis (2 abajo + 2 en línea por tiempo ≈ tapado/nota)
+SU = 'ttxxttxxttxxttxx'
+# Redoblante: 16 semis
+RE = 'xxxxxxxxxxxxxxxx'
+# Timbal: (2 semis + corchea) × 4 — cabezas mixtas ≈ nota/abierto
+TI = 'xxo=xxo=xxo=xxo='
+# Repique: (2 tapado + 2 nota) × 4
+RP = 'ttxxttxxttxxttxx'
 
-
-def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
-    return compas({'surdo_grave': sg, 'surdo_agudo': sa, 'surdo_medio': sm,
-                   'redoblante': re, 'repique': rp, 'timbal': ti},
-                  grid=32, **kw)
-
-
-SU = 'x-xxx-x-' * 4
-SU2 = 'x-xx-xx-' * 4
-RE = 'x>xx>>xx' * 4
-RE_FILL = 'x>xx>>xx' * 3 + 'x>xx--x-'
-TI = 'xxx-x=--' * 4
-TI2 = 'xxx-x=--' * 2 + 'x=--x=--x=--x=--'
-RP = 'x-xx-xx-' * 4
-RP2 = 'x-xx-xx-' * 3 + 'xxxx-xx-'
+# Cierre del último compás: 12 semis + corchea c/punto + semi
+SU_END = 'ttxxttxxttxxx==x'
+RE_END = 'xxxxxxxxxxxx' + 'x==x'
+TI_END = 'xxo=xxo=x-o=x-o='
+RP_END = 'ttxxttxxt-x=t-x='
 
 toque = [
-    c(sg=SU, sa=SU, sm=SU, re=RE, ti=TI, rp=RP,
-      repeat_begin=True, ending=1, texto='Toque — repetición 1', dyn='mf'),
-    c(sg=SU2, sa=SU2, sm=SU2, re=RE, ti=TI, rp=RP,
-      ending=2, texto='Repetición 2'),
-    c(sg=SU, sa=SU, sm=SU, re=RE, ti=TI2, rp=RP),
-    c(sg=SU2, sa=SU2, sm=SU2, re=RE, ti=TI, rp=RP2),
-    c(sg=SU, sa=SU, sm=SU, re=RE_FILL, ti=TI2, rp=RP2, repeat_end=True),
+    compas({'surdo_grave': SU, 'surdo_agudo': SU, 'surdo_medio': SU,
+            'redoblante': RE, 'timbal': TI, 'repique': RP},
+           repeat_begin=True, ending=1,
+           texto='Toque — … revisar con la escuela (cabezas/acentos)', dyn='mf'),
+    compas({'surdo_grave': SU, 'surdo_agudo': SU, 'surdo_medio': SU,
+            'redoblante': RE, 'timbal': TI, 'repique': RP},
+           ending=2),
+    compas({'surdo_grave': SU, 'surdo_agudo': SU, 'surdo_medio': SU,
+            'redoblante': RE, 'timbal': TI, 'repique': RP}),
+    compas({'surdo_grave': SU, 'surdo_agudo': SU, 'surdo_medio': SU,
+            'redoblante': RE, 'timbal': TI, 'repique': RP}),
+    compas({'surdo_grave': SU_END, 'surdo_agudo': SU_END, 'surdo_medio': SU_END,
+            'redoblante': RE_END, 'timbal': TI_END, 'repique': RP_END},
+           repeat_end=True,
+           texto='Cierre — … revisar con la escuela'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [

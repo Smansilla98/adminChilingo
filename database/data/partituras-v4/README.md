@@ -32,9 +32,26 @@ si el JSON del repo cambió: los cambios definitivos van al `.py`, el editor es 
 
 * `generar.py` — importa los módulos, valida y escribe `NN-slug.json` + `manifest.json`.
 
+## Equivalencias (fuente de duraciones)
+
+La hoja **Equivalencias** del cuadernillo (pág. 1) es la referencia obligatoria
+para figuras y silencios. Detalle: [`revision/EQUIVALENCIAS.md`](revision/EQUIVALENCIAS.md)
+(imagen: `revision/equivalencias.png`).
+
+| Figura | Tiempos | Token grilla 16 | Barras |
+| --- | --- | --- | --- |
+| Redonda | 4 | `x===============` | — |
+| Blanca | 2 | `x=======` | — |
+| Negra | 1 | `x===` | — |
+| Corchea | 1/2 | `x=` | de a 2 |
+| Semicorchea | 1/4 | `x` | de a 4 |
+| Fusa | 1/8 | `grid=32` | de a 8 |
+
+No inventar patrones tipo `xx-x`: escribir la figura que declara el PDF.
+
 ## Modelo
 
-* Modelo v4 del editor (`resources/js/partitura/model.js` + `app/Support/PartituraScore.php`). TPQ = 48.
+* Modelo v4 del editor (`resources/js/partitura/model.js` + `app/Support/PartituraScore.php`). TPQ = 48 (= 1 negra = 1 tiempo).
 
 * Una sola `timeSignature` por partitura. Los toques en 6/8 (Malamakuá y Solo de Surdos) usan grilla de 12 semicorcheas; los compases de 2/4 o de 4/4 intercalados en toques de otro compás se escriben adaptados y se aclara en el campo `texto` del compás.
 
