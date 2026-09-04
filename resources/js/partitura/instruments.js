@@ -87,8 +87,9 @@ export const GOLPES = {
         cabeza: 'x', articulacion: null, pos: 3, gain: 1.15, timbre: 'aro', tipoGolpe: 'slap',
     },
     palma: {
-        id: 'palma', label: 'Palma', short: '○',
-        cabeza: 'circled', articulacion: 'ao', pos: 3, gain: 0.9, timbre: 'palma', tipoGolpe: 'palma',
+        id: 'palma', label: 'Palma', short: '◆',
+        // Cuadernillo: cabeza en rombo (Timbal)
+        cabeza: 'diamond', articulacion: null, pos: 4, gain: 0.9, timbre: 'palma', tipoGolpe: 'palma',
     },
     dedo: {
         id: 'dedo', label: 'Dedos', short: '✕',

@@ -84,7 +84,9 @@ if [ "${RUN_SEED:-0}" = "1" ]; then
     php artisan db:seed --force --no-interaction || true
 fi
 
-# Partituras v4: regenerar JSON desde los .py y cargar seeders si faltan
+# Partituras v4: regenerar JSON desde los .py y cargar/actualizar en la DB.
+# --force por defecto: los JSON del repo son la fuente de verdad (figuras del
+# cuadernillo). Para no pisar ediciones hechas en el editor: PARTITURAS_BOOTSTRAP_FORCE=0
 PARTITURAS_PY="database/data/partituras-v4/generar.py"
 if [ -f "$PARTITURAS_PY" ]; then
     echo "=== Partituras v4 (Python + seeders) ==="
@@ -94,9 +96,11 @@ if [ -f "$PARTITURAS_PY" ]; then
         echo "⚠️  python3 no está instalado; se usan los JSON ya generados."
     fi
     PARTITURAS_BOOTSTRAP_ARGS="--no-interaction"
-    if [ "${PARTITURAS_BOOTSTRAP_FORCE:-0}" = "1" ]; then
+    if [ "${PARTITURAS_BOOTSTRAP_FORCE:-1}" != "0" ]; then
         PARTITURAS_BOOTSTRAP_ARGS="$PARTITURAS_BOOTSTRAP_ARGS --force"
-        echo "(PARTITURAS_BOOTSTRAP_FORCE=1: recarga todas las partituras v4)"
+        echo "(partituras:bootstrap --force: recarga desde JSON v4)"
+    else
+        echo "(PARTITURAS_BOOTSTRAP_FORCE=0: solo actualiza si falta o cambió el hash)"
     fi
     php artisan partituras:bootstrap $PARTITURAS_BOOTSTRAP_ARGS || echo "⚠️  Seeders de partituras fallaron. El servidor arranca igual."
 fi
