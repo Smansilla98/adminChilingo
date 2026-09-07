@@ -48,11 +48,13 @@ export const INSTRUMENTOS_DEFAULT = ['surdo_grave', 'surdo_agudo', 'surdo_medio'
 
 /**
  * Cabezas según nomenclatura La Chilinga:
- * - Abierto / nota: óvalo negro
- * - Slap / tapado (timbal) / chapa: X
- * - Palma: círculo vacío (o)
- * - Presionado: nota + barra
+ * - Abierto / nota / palma: óvalo negro
+ * - Chapa / dedo: X
+ * - Slap (timbal): círculo vacío
+ * - Presionado: nota + barra debajo
+ * - Tapado (surdo): nota + barra encima
  * - Acentuado: nota + >
+ * - Agudo (repique): triángulo
  */
 /** @type {Record<string, Golpe>} */
 export const GOLPES = {
@@ -79,17 +81,18 @@ export const GOLPES = {
     },
     abierto: {
         id: 'abierto', label: 'Abierto', short: '●',
-        // Timbal: óvalo negro (el círculo vacío es Palma).
+        // Timbal: óvalo negro (el círculo vacío es slap).
         cabeza: 'normal', articulacion: null, pos: 3, gain: 1.1, timbre: 'golpe', tipoGolpe: 'abierto',
     },
     slap: {
-        id: 'slap', label: 'Slap / tapado', short: '✕',
-        cabeza: 'x', articulacion: null, pos: 3, gain: 1.15, timbre: 'aro', tipoGolpe: 'slap',
+        id: 'slap', label: 'Slap', short: '○',
+        // Hoja Nomenclatura: círculo vacío pequeño.
+        cabeza: 'circled', articulacion: null, pos: 3, gain: 1.15, timbre: 'aro', tipoGolpe: 'slap',
     },
     palma: {
-        id: 'palma', label: 'Palma', short: '◆',
-        // Cuadernillo: cabeza en rombo (Timbal)
-        cabeza: 'diamond', articulacion: null, pos: 4, gain: 0.9, timbre: 'palma', tipoGolpe: 'palma',
+        id: 'palma', label: 'Palma', short: '●',
+        // Hoja Nomenclatura: óvalo negro (posición baja).
+        cabeza: 'normal', articulacion: null, pos: 4, gain: 0.9, timbre: 'palma', tipoGolpe: 'palma',
     },
     dedo: {
         id: 'dedo', label: 'Dedos', short: '✕',
@@ -174,7 +177,7 @@ export function sistemasVisuales(insts) {
     push(['surdo_grave']);
     push(['surdo_agudo']);
     push(['surdo_medio']);
-    push(['redoblante', 'repique'], 'Redoblante / Repique');
+    push(['redoblante', 'repique'], 'Redoblante y Repique');
     push(['timbal']);
     push(['agogo']);
     push(['palmas']);

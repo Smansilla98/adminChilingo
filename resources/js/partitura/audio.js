@@ -8,6 +8,18 @@ import {
 } from './model.js';
 import { bancoSamples } from './samples.js';
 
+/** Dispersión micro determinística en el unísono (ms → s). Evita suma en fase. */
+const UNISON_OFFSET = {
+    surdo_grave: 0,
+    surdo_medio: 0.004,
+    surdo_agudo: 0.007,
+    redoblante: 0.003,
+    repique: 0.006,
+    timbal: 0.008,
+    agogo: 0.005,
+    palmas: 0.002,
+};
+
 export class MotorAudio {
     constructor() {
         /** @type {AudioContext|null} */
@@ -29,6 +41,7 @@ export class MotorAudio {
         this._offset = 0;
         this._duration = 0;
         this._measureStarts = [];
+        this._countInSec = 0;
         this.estadoSamples = { listos: 0, faltan: 0, total: 0, missing: [] };
     }
 
@@ -37,8 +50,15 @@ export class MotorAudio {
             const AC = window.AudioContext || window.webkitAudioContext;
             this.ctx = new AC();
             this.master = this.ctx.createGain();
-            this.master.gain.value = 0.9;
-            this.master.connect(this.ctx.destination);
+            this.master.gain.value = 0.75;
+            this.limiter = this.ctx.createDynamicsCompressor();
+            this.limiter.threshold.value = -14;
+            this.limiter.knee.value = 12;
+            this.limiter.ratio.value = 8;
+            this.limiter.attack.value = 0.003;
+            this.limiter.release.value = 0.16;
+            this.master.connect(this.limiter);
+            this.limiter.connect(this.ctx.destination);
         }
         if (this.ctx.state === 'suspended') await this.ctx.resume();
         return this.ctx;
@@ -107,7 +127,7 @@ export class MotorAudio {
 
     /**
      * @param {object} score
-     * @param {{ desde?: {sectionIdx:number, measureIdx:number}, soloSeccion?: number|null, loop?: boolean, offsetSec?: number }} [opts]
+     * @param {{ desde?: {sectionIdx:number, measureIdx:number}, soloSeccion?: number|null, loop?: boolean, offsetSec?: number, countIn?: boolean }} [opts]
      */
     async play(score, opts = {}) {
         await this.asegurarContexto();
@@ -130,6 +150,7 @@ export class MotorAudio {
         this._offset = opts.offsetSec || 0;
         this._duration = plan.duration;
         this._measureStarts = plan.measureStarts;
+        this._countInSec = plan.countInSec || 0;
         this._loop = !!opts.loop;
         this._playOpts = opts;
         this._score = score;
@@ -141,7 +162,12 @@ export class MotorAudio {
             if (t < this.ctx.currentTime - 0.02) return;
             if (ev.tipo === 'nota') {
                 const destinos = ev.instrument === UNISONO ? vocesDeUnisono(score) : [ev.instrument];
-                destinos.forEach((id) => this._dispararGolpe(id, ev.articulation, t, ev.velocity));
+                const n = destinos.length;
+                const comp = n > 1 ? 1 / Math.sqrt(n) : 1;
+                destinos.forEach((id) => {
+                    const dt = n > 1 ? (UNISON_OFFSET[id] || 0) : 0;
+                    this._dispararGolpe(id, ev.articulation, t + dt, ev.velocity * comp);
+                });
             } else if (ev.tipo === 'click') {
                 this._click(t, ev.fuerte);
             }
@@ -195,24 +221,44 @@ export class MotorAudio {
                 measureIdx: ev.measureIdx,
             }));
 
+        const porPulso = Math.round((TPQ * 4) / (score.timeSignature.den || 4));
+        const pulsos = score.timeSignature.num || 4;
+        const countIn = opts.countIn !== false && !(opts.offsetSec > 0);
+        const countInSec = countIn ? segundosDeTicks(cap, bpm) : 0;
+
         const clicks = [];
+        if (countIn) {
+            for (let p = 0; p < pulsos; p++) {
+                clicks.push({
+                    tipo: 'click',
+                    musicalSec: segundosDeTicks(p * porPulso, bpm),
+                    fuerte: p === 0,
+                    countIn: true,
+                });
+            }
+        }
         if (this.metronomo) {
-            const porPulso = Math.round((TPQ * 4) / (score.timeSignature.den || 4));
             timeline.forEach((pos, mi) => {
-                for (let p = 0; p < (score.timeSignature.num || 4); p++) {
+                for (let p = 0; p < pulsos; p++) {
                     clicks.push({
                         tipo: 'click',
-                        musicalSec: segundosDeTicks(mi * cap + p * porPulso, bpm),
+                        musicalSec: countInSec + segundosDeTicks(mi * cap + p * porPulso, bpm),
                         fuerte: p === 0,
                     });
                 }
             });
         }
 
+        if (countInSec) {
+            eventosRebase.forEach((ev) => { ev.musicalSec += countInSec; });
+            measureStarts.forEach((m) => { m.musicalSec += countInSec; });
+        }
+
         return {
             eventos: [...eventosRebase, ...clicks],
             measureStarts,
-            duration: segundosDeTicks(cursorTick, bpm),
+            countInSec,
+            duration: countInSec + segundosDeTicks(cursorTick, bpm),
         };
     }
 
@@ -225,7 +271,7 @@ export class MotorAudio {
             if (this.onClock) this.onClock({ musicalSec, ...pos });
             if (musicalSec >= this._duration) {
                 if (this._loop && this._score) {
-                    this.play(this._score, { ...this._playOpts, offsetSec: 0 });
+                    this.play(this._score, { ...this._playOpts, offsetSec: 0, countIn: false });
                     return;
                 }
                 this.playing = false;
@@ -239,14 +285,23 @@ export class MotorAudio {
 
     posicionDe(musicalSec) {
         const starts = this._measureStarts;
-        if (!starts.length) return { sectionIdx: 0, measureIdx: 0, frac: 0 };
+        if (!starts.length) return { sectionIdx: 0, measureIdx: 0, frac: 0, countIn: false };
+        const countInSec = this._countInSec || 0;
+        if (countInSec && musicalSec < countInSec) {
+            return {
+                sectionIdx: starts[0].sectionIdx,
+                measureIdx: starts[0].measureIdx,
+                frac: 0,
+                countIn: true,
+            };
+        }
         let cur = starts[0];
         for (const m of starts) {
             if (musicalSec >= m.musicalSec) cur = m;
             else break;
         }
         const frac = cur.duration > 0 ? Math.min(1, Math.max(0, (musicalSec - cur.musicalSec) / cur.duration)) : 0;
-        return { sectionIdx: cur.sectionIdx, measureIdx: cur.measureIdx, frac };
+        return { sectionIdx: cur.sectionIdx, measureIdx: cur.measureIdx, frac, countIn: false };
     }
 
     musicalAhora() {
@@ -291,7 +346,7 @@ export class MotorAudio {
             this.master.gain.cancelScheduledValues(t);
             this.master.gain.setValueAtTime(this.master.gain.value, t);
             this.master.gain.linearRampToValueAtTime(0.0001, t + 0.02);
-            this.master.gain.linearRampToValueAtTime(0.9, t + 0.08);
+            this.master.gain.linearRampToValueAtTime(0.75, t + 0.08);
         }
     }
 }

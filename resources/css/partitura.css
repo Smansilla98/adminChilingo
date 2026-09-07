@@ -11,7 +11,7 @@
     --pt-muted: var(--muted, #a8b3c9);
     --pt-brass: var(--accent, #3e7bfa);
     --pt-accent: var(--accent, #3e7bfa);
-    --pt-paper: #fbf7ef;
+    --pt-paper: #ffffff;
     --pt-toolbar-h: 56px;
 }
 
@@ -140,7 +140,9 @@
 .pt-input:focus { outline: 2px solid color-mix(in srgb, var(--pt-brass) 60%, transparent); outline-offset: -1px; }
 .pt-input-title { width: 220px; font-weight: 700; }
 .pt-input-autor { width: 150px; }
-.pt-input-num { width: 64px; }
+.pt-input-num { width: 52px; }
+.pt-tempo-slider { width: 96px; height: 22px; accent-color: var(--pt-brass); cursor: pointer; }
+.pt-play-countin { opacity: 0.45; }
 .pt-input-sm { height: 26px; font-size: 12px; }
 .pt-select { padding-right: 1.4rem; }
 

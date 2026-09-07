@@ -12,7 +12,7 @@ import {
     MAPA_SAMPLES, nombreArchivoSample, sistemasVisuales, instrumentoPorId,
     GOLPES_POR_INSTRUMENTO, ARTICULACION_SAMPLE,
 } from '../../resources/js/partitura/instruments.js';
-import { BancoSamples } from '../../resources/js/partitura/samples.js';
+import { BancoSamples, resolverGolpe, golpesPaletaAudibles } from '../../resources/js/partitura/samples.js';
 
 describe('compás 4/4', () => {
     it('tiene 192 ticks (4 negras × TPQ 48)', () => {
@@ -56,10 +56,23 @@ describe('mapeo de samples 1:1', () => {
         assert.equal(nombreArchivoSample('redoblante', 'nota'), 'redoblante_normal');
         assert.equal(nombreArchivoSample('timbal', 'abierto'), 'timbal_abierto');
     });
-    it('no hay fallback a otra articulación en el banco', () => {
+    it('obtener() no inventa buffers: sin precarga sigue vacío', () => {
         const b = new BancoSamples();
         assert.equal(b.obtener('surdo_medio', 'chapa'), null);
         assert.equal(b.obtener('surdo_grave', 'nota'), null);
+    });
+    it('cada golpe de paleta resuelve a un sample del catálogo', () => {
+        golpesPaletaAudibles().forEach(({ instId, stroke, ok }) => {
+            assert.equal(ok, true, `${instId} ${stroke} mudo`);
+        });
+        const surdoAcc = resolverGolpe('surdo_grave', 'acentuado');
+        assert.equal(surdoAcc.strokeId, 'nota');
+        assert.ok(surdoAcc.velMul > 1);
+        const flam = resolverGolpe('redoblante', 'flam');
+        assert.equal(flam.flam, true);
+        assert.equal(flam.strokeId, 'nota');
+        const tap = resolverGolpe('redoblante', 'tapado');
+        assert.equal(tap.choke, true);
     });
 });
 
@@ -87,7 +100,7 @@ describe('Redoblante + Repique comparten pentagrama', () => {
         const sis = sistemasVisuales(insts);
         const redo = sis.find((s) => s.id === 'redoblante+repique');
         assert.ok(redo, 'debe existir el sistema compartido');
-        assert.equal(redo.label, 'Redoblante / Repique');
+        assert.equal(redo.label, 'Redoblante y Repique');
         assert.equal(redo.compartido, true);
         assert.equal(redo.members.length, 2);
         assert.equal(sis.filter((s) => s.id === 'redoblante' || s.id === 'repique').length, 0);

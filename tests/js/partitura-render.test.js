@@ -65,7 +65,7 @@ describe('render VexFlow', () => {
             assert.equal(horiz.length, 5, `5 líneas, obtuvo ${horiz.length} d=${[...g.querySelectorAll('path')].map((p) => p.getAttribute('d')).join('|')}`);
         });
         assert.ok(svg.querySelector('g.vf-clef'), 'clave de percusión');
-        assert.match(host.textContent, /Redoblante \/ Repique/);
+        assert.match(host.textContent, /Redoblante y Repique/);
         assert.doesNotMatch(host.textContent, /Redoblante\n/);
     });
 
@@ -77,7 +77,7 @@ describe('render VexFlow', () => {
         const labels = [...host.querySelectorAll('svg')].map((s) => s.parentElement);
         const text = host.innerHTML;
         const redoSolo = (text.match(/>Redoblante</g) || []).length;
-        const compartido = (text.match(/Redoblante \/ Repique/g) || []).length;
+        const compartido = (text.match(/Redoblante y Repique/g) || []).length;
         assert.ok(compartido >= 1, 'etiqueta compartida');
         assert.equal(redoSolo, 0, 'no debe haber pentagrama solo de Redoblante');
     });
@@ -107,5 +107,13 @@ describe('render VexFlow', () => {
         // 5 líneas × 10px spacing = 40, más grosor de línea
         assert.ok(maxH <= 48, `barra más alta ${maxH}px (debe ≤ 48)`);
         assert.ok(maxH >= 35, `barra demasiado baja ${maxH}`);
+    });
+
+    it('genera beams de corchea (barras de agrupación)', () => {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        renderScore(host, scorePrueba(), { anchoPagina: 900 });
+        const beams = host.querySelectorAll('g.vf-beam');
+        assert.ok(beams.length >= 1, `beams: ${beams.length}`);
     });
 });

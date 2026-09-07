@@ -45,6 +45,8 @@ export class EditorPartitura {
         this.measureBoxes = [];
         this.dirty = false;
         this.guardando = false;
+        this.loop = false;
+        this.countIn = true;
         this.audio = new MotorAudio();
         this.audio.onClock = (pos) => this.marcarPlayhead(pos);
         this.audio.onStop = () => this.finTransporte();
@@ -75,12 +77,15 @@ export class EditorPartitura {
                     <button class="pt-btn pt-btn-play" data-a="play" title="Reproducir (Espacio)">▶</button>
                     <button class="pt-btn" data-a="pause" title="Pausa">❚❚</button>
                     <button class="pt-btn" data-a="stop" title="Detener">■</button>
-                    <button class="pt-btn pt-toggle" data-a="loop" title="Loop">↻</button>
-                    <button class="pt-btn pt-toggle" data-a="metro" title="Metrónomo">𝅘𝅥</button>
+                    <button class="pt-btn pt-toggle" data-a="loop" title="Repetir">↻</button>
+                    <button class="pt-btn pt-toggle on" data-a="countin" title="Conteo de un compás antes de entrar">1·2·3·4</button>
+                    <button class="pt-btn pt-toggle" data-a="metro" title="Metrónomo">Metrónomo</button>
                 </div>
                 <div class="pt-tb-group">
-                    <label class="pt-field"><span>Tempo</span>
-                        <input class="pt-input pt-input-num" type="number" min="30" max="260" data-f="tempo" value="${this.score.tempo}">
+                    <label class="pt-field pt-field-tempo" title="Bajar el tempo es el gesto del bloque">
+                        <span>Tempo</span>
+                        <input class="pt-tempo-slider" type="range" min="60" max="100" data-f="tempo-slider" value="${this.score.tempo}">
+                        <input class="pt-input pt-input-num" type="number" min="60" max="100" data-f="tempo" value="${this.score.tempo}">
                     </label>
                     <label class="pt-field"><span>Compás</span>
                         <select class="pt-input pt-select" data-f="ts">
@@ -315,11 +320,12 @@ export class EditorPartitura {
         if (!box) return;
         const el = document.createElement('div');
         el.className = 'pt-play-box pt-play-cursor';
-        const frac = Number.isFinite(pos.frac) ? pos.frac : 0;
+        const frac = pos.countIn ? 0 : (Number.isFinite(pos.frac) ? pos.frac : 0);
         el.style.left = `${box.x + frac * box.w}px`;
         el.style.top = `${box.y}px`;
         el.style.width = '2px';
         el.style.height = `${box.h}px`;
+        if (pos.countIn) el.classList.add('pt-play-countin');
         box.lineEl.appendChild(el);
     }
 
@@ -501,6 +507,7 @@ export class EditorPartitura {
             case 'pause': return this.audio.pause();
             case 'stop': return this.audio.stop();
             case 'loop': btn.classList.toggle('on'); this.loop = btn.classList.contains('on'); return;
+            case 'countin': btn.classList.toggle('on'); this.countIn = btn.classList.contains('on'); return;
             case 'metro': btn.classList.toggle('on'); this.audio.metronomo = btn.classList.contains('on'); return;
             case 'dot': this.dotsActivos = this.dotsActivos ? 0 : 1; this.marcarBotonesDuracion();
                 return this.editar(() => ops.toggleDot(this.score, this.sel, 1));
@@ -616,9 +623,9 @@ export class EditorPartitura {
         if (!f) return;
         if (f === 'title') { this.score.title = e.target.value; return this.tocado(); }
         if (f === 'autor') { this.score.autor = e.target.value; return this.tocado(); }
-        if (f === 'tempo') {
-            this.score.tempo = Math.min(260, Math.max(30, Number(e.target.value) || 100));
-            return this.tocado();
+        if (f === 'tempo' || f === 'tempo-slider') {
+            this.setTempo(e.target.value);
+            return;
         }
         if (f === 'sec-name') {
             const si = Number(e.target.closest('[data-section]').dataset.section);
@@ -808,6 +815,16 @@ export class EditorPartitura {
         this.render();
     }
 
+    setTempo(raw) {
+        const bpm = Math.min(100, Math.max(60, Number(raw) || 88));
+        this.score.tempo = bpm;
+        const num = this.root.querySelector('[data-f="tempo"]');
+        const slider = this.root.querySelector('[data-f="tempo-slider"]');
+        if (num) num.value = String(bpm);
+        if (slider) slider.value = String(bpm);
+        this.tocado();
+    }
+
     async play(opts = {}) {
         this.root.querySelector('.pt-btn-play')?.classList.add('on');
         try {
@@ -822,6 +839,7 @@ export class EditorPartitura {
                 loop: !!this.loop,
                 soloSeccion: opts.soloSeccion ?? null,
                 desde: opts.soloSeccion === undefined && this.sel ? { sectionIdx: this.sel.sectionIdx, measureIdx: 0 } : null,
+                countIn: this.countIn !== false,
             });
         } catch (err) {
             this.aviso(`Audio: ${err.message}`);
@@ -944,7 +962,9 @@ export class EditorPartitura {
             const tsInput = this.root.querySelector('[data-f="ts"]');
             if (titleInput) titleInput.value = this.score.title || '';
             if (autorInput) autorInput.value = this.score.autor || '';
-            if (tempoInput) tempoInput.value = String(this.score.tempo || 100);
+            if (tempoInput) tempoInput.value = String(this.score.tempo || 88);
+            const tempoSlider = this.root.querySelector('[data-f="tempo-slider"]');
+            if (tempoSlider) tempoSlider.value = String(this.score.tempo || 88);
             if (tsInput) tsInput.value = `${this.score.timeSignature.num}/${this.score.timeSignature.den}`;
             return true;
         });

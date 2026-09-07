@@ -1,6 +1,6 @@
 # Partituras del Cuadernillo de Toques (modelo v4)
 
-Los **26 toques** del *Cuadernillo de Toques de La Chilinga* (Recopilación: Luciano Molina - Pablo Cuffia, Bloque Lunes Saavedra) transcriptos al modelo v4 del editor de partituras.
+Los **26 toques** del *Cuadernillo de Toques de La Chilinga* transcriptos al modelo v4 del editor de partituras.
 
 Estos JSON son la fuente que carga `database/seeders/PartiturasEjemploSeeder.php` en `programa_ritmos.medios['partitura_score']` (sobreescribe lo que haya). **La fuente de verdad son los `.py`**: lo que se ve en la app sale de estos JSON, y si la app muestra algo distinto es porque la base todavía tiene una versión vieja (ver *Sello de fuente* más abajo).
 
@@ -71,7 +71,7 @@ No inventar patrones tipo `xx-x`: escribir la figura que declara el PDF.
 
 ## Criterio de transcripción
 
-Transcripción visual página por página del PDF. Lo que el escaneo no permite leer con certeza **no se adivina**: se transcribe la lectura más probable y se deja la marca `revisar con la escuela` en el campo `texto` del compás, para resolverlo con Luciano/Pablo o contra el audio y recién entonces corregirlo en el editor (que guarda el cambio en la base). Puntos abiertos hoy: llamadas y cortes en fusas/sextillos, solos de timbal, redoblante en fusas continuas, y en particular las llamadas densas de Iyesá, Chiruda, La Meta, Muñequitos I y Toque a Oxosi, más los timbales de Samba Reggae.
+Transcripción visual página por página del PDF. Lo que el escaneo no permite leer con certeza **no se adivina**: se transcribe la lectura más probable y se deja la marca `revisar con la escuela` en el campo `texto` del compás, para resolverlo contra el audio y recién entonces corregirlo en el editor (que guarda el cambio en la base). Puntos abiertos hoy: llamadas y cortes en fusas/sextillos, solos de timbal, redoblante en fusas continuas, y en particular las llamadas densas de Iyesá, Chiruda, La Meta, Muñequitos I y Toque a Oxosi, más los timbales de Samba Reggae.
 
 La auditoría toque por toque contra el PDF se documenta en `revision/NN-slug.md`, un archivo por toque.
 

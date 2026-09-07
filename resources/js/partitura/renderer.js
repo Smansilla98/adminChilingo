@@ -2,20 +2,24 @@
  * Render VexFlow 4 — pentagramas de 5 líneas, clave de percusión, barras de compás.
  * Redoblante y Repique comparten un único sistema. Las voces de un mismo
  * compás se formatean juntas (Formatter.joinVoices) para alinear la coordenada X.
+ *
+ * Orden VexFlow: notas → beams/tuplets → Voice → format → stave.draw →
+ * voice.draw → beam.draw. Los beams se construyen ANTES del formateo.
  */
 import {
     Renderer, Stave, StaveNote, GhostNote, Beam, Tuplet, Formatter, Articulation,
-    Barline, Volta, Annotation, Dot, Fraction, Voice,
+    Barline, Volta, Annotation, Dot, Fraction, Voice, GraceNote, GraceNoteGroup,
 } from 'vexflow';
-import { instrumentoPorId, cabezaVexflow, GOLPES, esUnisono, sistemasVisuales } from './instruments.js';
-import { TPQ, ticksDeNota } from './model.js';
+import { instrumentoPorId, cabezaVexflow, GOLPES, sistemasVisuales } from './instruments.js';
+import { TPQ, ticksDeNota, ticksDeCompas } from './model.js';
 
-const LABEL_W = 132;
+const LABEL_W = 168;
 const STAVE_H = 94;
 const LINE_PAD_TOP = 28;
 const LINE_PAD_BOTTOM = 22;
 const MIN_MEASURE_W = 180;
 const LINE_SPACING = 10;
+const FONT = 'Inter, system-ui, sans-serif';
 
 /**
  * @param {HTMLElement} host
@@ -87,7 +91,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     const renderer = new Renderer(wrap, Renderer.Backends.SVG);
     renderer.resize(width, height);
     const ctx = renderer.getContext();
-    ctx.setFont('Times New Roman', 11, '');
+    ctx.setFont(FONT, 11, '');
     ctx.setFillStyle('#111');
     ctx.setStrokeStyle('#111');
 
@@ -104,7 +108,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             const y = LINE_PAD_TOP + di * STAVE_H;
             if (k === 0) {
                 ctx.save();
-                ctx.setFont('Times New Roman', 12, 'italic');
+                ctx.setFont(FONT, 12, '');
                 ctx.fillText(sis.label, 4, y + 48);
                 ctx.restore();
             }
@@ -134,7 +138,6 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 stave.setText(m.texto, 3, { shift_y: -8, justification: 1 });
             }
 
-            stave.setContext(ctx).draw();
             sistemasStave.push({ sis, stave, di, y });
 
             sis.members.forEach((inst, vi) => {
@@ -147,7 +150,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 let grupoNotas = [];
 
                 const tickables = (vozData.length ? vozData : [{ dur: 'w', rest: true, dots: 0, stroke: 'nota' }]).map((n, ni) => {
-                    const vf = construirNota(n, pitch, stem);
+                    const vf = construirNota(n, pitch, stem, ts);
                     built.push({ vf, data: n, idx: ni, instId: inst.def.id });
                     const gid = n.tuplet?.id || null;
                     if (gid !== grupoActual) {
@@ -160,14 +163,21 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 });
                 if (grupoActual && grupoNotas.length > 1) tuplets.push(nuevoTuplet(grupoNotas));
 
-                const voice = new Voice(voiceTime).setMode(Voice.Mode.SOFT);
+                const voice = new Voice(voiceTime).setMode(Voice.Mode.STRICT);
                 try {
                     voice.addTickables(tickables);
                 } catch (e) {
-                    console.warn('Partitura: voz no encaja en el compás', e);
+                    console.warn('Partitura: voz no encaja en el compás, se formatea en SOFT', e);
+                    voice.setMode(Voice.Mode.SOFT);
+                    try { voice.addTickables(tickables); } catch { /* ya avisado */ }
                 }
                 voice.setStave(stave);
-                vocesFmt.push({ voice, stave, built, tuplets, instId: inst.def.id });
+
+                const beams = Beam.generateBeams(built.map((b) => b.vf), {
+                    beam_rests: false,
+                    groups: gruposDeBeam(ts),
+                });
+                vocesFmt.push({ voice, stave, built, tuplets, beams, instId: inst.def.id });
             });
         });
 
@@ -177,25 +187,24 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 const fmt = new Formatter();
                 fmt.joinVoices(voices);
                 const first = sistemasStave[0]?.stave;
-                if (first) fmt.formatToStave(voices, first);
-                else fmt.format(voices, measureW - (k === 0 ? 56 : 16));
+                const indent = first
+                    ? Math.max(8, first.getNoteStartX() - first.getX())
+                    : (k === 0 ? 56 : 12);
+                const anchoUtil = Math.max(48, measureW - indent - 10);
+                fmt.format(voices, anchoUtil);
             } catch (e) {
                 console.warn('Partitura: formato conjunto falló', e);
             }
         }
 
-        vocesFmt.forEach(({ voice, stave, built, tuplets, instId }) => {
+        sistemasStave.forEach(({ stave }) => stave.setContext(ctx).draw());
+
+        vocesFmt.forEach(({ voice, stave, built, tuplets, beams, instId }) => {
             try {
                 voice.draw(ctx, stave);
             } catch (e) {
                 console.warn('Partitura: no se pudo dibujar la voz', e);
             }
-            const vfNotas = built.map((b) => b.vf);
-            const beams = Beam.generateBeams(vfNotas, {
-                beam_rests: false,
-                maintain_stem_directions: true,
-                groups: gruposDeBeam(ts),
-            });
             beams.forEach((b) => b.setContext(ctx).draw());
             tuplets.forEach((t) => t.setContext(ctx).draw());
 
@@ -232,11 +241,18 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     return wrap;
 }
 
-function construirNota(n, pitch, stem) {
+function construirNota(n, pitch, stem, ts) {
     const dur = n.dur + (n.rest ? 'r' : '');
 
     if (n.rest) {
-        const rest = new StaveNote({ keys: [pitch], duration: dur, align_center: true, clef: 'percussion' });
+        const cap = ticksDeCompas(ts || { num: 4, den: 4 });
+        const entero = ticksDeNota(n) >= cap;
+        const rest = new StaveNote({
+            keys: [pitch],
+            duration: dur,
+            clef: 'percussion',
+            ...(entero ? { align_center: true } : {}),
+        });
         aplicarPuntillos(rest, n.dots);
         return rest;
     }
@@ -255,23 +271,34 @@ function construirNota(n, pitch, stem) {
         note.addModifier(new Articulation(golpe.articulacion).setPosition(pos));
     }
     if (n.stroke === 'flam') {
-        note.addModifier(
-            new Annotation('fl')
-                .setFont('Times New Roman', 9, 'italic')
-                .setVerticalJustification(Annotation.VerticalJustify.TOP)
-        );
+        try {
+            const grace = new GraceNote({
+                keys: [cabezaVexflow(pitch, 'nota')],
+                duration: '16',
+                slash: true,
+                clef: 'percussion',
+                stem_direction: stem || 1,
+            });
+            note.addModifier(new GraceNoteGroup([grace], true));
+        } catch {
+            note.addModifier(
+                new Annotation('fl')
+                    .setFont(FONT, 9, 'italic')
+                    .setVerticalJustification(Annotation.VerticalJustify.TOP)
+            );
+        }
     }
     if (n.digitacion === 'D' || n.digitacion === 'I') {
         note.addModifier(
             new Annotation(n.digitacion)
-                .setFont('Times New Roman', 11, 'bold')
+                .setFont(FONT, 11, 'bold')
                 .setVerticalJustification(Annotation.VerticalJustify.BOTTOM)
         );
     }
     if (n.dyn) {
         note.addModifier(
             new Annotation(n.dyn)
-                .setFont('Times New Roman', 11, 'bold italic')
+                .setFont(FONT, 11, 'bold italic')
                 .setVerticalJustification(Annotation.VerticalJustify.BOTTOM)
         );
     }
