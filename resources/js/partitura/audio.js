@@ -50,13 +50,13 @@ export class MotorAudio {
             const AC = window.AudioContext || window.webkitAudioContext;
             this.ctx = new AC();
             this.master = this.ctx.createGain();
-            this.master.gain.value = 0.75;
+            this.master.gain.value = 0.7;
             this.limiter = this.ctx.createDynamicsCompressor();
-            this.limiter.threshold.value = -14;
-            this.limiter.knee.value = 12;
-            this.limiter.ratio.value = 8;
-            this.limiter.attack.value = 0.003;
-            this.limiter.release.value = 0.16;
+            this.limiter.threshold.value = -8;
+            this.limiter.knee.value = 8;
+            this.limiter.ratio.value = 3.5;
+            this.limiter.attack.value = 0.004;
+            this.limiter.release.value = 0.12;
             this.master.connect(this.limiter);
             this.limiter.connect(this.ctx.destination);
         }
@@ -342,11 +342,12 @@ export class MotorAudio {
             try { src.stop(t); } catch { /* ya detenida */ }
         });
         this._sources = [];
+        bancoSamples.cortarTodas(this.ctx);
         if (this.ctx && this.master) {
             this.master.gain.cancelScheduledValues(t);
             this.master.gain.setValueAtTime(this.master.gain.value, t);
             this.master.gain.linearRampToValueAtTime(0.0001, t + 0.02);
-            this.master.gain.linearRampToValueAtTime(0.75, t + 0.08);
+            this.master.gain.linearRampToValueAtTime(0.7, t + 0.08);
         }
     }
 }

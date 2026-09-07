@@ -114,6 +114,23 @@ php artisan storage:link 2>/dev/null || true
 mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/views
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
+# Samples de partitura: tienen que ser legibles por php artisan serve / www-data.
+# No están en .gitignore (solo .raw/). Si faltan, el PLAY queda mudo o a pedazos.
+echo "=== Samples de percusión ==="
+PERC_DIR="public/sounds/perc"
+if [ -d "$PERC_DIR" ]; then
+    chmod -R a+rX "$PERC_DIR" 2>/dev/null || true
+    WAV_N=$(find "$PERC_DIR" -maxdepth 1 -type f -name '*.wav' | wc -l)
+    if [ "$WAV_N" -lt 26 ]; then
+        echo "⚠️  $PERC_DIR tiene $WAV_N WAV (se esperan 26). El reproductor va a fallar."
+        ls -la "$PERC_DIR" || true
+    else
+        echo "✓ $WAV_N WAV listos en /$PERC_DIR (modo $(stat -c '%a' "$PERC_DIR" 2>/dev/null || echo '?'))"
+    fi
+else
+    echo "⚠️  No existe $PERC_DIR — el PLAY de partituras no tiene samples."
+fi
+
 # artisan serve lanza un php -S hijo: hereda PHP_INI_SCAN_DIR (no los -d del padre)
 if [ -d /usr/local/etc/php/conf.d ]; then
     export PHP_INI_SCAN_DIR="/usr/local/etc/php/conf.d"

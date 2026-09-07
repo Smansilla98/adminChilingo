@@ -13,6 +13,9 @@ import {
     GOLPES_POR_INSTRUMENTO, ARTICULACION_SAMPLE,
 } from '../../resources/js/partitura/instruments.js';
 import { BancoSamples, resolverGolpe, golpesPaletaAudibles } from '../../resources/js/partitura/samples.js';
+import { existsSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 describe('compás 4/4', () => {
     it('tiene 192 ticks (4 negras × TPQ 48)', () => {
@@ -75,6 +78,17 @@ describe('mapeo de samples 1:1', () => {
         assert.equal(flam.strokeId, 'nota');
         const tap = resolverGolpe('redoblante', 'tapado');
         assert.equal(tap.choke, true);
+    });
+    it('los 26 WAV del catálogo existen en public/sounds/perc', () => {
+        const root = join(dirname(fileURLToPath(import.meta.url)), '../../public/sounds/perc');
+        const wavs = existsSync(root) ? readdirSync(root).filter((f) => f.endsWith('.wav')) : [];
+        Object.entries(MAPA_SAMPLES).forEach(([inst, strokes]) => {
+            strokes.forEach((s) => {
+                const file = `${nombreArchivoSample(inst, s)}.wav`;
+                assert.ok(wavs.includes(file), `falta ${file}`);
+            });
+        });
+        assert.equal(wavs.length, 26);
     });
 });
 

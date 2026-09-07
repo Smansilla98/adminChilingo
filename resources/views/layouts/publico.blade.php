@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="chilinga-samples" content="{{ parse_url(asset('sounds/perc'), PHP_URL_PATH) ?: '/sounds/perc' }}">
     <title>@yield('title', 'Programa') — {{ config('app.name', 'La Chilinga') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">

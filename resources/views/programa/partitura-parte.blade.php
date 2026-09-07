@@ -25,6 +25,7 @@
 
         <div
             data-partitura-viewer
+            data-samples-base="{{ parse_url(asset('sounds/perc'), PHP_URL_PATH) ?: '/sounds/perc' }}"
             data-score="{{ json_encode($score, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}"
             data-instrumento="{{ $instrumento }}"
             data-controles="1"
