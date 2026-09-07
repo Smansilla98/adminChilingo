@@ -19,7 +19,7 @@ def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
 # --- INTRODUCCIÓN
 introduccion = [
     c(ti='xxxx-xx-xxxx-xx-', sa='x==-x=x=x=-x=x--',
-      texto='Introducción — … revisar con la escuela', dyn='mf'),
+      texto='Introducción', dyn='mf'),
     c(ti='xxxx----xxxx-xx-', sa='o===============',
       sg='----------x---x-'),
 ]
@@ -43,7 +43,7 @@ def toque(texto='Toque'):
     return [
         c(sa=SA, sg=SG, sm=SM, re=RE, ti=TI, rp=RP,
           repeat_begin=True,
-          texto=texto + ' — … revisar con la escuela (HI)', dyn='mf'),
+          texto=texto + '', dyn='mf'),
         c(sa=SA, sg=SG2, sm='-x-x=--x-x-x=x--', re=RE2, ti=TI, rp=RP2),
         c(sa=SA, sg=SG, sm=SM, re=RE, ti=TI, rp=RP),
         c(sa=SA, sg=SG2, sm='x=--x-x-x=-xx---', re=RE2, ti=TI, rp=RP2,
@@ -53,7 +53,7 @@ def toque(texto='Toque'):
 
 variacion_1 = [
     c(sg='x===----x===----', re=RE, ti='x==-x=--tttt-x--',
-      repeat_begin=True, texto='Variación 1 (x4) — cresc. p → f — … revisar',
+      repeat_begin=True, texto='Variación 1 (x4) — cresc. p → f',
       dyn='p'),
     c(sa=SA, sg='x===----x===----', re=RE, rp=RE, ti='x=tt-x=-tttt-x--'),
     c(sa=SA, sg='x===------------', re=RE2, rp=RE2, ti=TI),
@@ -65,7 +65,7 @@ variacion_2 = [
     c(sm='-x-t-x=-t=-x-t--', rp='-x-t-x=-t=-x-t--',
       re='xx>>xx>>x>x>' + '6(xxxxxx)',
       repeat_begin=True,
-      texto='Variación 2 — … revisar con la escuela', dyn='mf'),
+      texto='Variación 2', dyn='mf'),
     c(sm='-x-t-x=-t=-x-tx-', rp='-x-t-x=-t=-x-tx-', re=RE, repeat_end=True),
 ]
 
@@ -79,7 +79,7 @@ llamada_var2 = [
 
 llamada = [
     c(ti='x==-x=-x=x=x=x--',
-      texto='Llamada — … revisar con la escuela', dyn='f'),
+      texto='Llamada', dyn='f'),
     c(ti='xxxx-x==-xx-xx=x'),
     c(rp=RE2, texto='Repique (después de surdos grave y agudo)'),
     c(rp=RE2),

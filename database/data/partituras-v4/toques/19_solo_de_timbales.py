@@ -15,14 +15,14 @@ TRES = '3(xxx)'
 
 # Lecturas probables sin xx-x inventado; grupos de 4 / corcheas
 PATRONES = [
-    ('xxxx-xx-xxxx-xx-', 'Solo de timbales — … revisar con la escuela', 'mf'),
+    ('xxxx-xx-xxxx-xx-', 'Solo de timbales', 'mf'),
     ('-xx-xx--xxxx-xx-', None, None),
-    (SEIS + SEIS + SEIS + SEIS, '… revisar con la escuela (sextillos)', None),
+    (SEIS + SEIS + SEIS + SEIS, 'Sextillos', None),
     ('x=oo-x=-x=-o=x=-', None, None),
     ('o=--xxxx-x=x=x=-', None, None),
     ('xx--x=x=xx-xxx--', None, None),
     ('x=x=oo=-x=xx-xx-', None, None),
-    ('x=x=-x=-' + TRES + TRES, '… revisar con la escuela (tresillos)', None),
+    ('x=x=-x=-' + TRES + TRES, 'Tresillos', None),
     (SEIS + 'x=--' + TRES + TRES, None, None),
     ('-xxx-xx-x=--x=x-', None, None),
     ('x=-x=-x=x=-t=t=-', None, None),

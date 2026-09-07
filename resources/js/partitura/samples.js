@@ -12,10 +12,7 @@ const EXT = ['wav', 'mp3', 'ogg'];
 export const SAMPLES_BASE = '/sounds/perc';
 
 /** Instrumentos sin WAV propio → un sample cercano de la escuela. */
-const ALIAS_INST = {
-    agogo: { instId: 'repique', strokeId: 'agudo' },
-    palmas: { instId: 'timbal', strokeId: 'palma' },
-};
+const ALIAS_INST = {};
 
 function strokeBase(instId) {
     return instId === 'timbal' ? 'abierto' : 'nota';

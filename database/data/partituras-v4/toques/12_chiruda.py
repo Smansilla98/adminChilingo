@@ -22,7 +22,7 @@ HI_LL = 'x=xxx=xxx=xxx=xx'          # (corchea + 2 semis) × 4
 llamada = [
     c(re=HI_LL, rp=HI_LL, ti=HI_LL,
       sg='-x=x=-x=--x=x=--', sa='-x=x=-x=--x=x=--', sm='-x=x=-x=--x=x=--',
-      texto='Llamada — … revisar con la escuela', dyn='f'),
+      texto='Llamada', dyn='f'),
     c(re='----x=--x=xxx=xx', rp='----x=--x=xxx=xx', ti='----x=--x=xxx=xx',
       sg='x=xxx=x=--------', sa='x=xxx=x=--------', sm='x=xxx=x=--------'),
     c(re='x=xxx=x=x=======', rp='x=xxx=x=x=======', ti='x=xxx=x=x=======',
@@ -34,12 +34,12 @@ BASE = dict(sg='----x===----x===', sa='x=x=-x=x=x=x=x=-',
             sm='x===-x=x=---x=x=', re=RE_BASE, rp=RE_BASE,
             ti='-o=o=-x=x=-o=o=-')
 toque = [c(**BASE, repeat_begin=True, repeat_end=True,
-           texto='Toque — … revisar con la escuela (repi/timbal)', dyn='mf')]
+           texto='Toque', dyn='mf')]
 
 variacion_1 = [
     c(sa='--------xx--fx=x', sg='----x===----x===', sm='--x=xxx=--------',
       re=RE_BASE, ti='---o=---x=--o=--',
-      repeat_begin=True, texto='Variación 1 (x4) — … revisar con la escuela'),
+      repeat_begin=True, texto='Variación 1 (x4)'),
     c(sa='x=x=--fx=-x=----', sg='----x===----x===', sm='t=-t=t=-t=x=----',
       re=RE_BASE, ti='---o=---x=--o=--', rp='t=-t=t=-t=x=----',
       repeat_end=True),
@@ -48,7 +48,7 @@ variacion_1 = [
 variacion_2 = [
     c(sa='x=x=--fx=-x=x=--', sg='----x===----x===', sm='x=xxx=x=--xxxx--',
       re=RE_BASE, ti='-x=x=--x=x=-----',
-      repeat_begin=True, texto='Variación 2 (x4) — … revisar con la escuela', dyn='p'),
+      repeat_begin=True, texto='Variación 2 (x4)', dyn='p'),
     c(sa='x=x=--fx=-x=----', sg='----x===----x===', sm='x===------------',
       re=RE_BASE, ti='-x=x=--x=x=-----', rp='-x=x=-x=-x=x=---',
       repeat_end=True, dyn='f'),
@@ -57,7 +57,7 @@ variacion_2 = [
 llamada_2 = [
     c(re='x=xx=x=---x=x=--', rp='x=xx=x=---x=x=--', ti='x=xx=x=---x=x=--',
       sg='----x=x=----x=x=', sa='----x=x=----x=x=', sm='----x=x=----x=x=',
-      texto='Llamada — … revisar con la escuela', dyn='f'),
+      texto='Llamada', dyn='f'),
     c(re='x=xx=x=x=---x=--', rp='x=xx=x=x=---x=--', ti='x=xx=x=x=---x=--',
       sg='--------x=x=----', sa='--------x=x=----', sm='--------x=x=----'),
 ]

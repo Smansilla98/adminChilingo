@@ -17,12 +17,12 @@ def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
 
 
 # --- LLAMADA
-# Surdos m1: sil. blanca · 4 semis · sil. negra
-# Surdos m2: negra · 4 semis · sil. blanca
-# HI m2: (sil.semi + 3 semis + negra) × 2
-LL_SU_1 = '--------xxxx----'
-LL_SU_2 = 'x===xxxx--------'
-LL_HI_2 = '-xxxx===-xxxx==='
+# Surdos m1: sil. blanca · sil. negra · sil. corchea + 2 semis
+# Surdos m2: negra · sil. negra · sil. corchea + 2 semis · sil. negra
+# HI m2: (sil. corchea + 2 semis) × 4
+LL_SU_1 = '--------------xx'
+LL_SU_2 = 'x===------xx----'
+LL_HI_2 = '--xx--xx--xx--xx'
 
 
 def llamada(texto='Llamada inicial, intermedia y final'):
@@ -35,12 +35,12 @@ def llamada(texto='Llamada inicial, intermedia y final'):
 
 
 # --- TOQUE
-# Surdos/Redo: semis; X = tapado (t). Beat 3 del PDF lleva silencio en 3ª semi.
-# Timbal: nota + 3 palmas · 2 corcheas × 2  (diamante = palma)
-# Repique: sil. + 3 semis · corchea · … (lectura probable)
-SU = 'xttxxttxxx-x-xxx'
-TI = 'xpppx=x=xpppx=x='
-RP = '-xxx-x=--xxx-x=-'
+# Surdos/Redo: oval + 2 chapas (X) + oval por tiempo 1-2; sil.corchea+2 semis × 2
+# Timbal: sil.semi + 3 palmas (rombo) · sil.corchea + corchea, × 2
+# Repique: (sil.corchea + corchea) × 2 · (sil.corchea + 2 semis) × 2
+SU = 'xccxxccx--xx--xx'
+TI = '-ppp--x=-ppp--x='
+RP = '--x=--x=--xx--xx'
 
 toque = [
     c(sg=SU, sa=SU, sm=SU, re=SU, ti=TI, rp=RP,
@@ -52,7 +52,7 @@ variacion = [
     c(sg=SU, sa=SU, sm=SU, re=SU,
       ti='xxxx----x=x=----', rp='xxxx----x=-x=---',
       repeat_begin=True,
-      texto='Variación (cada 4 vueltas) — … revisar con la escuela'),
+      texto='Variación (cada 4 vueltas)'),
     c(sg=SU, sa=SU, sm=SU, re=SU,
       ti='-xxx-xx-o=-o=---', rp='-xxx-xxx-x=-x=--', repeat_end=True),
 ]

@@ -1,7 +1,7 @@
 """La Meta — Cuadernillo págs. 40-46 (PDF págs. 43-49).
 
 Transcripción literal donde se lee. Sextillos/llamadas densas del escaneo
-→ texto='… revisar con la escuela' (no inventar xx-x).
+→ texto=None (no inventar xx-x).
 """
 from dsl import INSTS, VACIO, compas, score, seccion
 
@@ -18,12 +18,12 @@ def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
 
 
 # ------------------------------------------------------------- Introducción 1
-MARCHA = '--t---t---t---t-'
+MARCHA = '--t=--t=--t=--t='
 
 introduccion_1 = [
     c(ti='6(x-x-xo)6(x-x-xo)6(xxxx-x)6(o-x-x-)',
       sg=MARCHA, sa=MARCHA, sm=MARCHA, re=MARCHA, rp=MARCHA,
-      texto='Introducción 1 — … revisar con la escuela (sextillos)', dyn='mf'),
+      texto='Introducción 1', dyn='mf'),
     c(ti='6(x-xx-x)6(x-x-xo)6(xxxxxx)6(x-x-x-)',
       sg=MARCHA, sa=MARCHA, sm=MARCHA, re=MARCHA, rp=MARCHA),
 ]
@@ -33,7 +33,7 @@ llamada_timbal = [
     c(rp='6(-x-x-x)6(-xx-xx)6(xx-xxx)6(x-xx-x)',
       sm='--x---x-----6(xxx-x-)',
       sg=MARCHA, sa=MARCHA,
-      texto='Llamada (sobre timbal) — … revisar con la escuela', dyn='f'),
+      texto='Llamada (sobre timbal)', dyn='f'),
     c(rp='6(-x-x-x)6(x-xx-x)6(xxx-xx)6(x-x---)',
       sm='--x-6(xxx---)--x---x-',
       sg=MARCHA, sa=MARCHA),
@@ -51,7 +51,7 @@ corte_1 = [
       re='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
       rp='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
       ti='6(x-oxox)6(xoxox-)6(x-oxox)6(xoxox-)',
-      texto='Corte — … revisar con la escuela (sextillos)', dyn='f'),
+      texto='Corte', dyn='f'),
     c(sg='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
       sa='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
       sm='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
@@ -104,11 +104,11 @@ llamada = [
 ]
 
 # ------------------------------------------------------------------- Toque 1
-T1_SGA = 'tt-t----x-------'
-T1_SM = 'tt-t--------x---'
-T1_RE = '>>>>xxxx>xxx>xxx'
-T1_TI = '-x---x=--x---x=-'
-T1_RP = 'x-------x---x=--'
+T1_SGA = 'tttx----t===t==='
+T1_SM = 'tttx----t=x=t==='
+T1_RE = '>>>>>xxx>xxx>xxx'
+T1_TI = '--x=--xx--x=--xx'
+T1_RP = 'x=======x===x=--'
 
 
 def toque_1(texto='Toque 1'):
@@ -138,7 +138,7 @@ variacion_1 = [
 
 # --------------------------------------------------------- Llamada intermedia
 llamada_intermedia = [
-    c(sg='tttt----tttt----', sa='tttt----tttt----',
+    c(sg='tttx----tttx----', sa='tttx----tttx----',
       sm='ttttxxxxttttxxxx', re='tttt----tttt----',
       rp='tttt----tttt----',
       texto='Llamada intermedia', dyn='f'),

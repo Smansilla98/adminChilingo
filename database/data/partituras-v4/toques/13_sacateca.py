@@ -30,7 +30,7 @@ introduccion = [
 # Llamada repique: frase sincopada del PDF (sin xx-x inventado)
 LL_RP = '-x=x=xxx=-x=xxx='
 llamada = [
-    c(rp=LL_RP, texto='Llamada (repique) — … revisar con la escuela', dyn='f'),
+    c(rp=LL_RP, texto='Llamada (repique)', dyn='f'),
     c(rp='xxxxxxxx--------', texto='(compás de 2/4 completado con silencios)'),
 ]
 
@@ -41,11 +41,11 @@ BASE = dict(sg='x-------x-------', sa='----x-------x---',
 toque = [
     c(**BASE, repeat_begin=True, texto='Toque', dyn='mf'),
     c(**{**BASE, 'sm': '-x=x=-x=xxxxx=x='}, repeat_end=True,
-      texto='Toque — … revisar con la escuela (surdo medio)'),
+      texto='Toque'),
 ]
 
 llamada_2 = [
-    c(ti='xxxoxxxoxxxoxxxo', texto='Llamada 2 — … revisar con la escuela', dyn='mf'),
+    c(ti='xxxoxxxoxxxoxxxo', texto='Llamada 2', dyn='mf'),
     c(ti='o=-o=-o=-o==x==='),
     c(rp='xxxxxxxxxxxxx===', sm='--------------x-',
       texto='Repique cresc. p → f', dyn='f'),
@@ -56,7 +56,7 @@ BASE_SOLOS = dict(sg='x-------x-------', sa='----x-------x---',
 
 base_solos = [
     c(**BASE_SOLOS, repeat_begin=True, repeat_end=True,
-      texto='Base de solos de timbal — … revisar con la escuela', dyn='mf'),
+      texto='Base de solos de timbal', dyn='mf'),
 ]
 
 llamada_solos = [
@@ -66,7 +66,7 @@ llamada_solos = [
 ]
 
 llamada_final = [
-    compas(unisono(LL_RP), texto='Llamada final — … revisar con la escuela', dyn='f'),
+    compas(unisono(LL_RP), texto='Llamada final', dyn='f'),
     compas(unisono('xxxxxxxxx==-x=x-')),
 ]
 

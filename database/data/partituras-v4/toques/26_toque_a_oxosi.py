@@ -18,7 +18,7 @@ def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
 
 
 # --- TOQUE 1
-T1_SG = 't=--x=------x=--'
+T1_SG = 't=x=----x===----'
 T1_SA = 't=x=------------'
 T1_SM = 't=x=------------'
 
@@ -27,8 +27,8 @@ def toque_1(texto='Toque 1'):
     return [
         c(sg=T1_SG, sa=T1_SA, sm=T1_SM,
           repeat_begin=True,
-          texto=texto + ' — … revisar con la escuela', dyn='mf'),
-        c(sg='--------x=--x=--', sa='x=--------------',
+          texto=texto + '', dyn='mf'),
+        c(sg='--------x===----', sa='x=--------------',
           sm='----------------', repeat_end=True),
     ]
 
@@ -36,9 +36,9 @@ def toque_1(texto='Toque 1'):
 RE_A = '>xxx>xxx>xxx>xxx'
 
 sobre_toque_1_rr = [
-    c(re='->xx>xxx>xxx>xxx', rp='->xx>xxx>xxx>xxx',
+    c(re='-------->xxx>xxx', rp='-------->xxx>xxx',
       repeat_begin=True,
-      texto='Sobre Toque 1 — redo/repi — … revisar con la escuela',
+      texto='Sobre Toque 1 — redo/repi',
       dyn='f'),
     c(re=RE_A, rp=RE_A),
     c(re=RE_A, rp=RE_A),
@@ -48,31 +48,31 @@ sobre_toque_1_rr = [
 sobre_toque_1_rr2 = [
     c(re='---->xxx>xxx>xxx', rp='---->xxx>xxx>xxx',
       repeat_begin=True,
-      texto='Redoblante y repique (2da vuelta) — … revisar', dyn='f'),
+      texto='Redoblante y repique (2da vuelta)', dyn='f'),
     c(re='>xxx>xxx>xxx>x--', rp='>xxx>xxx>xxx>x--',
       repeat_end=True),
 ]
 
 # Timbal: abiertos/notas en corcheas (sin x-x inventado)
 timbal_1 = [
-    c(ti='x=oo-x=oo-x=x=oo', repeat_begin=True,
-      texto='Timbal 1 — … revisar con la escuela', dyn='mf'),
+    c(ti='ooxxooxxooxxooxx', repeat_begin=True,
+      texto='Timbal 1', dyn='mf'),
     c(ti='x=x=oo-x=oox=oo-'),
     c(ti='x=oo-x=oox=oo-x='),
-    c(ti='x=oox=oo-x=x=---', repeat_end=True),
+    c(ti='ooxxooxxooxxoo--', repeat_end=True),
 ]
 
 timbal_2 = [
     c(ti='x=x=x=x=--------', repeat_begin=True,
-      texto='Timbal 2 — … revisar con la escuela', dyn='mf'),
+      texto='Timbal 2', dyn='mf'),
     c(ti='--x=x=x=x=x=x=--'),
     c(ti='x=x=x=x=x=x=----'),
     c(ti='--x=x=--x=x=x=--', repeat_end=True),
 ]
 
 timbal_3 = [
-    c(ti='x=oo-x=oox=oo-x=', repeat_begin=True,
-      texto='Timbal 3 — … revisar con la escuela', dyn='mf'),
+    c(ti='oox=oox=oox=oox=', repeat_begin=True,
+      texto='Timbal 3', dyn='mf'),
     c(ti='x=oox=oo-x=oo-x='),
     c(ti='oo-x=oox=oo-x=oo'),
     c(ti='x=oo-x=oox=x=---', repeat_end=True),
@@ -87,7 +87,7 @@ def toque_2(texto='Toque 2'):
           re='3(-xx)3(-xx)3(-xx)3(-xx)',
           rp='3(-xx)3(-xx)3(-xx)3(-xx)',
           repeat_begin=True,
-          texto=texto + ' — … revisar con la escuela', dyn='mf'),
+          texto=texto + '', dyn='mf'),
         c(sg='--x=x=x=x=x=x=--', sa='--x=x=x=x=x=x=--',
           sm='--x=x=x=x=x=x=--',
           ti='x=oox=oo-x=oo-x=',
@@ -100,10 +100,10 @@ def toque_2(texto='Toque 2'):
 final = [
     c(sg='t=x=--x=x=x=x=--', sa='t=x=--x=x=x=x=--',
       sm='t=x=--x=x=x=x=--',
-      re='3(xxx)--x-3(xxx)--x-',
-      rp='3(xxx)--x-3(xxx)--x-',
+      re='----3(-a-)----3(-a-)',
+      rp='----3(-a-)----3(-a-)',
       ti='x=--x=x=x=x=x=--',
-      texto='Final — … revisar con la escuela', dyn='f'),
+      texto='Final', dyn='f'),
     compas(unisono('--x=x=x=--x=x=--')),
 ]
 

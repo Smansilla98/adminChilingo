@@ -9,7 +9,7 @@ MATCH = {'año': 1, 'orden': 11, 'nombre': 'Samba Reggae Contemporáneo'}
 PDF_PAGES = [17]
 
 # Llamada "Todos": 2 corcheas · sil.corchea + corchea · negra · 2 corcheas
-LLAMADA = 'x=x=--x=x===x=x='
+LLAMADA = 'x===--x=x===x==='
 
 # Toque
 # Grave: negras 1 y 3 · Agudo: negras 2 y 4
@@ -20,8 +20,8 @@ BASE = {
     'surdo_grave': 'x===----x===----',
     'surdo_agudo': '----x===----x===',
     'surdo_medio': '------xx------xx',
-    'redoblante': '>xxx>xxx>>xx>x>x',
-    'repique': '>xxx>xxx>>xx>x>x',
+    'redoblante': '>xx>xx>x>xx>xx>x',
+    'repique': '>xx>xx>x>xx>xx>x',
     'timbal': '--oo--xx--oo--xx',
 }
 

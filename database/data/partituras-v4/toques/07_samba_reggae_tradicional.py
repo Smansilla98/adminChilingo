@@ -31,7 +31,7 @@ toque = [
 
 # Llamadas "sobre toque": solo repique llama; surdos entran al final
 # Figuras densas del escaneo → revisar frases exactas con la escuela
-LL_RP_1 = 'x==x--x=--xxxx--'
+LL_RP_1 = 'x==x--x=-xxxx==='
 LL_RP_2A = '--xxxxxxxxxxxx--'
 LL_RP_3 = '----------------'
 LL_SU_ENTRA = '--------------x='
@@ -41,7 +41,7 @@ ROLL = 'xxxxxxxxxxxxxxxx'
 llamada_1 = [
     compas({'repique': LL_RP_1, **tutti(VACIO, SURDOS),
             'redoblante': VACIO, 'timbal': VACIO},
-           texto='Llamada 1 (sobre toque) — … revisar con la escuela', dyn='f'),
+           texto='Llamada 1 (sobre toque)', dyn='f'),
     compas({'repique': LL_RP_2A, **tutti(LL_SU_ENTRA, SURDOS),
             'redoblante': VACIO, 'timbal': VACIO}),
     compas({'repique': LL_RP_3, **tutti(LL_SU_ROLL, SURDOS),
@@ -51,7 +51,7 @@ llamada_1 = [
 llamada_2 = [
     compas({'repique': LL_RP_1, **tutti(VACIO, SURDOS),
             'redoblante': VACIO, 'timbal': VACIO},
-           texto='Llamada 2 (sobre toque) — … revisar con la escuela', dyn='f'),
+           texto='Llamada 2 (sobre toque)', dyn='f'),
     compas({'repique': '-xxxxx==-xxxxx==',
             'surdo_grave': 'x===--x=x===--x=',
             'surdo_agudo': 'x===--x=x===--x=',
@@ -72,7 +72,7 @@ variacion = [
 llamada_final = [
     compas({'repique': LL_RP_1, **tutti(VACIO, SURDOS),
             'redoblante': VACIO, 'timbal': VACIO},
-           texto='Llamada final (sobre toque) — … revisar con la escuela', dyn='f'),
+           texto='Llamada final (sobre toque)', dyn='f'),
     compas({'repique': VACIO, **tutti('x===============', SURDOS),
             'redoblante': VACIO, 'timbal': VACIO}),
 ]

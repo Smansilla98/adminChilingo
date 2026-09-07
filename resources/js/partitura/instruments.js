@@ -20,12 +20,12 @@
 export const INSTRUMENTOS = [
     // Voz "Todos" del cuadernillo: unísono estricto, un solo pentagrama.
     { id: 'todos', label: 'Todos', short: 'Tod', pitch: 'b/4', stem: 1, midi: 38, color: '#6d5b45', familia: 'membrana', freq: 120 },
-    { id: 'surdo_grave', label: 'Surdo Grave', short: 'S.Gr', pitch: 'e/4', stem: -1, midi: 35, color: '#e86a3c', familia: 'membrana', freq: 62 },
-    { id: 'surdo_agudo', label: 'Surdo Agudo', short: 'S.Ag', pitch: 'g/4', stem: -1, midi: 36, color: '#f0a04b', familia: 'membrana', freq: 96 },
+    { id: 'surdo_grave', label: 'Surdo Grave', short: 'S.Gr', pitch: 'e/4', stem: -1, midi: 87, color: '#e86a3c', familia: 'membrana', freq: 62 },
+    { id: 'surdo_agudo', label: 'Surdo Agudo', short: 'S.Ag', pitch: 'g/4', stem: -1, midi: 43, color: '#f0a04b', familia: 'membrana', freq: 96 },
     { id: 'surdo_medio', label: 'Surdo Medio', short: 'S.Me', pitch: 'a/4', stem: -1, midi: 41, color: '#d1a054', familia: 'membrana', freq: 78 },
     { id: 'redoblante', label: 'Redoblante', short: 'Redo', pitch: 'c/5', stem: 1, midi: 38, color: '#5b9ef0', familia: 'membrana', freq: 205 },
     { id: 'repique', label: 'Repique', short: 'Repi', pitch: 'd/5', stem: 1, midi: 40, color: '#4a9a86', familia: 'membrana', freq: 300 },
-    { id: 'timbal', label: 'Timbal', short: 'Timb', pitch: 'f/5', stem: 1, midi: 48, color: '#9c8ad1', familia: 'membrana', freq: 168 },
+    { id: 'timbal', label: 'Timbal', short: 'Timb', pitch: 'f/5', stem: 1, midi: 66, color: '#9c8ad1', familia: 'membrana', freq: 168 },
     { id: 'agogo', label: 'Agogó', short: 'Ago', pitch: 'a/5', stem: 1, midi: 67, color: '#c1432b', familia: 'metal', freq: 780 },
     { id: 'palmas', label: 'Palmas', short: 'Palm', pitch: 'b/5', stem: 1, midi: 39, color: '#b6a488', familia: 'mano', freq: 1200 },
 ];
@@ -146,6 +146,8 @@ export const MAPA_SAMPLES = {
     redoblante: ['nota', 'acentuado', 'chapa'],
     timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo'],
     repique: ['nota', 'acentuado', 'chapa', 'agudo'],
+    agogo: ['nota', 'acentuado', 'tapado'],
+    palmas: ['nota', 'acentuado'],
 };
 
 export function nombreArchivoSample(instId, strokeId) {
@@ -207,18 +209,18 @@ export const GOLPES_POR_INSTRUMENTO = {
 };
 
 /**
- * MIDI por (instrumento, golpe). GM percussion + variaciones Chilinga.
- * Timbal: abierto 48, slap 49, palma 50.
- * Redoblante: normal 38, chapa 39.
- * Surdos: abierta = midi base; chapa = rim.
+ * MIDI por (instrumento, golpe). Canal 10 / GM + GM2.
+ * Surdo grave: 87 open / 86 mute. Caixa 38. Repique 40. Timbal 66/65. Palma 39.
  */
 const MIDI_POR_GOLPE = {
-    timbal: { abierto: 48, slap: 49, tapado: 49, palma: 50, dedo: 49, presionado: 48, acentuado: 48, nota: 48 },
-    redoblante: { nota: 38, acentuado: 38, chapa: 39, tapado: 37, flam: 38 },
-    repique: { nota: 40, acentuado: 40, chapa: 39, agudo: 43, flam: 40 },
-    surdo_grave: { nota: 35, acentuado: 35, chapa: 37, tapado: 35, flam: 35 },
-    surdo_medio: { nota: 41, acentuado: 41, chapa: 37, tapado: 41, flam: 41 },
-    surdo_agudo: { nota: 36, acentuado: 36, chapa: 37, tapado: 36, flam: 36 },
+    timbal: { abierto: 66, slap: 65, tapado: 64, palma: 39, dedo: 62, presionado: 64, acentuado: 66, nota: 66 },
+    redoblante: { nota: 38, acentuado: 40, chapa: 37, tapado: 37, flam: 38 },
+    repique: { nota: 40, acentuado: 40, chapa: 37, agudo: 43, flam: 40 },
+    surdo_grave: { nota: 87, acentuado: 87, chapa: 37, tapado: 86, flam: 87 },
+    surdo_medio: { nota: 41, acentuado: 41, chapa: 37, tapado: 86, flam: 41 },
+    surdo_agudo: { nota: 43, acentuado: 43, chapa: 37, tapado: 86, flam: 43 },
+    agogo: { nota: 67, acentuado: 67, tapado: 68, chapa: 68, flam: 67 },
+    palmas: { nota: 39, acentuado: 39, flam: 39 },
 };
 
 export const DINAMICAS = ['pp', 'p', 'mp', 'mf', 'f', 'ff'];

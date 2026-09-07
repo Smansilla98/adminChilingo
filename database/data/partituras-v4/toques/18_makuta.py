@@ -23,29 +23,29 @@ def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, ag=V, **kw):
 # de ataque en las tres voces cuando el PDF marca el mismo golpe; densos → revisar.
 def llamada(texto='Llamada principio y final'):
     return [
-        c(sg='x===----x===x==x', sa='----x===----x===', sm='--------x===----',
-          texto=texto + ' — … revisar con la escuela (alturas)', dyn='f'),
+        c(sg='x===--------x==x', sa='--------x===----', sm='----x===--------',
+          texto=texto + '', dyn='f'),
         c(sg='--------------xx', sa='xx--xx----------', sm='--xx----xx------',
           re='--xx----xx------', rp='--xx----xx------', ti='--xx----xx------'),
         c(sg='x---------------', sa='x---------------', sm='x---------------',
           re='--x=------------', rp='--x=------------', ti='--x=------------',
-          texto='(cierre corto — … revisar con la escuela)'),
+          texto='(cierre corto'),
     ]
 
 
 # --- TOQUE
 # Surdos / medio / redo / timbal / repique / campana — figuras de escuela
 SU = '---x----x=x=x---'
-SM = '------x-----xxx-'
+SM = '------x=----xxxx'
 RE = '>xxx>xxx>xxx>xxx'
-TI = 'o=====x=o===x=xx'
-RP = 'xx--xx--xx--xx--'
+TI = 'p==xp=xxp===xxx='
+RP = 'xx==xx==xx==xx=='
 AG = 'xx-t-t-xx-t-t---'
 
 toque = [
     c(sg=SU, sa=SU, sm=SM, re=RE, rp=RP, ti=TI, ag=AG,
       repeat_begin=True, repeat_end=True,
-      texto='Toque — … revisar con la escuela (campana/HI)', dyn='mf'),
+      texto='Toque', dyn='mf'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 84, INST, [

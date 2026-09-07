@@ -18,12 +18,12 @@ llamada = [
     compas({**tutti('3(>xx)3(>xx)3(>xx)3(>xx)', SURDOS),
             'redoblante': VACIO, 'repique': VACIO, 'timbal': VACIO},
            texto='Llamada (p a f)', dyn='p'),
-    compas({**tutti('>===x=x=--x=--x=', SURDOS),
+    compas({**tutti('>===x=x=--x=x===', SURDOS),
             'redoblante': '--x=----x===--x=', 'timbal': '--x=----x===--x=',
             'repique': '--x=----x===--x='}, dyn='f'),
     compas({**tutti(VACIO, SURDOS), 'redoblante': VACIO, 'timbal': VACIO,
-            'repique': '------x=x=x=----'},
-           texto='Llamada — … revisar con la escuela (cierre repique)'),
+            'repique': '----------x=x=x='},
+           texto='Llamada'),
 ]
 
 BASE1_SU = 'x=x=--x=--------'
@@ -39,18 +39,18 @@ base1 = [
 
 intermedia = [
     compas({**tutti(VACIO, SURDOS), 'redoblante': VACIO, 'timbal': VACIO,
-            'repique': '-x=xx=x=-x=-x=x='},
+            'repique': '--x=x==x--xx--xx'},
            repeat_begin=True,
-           texto='Llamada intermedia (repique) — … revisar con la escuela', dyn='f'),
+           texto='Llamada intermedia (repique)', dyn='f'),
     compas({**tutti(VACIO, SURDOS), 'redoblante': VACIO, 'timbal': VACIO,
-            'repique': 'x==xx=-x=-x=--x='}, repeat_end=True),
+            'repique': 'x==x--xx----x=x='}, repeat_end=True),
 ]
 
 base2 = [
     compas({'surdo_grave': 'xxxx--xx--xx----', 'surdo_medio': 'xxxx--xx--xx----',
             'surdo_agudo': '----x===----x===', 'redoblante': REDO_A,
             'repique': REPI_M1, 'timbal': TIMBAL},
-           repeat_begin=True, texto='Base 2 — … revisar con la escuela (surdos)',
+           repeat_begin=True, texto='Base 2',
            dyn='mf'),
     compas({'surdo_grave': 'xxxx--xx--------', 'surdo_medio': 'xxxx--xx--------',
             'surdo_agudo': '----x===----x===', 'redoblante': REDO_B,

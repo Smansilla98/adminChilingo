@@ -21,7 +21,7 @@ def c(sb=V, sme=V, re=V, rp=V, ti=V, **kw):
 # ------------------------------------------------------------- Introducción
 introduccion = [
     c(rp='xxxxxxxxxxxxxxxx',
-      texto='Introducción — repique cresc. p → f — … revisar con la escuela',
+      texto='Introducción — repique cresc. p → f',
       dyn='p'),
     c(ti='------x-o=o=----', rp='xxxxxxxxxxxxxxxx', dyn='f'),
     c(ti='-x=-x-xxxx-xxxx-', rp='xxxxxxxxxxxxxxxx', dyn='p'),
@@ -46,18 +46,18 @@ acompanamiento_intro = [
 
 # ------------------------------------------------------------------ Toque 1
 # Base/melodía: figuras de escuela (corcheas / grupos); HI densos → revisar
-T1_SB = '----x=--x=----x-'
-T1_SME = 'xxxxxxxx--xxxx--'
-T1_RE = 'x>>-x>>-x>>-x>>-'
-T1_TI = 'x=oox=oox=oox=oo'
-T1_RP = '-x=--x=--x=--x=-'
+T1_SB = '--x=------------'
+T1_SME = '--x=xxxxxxxxxxxx'
+T1_RE = 'x->>x->>x->>x->>'
+T1_TI = 'o==xo==xo==xo==x'
+T1_RP = '--xx--xx--xx--xx'
 
 
 def toque_1(texto='Toque 1 (x4)'):
     return [
         c(sb=T1_SB, sme=T1_SME, re=T1_RE, ti=T1_TI, rp=T1_RP,
           repeat_begin=True,
-          texto=texto + ' — … revisar con la escuela', dyn='mf'),
+          texto=texto + '', dyn='mf'),
         c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
           re=T1_RE, ti=T1_TI, rp=T1_RP),
         c(sb='-x--x---x---x=--', sme='xxxx----xxxxxx--',
@@ -70,13 +70,13 @@ def toque_1(texto='Toque 1 (x4)'):
 
 corte = [
     c(rp='x=x=x=--x=x=x=--',
-      texto='Corte — repique — … revisar con la escuela', dyn='f'),
+      texto='Corte — repique', dyn='f'),
     c(rp='xxxx-x=-x=x=x=--'),
 ]
 
 # ------------------------------------------------------------------ Toque 2
-T2_RE = 'x>>-x>>-x>>-x>>-'
-T2_RP = '-x=--x=--x=--x=-'
+T2_RE = 'x->>x->>x->>x->>'
+T2_RP = '--xx--xx--xx--xx'
 
 
 def toque_2(texto='Toque 2 (x4)'):
@@ -84,7 +84,7 @@ def toque_2(texto='Toque 2 (x4)'):
         c(sb=T1_SB, sme=T1_SME, re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)',
           repeat_begin=True,
-          texto=texto + ' — … revisar con la escuela', dyn='mf'),
+          texto=texto + '', dyn='mf'),
         c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
           re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
@@ -94,7 +94,7 @@ def toque_2(texto='Toque 2 (x4)'):
         c(sb='-x--x-----x=x=--', sme='x=x=----x=x=x=--',
           re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(oxo)3(xoo)3(xxo)',
-          texto='Variación de timbal en la 4ta vuelta — … revisar',
+          texto='Variación de timbal en la 4ta vuelta',
           repeat_end=True),
     ]
 
@@ -104,7 +104,7 @@ variacion = [
     c(sme='xxxxxx--xxxxxx--', re=T2_RE,
       ti='x=--o=--x=--o=--',
       repeat_begin=True,
-      texto='Variación — … revisar con la escuela', dyn='mf'),
+      texto='Variación', dyn='mf'),
     c(sme='xxxxxx--xxxx----', re=T2_RE,
       ti='x=--o=--x=--o=--', repeat_end=True),
 ]
@@ -112,7 +112,7 @@ variacion = [
 # -------------------------------------------------------- Llamada intermedia
 llamada_intermedia = [
     c(rp='xxxxxxxxxxxx----',
-      texto='Llamada intermedia — … revisar con la escuela', dyn='f'),
+      texto='Llamada intermedia', dyn='f'),
     c(rp='xxxxxxxxxxxx----'),
     c(rp='o==============='),
     c(rp='x=------x=------'),
@@ -133,7 +133,7 @@ def toque_3(texto='Toque 3 (x2)'):
           re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)',
           repeat_begin=True,
-          texto=texto + ' — … revisar con la escuela', dyn='mf'),
+          texto=texto + '', dyn='mf'),
         c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
           re=T2_RE, rp=T2_RP,
           ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
@@ -150,7 +150,7 @@ def toque_3(texto='Toque 3 (x2)'):
 llamada_final = [
     c(rp='3(xxx)3(xxx)--------', ti='----------xxxx--',
       re=T2_RE, sb=T1_SB, sme='xxxxxxxxxxxxxxxx',
-      texto='Llamada final — … revisar con la escuela', dyn='f'),
+      texto='Llamada final', dyn='f'),
     c(rp='--------3(xxx)3(xxx)', ti='o===============',
       re=T2_RE, sb='--x---x---x=x=--',
       sme='xxxxxx--xxxxxx--'),

@@ -46,7 +46,7 @@ TI = 'xxx-xxx-xx--'
 toque = [
     c(sg=SU, sa=SU, sm=SU, re=RE, rp='------x=====', ti=TI,
       repeat_begin=True,
-      texto='Toque — … revisar con la escuela (timbal/repique)', dyn='mf'),
+      texto='Toque', dyn='mf'),
     c(sg=SU2, sa=SU2, sm=SU2, re=RE, rp='--x---x=====', ti=TI,
       repeat_end=True),
 ]

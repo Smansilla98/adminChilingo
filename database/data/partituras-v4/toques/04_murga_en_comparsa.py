@@ -38,7 +38,7 @@ toque = [compas(TOQUE, repeat_begin=True, repeat_end=True, texto='Toque', dyn='m
 # Variación: surdo medio y repique; el resto sostiene el toque
 VAR_SM = [
     'x===----------x=',   # negra · 2 sil. · sil.corchea + corchea
-    'x===----x===x===',   # negra · sil. · 2 negras
+    'x=--x===x===x===',   # corchea · sil. corchea · 3 negras
     'x===----------x=',
     'x===------------',   # negra · sil. · sil. blanca
 ]

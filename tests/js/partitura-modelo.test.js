@@ -39,6 +39,8 @@ describe('mapeo de samples 1:1', () => {
         redoblante: ['nota', 'acentuado', 'chapa'],
         timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo'],
         repique: ['nota', 'acentuado', 'chapa', 'agudo'],
+        agogo: ['nota', 'acentuado', 'tapado'],
+        palmas: ['nota', 'acentuado'],
     };
     Object.entries(esperado).forEach(([inst, strokes]) => {
         it(`${inst} tiene ${strokes.join(', ')}`, () => {

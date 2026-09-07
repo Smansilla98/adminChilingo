@@ -13,7 +13,7 @@ INSTS = ['surdo_grave', 'surdo_agudo', 'surdo_medio', 'redoblante', 'repique',
 V = '----------------'
 
 # Agogó / palmas de la introducción (figuras del PDF)
-AGOGO = 'x=x=x=x=x=x=x=x='
+AGOGO = 'x=x=x=x=xxx=--xx'
 PALMAS = 'x===x=x=x===x=x='
 
 
@@ -24,7 +24,7 @@ def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, ag=V, pa=V, **kw):
 
 
 introduccion = [
-    c(ag=AGOGO, texto='Introducción (Iyesá I) — agogó — … revisar con la escuela',
+    c(ag=AGOGO, texto='Introducción (Iyesá I) — agogó',
       dyn='mf'),
     c(ag=AGOGO, pa=PALMAS, texto='Entran las palmas'),
 ]
@@ -32,7 +32,7 @@ introduccion = [
 LL_RE = '>x>>x>>x>>>>6(xxxxxx)'
 LL_TI = 'xxxx--xo=o=o=oo-'
 llamada = [
-    c(rp='f==x-fx=x===----', re=V, texto='Llamada — … revisar con la escuela', dyn='f'),
+    c(rp='f==x-fx=x===----', re=V, texto='Llamada', dyn='f'),
     c(rp='x===------fx=x==', sg='----x=x=x===----', sa='----x=x=x===----',
       sm='----x=x=x===----', re=LL_RE, ti=LL_TI),
     c(rp='x===------fx=x==', sg='----x=x=x===----', sa='----x=x=x===----',
@@ -45,7 +45,7 @@ I1 = dict(sg='x===----x===----', sa='x===----x===----', sm='----x=x=----x=x=',
           re='>xx>x=>xx>x=6(xx>>>>)', rp='>x>xxx>x>xx>x>>x',
           ti='o=o=xxxxo=o=x=x=', ag=AGOGO, pa=PALMAS)
 toque_1 = [c(**I1, repeat_begin=True, repeat_end=True,
-             texto='Toque Iyesá I — … revisar con la escuela', dyn='mf')]
+             texto='Toque Iyesá I', dyn='mf')]
 
 variacion_1 = [c(**{**I1, 'rp': '6(>>>>xx)xx>x>xx>x>>x'},
                  repeat_begin=True, repeat_end=True,
@@ -79,7 +79,7 @@ I3A = dict(sg='---t=-t=-x=t--t=', sa='---t=-t=-x=t--t=', sm='t===t===t===t=x=',
            re='xx>x>xxx>xx>xx>x', rp='x==---------x==-',
            ti='-o===o=-x=------', ag=AGOGO)
 toque_3a = [c(**I3A, repeat_begin=True, repeat_end=True,
-              texto='Toque Iyesá III A — … revisar con la escuela', dyn='mf')]
+              texto='Toque Iyesá III A', dyn='mf')]
 
 llamada_3b = [
     c(sg=LL_SU, sa=LL_SU, texto='Llamada para Iyesá III B (sobre Iyesá III A)',
@@ -101,7 +101,7 @@ I3C = dict(sg='-x=x==-t--x=x=t=', sa='-x=x==-t--x=x=t=', sm='----x=x=xx=t----',
            re='x=>=x=>=x=>=x=>=', rp='-x=--x=x==-x==--',
            ti='-x=x=-x=--x=x=--')
 toque_3c = [c(**I3C, repeat_begin=True, repeat_end=True,
-              texto='Iyesá III C — … revisar con la escuela', dyn='mf')]
+              texto='Iyesá III C', dyn='mf')]
 
 ROLL = 'xxxxxxxxxxxxx==='
 llamada_final = [

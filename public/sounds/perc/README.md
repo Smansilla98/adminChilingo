@@ -2,48 +2,66 @@
 
 Ruta pública: `/sounds/perc/` → `public/sounds/perc/`
 
-Formato: **WAV** (preferido), también se aceptan `.mp3` y `.ogg`.
+Formato: **WAV** 44.1 kHz estéreo.
 Nomenclatura: `{instrumento}_{articulacion}.wav`
 
-El sampler **no inventa** el sonido: si falta el archivo, ese golpe no suena
-(no se sustituye por otra articulación ni por un tono).
-
-En el modelo interno, el golpe pleno se llama `nota` y el archivo usa `normal`.
+El golpe pleno se llama `nota` en el modelo y el archivo usa `normal`.
 
 ## Estado actual
 
-Los 21 samples requeridos están en esta carpeta. Son one-shots de
-[Mixkit](https://mixkit.co/free-sound-effects/) (licencia Mixkit: uso libre
-personal y comercial; la atribución no es obligatoria). Cada archivo se
-descargó del WAV original y se renombró al nombre canónico del sampler.
+26 one-shots, 1:1 con `MAPA_SAMPLES` (incluye agogó y palmas).
 
-Sustituí estos placeholders cuando haya grabaciones propias de la batería de
-La Chilinga.
+Banco extraído de **FluidR3 GM** (Frank Wen), el soundfont GM libre que empaquetan
+Debian/Ubuntu como `fluid-soundfont-gm` (MIT). Cada hit se recortó, afinó y
+normalizó al vocabulario de la escuela (surdo grave/medio/agudo, caixa, repique,
+timbal, agogó, palmas).
 
-## Origen Mixkit
+No es la batería grabada de La Chilinga: es el kit GM latino más cercano que se
+puede redistribuir. Cuando haya one-shots propios, se tiran encima con el mismo
+nombre de archivo.
 
-| Archivo | ID Mixkit | Nombre original |
+Regenerar (hace falta el `.sf2`, ~144 MB, no va en el repo):
+
+```
+python3 scripts/build-perc-kit.py /ruta/FluidR3_GM_GS.sf2
+```
+
+Fuente del SF2: [Internet Archive — FluidR3 GM+GS](https://archive.org/details/fluidr3-gm-gs).
+
+## Qué se usó de FluidR3
+
+| Archivo | Sample GM de origen | Ajuste |
 |---|---|---|
-| `surdo_grave_normal.wav` | [2294](https://mixkit.co/free-sound-effects/drum/) | mixkit-drum-bass-hit-2294 |
-| `surdo_grave_chapa.wav` | [833](https://mixkit.co/free-sound-effects/metal/) | mixkit-metal-hammer-hit-833 |
-| `surdo_grave_tapado.wav` | [2300](https://mixkit.co/free-sound-effects/drum/) | mixkit-knocking-sub-bass-2300 |
-| `surdo_medio_normal.wav` | [2299](https://mixkit.co/free-sound-effects/drum/) | mixkit-short-bass-hit-2299 |
-| `surdo_medio_chapa.wav` | [2980](https://mixkit.co/free-sound-effects/metal/) | mixkit-factory-metal-hard-hit-2980 |
-| `surdo_medio_tapado.wav` | [2070](https://mixkit.co/free-sound-effects/hit/) | mixkit-light-impact-on-the-ground-2070 |
-| `surdo_agudo_normal.wav` | [562](https://mixkit.co/free-sound-effects/drum/) | mixkit-hand-tribal-drum-562 |
-| `surdo_agudo_chapa.wav` | [2177](https://mixkit.co/free-sound-effects/metal/) | mixkit-metal-grill-quick-hit-2177 |
-| `surdo_agudo_tapado.wav` | [2072](https://mixkit.co/free-sound-effects/hit/) | mixkit-small-hit-in-a-game-2072 |
-| `redoblante_normal.wav` | [558](https://mixkit.co/free-sound-effects/drum/) | mixkit-tribal-dry-drum-558 |
-| `redoblante_acentuado.wav` | [565](https://mixkit.co/free-sound-effects/drum/) | mixkit-hard-horror-hit-drum-565 |
-| `redoblante_chapa.wav` | [2183](https://mixkit.co/free-sound-effects/metal/) | mixkit-glass-hitting-a-metal-2183 |
-| `timbal_abierto.wav` | [2093](https://mixkit.co/free-sound-effects/hit/) | mixkit-basketball-ball-hard-hit-2093 |
-| `timbal_slap.wav` | [2167](https://mixkit.co/free-sound-effects/slap/) | mixkit-short-slap-or-clap-2167 |
-| `timbal_palma.wav` | [481](https://mixkit.co/free-sound-effects/clapping/) | mixkit-one-clap-481 |
-| `timbal_presionado.wav` | [2182](https://mixkit.co/free-sound-effects/hit/) | mixkit-wood-hard-hit-2182 |
-| `timbal_dedo.wav` | [2073](https://mixkit.co/free-sound-effects/hit/) | mixkit-game-ball-tap-2073 |
-| `repique_normal.wav` | [2333](https://mixkit.co/free-sound-effects/hit/) | mixkit-western-guitar-drum-single-2333 |
-| `repique_acentuado.wav` | [579](https://mixkit.co/free-sound-effects/drum/) | mixkit-drum-joke-accent-579 |
-| `repique_chapa.wav` | [2160](https://mixkit.co/free-sound-effects/metal/) | mixkit-metallic-sword-strike-2160 |
-| `repique_agudo.wav` | [560](https://mixkit.co/free-sound-effects/drum/) | mixkit-toy-drums-and-bell-ding-560 |
+| `surdo_grave_normal` | Tom Floor | −4 semitonos, lowpass |
+| `surdo_grave_tapado` | Std Kick 7 | grave, decay corto |
+| `surdo_grave_chapa` | Sticks | highpass |
+| `surdo_medio_*` | Tom Floor / Kick / Rim Tap | afinación media |
+| `surdo_agudo_*` | Tom Low / Kick / Woodblock | afinación aguda |
+| `redoblante_normal` | Orch Snare | — |
+| `redoblante_acentuado` | Power Snare 1 | — |
+| `redoblante_chapa` | Rim Tap | — |
+| `repique_normal` / `_acentuado` | Power Snare 2 | +3 / +4 semitonos |
+| `repique_chapa` | Sticks | más agudo |
+| `repique_agudo` | 808 Snare 1 | +5 semitonos |
+| `timbal_abierto` | High Timbale | — |
+| `timbal_presionado` | Low Timbale | choke |
+| `timbal_slap` | Bongo Rim | — |
+| `timbal_dedo` | High Conga | más agudo |
+| `timbal_palma` / `palmas_*` | Clap | — |
+| `agogo_normal` / `_acentuado` | High Agogo | — |
+| `agogo_tapado` | Low Agogo | choke |
 
-URL de descarga: `https://assets.mixkit.co/active_storage/sfx/{ID}/{ID}.wav`
+El MIDI exportado usa el mapa GM2: surdo grave **87 open / 86 mute**, caixa **38**,
+repique **40**, timbal **66/65**, palmas **39**, agogó **67/68**. Así un DAW con
+GeneralUser GS o FluidR3 dispara los mismos instrumentos.
+
+## Lo que no se pudo meter (gratis, pero no descargable acá)
+
+- **Freesound CC0** (caixa de Sassaby, repinique de BeppeB): el CDN responde 403
+  sin cuenta. Siguen siendo la mejor fuente de one-shots de samba; hay que
+  bajarlos a mano y renombrarlos.
+- **House of Loop / Noiiz tasters**: piden cuenta.
+- **JasperCodes Brazilian Bateria .sf2**: mezcla samples de Splice y otros packs
+  comerciales; no se incorpora.
+
+Atribución FluidR3: Frank Wen, MIT.

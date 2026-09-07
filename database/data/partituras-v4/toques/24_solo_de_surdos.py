@@ -33,14 +33,14 @@ solo = [
     surdos('x=x-x=--t=--'),
     surdos('t=--x=--t=x-'),
     surdos('x=x=x=x=x=x=',
-           texto='Cierre en 4/4 en el cuadernillo (cresc. p → f) — … revisar',
+           texto='Cierre en 4/4 en el cuadernillo (cresc. p → f)',
            dyn='p', repeat_end=True),
 ]
 
 # ------------------------------------------------ Entrada al acompañamiento
 entrada = [
     c(re='-x=--x=-x=--', ti='-x=--x=-x=--', rp='-x=--x=-x=--',
-      texto='Entrada al acompañamiento — … revisar con la escuela', dyn='mf'),
+      texto='Entrada al acompañamiento', dyn='mf'),
     c(re='x=----x=x=--', ti='x=----x=x=--', rp='x=x=x=x=x=--'),
 ]
 
@@ -48,7 +48,7 @@ entrada = [
 acompanamiento = [
     c(re='>x=>x=>x=>x=', ti='x=x=x=x=x=--', rp='x=x=x=x=x=x=',
       repeat_begin=True,
-      texto='Acompañamiento de surdos — … revisar con la escuela', dyn='mf'),
+      texto='Acompañamiento de surdos', dyn='mf'),
     c(re='>x=>x=>x=>xx', ti='x=--x=x=x=--', rp='x=x=x=xxx-x=',
       repeat_end=True),
 ]
@@ -56,7 +56,7 @@ acompanamiento = [
 # --------------------------------------- Después de la repetición de surdos
 despues = [
     c(re='x=x=x=x=x=x=', ti='x=x=x=x=x=x=', rp='x=x=x=x=x=x=',
-      texto='Después de repetición (4/4 en PDF) — p → f — … revisar',
+      texto='Después de repetición (4/4 en PDF) — p → f',
       dyn='p'),
     surdos('x=x=x=x=x=x=', texto='Surdos grave, agudo y medio — p → f',
            dyn='p'),
@@ -65,7 +65,7 @@ despues = [
 # ------------------------------------------------------------ Llamada final
 llamada_final = [
     compas(unisono('-x=-x=-x=x=-'), grid=12, num=6, den=8,
-           texto='Llamada final — todos — … revisar con la escuela', dyn='f'),
+           texto='Llamada final — todos', dyn='f'),
     compas(unisono('x=--x=x=x=--'), grid=12, num=6, den=8),
 ]
 

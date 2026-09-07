@@ -27,9 +27,9 @@ LL_SU_2 = '------------x==='
 llamada = [
     c(ti=LL_DIR_1, texto='Llamada (director / timbaletas)', dyn='f'),
     c(ti=VACIO, sg=LL_SU_2, sa=LL_SU_2, sm=LL_SU_2,
-      texto='Llamada — … revisar con la escuela (HI densos)'),
+      texto='Llamada'),
     c(ti=VACIO, rp=VACIO,
-      texto='Llamada — … revisar con la escuela (repique / director)'),
+      texto='Llamada'),
     c(),
 ]
 
@@ -47,7 +47,7 @@ base_1 = [
     c(sa='x===----x===----', sg='----x===------x=',
       sm='------x=----x==x',
       re=RE, rp=VACIO, ti=TI1, repeat_begin=True,
-      texto='Base 1 (x4) — … revisar con la escuela (repique)', dyn='mf'),
+      texto='Base 1 (x4)', dyn='mf'),
     c(re=RE, rp=VACIO, ti=TI2, repeat_end=True),
 ]
 
@@ -56,7 +56,7 @@ base_2 = [
     c(sa='x===----x===----', sg='----x===------x=',
       sm='---x----x==x----',
       re=RE, ti=TI1, repeat_begin=True,
-      texto='Base 2 (x4) — … revisar con la escuela', dyn='mf'),
+      texto='Base 2 (x4)', dyn='mf'),
     c(sa='-x--------------', sm='--x-x=x=--x=x---',
       re=RE, ti=TI2, repeat_end=True),
 ]
@@ -65,14 +65,14 @@ base_3 = [
     c(sa='x===----x===----', sg='----x===------x=',
       sm='---x----x==x----',
       re=RE, ti=TI1, repeat_begin=True,
-      texto='Base 3 (x4) — … revisar con la escuela', dyn='mf'),
+      texto='Base 3 (x4)', dyn='mf'),
     c(sg='------x-----x---', sm='-----x=---x=x---',
       re=RE, ti=TI2, repeat_end=True),
 ]
 
 corte = [
     c(ti='6(xxxxxx)6(xxxxxx)x===----',
-      texto='Corte (timbal) — … revisar con la escuela (sextillos)',
+      texto='Corte (timbal)',
       dyn='f'),
     c(sg='--------x---x=x=', sa='--------x---x=x=', sm='--------x---x=x='),
 ]
@@ -80,7 +80,7 @@ corte = [
 base_4 = [
     c(sa='o===============', sg='----x===------x=', sm='---x----x==x----',
       re=RE, ti=TI1, repeat_begin=True,
-      texto='Base 4 (x4) — dim. f → p — … revisar con la escuela', dyn='f'),
+      texto='Base 4 (x4) — dim. f → p', dyn='f'),
     c(sa='o===============', sg='------x-------x-', sm='----x=--x---x==x',
       re=RE, ti=TI2, repeat_end=True, dyn='p'),
 ]
@@ -90,7 +90,7 @@ TRES = '3(xxx)3(xxx)3(xxx)3(xxx)'
 coda = [
     c(ti=TRES, sg='x=-x----t=------', sa='x=-x----t=------',
       sm='x=-x----t=------', rp='----x---t=------',
-      texto='Coda — … revisar con la escuela (tresillos)', dyn='f'),
+      texto='Coda', dyn='f'),
     c(ti=TRES),
 ]
 

@@ -14,14 +14,14 @@ PDF_PAGES = [23]
 INSTS = ['agogo']
 
 # Claves en 2 compases (3-2 / 2-3)
-TRES_SON = 'x=====x=====x==='      # 1 · 2& · 4
-DOS = '----x===x======='          # 2 · 3
-TRES_RUMBA = 'x=====x=======x='    # 1 · 2& · 4&
-TRES_SAMBA = 'x===x=====x====='    # 1 · 2 · 3&
+TRES_SON = 'x===--x=----x==='      # negra · sil.corchea+corchea · sil.negra · negra
+DOS = '----x===x===----'          # sil.negra · negra · negra · sil.negra
+TRES_RUMBA = 'x===--x=------x='    # 1 · 2& · 4&
+TRES_SAMBA = 'x===x===--x=----'    # 1 · 2 · 3&
 
 # Misma clave condensada en 1 compás (como el cuadernillo)
-SON_1C = 'x==x==x=--x=x=--'
-SON_1C_23 = '--x=x===x==x==x='
+SON_1C = 'x==x--x=--x=x==='
+SON_1C_23 = '--x=x===x==x--x='
 RUMBA_1C = 'x==x===x--x=x==='
 RUMBA_1C_23 = '--x=x===x==x===x'
 SAMBA_1C = 'x==x==x===x===x='
@@ -47,7 +47,7 @@ SCORE = score(TITULO, 'La Chilinga', 85, INSTS, [
     seccion('Clave de Rumba 3-2', par(TRES_RUMBA, DOS, 'Clave de Rumba (3-2)'), 2),
     seccion('Clave de Rumba 2-3', par(DOS, TRES_RUMBA, 'Clave de Rumba (2-3)'), 2),
     seccion('Clave de Rumba (1 compás)',
-            uno(RUMBA_1C, 'Clave de Rumba en 1 compás — … revisar con la escuela'), 2),
+            uno(RUMBA_1C, 'Clave de Rumba en 1 compás'), 2),
     seccion('Clave de Rumba 2-3 (1 compás)',
             uno(RUMBA_1C_23, 'Clave de Rumba 2-3 en 1 compás'), 2),
     seccion('Clave de Samba 3-2', par(TRES_SAMBA, DOS, 'Clave de Samba (3-2)'), 2),

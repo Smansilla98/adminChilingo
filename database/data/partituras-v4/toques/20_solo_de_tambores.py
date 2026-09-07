@@ -21,7 +21,7 @@ OCHOS = 'x=x=x=x=x=x=x=x='   # tramo 6/8 → 8 corcheas
 OCHOS2 = 'x=x=x=x=x=x=x=x='
 
 BLOQUES = [
-    (A, 'Solo de tambores — … revisar con la escuela (acentos finos)', 'f'),
+    (A, 'Solo de tambores', 'f'),
     (B, None, None),
     (C, None, None),
     (D, None, None),

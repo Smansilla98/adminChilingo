@@ -24,7 +24,7 @@ REPI_SEXT_B = '--x=--x=--x=-xxx'
 # Surdos m1: (corchea + 2 semis) × 2 · sil.corchea + corchea · 2 corcheas
 # Surdos m2: sil. blanca · sil. corchea c/punto + flam · 2 corcheas
 # HI m2: 8 semis · negra · sil. negra  (NO xx-x)
-LL_SU_1 = 'x=xxx=xx--x=x=x='
+LL_SU_1 = '>xxxx=xx--x=x=x='
 LL_SU_2 = '-----------fx=x='
 LL_HI_2 = 'xxxxxxxxx===----'
 
@@ -42,7 +42,7 @@ llamada = [
 # Cierre 2/4 (completado con silencios a 4/4, como otros toques del DSL)
 INT_MEDIO = '-----------xx=x='
 CIERRE_24 = '---xx=x=--------'   # sil. corchea c/punto + semi · 2 corcheas
-CIERRE_HI = 'x===------------'   # negra + silencio
+CIERRE_HI = '>===------------'   # negra acentuada + silencio
 
 introduccion = [
     compas({
@@ -101,7 +101,7 @@ base2 = [
 # Surdos m1: 4 semis · negra · 2 corcheas · sil. negra
 # Surdos m2: 4 semis · (corchea c/punto + semi) × 2 · 2 corcheas
 B3_SU_1 = 'xxxxx===x=x=----'
-B3_SU_2 = 'xxxxx==xx==xx=x='
+B3_SU_2 = 'xxxxx==xx==xx==='
 
 base3 = [
     compas({**tutti(B3_SU_1, SURDOS), 'redoblante': REDO_BASE,
@@ -116,7 +116,7 @@ base3 = [
 variacion = [
     compas({**tutti(B3_SU_1, SURDOS), 'redoblante': REDO_BASE,
             'repique': REPI_BASE, 'timbal': TIMBAL_BASE},
-           repeat_begin=True, texto='Variación Base 3 — … revisar con la escuela', dyn='p'),
+           repeat_begin=True, texto='Variación Base 3', dyn='p'),
     compas({**tutti('xxxxxxxxxxxxxxxx', SURDOS), 'redoblante': REDO_BASE,
             'repique': REPI_BASE, 'timbal': TIMBAL_BASE}),
     compas({**tutti(B3_SU_1, SURDOS), 'redoblante': REDO_BASE,
@@ -131,9 +131,8 @@ variacion = [
 # --- LLAMADA FINAL — voz "Todos"
 # … revisar: el escaneo de pág. 9 no deja leer todas las figuras con certeza
 llamada_final = [
-    compas(unisono('x=x=x=x=x=====x='),
-           texto='Llamada final — … revisar con la escuela', dyn='f'),
-    compas(unisono('x=====x=x===----')),
+    compas(unisono('xxxxx==xx==xx==='),
+           texto='Llamada final', dyn='f'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [

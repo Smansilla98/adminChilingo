@@ -19,7 +19,7 @@ TOQUE = {
     'surdo_medio': 'x==xx=>=x==xx=>=',
     'redoblante': '>xxx>xxx>xxx>xxx',
     'repique': '>xxx>xxx>xxx>xxx',
-    'timbal': 'o==ox=o=o==ox=o=',
+    'timbal': 'o==oo=x=o==oo=x=',
 }
 
 # Llamada: HI 4 corcheas + sil. blanca; Surdos sil. blanca + 4 corcheas
@@ -38,7 +38,7 @@ toque = [
 variacion = [
     compas({**TOQUE, 'repique': '>xxx>xxx>xxx>x>x'},
            repeat_begin=True, repeat_end=True,
-           texto='Variación de Repique — … revisar con la escuela'),
+           texto='Variación de Repique'),
 ]
 
 # Llamada final: HI negras 2 y 4; Surdos 4 corcheas + sil. blanca · redonda
@@ -50,7 +50,7 @@ llamada_final = [
     compas({'redoblante': '----x===x=======', 'timbal': '----x===x=======',
             'repique': '----x===x=======',
             **tutti('x===============', SURDOS)},
-           texto='Llamada final — … revisar con la escuela (cierre HI)'),
+           texto='Llamada final'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 84, INSTS, [

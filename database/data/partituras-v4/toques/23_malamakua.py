@@ -22,11 +22,11 @@ def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
 INTRO_S = 'x=--------x='
 
 introduccion = [
-    c(rp='x=--x=--x=x=', sg='x=====----x=', sa='x=====----x=',
-      sm='x=====----x=',
-      texto='Introducción — 6/8 — … revisar con la escuela', dyn='mf'),
-    c(rp='-x--x=--x=x=', sg='--x=--------', sa='--x=--------',
-      sm='--x=--------'),
+    c(rp='x=--x=--xxx=', sg='x=====------', sa='x=====------',
+      sm='x=====------',
+      texto='Introducción — 6/8', dyn='mf'),
+    c(rp='--x===x=--xx', sg='------------', sa='------------',
+      sm='------------'),
     c(rp='x=--x=--x=x=', sg='x=====----x=', sa='x=====----x=',
       sm='x=====----x='),
     c(rp='-x--x=x=x=--', sg='x=x=----x=--', sa='x=x=----x=--',
@@ -45,7 +45,7 @@ def toque(texto='Toque'):
     return [
         c(sg=T_S1, sa=T_S1, sm=T_S1, re=T_RE, ti=T_TI, rp=T_RP,
           repeat_begin=True,
-          texto=texto + ' — … revisar con la escuela (HI)', dyn='mf'),
+          texto=texto + '', dyn='mf'),
         c(sg=T_S2, sa=T_S2, sm=T_S2, re='>x=>x=>x=>xx',
           ti='x=--x=-x=x=-', rp=T_RP, repeat_end=True),
     ]
@@ -53,10 +53,10 @@ def toque(texto='Toque'):
 
 # --------------------------------------------------------------- Variación
 variacion = [
-    c(sg='xxxxxx------', sa='xxxxxx------', sm='xxxxxx------',
+    c(sg='xxx=xxx=xxx=', sa='xxx=xxx=xxx=', sm='xxx=xxx=xxx=',
       re='>>x>>x>>x>>x', ti='x=x=x=x=x=x=', rp='x=x=x=x=x=x=',
       repeat_begin=True,
-      texto='Variación — … revisar con la escuela', dyn='mf'),
+      texto='Variación', dyn='mf'),
     c(sg='xxxxxx-x=---', sa='xxxxxx-x=---', sm='xxxxxx-x=---',
       re='>>x>>x>>xxxx', ti='x=x=x=x=x=--', rp='x=x=x=xxx-x=',
       repeat_end=True),
@@ -65,7 +65,7 @@ variacion = [
 # ------------------------------------------------------------ Llamada final
 llamada_final = [
     compas(unisono('-x=-x=-x=x=-'), grid=12, num=6, den=8,
-           texto='Llamada final — todos — … revisar con la escuela', dyn='f'),
+           texto='Llamada final — todos', dyn='f'),
     compas(unisono('x=--x=x=x=--'), grid=12, num=6, den=8),
 ]
 

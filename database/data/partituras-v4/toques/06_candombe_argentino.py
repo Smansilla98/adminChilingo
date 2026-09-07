@@ -31,9 +31,9 @@ toque = [
         'surdo_medio': 'x==xx=x=x==xx=x=',
         'redoblante': '>xxx>xxx>xxx>>xx',
         'repique': '>x=xx=>x=xx=>x=x',
-        'timbal': 'o==so=sso==so=ss',
+        'timbal': 'xxxxxxxxxxxxxxxx',
     }, repeat_begin=True, repeat_end=True,
-       texto='Toque — … revisar con la escuela (repi/timbal)', dyn='mf'),
+       texto='Toque', dyn='mf'),
 ]
 
 llamada_final = [

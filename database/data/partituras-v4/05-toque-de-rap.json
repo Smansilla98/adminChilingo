@@ -53,12 +53,12 @@
   ],
   "sections": [
     {
-      "id": "s2058",
+      "id": "s2049",
       "name": "LLAMADA",
       "repeatX": 1,
       "measures": [
         {
-          "id": "m1713",
+          "id": "m1709",
           "repeatBegin": false,
           "repeatEnd": false,
           "ending": null,
@@ -66,12 +66,51 @@
           "voces": {
             "surdo_grave": [
               {
-                "id": "n1715",
+                "id": "n1711",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "acentuado",
                 "dyn": "p",
+                "tuplet": {
+                  "id": "t1710",
+                  "num": 3,
+                  "den": 2
+                }
+              },
+              {
+                "id": "n1712",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": {
+                  "id": "t1710",
+                  "num": 3,
+                  "den": 2
+                }
+              },
+              {
+                "id": "n1713",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": {
+                  "id": "t1710",
+                  "num": 3,
+                  "den": 2
+                }
+              },
+              {
+                "id": "n1715",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "acentuado",
+                "dyn": null,
                 "tuplet": {
                   "id": "t1714",
                   "num": 3,
@@ -181,14 +220,16 @@
                   "num": 3,
                   "den": 2
                 }
-              },
+              }
+            ],
+            "surdo_agudo": [
               {
                 "id": "n1727",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "acentuado",
-                "dyn": null,
+                "dyn": "p",
                 "tuplet": {
                   "id": "t1726",
                   "num": 3,
@@ -220,16 +261,14 @@
                   "num": 3,
                   "den": 2
                 }
-              }
-            ],
-            "surdo_agudo": [
+              },
               {
                 "id": "n1731",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "acentuado",
-                "dyn": "p",
+                "dyn": null,
                 "tuplet": {
                   "id": "t1730",
                   "num": 3,
@@ -339,14 +378,16 @@
                   "num": 3,
                   "den": 2
                 }
-              },
+              }
+            ],
+            "surdo_medio": [
               {
                 "id": "n1743",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "acentuado",
-                "dyn": null,
+                "dyn": "p",
                 "tuplet": {
                   "id": "t1742",
                   "num": 3,
@@ -378,16 +419,14 @@
                   "num": 3,
                   "den": 2
                 }
-              }
-            ],
-            "surdo_medio": [
+              },
               {
                 "id": "n1747",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "acentuado",
-                "dyn": "p",
+                "dyn": null,
                 "tuplet": {
                   "id": "t1746",
                   "num": 3,
@@ -497,50 +536,11 @@
                   "num": 3,
                   "den": 2
                 }
-              },
-              {
-                "id": "n1759",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
-                "dyn": null,
-                "tuplet": {
-                  "id": "t1758",
-                  "num": 3,
-                  "den": 2
-                }
-              },
-              {
-                "id": "n1760",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": {
-                  "id": "t1758",
-                  "num": 3,
-                  "den": 2
-                }
-              },
-              {
-                "id": "n1761",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": {
-                  "id": "t1758",
-                  "num": 3,
-                  "den": 2
-                }
               }
             ],
             "redoblante": [
               {
-                "id": "n1762",
+                "id": "n1758",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -551,7 +551,7 @@
             ],
             "repique": [
               {
-                "id": "n1763",
+                "id": "n1759",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -562,7 +562,7 @@
             ],
             "timbal": [
               {
-                "id": "n1764",
+                "id": "n1760",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -574,7 +574,7 @@
           }
         },
         {
-          "id": "m1765",
+          "id": "m1761",
           "repeatBegin": false,
           "repeatEnd": false,
           "ending": null,
@@ -582,7 +582,7 @@
           "voces": {
             "surdo_grave": [
               {
-                "id": "n1766",
+                "id": "n1762",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -591,7 +591,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1767",
+                "id": "n1763",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -600,19 +600,57 @@
                 "tuplet": null
               },
               {
-                "id": "n1768",
+                "id": "n1764",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1765",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1766",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1767",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ],
+            "surdo_agudo": [
+              {
+                "id": "n1768",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "acentuado",
+                "dyn": "f",
                 "tuplet": null
               },
               {
                 "id": "n1769",
                 "dur": "8",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -643,25 +681,25 @@
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              }
-            ],
-            "surdo_agudo": [
+              },
               {
                 "id": "n1773",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
-                "stroke": "acentuado",
-                "dyn": "f",
-                "tuplet": null
-              },
-              {
-                "id": "n1774",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
+                "tuplet": null
+              }
+            ],
+            "surdo_medio": [
+              {
+                "id": "n1774",
+                "dur": "q",
+                "dots": 0,
+                "rest": false,
+                "stroke": "acentuado",
+                "dyn": "f",
                 "tuplet": null
               },
               {
@@ -677,7 +715,7 @@
                 "id": "n1776",
                 "dur": "8",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -686,7 +724,7 @@
                 "id": "n1777",
                 "dur": "8",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -695,79 +733,14 @@
                 "id": "n1778",
                 "dur": "8",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1779",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ],
-            "surdo_medio": [
-              {
-                "id": "n1780",
                 "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
-                "dyn": "f",
-                "tuplet": null
-              },
-              {
-                "id": "n1781",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1782",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1783",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1784",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1785",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1786",
-                "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -777,7 +750,7 @@
             ],
             "redoblante": [
               {
-                "id": "n1787",
+                "id": "n1780",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -786,7 +759,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1788",
+                "id": "n1781",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -795,7 +768,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1789",
+                "id": "n1782",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -804,7 +777,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1790",
+                "id": "n1783",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -813,7 +786,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1791",
+                "id": "n1784",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -822,7 +795,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1792",
+                "id": "n1785",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -833,7 +806,7 @@
             ],
             "timbal": [
               {
-                "id": "n1793",
+                "id": "n1786",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -842,7 +815,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1794",
+                "id": "n1787",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -851,7 +824,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1795",
+                "id": "n1788",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -860,7 +833,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1796",
+                "id": "n1789",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -869,7 +842,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1797",
+                "id": "n1790",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -878,7 +851,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1798",
+                "id": "n1791",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -889,7 +862,7 @@
             ],
             "repique": [
               {
-                "id": "n1799",
+                "id": "n1792",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -898,7 +871,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1800",
+                "id": "n1793",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -907,7 +880,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1801",
+                "id": "n1794",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -916,7 +889,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1802",
+                "id": "n1795",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -925,7 +898,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1803",
+                "id": "n1796",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -934,7 +907,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1804",
+                "id": "n1797",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -946,15 +919,15 @@
           }
         },
         {
-          "id": "m1805",
+          "id": "m1798",
           "repeatBegin": false,
           "repeatEnd": false,
           "ending": null,
-          "texto": "Llamada — … revisar con la escuela (cierre repique)",
+          "texto": "Llamada",
           "voces": {
             "surdo_grave": [
               {
-                "id": "n1806",
+                "id": "n1799",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -965,7 +938,7 @@
             ],
             "surdo_agudo": [
               {
-                "id": "n1807",
+                "id": "n1800",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -976,7 +949,7 @@
             ],
             "surdo_medio": [
               {
-                "id": "n1808",
+                "id": "n1801",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -987,7 +960,7 @@
             ],
             "redoblante": [
               {
-                "id": "n1809",
+                "id": "n1802",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -998,7 +971,7 @@
             ],
             "timbal": [
               {
-                "id": "n1810",
+                "id": "n1803",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -1009,10 +982,82 @@
             ],
             "repique": [
               {
-                "id": "n1811",
-                "dur": "q",
+                "id": "n1804",
+                "dur": "h",
                 "dots": 0,
                 "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1805",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1806",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1807",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1808",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s2050",
+      "name": "BASE 1",
+      "repeatX": 4,
+      "measures": [
+        {
+          "id": "m1809",
+          "repeatBegin": true,
+          "repeatEnd": false,
+          "ending": null,
+          "texto": "Base 1",
+          "voces": {
+            "surdo_grave": [
+              {
+                "id": "n1810",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": "mf",
+                "tuplet": null
+              },
+              {
+                "id": "n1811",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -1037,87 +1082,6 @@
               },
               {
                 "id": "n1814",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1815",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1816",
-                "dur": "q",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "s2059",
-      "name": "BASE 1",
-      "repeatX": 4,
-      "measures": [
-        {
-          "id": "m1817",
-          "repeatBegin": true,
-          "repeatEnd": false,
-          "ending": null,
-          "texto": "Base 1",
-          "voces": {
-            "surdo_grave": [
-              {
-                "id": "n1818",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": "mf",
-                "tuplet": null
-              },
-              {
-                "id": "n1819",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1820",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1821",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1822",
                 "dur": "h",
                 "dots": 0,
                 "rest": true,
@@ -1128,7 +1092,7 @@
             ],
             "surdo_medio": [
               {
-                "id": "n1823",
+                "id": "n1815",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -1137,7 +1101,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1824",
+                "id": "n1816",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -1146,7 +1110,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1825",
+                "id": "n1817",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -1155,7 +1119,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1826",
+                "id": "n1818",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -1164,7 +1128,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1827",
+                "id": "n1819",
                 "dur": "h",
                 "dots": 0,
                 "rest": true,
@@ -1175,7 +1139,7 @@
             ],
             "surdo_agudo": [
               {
-                "id": "n1828",
+                "id": "n1820",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -1184,7 +1148,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1829",
+                "id": "n1821",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -1193,7 +1157,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1830",
+                "id": "n1822",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -1202,7 +1166,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1831",
+                "id": "n1823",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -1213,12 +1177,84 @@
             ],
             "redoblante": [
               {
-                "id": "n1832",
+                "id": "n1824",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": "mf",
+                "tuplet": null
+              },
+              {
+                "id": "n1825",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1826",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1827",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1828",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "acentuado",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1829",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1830",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1831",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1832",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
                 "tuplet": null
               },
               {
@@ -1283,83 +1319,11 @@
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              },
-              {
-                "id": "n1840",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1841",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1842",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1843",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1844",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1845",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1846",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1847",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
               }
             ],
             "repique": [
               {
-                "id": "n1848",
+                "id": "n1840",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -1368,7 +1332,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1849",
+                "id": "n1841",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -1377,7 +1341,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1850",
+                "id": "n1842",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -1386,7 +1350,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1851",
+                "id": "n1843",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -1397,7 +1361,7 @@
             ],
             "timbal": [
               {
-                "id": "n1852",
+                "id": "n1844",
                 "dur": "8",
                 "dots": 0,
                 "rest": true,
@@ -1406,7 +1370,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1853",
+                "id": "n1845",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
@@ -1415,88 +1379,88 @@
                 "tuplet": null
               },
               {
-                "id": "n1854",
+                "id": "n1846",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1847",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1848",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1849",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1850",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1851",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1852",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1853",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1854",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1855",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1856",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1857",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1858",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1859",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "palma",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1860",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "palma",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1861",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1862",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1863",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
@@ -1508,13 +1472,87 @@
           }
         },
         {
-          "id": "m1864",
+          "id": "m1856",
           "repeatBegin": false,
           "repeatEnd": true,
           "ending": null,
           "texto": null,
           "voces": {
             "surdo_grave": [
+              {
+                "id": "n1857",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1858",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1859",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1860",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1861",
+                "dur": "h",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ],
+            "surdo_medio": [
+              {
+                "id": "n1862",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1863",
+                "dur": "8",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1864",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
               {
                 "id": "n1865",
                 "dur": "8",
@@ -1526,80 +1564,6 @@
               },
               {
                 "id": "n1866",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1867",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1868",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1869",
-                "dur": "h",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ],
-            "surdo_medio": [
-              {
-                "id": "n1870",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1871",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1872",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1873",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1874",
                 "dur": "h",
                 "dots": 0,
                 "rest": true,
@@ -1610,7 +1574,7 @@
             ],
             "surdo_agudo": [
               {
-                "id": "n1875",
+                "id": "n1867",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -1619,7 +1583,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1876",
+                "id": "n1868",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -1628,7 +1592,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1877",
+                "id": "n1869",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -1637,7 +1601,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1878",
+                "id": "n1870",
                 "dur": "q",
                 "dots": 0,
                 "rest": false,
@@ -1648,11 +1612,83 @@
             ],
             "redoblante": [
               {
-                "id": "n1879",
+                "id": "n1871",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1872",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1873",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1874",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1875",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1876",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1877",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1878",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1879",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
               },
@@ -1670,7 +1706,7 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
               },
@@ -1688,7 +1724,7 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
               },
@@ -1706,7 +1742,7 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
               },
@@ -1718,19 +1754,21 @@
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              },
+              }
+            ],
+            "repique": [
               {
                 "id": "n1887",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
+                "rest": true,
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1888",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -1739,16 +1777,16 @@
               },
               {
                 "id": "n1889",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
+                "rest": true,
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1890",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -1757,16 +1795,7 @@
               },
               {
                 "id": "n1891",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1892",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -1774,11 +1803,22 @@
                 "tuplet": null
               },
               {
-                "id": "n1893",
-                "dur": "16",
+                "id": "n1892",
+                "dur": "8",
                 "dots": 0,
                 "rest": false,
-                "stroke": "acentuado",
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ],
+            "timbal": [
+              {
+                "id": "n1893",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
@@ -1787,15 +1827,22 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "palma",
                 "dyn": null,
                 "tuplet": null
-              }
-            ],
-            "repique": [
+              },
               {
                 "id": "n1895",
-                "dur": "q",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1896",
+                "dur": "8",
                 "dots": 0,
                 "rest": true,
                 "stroke": "nota",
@@ -1803,8 +1850,8 @@
                 "tuplet": null
               },
               {
-                "id": "n1896",
-                "dur": "q",
+                "id": "n1897",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -1812,17 +1859,8 @@
                 "tuplet": null
               },
               {
-                "id": "n1897",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
                 "id": "n1898",
-                "dur": "8",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -1833,37 +1871,35 @@
                 "id": "n1899",
                 "dur": "8",
                 "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1900",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ],
-            "timbal": [
-              {
-                "id": "n1901",
-                "dur": "8",
-                "dots": 0,
                 "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
-                "id": "n1902",
+                "id": "n1900",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1901",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1902",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
@@ -1872,84 +1908,12 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "palma",
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1904",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1905",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1906",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1907",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1908",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "palma",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1909",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "palma",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1910",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1911",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1912",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
@@ -1963,20 +1927,20 @@
       ]
     },
     {
-      "id": "s2060",
+      "id": "s2051",
       "name": "LLAMADA INTERMEDIA",
       "repeatX": 1,
       "measures": [
         {
-          "id": "m1913",
+          "id": "m1905",
           "repeatBegin": true,
           "repeatEnd": false,
           "ending": null,
-          "texto": "Llamada intermedia (repique) — … revisar con la escuela",
+          "texto": "Llamada intermedia (repique)",
           "voces": {
             "surdo_grave": [
               {
-                "id": "n1914",
+                "id": "n1906",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -1987,7 +1951,7 @@
             ],
             "surdo_agudo": [
               {
-                "id": "n1915",
+                "id": "n1907",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -1998,7 +1962,7 @@
             ],
             "surdo_medio": [
               {
-                "id": "n1916",
+                "id": "n1908",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -2009,7 +1973,7 @@
             ],
             "redoblante": [
               {
-                "id": "n1917",
+                "id": "n1909",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -2020,7 +1984,7 @@
             ],
             "timbal": [
               {
-                "id": "n1918",
+                "id": "n1910",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -2031,8 +1995,8 @@
             ],
             "repique": [
               {
-                "id": "n1919",
-                "dur": "16",
+                "id": "n1911",
+                "dur": "8",
                 "dots": 0,
                 "rest": true,
                 "stroke": "nota",
@@ -2040,7 +2004,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1920",
+                "id": "n1912",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -2049,7 +2013,16 @@
                 "tuplet": null
               },
               {
-                "id": "n1921",
+                "id": "n1913",
+                "dur": "8",
+                "dots": 1,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1914",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
@@ -2058,26 +2031,8 @@
                 "tuplet": null
               },
               {
-                "id": "n1922",
+                "id": "n1915",
                 "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1923",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1924",
-                "dur": "16",
                 "dots": 0,
                 "rest": true,
                 "stroke": "nota",
@@ -2085,8 +2040,8 @@
                 "tuplet": null
               },
               {
-                "id": "n1925",
-                "dur": "8",
+                "id": "n1916",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -2094,8 +2049,17 @@
                 "tuplet": null
               },
               {
-                "id": "n1926",
+                "id": "n1917",
                 "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1918",
+                "dur": "8",
                 "dots": 0,
                 "rest": true,
                 "stroke": "nota",
@@ -2103,8 +2067,8 @@
                 "tuplet": null
               },
               {
-                "id": "n1927",
-                "dur": "8",
+                "id": "n1919",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -2112,8 +2076,8 @@
                 "tuplet": null
               },
               {
-                "id": "n1928",
-                "dur": "8",
+                "id": "n1920",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -2124,7 +2088,7 @@
           }
         },
         {
-          "id": "m1929",
+          "id": "m1921",
           "repeatBegin": false,
           "repeatEnd": true,
           "ending": null,
@@ -2132,7 +2096,7 @@
           "voces": {
             "surdo_grave": [
               {
-                "id": "n1930",
+                "id": "n1922",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -2143,7 +2107,7 @@
             ],
             "surdo_agudo": [
               {
-                "id": "n1931",
+                "id": "n1923",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -2154,7 +2118,7 @@
             ],
             "surdo_medio": [
               {
-                "id": "n1932",
+                "id": "n1924",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -2165,7 +2129,7 @@
             ],
             "redoblante": [
               {
-                "id": "n1933",
+                "id": "n1925",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -2176,7 +2140,7 @@
             ],
             "timbal": [
               {
-                "id": "n1934",
+                "id": "n1926",
                 "dur": "w",
                 "dots": 0,
                 "rest": true,
@@ -2187,7 +2151,7 @@
             ],
             "repique": [
               {
-                "id": "n1935",
+                "id": "n1927",
                 "dur": "8",
                 "dots": 1,
                 "rest": false,
@@ -2196,7 +2160,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1936",
+                "id": "n1928",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
@@ -2205,43 +2169,43 @@
                 "tuplet": null
               },
               {
-                "id": "n1937",
+                "id": "n1929",
                 "dur": "8",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
-                "id": "n1938",
+                "id": "n1930",
                 "dur": "16",
                 "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1939",
-                "dur": "8",
-                "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
-                "id": "n1940",
+                "id": "n1931",
                 "dur": "16",
                 "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1932",
+                "dur": "q",
+                "dots": 0,
                 "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
-                "id": "n1941",
+                "id": "n1933",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -2250,16 +2214,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1942",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1943",
+                "id": "n1934",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -2273,20 +2228,20 @@
       ]
     },
     {
-      "id": "s2061",
+      "id": "s2052",
       "name": "BASE 2",
       "repeatX": 4,
       "measures": [
         {
-          "id": "m1944",
+          "id": "m1935",
           "repeatBegin": true,
           "repeatEnd": false,
           "ending": null,
-          "texto": "Base 2 — … revisar con la escuela (surdos)",
+          "texto": "Base 2",
           "voces": {
             "surdo_grave": [
               {
-                "id": "n1945",
+                "id": "n1936",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
@@ -2295,7 +2250,7 @@
                 "tuplet": null
               },
               {
-                "id": "n1946",
+                "id": "n1937",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
@@ -2304,12 +2259,95 @@
                 "tuplet": null
               },
               {
-                "id": "n1947",
+                "id": "n1938",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1939",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1940",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1941",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1942",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1943",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1944",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1945",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1946",
+                "dur": "q",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ],
+            "surdo_medio": [
+              {
+                "id": "n1947",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": "mf",
                 "tuplet": null
               },
               {
@@ -2323,9 +2361,9 @@
               },
               {
                 "id": "n1949",
-                "dur": "8",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2341,18 +2379,18 @@
               },
               {
                 "id": "n1951",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1952",
-                "dur": "8",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2368,6 +2406,15 @@
               },
               {
                 "id": "n1954",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1955",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
@@ -2376,7 +2423,16 @@
                 "tuplet": null
               },
               {
-                "id": "n1955",
+                "id": "n1956",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1957",
                 "dur": "q",
                 "dots": 0,
                 "rest": true,
@@ -2385,10 +2441,19 @@
                 "tuplet": null
               }
             ],
-            "surdo_medio": [
+            "surdo_agudo": [
               {
-                "id": "n1956",
-                "dur": "16",
+                "id": "n1958",
+                "dur": "q",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n1959",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -2396,35 +2461,8 @@
                 "tuplet": null
               },
               {
-                "id": "n1957",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1958",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1959",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
                 "id": "n1960",
-                "dur": "8",
+                "dur": "q",
                 "dots": 0,
                 "rest": true,
                 "stroke": "nota",
@@ -2433,27 +2471,29 @@
               },
               {
                 "id": "n1961",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              },
+              }
+            ],
+            "redoblante": [
               {
                 "id": "n1962",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
-                "dyn": null,
+                "dyn": "mf",
                 "tuplet": null
               },
               {
                 "id": "n1963",
-                "dur": "8",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2478,60 +2518,56 @@
               },
               {
                 "id": "n1966",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
-                "stroke": "nota",
+                "rest": false,
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
-              }
-            ],
-            "surdo_agudo": [
+              },
               {
                 "id": "n1967",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1968",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
-                "dyn": "mf",
+                "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1969",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1970",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              }
-            ],
-            "redoblante": [
+              },
               {
                 "id": "n1971",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
-                "dyn": "mf",
+                "dyn": null,
                 "tuplet": null
               },
               {
@@ -2557,7 +2593,7 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
               },
@@ -2566,7 +2602,7 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "acentuado",
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
@@ -2587,48 +2623,52 @@
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              },
+              }
+            ],
+            "repique": [
               {
                 "id": "n1978",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1979",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
-                "dyn": null,
+                "dyn": "mf",
                 "tuplet": null
               },
               {
                 "id": "n1980",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1981",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              },
+              }
+            ],
+            "timbal": [
               {
                 "id": "n1982",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2638,8 +2678,8 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "acentuado",
-                "dyn": null,
+                "stroke": "palma",
+                "dyn": "mf",
                 "tuplet": null
               },
               {
@@ -2647,15 +2687,15 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "palma",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1985",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2668,30 +2708,19 @@
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              }
-            ],
-            "repique": [
+              },
               {
                 "id": "n1987",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1988",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": "mf",
-                "tuplet": null
-              },
-              {
-                "id": "n1989",
-                "dur": "q",
+                "dur": "8",
                 "dots": 0,
                 "rest": true,
                 "stroke": "nota",
@@ -2699,16 +2728,23 @@
                 "tuplet": null
               },
               {
-                "id": "n1990",
-                "dur": "q",
+                "id": "n1989",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "palma",
                 "dyn": null,
                 "tuplet": null
-              }
-            ],
-            "timbal": [
+              },
+              {
+                "id": "n1990",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
               {
                 "id": "n1991",
                 "dur": "8",
@@ -2723,8 +2759,8 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "palma",
-                "dyn": "mf",
+                "stroke": "nota",
+                "dyn": null,
                 "tuplet": null
               },
               {
@@ -2732,19 +2768,21 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "palma",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n1994",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              },
+              }
+            ]
+          }
+        },
+        {
+          "id": "m1994",
+          "repeatBegin": false,
+          "repeatEnd": true,
+          "ending": null,
+          "texto": null,
+          "voces": {
+            "surdo_grave": [
               {
                 "id": "n1995",
                 "dur": "16",
@@ -2765,9 +2803,9 @@
               },
               {
                 "id": "n1997",
-                "dur": "8",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2777,24 +2815,24 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "palma",
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n1999",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
-                "rest": false,
-                "stroke": "palma",
+                "rest": true,
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n2000",
-                "dur": "8",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2810,24 +2848,24 @@
               },
               {
                 "id": "n2002",
+                "dur": "h",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              }
+            ],
+            "surdo_medio": [
+              {
+                "id": "n2003",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              }
-            ]
-          }
-        },
-        {
-          "id": "m2003",
-          "repeatBegin": false,
-          "repeatEnd": true,
-          "ending": null,
-          "texto": null,
-          "voces": {
-            "surdo_grave": [
+              },
               {
                 "id": "n2004",
                 "dur": "16",
@@ -2857,18 +2895,18 @@
               },
               {
                 "id": "n2007",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n2008",
-                "dur": "8",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2884,15 +2922,6 @@
               },
               {
                 "id": "n2010",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2011",
                 "dur": "h",
                 "dots": 0,
                 "rest": true,
@@ -2901,10 +2930,19 @@
                 "tuplet": null
               }
             ],
-            "surdo_medio": [
+            "surdo_agudo": [
+              {
+                "id": "n2011",
+                "dur": "q",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
               {
                 "id": "n2012",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -2913,22 +2951,24 @@
               },
               {
                 "id": "n2013",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n2014",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              },
+              }
+            ],
+            "redoblante": [
               {
                 "id": "n2015",
                 "dur": "16",
@@ -2940,9 +2980,9 @@
               },
               {
                 "id": "n2016",
-                "dur": "8",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
@@ -2967,27 +3007,25 @@
               },
               {
                 "id": "n2019",
-                "dur": "h",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              }
-            ],
-            "surdo_agudo": [
+              },
               {
                 "id": "n2020",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n2021",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -2996,24 +3034,22 @@
               },
               {
                 "id": "n2022",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
-                "rest": true,
+                "rest": false,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n2023",
-                "dur": "q",
+                "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
-              }
-            ],
-            "redoblante": [
+              },
               {
                 "id": "n2024",
                 "dur": "16",
@@ -3028,7 +3064,7 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
               },
@@ -3046,7 +3082,7 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
               },
@@ -3064,7 +3100,7 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "nota",
+                "stroke": "acentuado",
                 "dyn": null,
                 "tuplet": null
               },
@@ -3076,28 +3112,21 @@
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
-              },
+              }
+            ],
+            "repique": [
               {
                 "id": "n2031",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
-                "rest": false,
+                "rest": true,
                 "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n2032",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2033",
-                "dur": "16",
+                "dur": "q",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -3105,17 +3134,26 @@
                 "tuplet": null
               },
               {
+                "id": "n2033",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
                 "id": "n2034",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
                 "rest": false,
-                "stroke": "acentuado",
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n2035",
-                "dur": "16",
+                "dur": "8",
                 "dots": 0,
                 "rest": false,
                 "stroke": "nota",
@@ -3124,89 +3162,6 @@
               },
               {
                 "id": "n2036",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2037",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2038",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "acentuado",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2039",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              }
-            ],
-            "repique": [
-              {
-                "id": "n2040",
-                "dur": "q",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2041",
-                "dur": "q",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2042",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2043",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2044",
-                "dur": "8",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2045",
                 "dur": "8",
                 "dots": 0,
                 "rest": false,
@@ -3216,6 +3171,87 @@
               }
             ],
             "timbal": [
+              {
+                "id": "n2037",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n2038",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n2039",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n2040",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n2041",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n2042",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n2043",
+                "dur": "8",
+                "dots": 0,
+                "rest": true,
+                "stroke": "nota",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n2044",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
+              {
+                "id": "n2045",
+                "dur": "16",
+                "dots": 0,
+                "rest": false,
+                "stroke": "palma",
+                "dyn": null,
+                "tuplet": null
+              },
               {
                 "id": "n2046",
                 "dur": "8",
@@ -3230,93 +3266,12 @@
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
-                "stroke": "palma",
+                "stroke": "nota",
                 "dyn": null,
                 "tuplet": null
               },
               {
                 "id": "n2048",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "palma",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2049",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2050",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2051",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2052",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2053",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "palma",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2054",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "palma",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2055",
-                "dur": "8",
-                "dots": 0,
-                "rest": true,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2056",
-                "dur": "16",
-                "dots": 0,
-                "rest": false,
-                "stroke": "nota",
-                "dyn": null,
-                "tuplet": null
-              },
-              {
-                "id": "n2057",
                 "dur": "16",
                 "dots": 0,
                 "rest": false,
