@@ -52,12 +52,19 @@ export class EditorPartitura {
         this.audio.onStop = () => this.finTransporte();
         this.audio.onLoad = (msg) => this.aviso(msg);
         this.audio.onReady = (st) => {
+            if (!st.listos) {
+                this.aviso('Los samples no cargaron. Reproduciendo un golpe de respaldo.');
+                return;
+            }
             const extra = st.faltan ? ` · ${st.faltan} samples faltan` : '';
             this.aviso(`Listo para reproducir${extra}`);
         };
 
         this.construir();
         this.bindTeclado();
+        this.root.addEventListener('pointerdown', () => {
+            this.audio.asegurarContexto().then(() => this.audio.precargarSamples(this.score)).catch(() => {});
+        }, { once: true });
         this.render();
         this.seleccionInicial();
     }
@@ -479,7 +486,7 @@ export class EditorPartitura {
         this.seleccionar({ sectionIdx: mejor.sectionIdx, measureIdx: mejor.measureIdx, instId: mejor.instId, noteIdx: mejor.noteIdx });
         if (!mejor.rest) {
             const nota = notaDe(this.score, this.sel);
-            if (nota) this.audio.golpe(mejor.instId, nota.stroke).catch(() => {});
+            if (nota) this.audio.golpe(mejor.instId, nota.stroke, 0, 1, this.score).catch((err) => this.aviso(`Audio: ${err.message}`));
         }
     }
 
@@ -579,7 +586,7 @@ export class EditorPartitura {
                 return this.mixer(mixRow, (cfg) => { cfg.visible = cfg.visible === false; }, true);
             case 'preview': {
                 const id = mixRow?.dataset.inst;
-                if (id) this.audio.golpe(id, golpesDe(id)[0]?.id || 'nota').catch(() => {});
+                if (id) this.audio.golpe(id, golpesDe(id)[0]?.id || 'nota', 0, 1, this.score).catch((err) => this.aviso(`Audio: ${err.message}`));
                 return;
             }
             default:
@@ -775,7 +782,7 @@ export class EditorPartitura {
         this.redoStack = [];
         this.tocado();
         this.render();
-        if (previewStroke && this.sel) this.audio.golpe(this.sel.instId, previewStroke).catch(() => {});
+            if (previewStroke && this.sel) this.audio.golpe(this.sel.instId, previewStroke, 0, 1, this.score).catch((err) => this.aviso(`Audio: ${err.message}`));
     }
 
     editarCompas(fn) {

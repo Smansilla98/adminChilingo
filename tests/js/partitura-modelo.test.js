@@ -10,7 +10,7 @@ import {
 } from '../../resources/js/partitura/model.js';
 import {
     MAPA_SAMPLES, nombreArchivoSample, sistemasVisuales, instrumentoPorId,
-    GOLPES_POR_INSTRUMENTO, ARTICULACION_SAMPLE,
+    GOLPES_POR_INSTRUMENTO, ARTICULACION_SAMPLE, vocesDeUnisono,
 } from '../../resources/js/partitura/instruments.js';
 import { BancoSamples, resolverGolpe, golpesPaletaAudibles } from '../../resources/js/partitura/samples.js';
 import { existsSync, readdirSync } from 'node:fs';
@@ -132,6 +132,17 @@ describe('Redoblante + Repique comparten pentagrama', () => {
         assert.equal(sis.filter((s) => s.id === 'redoblante' || s.id === 'repique').length, 0);
         assert.ok(sis.find((s) => s.id === 'timbal'));
         assert.ok(sis.find((s) => s.id === 'surdo_grave'));
+    });
+});
+
+describe('Todos (unísono)', () => {
+    it('vocesDeUnisono expande Todos a los tambores reales', () => {
+        const score = crearPartitura({
+            instrumentos: ['todos', 'surdo_grave', 'redoblante', 'timbal'],
+        });
+        const dest = vocesDeUnisono(score);
+        assert.deepEqual(dest, ['surdo_grave', 'redoblante', 'timbal']);
+        assert.ok(!dest.includes('todos'));
     });
 });
 

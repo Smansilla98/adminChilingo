@@ -87,27 +87,45 @@ export class MotorAudio {
 
     aplicarMixer(score) {
         if (!this.ctx) return;
+        const todos = score.instruments.find((i) => i.id === UNISONO);
         const soloActivo = score.instruments.some((i) => i.solo);
+        const soloTodos = !!(todos && todos.solo);
         score.instruments.forEach((i) => {
             const g = this.canalDe(i.id);
-            const audible = soloActivo ? i.solo && !i.mute : !i.mute;
-            g.gain.value = audible ? i.volume : 0;
+            let audible;
+            if (!soloActivo) audible = !i.mute;
+            else if (i.id === UNISONO) audible = i.solo && !i.mute;
+            else if (soloTodos) audible = !i.mute;
+            else audible = i.solo && !i.mute;
+            const vol = i.id === UNISONO ? (todos?.volume ?? 0.9) : i.volume;
+            g.gain.value = audible ? vol : 0;
         });
     }
 
-    async golpe(instId, strokeId, when = 0, velocidad = 1) {
+    async golpe(instId, strokeId, when = 0, velocidad = 1, score = null) {
+        if (score) this._score = score;
         await this.asegurarContexto();
-        if (!bancoSamples.ready) await bancoSamples.precargar(this.ctx, [instId]);
-        const t = when || this.ctx.currentTime + 0.01;
+        if (!bancoSamples.ready) await bancoSamples.precargar(this.ctx, instId === UNISONO ? undefined : [instId]);
+        if (this.ctx.state === 'suspended') await this.ctx.resume();
+        const t = when || this.ctx.currentTime + 0.02;
         this._dispararGolpe(instId, strokeId, t, velocidad);
     }
 
     _dispararGolpe(instId, strokeId, t, velocidad = 1) {
-        const dest = instId === UNISONO ? null : instId;
-        if (!dest) return null;
-        const src = bancoSamples.disparar(this.ctx, this.canalDe(dest), dest, strokeId, t, velocidad);
-        if (src) this._sources.push(src);
-        return src;
+        const destinos = instId === UNISONO ? vocesDeUnisono(this._score) : [instId];
+        if (!destinos.length) return null;
+        const n = destinos.length;
+        const comp = n > 1 ? 1 / Math.sqrt(n) : 1;
+        let last = null;
+        destinos.forEach((id) => {
+            const dt = n > 1 ? (UNISON_OFFSET[id] || 0) : 0;
+            const src = bancoSamples.disparar(
+                this.ctx, this.canalDe(id), id, strokeId, t + dt, velocidad * comp,
+            );
+            if (src) this._sources.push(src);
+            last = src || last;
+        });
+        return last;
     }
 
     _click(t, fuerte) {
@@ -130,6 +148,7 @@ export class MotorAudio {
      * @param {{ desde?: {sectionIdx:number, measureIdx:number}, soloSeccion?: number|null, loop?: boolean, offsetSec?: number, countIn?: boolean }} [opts]
      */
     async play(score, opts = {}) {
+        this._score = score;
         await this.asegurarContexto();
         this._cortarFuentes();
         if (this._raf) cancelAnimationFrame(this._raf);
@@ -137,6 +156,7 @@ export class MotorAudio {
         this.stopFlag = false;
         this.paused = false;
         await this.precargarSamples(score);
+        if (this.ctx.state === 'suspended') await this.ctx.resume();
         this.aplicarMixer(score);
 
         const plan = this._planificar(score, opts);
@@ -145,7 +165,7 @@ export class MotorAudio {
             return;
         }
 
-        const lookahead = 0.08;
+        const lookahead = 0.12;
         this._t0 = this.ctx.currentTime + lookahead - (opts.offsetSec || 0);
         this._offset = opts.offsetSec || 0;
         this._duration = plan.duration;
@@ -153,7 +173,6 @@ export class MotorAudio {
         this._countInSec = plan.countInSec || 0;
         this._loop = !!opts.loop;
         this._playOpts = opts;
-        this._score = score;
         this.playing = true;
 
         plan.eventos.forEach((ev) => {
@@ -161,13 +180,7 @@ export class MotorAudio {
             const t = this._t0 + ev.musicalSec;
             if (t < this.ctx.currentTime - 0.02) return;
             if (ev.tipo === 'nota') {
-                const destinos = ev.instrument === UNISONO ? vocesDeUnisono(score) : [ev.instrument];
-                const n = destinos.length;
-                const comp = n > 1 ? 1 / Math.sqrt(n) : 1;
-                destinos.forEach((id) => {
-                    const dt = n > 1 ? (UNISON_OFFSET[id] || 0) : 0;
-                    this._dispararGolpe(id, ev.articulation, t + dt, ev.velocity * comp);
-                });
+                this._dispararGolpe(ev.instrument, ev.articulation, t, ev.velocity);
             } else if (ev.tipo === 'click') {
                 this._click(t, ev.fuerte);
             }
@@ -343,11 +356,5 @@ export class MotorAudio {
         });
         this._sources = [];
         bancoSamples.cortarTodas(this.ctx);
-        if (this.ctx && this.master) {
-            this.master.gain.cancelScheduledValues(t);
-            this.master.gain.setValueAtTime(this.master.gain.value, t);
-            this.master.gain.linearRampToValueAtTime(0.0001, t + 0.02);
-            this.master.gain.linearRampToValueAtTime(0.7, t + 0.08);
-        }
     }
 }

@@ -151,9 +151,15 @@ export class BancoSamples {
         for (const url of this.urlsDe(instId, strokeId)) {
             try {
                 const res = await fetch(url, { method: 'GET', cache: 'no-cache', credentials: 'same-origin' });
-                if (!res.ok) continue;
+                if (!res.ok) {
+                    if (typeof console !== 'undefined') console.warn(`[partitura] ${res.status} ${url}`);
+                    continue;
+                }
                 const tipo = (res.headers.get('content-type') || '').toLowerCase();
-                if (tipo.includes('text/html') || tipo.includes('application/json')) continue;
+                if (tipo.includes('text/html') || tipo.includes('application/json')) {
+                    if (typeof console !== 'undefined') console.warn(`[partitura] respuesta ${tipo} en ${url}`);
+                    continue;
+                }
                 const arr = await res.arrayBuffer();
                 if (arr.byteLength < 64) continue;
                 const buf = await ctx.decodeAudioData(arr.slice(0));
@@ -194,19 +200,28 @@ export class BancoSamples {
     disparar(ctx, out, instId, strokeId, t, vel = 1) {
         const plan = resolverGolpe(instId, strokeId);
         const buf = this.obtener(plan.instId, plan.strokeId);
-        if (!buf) return null;
-        // Los WAV ya pegan ~0 dBFS: no empujar a 0.95 o el tutti clipea y suena sucio.
         const amp = Math.min(0.85, Math.max(0.04, 0.52 * vel * plan.velMul));
         const voz = plan.instId;
+        const start = Number.isFinite(t) ? t : (ctx.currentTime + 0.01);
         if (plan.flam) {
-            this._oneshot(ctx, out, buf, t - 0.032, amp * 0.35, false, `${voz}__flam`);
+            if (buf) this._oneshot(ctx, out, buf, start - 0.032, amp * 0.35, false, `${voz}__flam`);
         }
-        return this._oneshot(ctx, out, buf, t, amp, plan.choke, voz);
+        if (!buf) {
+            if (typeof console !== 'undefined') {
+                console.warn(`[partitura] sin buffer, thump de respaldo: ${plan.instId} ${plan.strokeId}`);
+            }
+            return this._thump(ctx, out, start, amp, plan.choke, voz);
+        }
+        return this._oneshot(ctx, out, buf, start, amp, plan.choke, voz);
     }
 
     _oneshot(ctx, out, buf, t, amp, choke, voz) {
-        const start = Math.max(0, t);
-        if (voz) this._cortarVoz(ctx, voz, start);
+        const start = Math.max(ctx.currentTime, t);
+        // Solo el tapado/choke corta la cola anterior. Cortar en cada golpe
+        // al programar el timeline dejaba todas las notas en silencio:
+        // cancelScheduledValues + setValueAtTime(0.0008) aplastaba el ataque
+        // de las notas que todavía no habían sonado.
+        if (choke && voz) this._cortarVoz(ctx, voz, start);
         const src = ctx.createBufferSource();
         src.buffer = buf;
         const g = ctx.createGain();
@@ -216,22 +231,46 @@ export class BancoSamples {
             g.gain.exponentialRampToValueAtTime(0.0008, start + 0.07);
         }
         src.connect(g).connect(out);
-        src.start(start);
+        try {
+            src.start(start);
+        } catch (err) {
+            if (typeof console !== 'undefined') console.warn('[partitura] start()', err);
+            return null;
+        }
         if (voz) this.voces.set(voz, { src, gain: g });
         return src;
+    }
+
+    /** Respaldo audible si el WAV no cargó: no dejar un golpe mudo. */
+    _thump(ctx, out, t, amp, choke, voz) {
+        const start = Math.max(ctx.currentTime, t);
+        if (choke && voz) this._cortarVoz(ctx, voz, start);
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(92, start);
+        osc.frequency.exponentialRampToValueAtTime(48, start + 0.09);
+        g.gain.setValueAtTime(0, start);
+        g.gain.linearRampToValueAtTime(Math.min(0.45, amp), start + 0.002);
+        g.gain.exponentialRampToValueAtTime(0.0008, start + (choke ? 0.06 : 0.14));
+        osc.connect(g).connect(out);
+        try {
+            osc.start(start);
+            osc.stop(start + 0.16);
+        } catch {
+            return null;
+        }
+        if (voz) this.voces.set(voz, { src: osc, gain: g });
+        return osc;
     }
 
     _cortarVoz(ctx, voz, t) {
         const prev = this.voces.get(voz);
         if (!prev) return;
         this.voces.delete(voz);
-        const cut = Math.max(ctx.currentTime, t);
+        const cut = Math.max(ctx.currentTime + 0.001, t);
         try {
-            prev.gain.gain.cancelScheduledValues(cut);
-            const now = Math.max(0.0008, prev.gain.gain.value || 0.0008);
-            prev.gain.gain.setValueAtTime(now, cut);
-            prev.gain.gain.exponentialRampToValueAtTime(0.0008, cut + 0.014);
-            prev.src.stop(cut + 0.018);
+            prev.src.stop(cut);
         } catch {
             /* ya detenida */
         }

@@ -100,6 +100,20 @@ describe('interop partituras', () => {
         ].includes(id)));
     });
 
+    it('plan de llamada Todos genera notas (no se descarta el unísono)', () => {
+        const motor = new MotorAudio();
+        const score = scorePrueba();
+        const cap = ticksDeCompas(score.timeSignature);
+        score.sections[0].measures[0].voces.todos = ajustarVoz([
+            crearNota({ dur: 'q', stroke: 'nota' }),
+            crearNota({ dur: 'q', stroke: 'nota' }),
+            crearNota({ dur: 'h', rest: true }),
+        ], cap);
+        const plan = motor._planificar(score, { countIn: false });
+        const todos = plan.eventos.filter((e) => e.tipo === 'nota' && e.instrument === 'todos');
+        assert.equal(todos.length, 2);
+    });
+
     it('conteo previo de un compás (4 clicks) y se puede apagar', () => {
         const motor = new MotorAudio();
         const score = scorePrueba();
