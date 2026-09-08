@@ -282,12 +282,17 @@ class PartituraScore
                 $measures[] = self::compasVacio($ids, $ts);
             }
             $nombre = trim((string) ($sec['name'] ?? ''));
-            $sections[] = [
+            $agrupar = ($sec['agrupar'] ?? null) === 'agudos-graves' ? 'agudos-graves' : null;
+            $section = [
                 'id' => (string) ($sec['id'] ?? 's'.$si),
                 'name' => $nombre !== '' ? mb_substr($nombre, 0, 40) : 'Parte '.($si + 1),
                 'repeatX' => max(1, min(16, (int) ($sec['repeatX'] ?? 1))),
                 'measures' => $measures,
             ];
+            if ($agrupar) {
+                $section['agrupar'] = $agrupar;
+            }
+            $sections[] = $section;
         }
 
         if ($sections === []) {

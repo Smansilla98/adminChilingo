@@ -341,6 +341,7 @@ export function normalizarPartitura(raw) {
             id: String(sec?.id || nextId('s')),
             name: typeof sec?.name === 'string' && sec.name.trim() ? sec.name.trim() : `Parte ${si + 1}`,
             repeatX: Math.min(16, Math.max(1, parseInt(sec?.repeatX, 10) || 1)),
+            agrupar: sec?.agrupar === 'agudos-graves' ? 'agudos-graves' : null,
             measures: measuresRaw.slice(0, 64).map((m) => {
                 const voces = {};
                 ids.forEach((id) => {

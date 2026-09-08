@@ -204,10 +204,16 @@ def compas(voces, repeat_begin=False, repeat_end=False, ending=None, texto=None,
     }
 
 
-def seccion(nombre, measures, repeat_x=1):
-    """Sección con nombre en MAYÚSCULAS, como los encabezados del cuadernillo."""
-    return {'id': nid('s'), 'name': nombre.upper(), 'repeatX': repeat_x,
-            'measures': measures}
+def seccion(nombre, measures, repeat_x=1, agrupar=None):
+    """Sección con nombre en MAYÚSCULAS, como los encabezados del cuadernillo.
+
+    agrupar='agudos-graves' → pentagramas «Agudos (llaman)» / «Graves (responden)».
+    """
+    out = {'id': nid('s'), 'name': nombre.upper(), 'repeatX': repeat_x,
+           'measures': measures}
+    if agrupar:
+        out['agrupar'] = agrupar
+    return out
 
 
 def score(title, autor, tempo, instruments, sections, num=4, den=4):

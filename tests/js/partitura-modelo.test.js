@@ -138,6 +138,20 @@ describe('Redoblante + Repique comparten pentagrama', () => {
         assert.ok(sis.find((s) => s.id === 'timbal'));
         assert.ok(sis.find((s) => s.id === 'surdo_grave'));
     });
+    it('agrupar agudos-graves etiqueta llaman / responden', () => {
+        const insts = ['redoblante', 'repique', 'surdo_grave', 'surdo_agudo', 'surdo_medio', 'timbal'].map((id) => ({
+            def: instrumentoPorId(id),
+            cfg: { id, visible: true },
+        }));
+        const sis = sistemasVisuales(insts, 'agudos-graves');
+        const agudos = sis.find((s) => s.label === 'Agudos (llaman)');
+        const graves = sis.find((s) => s.label === 'Graves (responden)');
+        assert.ok(agudos);
+        assert.equal(agudos.members.length, 2);
+        assert.ok(graves);
+        assert.equal(graves.members.map((m) => m.def.id).join(), 'surdo_grave');
+        assert.equal(sis.filter((s) => s.id.startsWith('surdo_agudo') || s.id === 'surdo_medio').length, 0);
+    });
 });
 
 describe('Todos (unísono)', () => {
@@ -172,6 +186,23 @@ describe('eventosMusicales', () => {
         assert.ok(g.velocity > 0);
         const chapa = evs.find((e) => e.articulation === 'chapa');
         assert.equal(chapa.beat, 3);
+    });
+});
+
+describe('Toque de Chilinga — llamada agudos / graves', () => {
+    it('tiene 3 compases y agrupa agudos que llaman / graves que responden', () => {
+        const p = join(dirname(fileURLToPath(import.meta.url)), '../../database/data/partituras-v4/01-toque-de-chilinga.json');
+        const score = JSON.parse(readFileSync(p, 'utf8'));
+        const llamada = score.sections.find((s) => String(s.name).includes('LLAMADA INICIAL'));
+        assert.ok(llamada);
+        assert.equal(llamada.measures.length, 3);
+        assert.equal(llamada.agrupar, 'agudos-graves');
+        const m = llamada.measures[0];
+        const redo = (m.voces.redoblante || []).filter((n) => !n.rest);
+        const grave = (m.voces.surdo_grave || []).filter((n) => !n.rest);
+        assert.equal(redo.length, 3, 'ta-ca-tá');
+        assert.equal(redo[2].stroke, 'acentuado', 'tá acentuada');
+        assert.equal(grave.length, 2, 'pum pum');
     });
 });
 

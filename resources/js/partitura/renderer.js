@@ -13,7 +13,7 @@ import {
 import { instrumentoPorId, cabezaVexflow, GOLPES, sistemasVisuales } from './instruments.js';
 import { TPQ, ticksDeNota, ticksDeCompas } from './model.js';
 
-const LABEL_W = 168;
+const LABEL_W = 188;
 const STAVE_H = 94;
 const LINE_PAD_TOP = 28;
 const LINE_PAD_BOTTOM = 22;
@@ -82,7 +82,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     wrap.className = 'pt-line';
     wrap.dataset.section = String(si);
 
-    const sistemas = sistemasVisuales(instrumentos);
+    const sistemas = sistemasVisuales(instrumentos, sec.agrupar || null);
     const width = anchoPagina - 12;
     const usable = width - LABEL_W - 24;
     const measureW = Math.max(MIN_MEASURE_W, Math.floor(usable / idxs.length));

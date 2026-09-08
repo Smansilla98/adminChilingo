@@ -159,7 +159,7 @@ export function nombreArchivoSample(instId, strokeId) {
  * Agrupa instrumentos en sistemas de pentagrama.
  * Redoblante y Repique comparten un único pentagrama de 5 líneas.
  */
-export function sistemasVisuales(insts) {
+export function sistemasVisuales(insts, agrupar = null) {
     const byId = {};
     insts.forEach((x) => { byId[x.def.id] = x; });
     const seen = new Set();
@@ -175,6 +175,18 @@ export function sistemasVisuales(insts) {
             compartido: members.length > 1,
         });
     };
+    if (agrupar === 'agudos-graves') {
+        push(['redoblante', 'repique'], 'Agudos (llaman)');
+        push(['surdo_grave'], 'Graves (responden)');
+        ['surdo_agudo', 'surdo_medio'].forEach((id) => { if (byId[id]) seen.add(id); });
+        push(['timbal']);
+        push(['agogo']);
+        push(['palmas']);
+        insts.forEach((x) => {
+            if (!seen.has(x.def.id)) push([x.def.id]);
+        });
+        return out;
+    }
     push(['todos']);
     push(['surdo_grave']);
     push(['surdo_agudo']);
