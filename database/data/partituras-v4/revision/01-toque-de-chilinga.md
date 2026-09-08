@@ -1,14 +1,16 @@
 # Revisión — Toque de Chilinga (figuras = cuadernillo pág. 3 / PDF 6)
 
-Fuente: `toque-de-chilinga-cuadernillo.pdf` / `hi/pdf-06.png`.
+Fuente: `toque-de-chilinga-cuadernillo.pdf` / `hi/pdf-06.png` + hoja Equivalencias.
 
 ## LLAMADA INICIAL Y FINAL (Todos)
 
+El PDF arranca con **semicorcheas**, no con corcheas. Compases 1 y 3 son inversos.
+
 | Compás | Figuras |
 |---|---|
-| 1 | (2 corcheas + 4 semis) × 2 → `x=x=xxxxx=x=xxxx` |
-| 2 | 2 corcheas · sil. negra · 2 corcheas · sil. negra → `x=x=----x=x=----` |
-| 3 | (4 semis + 2 corcheas) × 2 → `xxxxx=x=xxxxx=x=` |
+| 1 | (4 semis + 2 corcheas) × 2 → `xxxxx=x=xxxxx=x=` |
+| 2 | sil. negra · 2 corcheas · sil. negra · 2 corcheas → `----x=x=----x=x=` |
+| 3 | (2 corcheas + 4 semis) × 2 → `x=x=xxxxx=x=xxxx` |
 | 4 | igual al 2 |
 
 ## TOQUE (×8)
@@ -19,20 +21,21 @@ Fuente: `toque-de-chilinga-cuadernillo.pdf` / `hi/pdf-06.png`.
 | Surdo Agudo | negras 2 y 4 |
 | Surdo Medio | (2 corcheas + negra) × 2 |
 | Redoblante / Repique | 16 semis, acento en 1ª de cada tiempo |
-| Timbal | (2 corcheas + sil. negra) × 2 |
+| Timbal | (sil. negra + 2 corcheas) × 2 |
 
 ## LLAMADA INTERMEDIA (×4)
 
 - Redo/Repi: misma frase que la llamada
 - Surdos: (sil. negra + 2 corcheas) × 2
 
-## Render (todos los toques)
+## Render (Equivalencias + toque)
 
 - Compás **C**
 - Clave de percusión
-- **1 línea** visible
-- Plicas arriba, barras planas por negra
-- Sin bracket / barra de sistema (no está en el cuadernillo)
+- Cabeza en la **línea del medio** (`b/4`)
+- **Plicas abajo** (hoja Equivalencias); en Redo+Repi, voz de arriba / abajo
+- Barras por negra (2 corcheas / 4 semis)
+- Sin bracket / barra de sistema
 - Solo voces que tocan en la sección
 
 ```bash

@@ -107,6 +107,16 @@ describe('golpes por instrumento (editor)', () => {
     });
 });
 
+describe('Equivalencias (grabado)', () => {
+    it('cabeza en la línea del medio y plica abajo', () => {
+        ['todos', 'surdo_grave', 'surdo_agudo', 'surdo_medio', 'redoblante', 'repique', 'timbal'].forEach((id) => {
+            const def = instrumentoPorId(id);
+            assert.equal(def.pitch, 'b/4', id);
+            assert.equal(def.stem, -1, id);
+        });
+    });
+});
+
 describe('Redoblante + Repique comparten pentagrama', () => {
     it('sistemasVisuales agrupa redo y repi', () => {
         const insts = ['redoblante', 'repique', 'timbal', 'surdo_grave'].map((id) => ({

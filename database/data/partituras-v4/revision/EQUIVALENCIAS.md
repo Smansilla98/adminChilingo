@@ -28,6 +28,12 @@ Misma duración que la figura homónima (`-` / `--` / `----` / etc. en el DSL).
 | Semicorchea | 1/4 | `16r` | `-` |
 | Fusa | 1/8 | `32r` | grilla 32: `-` |
 
+## Grabado (la hoja lo dibuja así)
+
+- Cabeza en la **línea del medio** del pentagrama de 5 líneas.
+- **Plica abajo** en todas las figuras (blanca, negra, corchea, semi, fusa).
+- Barras **debajo** de las cabezas: 2 corcheas / 4 semis / 8 fusas por tiempo.
+
 ## Reglas de escritura
 
 1. **No inventar** silencios de semicorchea sueltos tipo `xx-x` si el PDF muestra corcheas o grupos de 4 semis.

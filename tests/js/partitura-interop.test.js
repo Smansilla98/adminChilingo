@@ -62,6 +62,8 @@ describe('interop partituras', () => {
         assert.match(xml, /<beam number="1">begin<\/beam>/);
         assert.match(xml, /<beam number="2">begin<\/beam>/);
         assert.match(xml, /accent placement="below"/);
+        assert.match(xml, /<stem>down<\/stem>/);
+        assert.match(xml, /<display-step>B<\/display-step>/);
         assert.match(xml, /<rehearsal>LLAMADA INICIAL Y FINAL<\/rehearsal>/);
         assert.match(xml, /midi-channel>10/);
         assert.doesNotMatch(xml, /version="3\.1"/);

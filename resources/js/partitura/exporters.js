@@ -219,11 +219,13 @@ export function generarMusicXML(score) {
                     const voz = m.voces[mem.def.id] || [];
                     const notas = voz.length ? voz : [{ dur: 'w', rest: true, dots: 0, stroke: 'nota' }];
                     const beams = calcularBeams(notas, ts);
+                    const stem = p.sis.compartido ? (vi === 0 ? 'up' : 'down') : 'down';
                     notas.forEach((n, ni) => {
                         xml += notaXML(n, mem.def, {
                             voice: vi + 1,
                             iid: `${p.pid}-${mem.def.id}-${n.stroke || 'nota'}`,
                             beams: beams[ni],
+                            stem,
                         });
                     });
                 });
@@ -322,6 +324,7 @@ function notaXML(n, def, opts = {}) {
     if (n.tuplet) {
         s += `        <time-modification><actual-notes>${n.tuplet.num}</actual-notes><normal-notes>${n.tuplet.den}</normal-notes></time-modification>\n`;
     }
+    if (!n.rest) s += `        <stem>${opts.stem || 'down'}</stem>\n`;
     (opts.beams || []).forEach((b) => {
         s += `        <beam number="${b.number}">${b.tipo}</beam>\n`;
     });

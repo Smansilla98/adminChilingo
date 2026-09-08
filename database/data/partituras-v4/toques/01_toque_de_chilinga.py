@@ -8,14 +8,15 @@ TITULO = 'Toque de Chilinga'
 MATCH = {'año': 1, 'orden': 1, 'nombre': 'Ritmo Chilinga'}
 PDF_PAGES = [6]
 
-# --- LLAMADA INICIAL Y FINAL (Todos) — 4 compases
-# 1: (2 corcheas + 4 semis) × 2
-# 2: 2 corcheas · sil. negra · 2 corcheas · sil. negra
-# 3: (4 semis + 2 corcheas) × 2  (inverso del 1)
+# --- LLAMADA INICIAL Y FINAL (Todos) — 4 compases (PDF pág. 6)
+# El cuadernillo arranca con semis (no con corcheas): m1 y m3 estaban al revés.
+# 1: (4 semis + 2 corcheas) × 2
+# 2: sil. negra · 2 corcheas · sil. negra · 2 corcheas
+# 3: (2 corcheas + 4 semis) × 2
 # 4: igual al 2
-LL_1 = 'x=x=xxxxx=x=xxxx'   # x=x=xxxx x=x=xxxx
-LL_2 = 'x=x=----x=x=----'
-LL_3 = 'xxxxx=x=xxxxx=x='  # xxxx x=x= xxxx x=x=
+LL_1 = 'xxxxx=x=xxxxx=x='  # xxxx x=x= xxxx x=x=
+LL_2 = '----x=x=----x=x='
+LL_3 = 'x=x=xxxxx=x=xxxx'   # x=x=xxxx x=x=xxxx
 
 llamada = [
     compas(unisono(LL_1), texto='Todos'),
@@ -36,7 +37,7 @@ toque = [
         'surdo_medio': 'x=x=x===x=x=x===',
         'redoblante': '>xxx>xxx>xxx>xxx',
         'repique': '>xxx>xxx>xxx>xxx',
-        'timbal': 'x=x=----x=x=----',
+        'timbal': '----x=x=----x=x=',
     }, repeat_begin=True, repeat_end=True, texto='Toque'),
 ]
 

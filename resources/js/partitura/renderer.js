@@ -142,7 +142,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
 
             sis.members.forEach((inst, vi) => {
                 const vozData = m.voces[inst.def.id] || [];
-                const stem = sis.compartido ? (vi === 0 ? 1 : -1) : 1;
+                const stem = sis.compartido ? (vi === 0 ? 1 : -1) : (inst.def.stem || -1);
                 const pitch = inst.def.pitch || 'b/4';
                 const built = [];
                 const tuplets = [];

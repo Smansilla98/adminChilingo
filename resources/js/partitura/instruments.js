@@ -18,16 +18,16 @@
 
 /** @type {Instrumento[]} */
 export const INSTRUMENTOS = [
-    // Voz "Todos" del cuadernillo: unísono estricto, un solo pentagrama.
-    { id: 'todos', label: 'Todos', short: 'Tod', pitch: 'b/4', stem: 1, midi: 38, color: '#6d5b45', familia: 'membrana', freq: 120 },
-    { id: 'surdo_grave', label: 'Surdo Grave', short: 'S.Gr', pitch: 'e/4', stem: -1, midi: 87, color: '#e86a3c', familia: 'membrana', freq: 62 },
-    { id: 'surdo_agudo', label: 'Surdo Agudo', short: 'S.Ag', pitch: 'g/4', stem: -1, midi: 43, color: '#f0a04b', familia: 'membrana', freq: 96 },
-    { id: 'surdo_medio', label: 'Surdo Medio', short: 'S.Me', pitch: 'a/4', stem: -1, midi: 41, color: '#d1a054', familia: 'membrana', freq: 78 },
-    { id: 'redoblante', label: 'Redoblante', short: 'Redo', pitch: 'c/5', stem: 1, midi: 38, color: '#5b9ef0', familia: 'membrana', freq: 205 },
-    { id: 'repique', label: 'Repique', short: 'Repi', pitch: 'd/5', stem: 1, midi: 40, color: '#4a9a86', familia: 'membrana', freq: 300 },
-    { id: 'timbal', label: 'Timbal', short: 'Timb', pitch: 'f/5', stem: 1, midi: 66, color: '#9c8ad1', familia: 'membrana', freq: 168 },
-    { id: 'agogo', label: 'Agogó', short: 'Ago', pitch: 'a/5', stem: 1, midi: 67, color: '#c1432b', familia: 'metal', freq: 780 },
-    { id: 'palmas', label: 'Palmas', short: 'Palm', pitch: 'b/5', stem: 1, midi: 39, color: '#b6a488', familia: 'mano', freq: 1200 },
+    // Equivalencias + Toque de Chilinga: cabeza en la línea del medio, plica abajo.
+    { id: 'todos', label: 'Todos', short: 'Tod', pitch: 'b/4', stem: -1, midi: 38, color: '#6d5b45', familia: 'membrana', freq: 120 },
+    { id: 'surdo_grave', label: 'Surdo Grave', short: 'S.Gr', pitch: 'b/4', stem: -1, midi: 87, color: '#e86a3c', familia: 'membrana', freq: 62 },
+    { id: 'surdo_agudo', label: 'Surdo Agudo', short: 'S.Ag', pitch: 'b/4', stem: -1, midi: 43, color: '#f0a04b', familia: 'membrana', freq: 96 },
+    { id: 'surdo_medio', label: 'Surdo Medio', short: 'S.Me', pitch: 'b/4', stem: -1, midi: 41, color: '#d1a054', familia: 'membrana', freq: 78 },
+    { id: 'redoblante', label: 'Redoblante', short: 'Redo', pitch: 'b/4', stem: -1, midi: 38, color: '#5b9ef0', familia: 'membrana', freq: 205 },
+    { id: 'repique', label: 'Repique', short: 'Repi', pitch: 'b/4', stem: -1, midi: 40, color: '#4a9a86', familia: 'membrana', freq: 300 },
+    { id: 'timbal', label: 'Timbal', short: 'Timb', pitch: 'b/4', stem: -1, midi: 66, color: '#9c8ad1', familia: 'membrana', freq: 168 },
+    { id: 'agogo', label: 'Agogó', short: 'Ago', pitch: 'b/4', stem: -1, midi: 67, color: '#c1432b', familia: 'metal', freq: 780 },
+    { id: 'palmas', label: 'Palmas', short: 'Palm', pitch: 'b/4', stem: -1, midi: 39, color: '#b6a488', familia: 'mano', freq: 1200 },
 ];
 
 /** Instrumentos que arrancan en una partitura nueva. */
