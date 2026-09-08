@@ -59,6 +59,13 @@ def main():
     for f in archivos:
         mod = cargar(os.path.join(dir_toques, f))
         score = mod.SCORE
+        paginas = getattr(mod, 'PDF_PAGES', None)
+        if paginas:
+            score['source'] = {
+                'type': 'pdf',
+                'file': 'Toques_chilinga_compressed.pdf',
+                'pages': list(paginas),
+            }
         problemas = validar(score)
         slug = f[:-3].replace('_', '-')
         out = os.path.join(BASE, f'{slug}.json')

@@ -1,0 +1,588 @@
+{
+  "titulo": "Investigación musical — referencias La Chilinga",
+  "fecha": "2026-09-08",
+  "regla": "No inventar patrones de disco. El JSON v4 es del Cuadernillo, no onset del álbum.",
+  "midi_tipo": "MIDI GENERADO A PARTIR DE ANALISIS",
+  "midi_oficial": false,
+  "audio_autorizado_adjunto": false,
+  "contradicciones": [
+    {
+      "tema": "Año de Percusión",
+      "fuente_a": {"valor": "1998", "url": "https://es.wikipedia.org/wiki/La_Chilinga", "tipo": "Wikipedia", "confianza": "MEDIUM"},
+      "fuente_b": {"valor": "2003", "url": "https://www.cmtv.com.ar/discos_letras/show.php?DS_DS=1476&banda=La_Chilinga&bnid=158&disco=PERCUSION", "tipo": "CMTV", "confianza": "MEDIUM"}
+    },
+    {
+      "tema": "Año de Muñequitos del tambor",
+      "fuente_a": {"valor": "2004", "url": "https://es.wikipedia.org/wiki/La_Chilinga", "tipo": "Wikipedia", "confianza": "MEDIUM"},
+      "fuente_b": {"valor": "2005", "url": "https://www.cmtv.com.ar/discos_letras/letra.php?bnid=158&tmid=26093", "tipo": "CMTV", "confianza": "MEDIUM"}
+    },
+    {
+      "tema": "Título 3 Golpes vs Golpes",
+      "fuente_a": {"valor": "pedido: 3 Golpes", "tipo": "consulta", "confianza": "LOW"},
+      "fuente_b": {"valor": "Golpes (Raíces track 06)", "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158", "tipo": "CMTV", "confianza": "HIGH"}
+    }
+  ],
+  "piezas": [
+    {
+      "id": "tambores-iyesa",
+      "nombre": "Tambores Iyesá",
+      "album": "Percusión",
+      "anio": "1998 (Wikipedia) / 2003 (CMTV)",
+      "fuente": "Tagtuner + CMTV",
+      "url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7",
+      "url_alt": "https://www.cmtv.com.ar/discos_letras/show.php?DS_DS=1476&banda=La_Chilinga&bnid=158&disco=PERCUSION",
+      "duracion": "3:48",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido (mezcla de bloque; no afirmar líneas)",
+      "mapeo_cuadernillo": "09-iyesa.json",
+      "mapeo_titulo_cuadernillo": "Iyesá I, II y III",
+      "confianza_mapeo_nombre": "MEDIUM",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": "investigacion/midi/09-iyesa.mid",
+      "json_v4": "09-iyesa.json",
+      "bpm_pedagogico": 84,
+      "compas_pedagogico": "4/4",
+      "subdivision_pedagogica": "16ths + tresillos/sextillos en llamadas",
+      "instrumentos_cuadernillo": ["surdo_grave", "surdo_agudo", "surdo_medio", "redoblante", "repique", "timbal", "agogo", "palmas"],
+      "patron_base_cuadernillo": {
+        "agogo": "x=x=x=x=xxx=--xx",
+        "palmas": "x===x=x=x===x=x=",
+        "toque_iyesa_I": {
+          "surdo_grave": "x===----x===----",
+          "surdo_agudo": "x===----x===----",
+          "surdo_medio": "----x=x=----x=x=",
+          "redoblante": ">xx>x=>xx>x=6(xx>>>>)",
+          "repique": ">x>xxx>x>xx>x>>x",
+          "timbal": "o=o=xxxxo=o=x=x="
+        }
+      },
+      "estructura_cuadernillo": ["Introducción (agogó/palmas)", "Llamada", "Toque Iyesá I", "Variación de repique", "Llamada para Iyesá II", "Toque Iyesá II", "Llamadas Iyesá III", "Toques III A/B"],
+      "samples_requeridos": ["surdo_* nota/chapa/tapado", "redoblante nota/acentuado/chapa", "repique nota/acentuado/chapa/agudo", "timbal abierto/slap/palma/presionado/dedo", "agogo", "palmas"],
+      "samples_faltantes": [],
+      "observaciones": "El disco es un arreglo con posible canto/ensamble. El JSON es I, II y III del cuadernillo. No copiar el patrón I al II.",
+      "fuentes": [
+        {"source": "Tagtuner Percusion", "source_url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7", "source_type": "catálogo", "date": "consultado 2026-09-08", "confidence": "HIGH"},
+        {"source": "Cuadernillo págs. 15-19", "source_url": "toques/09_iyesa.py", "source_type": "partitura", "date": "cuadernillo", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "de-rumba",
+      "nombre": "De Rumba",
+      "album": "Percusión",
+      "anio": "1998 / 2003",
+      "fuente": "Tagtuner + CMTV",
+      "url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7",
+      "duracion": "3:10",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido",
+      "mapeo_cuadernillo": "11-rumba.json",
+      "mapeo_titulo_cuadernillo": "Rumba",
+      "confianza_mapeo_nombre": "MEDIUM",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": "investigacion/midi/11-rumba.mid",
+      "json_v4": "11-rumba.json",
+      "bpm_pedagogico": 86,
+      "compas_pedagogico": "4/4 (el cuadernillo marca un 2/4 en el cierre unísono)",
+      "subdivision_pedagogica": "16ths + tresillos",
+      "instrumentos_cuadernillo": ["todos", "surdo_grave", "surdo_agudo", "surdo_medio", "redoblante", "repique", "timbal"],
+      "patron_base_cuadernillo": {
+        "llamada_todos": "x==x---x--x=x===",
+        "surdo_grave": "x==x------------",
+        "surdo_agudo": "xx--x=x=xx--x=x=",
+        "surdo_medio": "--------x==xx===",
+        "redoblante": ">xxx>xxx>xxx>xxx",
+        "repique": "x=x=-x=x=x=-x=x=",
+        "timbal": "x=o--x=t=t--o=xx"
+      },
+      "estructura_cuadernillo": ["Llamada inicial y final", "Toque ×8", "Llamada sobre el toque", "Final unísono", "Variación de timbal"],
+      "samples_requeridos": ["surdos", "redoblante", "repique", "timbal (abierto/tapado)"],
+      "samples_faltantes": [],
+      "observaciones": "Título de disco 'De Rumba' ≠ afirmación de que el mix sea el toque de 2°.",
+      "fuentes": [
+        {"source": "Tagtuner", "source_url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"},
+        {"source": "Cuadernillo págs. 21-22", "source_url": "toques/11_rumba.py", "source_type": "partitura", "date": "cuadernillo", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "mongo-kuta",
+      "nombre": "Mongo Kutá",
+      "album": "Percusión",
+      "anio": "1998 / 2003",
+      "fuente": "Tagtuner (Mongo Kutá) / CMTV (MONGOKUTÁ)",
+      "url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7",
+      "duracion": "2:27",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido",
+      "mapeo_cuadernillo": "21-mongo-kuta.json",
+      "mapeo_titulo_cuadernillo": "Mongo kutá",
+      "confianza_mapeo_nombre": "MEDIUM",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": "investigacion/midi/21-mongo-kuta.mid",
+      "json_v4": "21-mongo-kuta.json",
+      "bpm_pedagogico": 84,
+      "compas_pedagogico": "4/4",
+      "subdivision_pedagogica": "16ths + sextillos en variación 2",
+      "instrumentos_cuadernillo": ["surdo_grave", "surdo_agudo", "surdo_medio", "redoblante", "repique", "timbal"],
+      "patron_base_cuadernillo": {
+        "surdo_agudo": "xxxx-xx-xxxx-xx-",
+        "surdo_grave_a": "x===------------",
+        "surdo_grave_b": "--x===----------",
+        "surdo_medio": "-x--x=--x-x-x=--",
+        "redoblante": ">xxx>xxx>xxx>xxx",
+        "repique": "-xx-----x-------",
+        "timbal": "x=t=xtxtx=t=xtxt"
+      },
+      "estructura_cuadernillo": ["Introducción", "Toque", "Variación 1", "Variación 2", "Llamada sobre var. 2", "Llamada"],
+      "samples_requeridos": ["surdos (incl. tapado en medio/repique de var. 2)", "redoblante acentuado", "timbal tapado"],
+      "samples_faltantes": [],
+      "observaciones": "PDF denso en HI: el .py marca revisar; no se inventó xx-x.",
+      "fuentes": [
+        {"source": "Tagtuner", "source_url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"},
+        {"source": "Cuadernillo págs. 37-39", "source_url": "toques/21_mongo_kuta.py", "source_type": "partitura", "date": "cuadernillo", "confidence": "MEDIUM"}
+      ]
+    },
+    {
+      "id": "la-llamada",
+      "nombre": "La Llamada",
+      "album": "Percusión",
+      "anio": "1998 / 2003",
+      "fuente": "Tagtuner (feat. Ariel Prat en otras fichas de catálogo)",
+      "url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7",
+      "duracion": "2:43",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido",
+      "mapeo_cuadernillo": null,
+      "confianza_mapeo_nombre": "n/a",
+      "confianza_igualdad_arreglo": "n/a",
+      "midi": null,
+      "json_v4": null,
+      "patron_disco": "desconocido — no hay transcripción pedagógica con este título",
+      "estructura_disco": "desconocido",
+      "samples_requeridos": [],
+      "samples_faltantes": ["AUDIO_NO_AUTORIZADO"],
+      "observaciones": "No aplicar el patrón de Rumba ni el de Chilinga. Sin audio autorizado no hay grilla.",
+      "fuentes": [
+        {"source": "Tagtuner", "source_url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "san-dombe",
+      "nombre": "San Dombe",
+      "album": "Percusión",
+      "anio": "1998 / 2003",
+      "fuente": "Tagtuner + CMTV",
+      "url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7",
+      "duracion": "1:23",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido",
+      "mapeo_cuadernillo": null,
+      "midi": null,
+      "json_v4": null,
+      "patron_disco": "desconocido",
+      "observaciones": "Nombre evoca candombe/dombe; no identificar con Candombe Argentino ni En Tres Candombe.",
+      "fuentes": [
+        {"source": "Tagtuner", "source_url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "toque-a-eleggua",
+      "nombre": "Toque a Eleggua",
+      "album": "Percusión",
+      "anio": "1998 / 2003",
+      "fuente": "Tagtuner + CMTV (Toque a Eleggua / TOQUE A ELEGGUA)",
+      "url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7",
+      "duracion": "2:12",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido",
+      "mapeo_cuadernillo": null,
+      "no_es": ["03-ochosi.json", "26-toque-a-oxosi.json"],
+      "midi": null,
+      "json_v4": null,
+      "patron_disco": "desconocido",
+      "observaciones": "Eleggua ≠ Ochosi/Oxosi. No reutilizar Toque a Oxosi.",
+      "fuentes": [
+        {"source": "Tagtuner", "source_url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "chinga-chilinga",
+      "nombre": "Chinga Chilinga",
+      "album": "Raíces",
+      "anio": "2007",
+      "fuente": "CMTV + CritiqueBrainz",
+      "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158",
+      "url_alt": "https://critiquebrainz.org/release-group/ec6871b9-83fb-3de7-a700-4fdcea411582",
+      "duracion": "3:51",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "Wikipedia: ~200 alumnos; no se listan líneas por instrumento",
+      "mapeo_cuadernillo": ["01-toque-de-chilinga.json", "17-chilinga-ii.json"],
+      "mapeo_titulo_cuadernillo": "Toque de Chilinga / Chilinga II",
+      "confianza_mapeo_nombre": "MEDIUM",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": ["investigacion/midi/01-toque-de-chilinga.mid", "investigacion/midi/17-chilinga-ii.mid"],
+      "json_v4": ["01-toque-de-chilinga.json", "17-chilinga-ii.json"],
+      "bpm_pedagogico": [88, 88],
+      "compas_pedagogico": "4/4",
+      "subdivision_pedagogica": "16ths",
+      "patron_base_cuadernillo_chilinga_1": {
+        "llamada_1": "xxxxx=x=xxxxx=x=",
+        "llamada_2": "----x=x=----x=x=",
+        "llamada_3": "x=x=xxxxx=x=xxxx",
+        "surdo_grave": "x===----x===----",
+        "surdo_agudo": "----x===----x===",
+        "surdo_medio": "x=x=x===x=x=x===",
+        "redoblante": ">xxx>xxx>xxx>xxx",
+        "repique": ">xxx>xxx>xxx>xxx",
+        "timbal": "----x=x=----x=x="
+      },
+      "patron_base_cuadernillo_chilinga_2": {
+        "surdo_grave": "xx--xx--xx--xx--",
+        "surdo_medio": "--xx--xx--xx--xx",
+        "redoblante": "xxxxxxxxxxxxxxxx",
+        "repique": "aaxxaaxxaaxxaaxx",
+        "timbal": "xxo=xxo=xxo=xxo="
+      },
+      "estructura_cuadernillo_1": ["Llamada inicial y final (Todos)", "Toque ×8", "Llamada intermedia ×4"],
+      "samples_requeridos": ["repique_agudo (Chilinga II)", "surdos", "redoblante acentuado"],
+      "samples_faltantes": [],
+      "observaciones": "Grabación con ~200 alumnos y posible canto. No afirmar cuál de los dos toques pedagógicos (si alguno) suena en el disco.",
+      "fuentes": [
+        {"source": "CMTV Raíces", "source_url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"},
+        {"source": "Wikipedia Raíces ~200 alumnos", "source_url": "https://es.wikipedia.org/wiki/La_Chilinga", "source_type": "enciclopedia", "date": "2026-09-08", "confidence": "MEDIUM"},
+        {"source": "Cuadernillo pág. 3 y 33", "source_url": "toques/01_toque_de_chilinga.py", "source_type": "partitura", "date": "cuadernillo", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "samba-reggae-xango",
+      "nombre": "Samba Reggae con Canto a Xangó",
+      "album": "Raíces",
+      "anio": "2007",
+      "fuente": "CMTV (SAMBA REGGAE CON CANTO A XANGO) / CritiqueBrainz (typo Samab reggae…)",
+      "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158",
+      "duracion": "1:55",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido; el título afirma canto (no está en el JSON pedagógico)",
+      "mapeo_cuadernillo": ["07-samba-reggae-tradicional.json", "08-samba-reggae-contemporaneo.json"],
+      "confianza_mapeo_nombre": "LOW",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": ["investigacion/midi/07-samba-reggae-tradicional.mid", "investigacion/midi/08-samba-reggae-contemporaneo.mid"],
+      "json_v4": ["07-samba-reggae-tradicional.json", "08-samba-reggae-contemporaneo.json"],
+      "bpm_pedagogico": 86,
+      "compas_pedagogico": "4/4",
+      "patron_base_tradicional": {
+        "surdo_grave": "x===----x===----",
+        "surdo_agudo": "----x===----x===",
+        "surdo_medio": "------x=----xxxx",
+        "redoblante": "xx>>xx>>xx>>xx>>",
+        "repique": ">xx>xx>xx>xx>xx>",
+        "timbal": "xpp-xxxxxpp-xxxx"
+      },
+      "observaciones": "No se sabe si el disco usa Tradicional, Contemporáneo, una mezcla o un arreglo con canto. Entregar ambos JSON como candidatos, no como identidad.",
+      "fuentes": [
+        {"source": "CMTV", "source_url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"},
+        {"source": "CritiqueBrainz (duración + typo)", "source_url": "https://critiquebrainz.org/release-group/ec6871b9-83fb-3de7-a700-4fdcea411582", "source_type": "catálogo", "date": "2026-09-08", "confidence": "MEDIUM"}
+      ]
+    },
+    {
+      "id": "golpes",
+      "nombre": "Golpes",
+      "alias_pedido": "3 Golpes",
+      "album": "Raíces",
+      "anio": "2007",
+      "fuente": "CMTV track 06 GOLPES",
+      "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158",
+      "duracion": "2:04",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "mapeo_cuadernillo": null,
+      "midi": null,
+      "json_v4": null,
+      "patron_disco": "desconocido",
+      "observaciones": "El pedido dice «3 Golpes»; CMTV y CritiqueBrainz dicen «Golpes». Ningún JSON se llama así.",
+      "fuentes": [
+        {"source": "CMTV", "source_url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "cuando-oigo-sonar-la-caja",
+      "nombre": "Cuando oigo sonar la caja",
+      "album": "Raíces",
+      "anio": "2007",
+      "fuente": "CMTV + CritiqueBrainz",
+      "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158",
+      "duracion": "3:22",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "mapeo_cuadernillo": null,
+      "midi": null,
+      "json_v4": null,
+      "patron_disco": "desconocido",
+      "observaciones": "Título sugiere caja/redoblante protagonista; no hay toque pedagógico con este nombre.",
+      "fuentes": [
+        {"source": "CritiqueBrainz", "source_url": "https://critiquebrainz.org/release-group/ec6871b9-83fb-3de7-a700-4fdcea411582", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "samba-do-mar",
+      "nombre": "Samba do Mar",
+      "album": "Raíces",
+      "anio": "2007",
+      "fuente": "CMTV + CritiqueBrainz",
+      "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158",
+      "duracion": "2:57",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "mapeo_cuadernillo": null,
+      "midi": null,
+      "json_v4": null,
+      "patron_disco": "desconocido",
+      "observaciones": "No usar Samba Reggae I/II como suplente.",
+      "fuentes": [
+        {"source": "CMTV", "source_url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "guaguanco-chilingo",
+      "nombre": "Guaguanco chilingo",
+      "album": "Raíces",
+      "anio": "2007",
+      "fuente": "CMTV (GUAGUANCO CHILINGO)",
+      "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158",
+      "duracion": "4:54",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "mapeo_cuadernillo": "11-rumba.json (solo analogía de familia rumba/guaguancó — NO identidad)",
+      "confianza_mapeo_nombre": "LOW",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": null,
+      "json_v4": null,
+      "patron_disco": "desconocido",
+      "observaciones": "No copiar el patrón de Rumba. Familia rítmica ≠ mismo toque.",
+      "fuentes": [
+        {"source": "CMTV", "source_url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "makuta",
+      "nombre": "Makuta",
+      "album": "Raíces",
+      "anio": "2007",
+      "fuente": "CMTV + CritiqueBrainz",
+      "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158",
+      "duracion": "2:16",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido; el cuadernillo sí lleva agogó/campana",
+      "mapeo_cuadernillo": "18-makuta.json",
+      "mapeo_titulo_cuadernillo": "Makuta",
+      "confianza_mapeo_nombre": "MEDIUM",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": "investigacion/midi/18-makuta.mid",
+      "json_v4": "18-makuta.json",
+      "bpm_pedagogico": 84,
+      "compas_pedagogico": "4/4",
+      "instrumentos_cuadernillo": ["surdo_grave", "surdo_agudo", "surdo_medio", "redoblante", "repique", "timbal", "agogo"],
+      "patron_base_cuadernillo": {
+        "surdos_grave_agudo": "---x----x=x=x---",
+        "surdo_medio": "------x=----xxxx",
+        "redoblante": ">xxx>xxx>xxx>xxx",
+        "repique": "xx==xx==xx==xx==",
+        "timbal": "p==xp=xxp===xxx=",
+        "agogo": "xx-t-t-xx-t-t---"
+      },
+      "estructura_cuadernillo": ["Llamada de principio", "Toque ×8", "Llamada final"],
+      "samples_requeridos": ["agogo nota/tapado", "timbal palma", "surdos"],
+      "samples_faltantes": [],
+      "observaciones": "Nombre coincidente. El disco puede incluir canto o forma distinta.",
+      "fuentes": [
+        {"source": "CMTV", "source_url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"},
+        {"source": "Cuadernillo pág. 34", "source_url": "toques/18_makuta.py", "source_type": "partitura", "date": "cuadernillo", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "canto-a-obatala",
+      "nombre": "Canto a Obatalá",
+      "album": "Raíces",
+      "anio": "2007",
+      "fuente": "CMTV (CANTO A OBATALA)",
+      "url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158",
+      "duracion": "3:04",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "mapeo_cuadernillo": null,
+      "midi": null,
+      "json_v4": null,
+      "patron_disco": "desconocido",
+      "observaciones": "El título prioriza canto. El cuadernillo no tiene toque 'Obatalá'.",
+      "fuentes": [
+        {"source": "CMTV", "source_url": "https://www.cmtv.com.ar/discos_letras/show.php?banda=La_Chilinga&bnid=158", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"}
+      ]
+    },
+    {
+      "id": "en-tres-candombe",
+      "nombre": "En Tres Candombe",
+      "album": "Viejos Dioses",
+      "anio": "2001",
+      "fuente": "Spotify + Tagtuner",
+      "url": "https://open.spotify.com/album/01HKLOCsVb7M8NR2p67OEZ",
+      "url_alt": "https://www.tagtuner.com/music/albums/La-Chilinga/Viejos-Dioses/album-v264e74",
+      "duracion": "2:11",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido; el álbum incluye banda (La Nación 2001: guitarras, bajo, teclados, voces)",
+      "mapeo_cuadernillo": "06-candombe-argentino.json",
+      "confianza_mapeo_nombre": "LOW",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": "investigacion/midi/06-candombe-argentino.mid",
+      "json_v4": "06-candombe-argentino.json",
+      "bpm_pedagogico": 88,
+      "compas_pedagogico": "4/4",
+      "patron_base_cuadernillo": {
+        "llamada_hi": "--x==x--x==xx===",
+        "llamada_surdos": "---x--x=---x--x=",
+        "toque_grave_agudo": "x==xx=x=x=x=x=x=",
+        "toque_medio": "x==xx=x=x==xx=x=",
+        "redoblante": ">xxx>xxx>xxx>>xx",
+        "repique": ">x=xx=>x=xx=>x=x",
+        "timbal": "xxxxxxxxxxxxxxxx"
+      },
+      "observaciones": "«En tres» no está explicado en fuentes públicas revisadas (¿tres toques? ¿clave?). No afirmar que sea el Candombe Argentino de 2°.",
+      "fuentes": [
+        {"source": "Spotify Viejos Dioses", "source_url": "https://open.spotify.com/album/01HKLOCsVb7M8NR2p67OEZ", "source_type": "Spotify", "date": "2001-12-03 / consultado 2026-09-08", "confidence": "HIGH"},
+        {"source": "Tagtuner (títulos 1-2 y 9,11,12 que Spotify a veces deja sin nombre)", "source_url": "https://www.tagtuner.com/music/albums/La-Chilinga/Viejos-Dioses/album-v264e74", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"},
+        {"source": "La Nación, banda paralela", "source_url": "https://www.lanacion.com.ar/espectaculos/la-chilinga-banda-y-escuela-nid45311/", "source_type": "artículo", "date": "c. 2001", "confidence": "MEDIUM"}
+      ]
+    },
+    {
+      "id": "toque-a-oxosi",
+      "nombre": "Toque a Oxosi",
+      "album": "Muñequitos del tambor — pista relacionada: El Bosque Oxosi",
+      "anio": "2004 (Wikipedia) / 2005 (CMTV)",
+      "fuente": "CMTV listado del álbum (track 16 EL BOSQUE OXOSI)",
+      "url": "https://www.cmtv.com.ar/discos_letras/letra.php?bnid=158&tmid=26093",
+      "duracion": "desconocido",
+      "bpm_disco": "desconocido",
+      "compas_disco": "desconocido",
+      "subdivision_disco": "desconocido",
+      "swing_disco": "desconocido",
+      "instrumentacion_disco": "desconocido",
+      "mapeo_cuadernillo": "26-toque-a-oxosi.json",
+      "relacionado_no_identidad": "03-ochosi.json (Ochosi de 1° — otro toque)",
+      "confianza_mapeo_nombre": "MEDIUM",
+      "confianza_igualdad_arreglo": "LOW",
+      "midi": "investigacion/midi/26-toque-a-oxosi.mid",
+      "json_v4": "26-toque-a-oxosi.json",
+      "bpm_pedagogico": 84,
+      "compas_pedagogico": "4/4",
+      "instrumentos_cuadernillo": ["todos", "surdo_grave", "surdo_agudo", "surdo_medio", "redoblante", "repique", "timbal"],
+      "patron_base_cuadernillo": {
+        "toque_1_sg": "t=x=----x===----",
+        "toque_1_sa_sm": "t=x=------------",
+        "sobre_toque_redo_repi": ">xxx>xxx>xxx>xxx",
+        "toque_2_surdos": "t=x=x=x=----x=--",
+        "toque_2_redo_repi": "3(-xx)3(-xx)3(-xx)3(-xx)",
+        "final_agudo": "----3(-a-)----3(-a-)"
+      },
+      "estructura_cuadernillo": ["Toque 1 ×4", "Sobre Toque 1 redo/repi", "2da vuelta redo/repi", "Timbal 1/2/3", "Toque 2 ×4", "Final (agudo + unísono)"],
+      "redoblante_mas_agudo": true,
+      "patron_agudo_conservado": true,
+      "samples_requeridos": ["repique_agudo", "redoblante_agudo", "surdo tapado", "timbal abierto/nota"],
+      "samples_faltantes": [
+        {
+          "id": "redoblante_agudo",
+          "flag": "AUDIO_SAMPLE_MISSING",
+          "accion": "mantener golpe agudo en redoblante; no sustituir ni borrar"
+        }
+      ],
+      "observaciones": "El Final escribe el mismo tresillo con agudo en redoblante y en repique. MAPA_SAMPLES cubre repique_agudo; redoblante no tiene articulación agudo. Ochosi de 1° no es Oxosi II.",
+      "fuentes": [
+        {"source": "CMTV Muñequitos listado", "source_url": "https://www.cmtv.com.ar/discos_letras/letra.php?bnid=158&tmid=26093", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"},
+        {"source": "Cuadernillo págs. 55-57 / Oxosi II", "source_url": "toques/26_toque_a_oxosi.py", "source_type": "partitura", "date": "cuadernillo", "confidence": "HIGH"}
+      ]
+    }
+  ],
+  "discografia_contexto": {
+    "percusion": {
+      "tracks_tagtuner": [
+        ["Intro", "2:51"], ["Sacateca", "1:53"], ["Tambores iyesá", "3:48"],
+        ["Buscando a Coco", "2:51"], ["De rumba", "3:10"], ["Chiruda stone", "2:23"],
+        ["Nunca a las dos", "2:50"], ["Mongo Kutá", "2:27"], ["La llamada", "2:43"],
+        ["San Dombe", "1:23"], ["Malamakuá", "2:29"], ["Toque a Eleggua", "2:12"]
+      ],
+      "duracion_disco": "31:08",
+      "url": "https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7"
+    },
+    "viejos_dioses": {
+      "tracks_tagtuner": [
+        ["Samborombón", "3:09"], ["Bombo", "3:56"], ["Cielo", "3:25"],
+        ["Santo Lugar", "3:41"], ["Un saludo a Cuba", "4:29"], ["En tres candombe", "2:11"],
+        ["Uh-ah", "3:31"], ["El dominguero", "3:24"], ["Sueños", "4:09"],
+        ["Ves, sabés", "4:02"], ["Caer", "3:04"], ["Carioca", "3:34"],
+        ["A medias no", "3:41"], ["La Meta", "3:15"]
+      ],
+      "spotify": "https://open.spotify.com/album/01HKLOCsVb7M8NR2p67OEZ",
+      "fecha_spotify": "2001-12-03"
+    },
+    "munequitos": {
+      "tracks_cmtv": [
+        "Va Llegando", "Muñequitos I", "Chiruda R&B", "Bará", "Duerme Negrito",
+        "Intro Kuko", "El Pescador", "Kuko Malo", "Línea 4,5,7", "Vidala para mi sombra",
+        "Rezo para Oxum", "Yemanyá", "Toque para Oxum", "Afrotango", "Muñequitos II",
+        "El Bosque Oxosi"
+      ],
+      "url": "https://www.cmtv.com.ar/discos_letras/letra.php?bnid=158&tmid=26093"
+    },
+    "raices": {
+      "tracks": [
+        ["Chinga Chilinga", "3:51"], ["Azabache", "3:32"], ["Prendeme la vela", "3:25"],
+        ["Samba reggae con canto a Xango", "1:55"], ["Aquarela brasilera", "4:01"],
+        ["Golpes", "2:04"], ["Cuando oigo sonar la caja", "3:22"], ["Samba do mar", "2:57"],
+        ["Guaganco chilingo", "4:54"], ["Makuta", "2:16"], ["Canto a Obatala", "3:04"],
+        ["Un aire de tango", "3:27"], ["Ciudad varela", "2:05"], ["Canto a Oxum", "4:44"],
+        ["Popurri", "1:44"], ["Danza", "2:36"]
+      ],
+      "url": "https://critiquebrainz.org/release-group/ec6871b9-83fb-3de7-a700-4fdcea411582",
+      "apple": "https://music.apple.com/us/album/ra%C3%ADces/1450087220"
+    },
+    "banda_fantasma": {
+      "anio": "2010",
+      "tracks_followlyrics": [
+        "De Acordeones y Tambores", "Chilinga II", "Toque en 7",
+        "Yo No Sé Porqué No Sé", "No Paramos Mas Nunca", "Amor Moderno",
+        "Haré", "La de Los Valles", "De Tu Flor", "Trompita", "Dos Cositas",
+        "Toque de Marcha", "Juancito"
+      ],
+      "contradiccion_deezer": "Deezer asocia también La Tortuguita (Altos Pensamientos) al período 2010 — no fusionar listados",
+      "url": "https://www.followlyrics.com/album/4257506/Fantasma",
+      "confianza_tracklist": "MEDIUM"
+    }
+  }
+}

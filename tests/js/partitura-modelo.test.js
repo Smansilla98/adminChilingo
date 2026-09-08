@@ -10,10 +10,10 @@ import {
 } from '../../resources/js/partitura/model.js';
 import {
     MAPA_SAMPLES, nombreArchivoSample, sistemasVisuales, instrumentoPorId,
-    GOLPES_POR_INSTRUMENTO, ARTICULACION_SAMPLE, vocesDeUnisono,
+    GOLPES_POR_INSTRUMENTO, ARTICULACION_SAMPLE, vocesDeUnisono, midiDeGolpe,
 } from '../../resources/js/partitura/instruments.js';
 import { BancoSamples, resolverGolpe, golpesPaletaAudibles } from '../../resources/js/partitura/samples.js';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -167,5 +167,38 @@ describe('eventosMusicales', () => {
         assert.ok(g.velocity > 0);
         const chapa = evs.find((e) => e.articulation === 'chapa');
         assert.equal(chapa.beat, 3);
+    });
+});
+
+describe('PDF Toques — Oxosi agudo y source', () => {
+    it('el Final conserva golpe agudo en redoblante (no se degrada a nota)', () => {
+        const p = join(dirname(fileURLToPath(import.meta.url)), '../../database/data/partituras-v4/26-toque-a-oxosi.json');
+        const score = JSON.parse(readFileSync(p, 'utf8'));
+        const final = score.sections.find((s) => String(s.name).toUpperCase().includes('FINAL'));
+        assert.ok(final, 'sección Final');
+        const redo = (final.measures[0].voces.redoblante || []).filter((n) => !n.rest);
+        assert.ok(redo.some((n) => n.stroke === 'agudo'), 'redoblante debe tener agudo');
+        const repi = (final.measures[0].voces.repique || []).filter((n) => !n.rest);
+        assert.ok(repi.some((n) => n.stroke === 'agudo'), 'repique debe tener agudo');
+    });
+    it('source apunta al PDF de Toques', () => {
+        const p = join(dirname(fileURLToPath(import.meta.url)), '../../database/data/partituras-v4/26-toque-a-oxosi.json');
+        const score = JSON.parse(readFileSync(p, 'utf8'));
+        assert.equal(score.source?.type, 'pdf');
+        assert.equal(score.source?.file, 'Toques_chilinga_compressed.pdf');
+        assert.deepEqual(score.source?.pages, [58, 59, 60]);
+    });
+    it('resolverGolpe no sustituye redoblante+agudo por nota', () => {
+        const r = resolverGolpe('redoblante', 'agudo');
+        assert.equal(r.strokeId, 'agudo');
+        assert.equal(r.instId, 'redoblante');
+        assert.equal(nombreArchivoSample('redoblante', 'agudo'), 'redoblante_agudo');
+        const root = join(dirname(fileURLToPath(import.meta.url)), '../../public/sounds/perc');
+        const wavs = existsSync(root) ? readdirSync(root).filter((f) => f.endsWith('.wav')) : [];
+        assert.equal(wavs.includes('redoblante_agudo.wav'), false, 'el sample sigue en backlog');
+    });
+    it('midiDeGolpe distingue agudo de nota en redoblante', () => {
+        assert.notEqual(midiDeGolpe('redoblante', 'agudo'), midiDeGolpe('redoblante', 'nota'));
+        assert.equal(midiDeGolpe('redoblante', 'agudo'), midiDeGolpe('repique', 'agudo'));
     });
 });

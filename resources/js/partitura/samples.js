@@ -41,6 +41,12 @@ export function resolverGolpe(instId, strokeId) {
         return { instId, strokeId, velMul: 1, flam: false, choke: false };
     }
 
+    // PDF: triángulo = golpe agudo. En redoblante no hay WAV (Oxosi).
+    // No sustituir por redoblante_normal.
+    if (strokeId === 'agudo') {
+        return { instId, strokeId: 'agudo', velMul: 1, flam: false, choke: false };
+    }
+
     if (strokeId === 'acentuado') {
         const base = strokeBase(instId);
         if (strokes?.includes(base)) {

@@ -375,6 +375,8 @@ export function normalizarPartitura(raw) {
     // que el seeder pueda detectar cuando lo guardado en la base quedó viejo.
     const fuente = normalizarFuente(raw.fuente);
     if (fuente) out.fuente = fuente;
+    const source = normalizarSourcePdf(raw.source);
+    if (source) out.source = source;
 
     return out;
 }
@@ -385,6 +387,18 @@ function normalizarFuente(raw) {
     const hash = String(raw.hash || '').replace(/[^a-f0-9]/gi, '').slice(0, 40);
     if (!origen || !hash) return null;
     return { origen, hash };
+}
+
+/** Fuente primaria: PDF de Toques (páginas de archivo). */
+function normalizarSourcePdf(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const type = String(raw.type || '').trim().slice(0, 20);
+    const file = String(raw.file || '').trim().slice(0, 120);
+    const pages = Array.isArray(raw.pages)
+        ? raw.pages.map((n) => parseInt(n, 10)).filter((n) => n >= 1 && n <= 200)
+        : [];
+    if (type !== 'pdf' || !file) return null;
+    return { type, file, pages };
 }
 
 function clamp(n, min, max) {

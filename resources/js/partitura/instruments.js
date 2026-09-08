@@ -214,7 +214,7 @@ export const GOLPES_POR_INSTRUMENTO = {
  */
 const MIDI_POR_GOLPE = {
     timbal: { abierto: 66, slap: 65, tapado: 64, palma: 39, dedo: 62, presionado: 64, acentuado: 66, nota: 66 },
-    redoblante: { nota: 38, acentuado: 40, chapa: 37, tapado: 37, flam: 38 },
+    redoblante: { nota: 38, acentuado: 40, chapa: 37, tapado: 37, flam: 38, agudo: 43 },
     repique: { nota: 40, acentuado: 40, chapa: 37, agudo: 43, flam: 40 },
     surdo_grave: { nota: 87, acentuado: 87, chapa: 37, tapado: 86, flam: 87 },
     surdo_medio: { nota: 41, acentuado: 41, chapa: 37, tapado: 86, flam: 41 },

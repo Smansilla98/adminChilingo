@@ -309,6 +309,10 @@ class PartituraScore
         if ($fuente !== null) {
             $out['fuente'] = $fuente;
         }
+        $source = self::normalizarSourcePdf($raw['source'] ?? null);
+        if ($source !== null) {
+            $out['source'] = $source;
+        }
 
         return $out;
     }
@@ -332,6 +336,32 @@ class PartituraScore
         }
 
         return ['origen' => $origen, 'hash' => $hash];
+    }
+
+    /**
+     * Referencia al PDF de Toques (páginas de archivo, no impresas).
+     *
+     * @return array{type: string, file: string, pages: list<int>}|null
+     */
+    public static function normalizarSourcePdf(mixed $raw): ?array
+    {
+        if (! is_array($raw)) {
+            return null;
+        }
+        $type = mb_substr(trim((string) ($raw['type'] ?? '')), 0, 20);
+        $file = mb_substr(trim((string) ($raw['file'] ?? '')), 0, 120);
+        if ($type !== 'pdf' || $file === '') {
+            return null;
+        }
+        $pages = [];
+        foreach ($raw['pages'] ?? [] as $n) {
+            $i = (int) $n;
+            if ($i >= 1 && $i <= 200) {
+                $pages[] = $i;
+            }
+        }
+
+        return ['type' => 'pdf', 'file' => $file, 'pages' => array_values($pages)];
     }
 
     /** Hash del contenido de un JSON de partitura (fuente de verdad en el repo). */
