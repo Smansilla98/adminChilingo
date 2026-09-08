@@ -46,6 +46,5 @@ python3 database/data/partituras-v4/midi_from_v4.py
 En `26-toque-a-oxosi.json` el Final usa golpe `agudo` (`a`) en **redoblante y
 repique**: `----3(-a-)----3(-a-)`. El patrón se conserva.
 
-- Sample `repique_agudo` está previsto en `MAPA_SAMPLES`.
-- Sample `redoblante_agudo` **no** está en el mapa → `AUDIO_SAMPLE_MISSING`.
-  No se sustituye el golpe.
+- Sample `repique_agudo` y `redoblante_agudo` están en `MAPA_SAMPLES` (proxy CC0).
+  El golpe `agudo` no se sustituye por `nota`.

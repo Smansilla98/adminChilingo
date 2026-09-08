@@ -69,7 +69,8 @@ El **Dockerfile** no ejecuta migraciones (no hay DB en build). Al **iniciar el c
 5. Muestra `php artisan migrate:status`.
 6. Opcional: si `RUN_SEED=1`, ejecuta `php artisan db:seed --force`.
 7. Regenera JSON de partituras v4 (`generar.py`) y `php artisan partituras:bootstrap` (con `--force` si `PARTITURAS_BOOTSTRAP_FORCE=1`).
-8. Crea `storage`/enlaces y arranca `php artisan serve`.
+8. Regenera el kit de percusión (`scripts/build-chilinga-kit.py`; hace falta `ffmpeg`). `PERC_KIT_REBUILD=0` lo saltea.
+9. Crea `storage`/enlaces y arranca `php artisan serve`.
 
 Build y ejecución:
 

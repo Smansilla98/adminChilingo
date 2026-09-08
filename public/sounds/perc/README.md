@@ -1,4 +1,4 @@
-# Samples de percusión — La Chilinga
+# Samples de percusión — playback de partitura
 
 Ruta pública: `/sounds/perc/` → `public/sounds/perc/`
 
@@ -9,59 +9,58 @@ El golpe pleno se llama `nota` en el modelo y el archivo usa `normal`.
 
 ## Estado actual
 
-26 one-shots, 1:1 con `MAPA_SAMPLES` (incluye agogó y palmas).
+27 one-shots, 1:1 con `MAPA_SAMPLES` (incluye `redoblante_agudo` para el Final de Oxosi).
 
-Banco extraído de **FluidR3 GM** (Frank Wen), el soundfont GM libre que empaquetan
-Debian/Ubuntu como `fluid-soundfont-gm` (MIT). Cada hit se recortó, afinó y
-normalizó al vocabulario de la escuela (surdo grave/medio/agudo, caixa, repique,
-timbal, agogó, palmas).
+Banco **procesado** a partir de librerías CC0 (no FluidR3):
 
-No es la batería grabada de La Chilinga: es el kit GM latino más cercano que se
-puede redistribuir. Cuando haya one-shots propios, se tiran encima con el mismo
-nombre de archivo.
+- [Versilian Community Sample Library](https://github.com/sgossner/VCSL) (CC0)
+- [FreePats World Percussion 2020-09-05](https://freepats.zenvoid.org/Percussion/world-percussion.html) (CC0; darbuka, cajón, claves, palmas, bongos)
 
-Regenerar (hace falta el `.sf2`, ~144 MB, no va en el repo):
+Cada hit se afinó, filtró y recortó al vocabulario de la escuela: surdo grave **corto**
+(~0,20 s, no boom de batucada), caixa nítida, repique más agudo, golpe agudo = ping de
+triángulo muted (el glifo del cuadernillo), agogó real, palmas.
+
+**No es la batería grabada de La Chilinga.** No va a ser posible grabar esos audios con
+la escuela por ahora. Cuando haya one-shots propios, se tiran encima con el mismo nombre
+de archivo.
+
+Regenerar (lo hace `start.sh` al arrancar si hay `ffmpeg`; las fuentes van en el repo):
 
 ```
-python3 scripts/build-perc-kit.py /ruta/FluidR3_GM_GS.sf2
+python3 scripts/build-chilinga-kit.py scripts/chilinga-kit-src
 ```
 
-Fuente del SF2: [Internet Archive — FluidR3 GM+GS](https://archive.org/details/fluidr3-gm-gs).
+Para no regenerar en el arranque: `PERC_KIT_REBUILD=0`.
 
-## Qué se usó de FluidR3
+El script viejo `scripts/build-perc-kit.py` sigue siendo el fallback FluidR3 (toms largos
+y 808). No usarlo para el playback del bloque.
 
-| Archivo | Sample GM de origen | Ajuste |
+## Qué se usó
+
+| Archivo | Origen | Ajuste |
 |---|---|---|
-| `surdo_grave_normal` | Tom Floor | −4 semitonos, lowpass |
-| `surdo_grave_tapado` | Std Kick 7 | grave, decay corto |
-| `surdo_grave_chapa` | Sticks | highpass |
-| `surdo_medio_*` | Tom Floor / Kick / Rim Tap | afinación media |
-| `surdo_agudo_*` | Tom Low / Kick / Woodblock | afinación aguda |
-| `redoblante_normal` | Orch Snare | — |
-| `redoblante_acentuado` | Power Snare 1 | — |
-| `redoblante_chapa` | Rim Tap | — |
-| `repique_normal` / `_acentuado` | Power Snare 2 | +3 / +4 semitonos |
-| `repique_chapa` | Sticks | más agudo |
-| `repique_agudo` | 808 Snare 1 | +5 semitonos |
-| `timbal_abierto` | High Timbale | — |
-| `timbal_presionado` | Low Timbale | choke |
-| `timbal_slap` | Bongo Rim | — |
-| `timbal_dedo` | High Conga | más agudo |
-| `timbal_palma` / `palmas_*` | Clap | — |
-| `agogo_normal` / `_acentuado` | High Agogo | — |
-| `agogo_tapado` | Low Agogo | choke |
+| `surdo_grave_normal` | VCSL bass + darbuka doom + cajón | afinado abajo, lowpass, fade ~0,20 s |
+| `surdo_grave_tapado` | bass + conga muted | decay ~0,10 s |
+| `surdo_grave_chapa` | sidestick + claves | highpass |
+| `surdo_medio_*` | tom / frame muted / sidestick | afinación media, corto |
+| `surdo_agudo_*` | tom + frame / claves | más agudo, más corto |
+| `redoblante_normal` / `_acentuado` | VCSL snare | highpass suave |
+| `redoblante_chapa` | sidestick | — |
+| `redoblante_agudo` | triángulo muted | ping de borde (Oxosi) |
+| `repique_normal` / `_acentuado` | rope snare | +3 / +4 semitonos, highpass |
+| `repique_chapa` | rope sidestick | — |
+| `repique_agudo` | triángulo muted | un poco más agudo que redo |
+| `timbal_abierto` | quinto + cowbell bajo | piel + ataque de metal |
+| `timbal_slap` | conga slap | — |
+| `timbal_presionado` | tumba muted | choke |
+| `timbal_dedo` | bongo | más agudo |
+| `timbal_palma` / `palmas_*` | hand clap FreePats | — |
+| `agogo_*` | VCSL agogó | volumen bajo (no pincha el tutti) |
 
 El MIDI exportado usa el mapa GM2: surdo grave **87 open / 86 mute**, caixa **38**,
 repique **40**, timbal **66/65**, palmas **39**, agogó **67/68**. Así un DAW con
-GeneralUser GS o FluidR3 dispara los mismos instrumentos.
+GeneralUser GS o FluidR3 dispara instrumentos *aproximados*; el timbre de escuela
+está en estos WAV, no en el MIDI.
 
-## Lo que no se pudo meter (gratis, pero no descargable acá)
-
-- **Freesound CC0** (caixa de Sassaby, repinique de BeppeB): el CDN responde 403
-  sin cuenta. Siguen siendo la mejor fuente de one-shots de samba; hay que
-  bajarlos a mano y renombrarlos.
-- **House of Loop / Noiiz tasters**: piden cuenta.
-- **JasperCodes Brazilian Bateria .sf2**: mezcla samples de Splice y otros packs
-  comerciales; no se incorpora.
-
-Atribución FluidR3: Frank Wen, MIT.
+Atribución: Versilian Studios LLC (VCSL, CC0); FreePats / Xavimart, Gonzalo y Roberto
+(World Percussion, CC0).

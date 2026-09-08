@@ -32,7 +32,7 @@ Fuente de números: `resources/js/partitura/instruments.js` → `MIDI_POR_GOLPE`
 | 38 | redoblante | nota / flam | 5 | REDOBLANTE Nota | redoblante_normal | CONVENTION |
 | 40 | redoblante | acentuado | 5 | Golpe Acentuado | redoblante_acentuado | CONVENTION |
 | 37 | redoblante | chapa / tapado | 5 | Golpe de Chapa | redoblante_chapa | CONVENTION |
-| 43 | redoblante | agudo | 5 y 60 | triángulo (mismo glifo que REPIQUE Golpe Agudo) | **MISSING** `redoblante_agudo` | BACKLOG_AUDIO; transcripción no se borra |
+| 43 | redoblante | agudo | 5 y 60 | triángulo (mismo glifo que REPIQUE Golpe Agudo) | `redoblante_agudo` (proxy CC0) | CONVENTION + sample AVAILABLE |
 | 40 | repique | nota / acentuado | 5 | REPIQUE | repique_normal / _acentuado | CONVENTION |
 | 43 | repique | agudo | 5 | Golpe Agudo (triángulo) | repique_agudo | CONVENTION + sample AVAILABLE |
 | 66 | timbal | abierto / acentuado / nota | 5 | Golpe Abierto | timbal_abierto | CONVENTION |

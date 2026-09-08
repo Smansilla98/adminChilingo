@@ -515,14 +515,8 @@
       "redoblante_mas_agudo": true,
       "patron_agudo_conservado": true,
       "samples_requeridos": ["repique_agudo", "redoblante_agudo", "surdo tapado", "timbal abierto/nota"],
-      "samples_faltantes": [
-        {
-          "id": "redoblante_agudo",
-          "flag": "AUDIO_SAMPLE_MISSING",
-          "accion": "mantener golpe agudo en redoblante; no sustituir ni borrar"
-        }
-      ],
-      "observaciones": "El Final escribe el mismo tresillo con agudo en redoblante y en repique. MAPA_SAMPLES cubre repique_agudo; redoblante no tiene articulación agudo. Ochosi de 1° no es Oxosi II.",
+      "samples_faltantes": [],
+      "observaciones": "El Final escribe el mismo tresillo con agudo en redoblante y en repique. MAPA_SAMPLES cubre ambos (proxy CC0, no grabación de escuela). Ochosi de 1° no es Oxosi II.",
       "fuentes": [
         {"source": "CMTV Muñequitos listado", "source_url": "https://www.cmtv.com.ar/discos_letras/letra.php?bnid=158&tmid=26093", "source_type": "catálogo", "date": "2026-09-08", "confidence": "HIGH"},
         {"source": "Cuadernillo págs. 55-57 / Oxosi II", "source_url": "toques/26_toque_a_oxosi.py", "source_type": "partitura", "date": "cuadernillo", "confidence": "HIGH"}

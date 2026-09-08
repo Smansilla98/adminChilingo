@@ -114,21 +114,34 @@ php artisan storage:link 2>/dev/null || true
 mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/views
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
-# Samples de partitura: tienen que ser legibles por php artisan serve / www-data.
-# No están en .gitignore (solo .raw/). Si faltan, el PLAY queda mudo o a pedazos.
-echo "=== Samples de percusión ==="
+# Kit de percusión: regenerar WAV desde fuentes CC0 (mismo criterio que generar.py).
+# Hace falta python3 + ffmpeg. PERC_KIT_REBUILD=0 usa los WAV ya commiteados.
+echo "=== Kit de percusión ==="
 PERC_DIR="public/sounds/perc"
-if [ -d "$PERC_DIR" ]; then
-    chmod -R a+rX "$PERC_DIR" 2>/dev/null || true
-    WAV_N=$(find "$PERC_DIR" -maxdepth 1 -type f -name '*.wav' | wc -l)
-    if [ "$WAV_N" -lt 26 ]; then
-        echo "⚠️  $PERC_DIR tiene $WAV_N WAV (se esperan 26). El reproductor va a fallar."
-        ls -la "$PERC_DIR" || true
+KIT_PY="scripts/build-chilinga-kit.py"
+KIT_SRC="${CHILINGA_KIT_SRC:-scripts/chilinga-kit-src}"
+mkdir -p "$PERC_DIR"
+if [ "${PERC_KIT_REBUILD:-1}" != "0" ] && [ -f "$KIT_PY" ]; then
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "⚠️  python3 no está; se usan los WAV del repo."
+    elif ! command -v ffmpeg >/dev/null 2>&1; then
+        echo "⚠️  ffmpeg no está; se usan los WAV del repo. Rebuild de la imagen o apt install ffmpeg."
+    elif [ ! -d "$KIT_SRC/vcsl" ]; then
+        echo "⚠️  No está $KIT_SRC; se usan los WAV del repo."
     else
-        echo "✓ $WAV_N WAV listos en /$PERC_DIR (modo $(stat -c '%a' "$PERC_DIR" 2>/dev/null || echo '?'))"
+        echo "(regenerando public/sounds/perc desde $KIT_SRC)"
+        python3 "$KIT_PY" "$KIT_SRC" || echo "⚠️  build-chilinga-kit.py falló; se siguen los WAV que haya."
     fi
 else
-    echo "⚠️  No existe $PERC_DIR — el PLAY de partituras no tiene samples."
+    echo "(PERC_KIT_REBUILD=0: no se regeneran los WAV)"
+fi
+chmod -R a+rX "$PERC_DIR" 2>/dev/null || true
+WAV_N=$(find "$PERC_DIR" -maxdepth 1 -type f -name '*.wav' 2>/dev/null | wc -l | tr -d ' ')
+if [ "$WAV_N" -lt 27 ]; then
+    echo "⚠️  $PERC_DIR tiene $WAV_N WAV (se esperan 27). El reproductor va a fallar."
+    ls -la "$PERC_DIR" || true
+else
+    echo "✓ $WAV_N WAV listos en $PERC_DIR (modo $(stat -c '%a' "$PERC_DIR" 2>/dev/null || echo '?'))"
 fi
 
 # artisan serve lanza un php -S hijo: hereda PHP_INI_SCAN_DIR (no los -d del padre)

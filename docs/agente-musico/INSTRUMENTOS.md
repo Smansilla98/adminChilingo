@@ -16,7 +16,7 @@ Nombres internos = ids del editor (`instruments.js`). No se inventó un id `snar
 | Redoblante | REDOBLANTE | `redoblante` | Nota | óvalo negro | CONVENTION | `redoblante_normal` | Nomenclatura | 5 | VIEWED |
 | Redoblante | Golpe Acentuado | `redoblante` | acentuado | óvalo + `>` debajo | CONVENTION | `redoblante_acentuado` | Nomenclatura | 5 | VIEWED |
 | Redoblante | Golpe de Chapa | `redoblante` | chapa | X | CONVENTION | `redoblante_chapa` | Nomenclatura | 5 | VIEWED |
-| Redoblante | Golpe Agudo | `redoblante` | agudo | **triángulo** (mismo glifo que repique) | CONVENTION | **MISSING** | Toque a Oxosi Final + Nomenclatura | 5 y 60 | TRANSCRIPTION=VALID glifo; AUDIO_SAMPLE_MISSING |
+| Redoblante | Golpe Agudo | `redoblante` | agudo | **triángulo** (mismo glifo que repique) | CONVENTION | `redoblante_agudo` (proxy CC0) | Toque a Oxosi Final + Nomenclatura | 5 y 60 | TRANSCRIPTION=VALID glifo; sample AVAILABLE (no es grabación de escuela) |
 | Timbal | TIMBAL / Golpe Abierto | `timbal` | abierto | óvalo negro | CONVENTION | `timbal_abierto` | Nomenclatura | 5 | VIEWED |
 | Timbal | Golpe de Slap | `timbal` | slap | círculo vacío | CONVENTION | `timbal_slap` | Nomenclatura | 5 | VIEWED (círculo, no X) |
 | Timbal | Golpe de Palma | `timbal` | palma | cabeza pequeña / rombo — **ambigua en el escaneo** | CONVENTION | `timbal_palma` | Nomenclatura | 5 | PENDING_HUMAN_REVIEW |

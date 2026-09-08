@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     ca-certificates \
     python3 \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensiones PHP para MySQL y tests (sqlite)

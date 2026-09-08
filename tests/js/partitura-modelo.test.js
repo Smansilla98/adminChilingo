@@ -39,7 +39,7 @@ describe('mapeo de samples 1:1', () => {
         surdo_grave: ['nota', 'chapa', 'tapado'],
         surdo_medio: ['nota', 'chapa', 'tapado'],
         surdo_agudo: ['nota', 'chapa', 'tapado'],
-        redoblante: ['nota', 'acentuado', 'chapa'],
+        redoblante: ['nota', 'acentuado', 'chapa', 'agudo'],
         timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo'],
         repique: ['nota', 'acentuado', 'chapa', 'agudo'],
         agogo: ['nota', 'acentuado', 'tapado'],
@@ -79,7 +79,7 @@ describe('mapeo de samples 1:1', () => {
         const tap = resolverGolpe('redoblante', 'tapado');
         assert.equal(tap.choke, true);
     });
-    it('los 26 WAV del catálogo existen en public/sounds/perc', () => {
+    it('los 27 WAV del catálogo existen en public/sounds/perc', () => {
         const root = join(dirname(fileURLToPath(import.meta.url)), '../../public/sounds/perc');
         const wavs = existsSync(root) ? readdirSync(root).filter((f) => f.endsWith('.wav')) : [];
         Object.entries(MAPA_SAMPLES).forEach(([inst, strokes]) => {
@@ -88,7 +88,8 @@ describe('mapeo de samples 1:1', () => {
                 assert.ok(wavs.includes(file), `falta ${file}`);
             });
         });
-        assert.equal(wavs.length, 26);
+        assert.equal(wavs.length, 27);
+        assert.ok(wavs.includes('redoblante_agudo.wav'));
     });
 });
 
@@ -104,6 +105,10 @@ describe('golpes por instrumento (editor)', () => {
         ['abierto', 'slap', 'palma', 'presionado', 'dedo'].forEach((g) => {
             assert.ok(GOLPES_POR_INSTRUMENTO.timbal.includes(g));
         });
+    });
+    it('redoblante incluye agudo (mismo triángulo que repique)', () => {
+        assert.ok(GOLPES_POR_INSTRUMENTO.redoblante.includes('agudo'));
+        assert.ok(MAPA_SAMPLES.redoblante.includes('agudo'));
     });
 });
 
@@ -195,7 +200,7 @@ describe('PDF Toques — Oxosi agudo y source', () => {
         assert.equal(nombreArchivoSample('redoblante', 'agudo'), 'redoblante_agudo');
         const root = join(dirname(fileURLToPath(import.meta.url)), '../../public/sounds/perc');
         const wavs = existsSync(root) ? readdirSync(root).filter((f) => f.endsWith('.wav')) : [];
-        assert.equal(wavs.includes('redoblante_agudo.wav'), false, 'el sample sigue en backlog');
+        assert.equal(wavs.includes('redoblante_agudo.wav'), true, 'Oxosi necesita el WAV de agudo en redoblante');
     });
     it('midiDeGolpe distingue agudo de nota en redoblante', () => {
         assert.notEqual(midiDeGolpe('redoblante', 'agudo'), midiDeGolpe('redoblante', 'nota'));

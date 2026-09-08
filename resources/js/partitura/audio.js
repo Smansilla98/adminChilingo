@@ -3,6 +3,19 @@
  * No usa OscillatorNode para simular tambores. El metrónomo sí es un click sintético.
  */
 import { UNISONO, vocesDeUnisono, MAPA_SAMPLES } from './instruments.js';
+
+/** Ganancia de timbre por instrumento (el agogó pincha; el surdo no debe tapar). */
+const GANANCIA_TIMBRE = {
+    surdo_grave: 0.95,
+    surdo_medio: 0.78,
+    surdo_agudo: 0.72,
+    redoblante: 1.0,
+    repique: 0.86,
+    timbal: 0.88,
+    agogo: 0.38,
+    palmas: 0.65,
+    todos: 0.85,
+};
 import {
     TPQ, ticksDeCompas, expandirTimeline, eventosMusicales, segundosDeTicks,
 } from './model.js';
@@ -78,7 +91,7 @@ export class MotorAudio {
     canalDe(instId) {
         if (!this.gains[instId]) {
             const g = this.ctx.createGain();
-            g.gain.value = 0.9;
+            g.gain.value = GANANCIA_TIMBRE[instId] ?? 0.9;
             g.connect(this.master);
             this.gains[instId] = g;
         }
@@ -98,7 +111,8 @@ export class MotorAudio {
             else if (soloTodos) audible = !i.mute;
             else audible = i.solo && !i.mute;
             const vol = i.id === UNISONO ? (todos?.volume ?? 0.9) : i.volume;
-            g.gain.value = audible ? vol : 0;
+            const timbre = GANANCIA_TIMBRE[i.id] ?? 1;
+            g.gain.value = audible ? vol * timbre : 0;
         });
     }
 

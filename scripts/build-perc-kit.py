@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Arma public/sounds/perc/ desde un SoundFont FluidR3 GM.
+"""Fallback: arma public/sounds/perc/ desde un SoundFont FluidR3 GM.
+
+El kit del playback es `scripts/build-chilinga-kit.py` (CC0, surdo corto).
+Este script queda por si hace falta regenerar el banco GM viejo.
 
 Uso:
   python3 scripts/build-perc-kit.py /ruta/FluidR3_GM_GS.sf2

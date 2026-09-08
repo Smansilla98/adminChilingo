@@ -37,8 +37,8 @@ MusicXML = `database/data/partituras-v4/investigacion/musicxml/`.
 | Malamakuá | 50–51 | 47–48 | (JSON 6/8) | 23-malamakua.json | sí | sí | AVAILABLE* | TRANSCRIBED / INDEXED |
 | Solo de Surdos | 52 | 49 | (JSON) | 24-solo-de-surdos.json | sí | sí | AVAILABLE* | TRANSCRIBED / INDEXED |
 | Muñequitos I | 53–57 | 50–54 | (JSON) | 25-munequitos.json | sí | sí | AVAILABLE* | TRANSCRIBED / INDEXED |
-| Toque a Oxosi | 58–60 | 55–57 | Todos, surdos, redo+repi (agudo), timbal | 26-toque-a-oxosi.json | sí | sí | PARTIAL | TRANSCRIBED; agudo VALID en nomenclatura; ritmo Final PENDING_HUMAN_REVIEW |
+| Toque a Oxosi | 58–60 | 55–57 | Todos, surdos, redo+repi (agudo), timbal | 26-toque-a-oxosi.json | sí | sí | AVAILABLE* | TRANSCRIBED; agudo VALID en nomenclatura; ritmo Final PENDING_HUMAN_REVIEW |
 
-\* AVAILABLE = hay WAV FluidR3 en `public/sounds/perc/` para el catálogo `MAPA_SAMPLES`. No son samples grabados de La Chilinga.
+\* AVAILABLE = hay WAV CC0 procesados en `public/sounds/perc/` para el catálogo `MAPA_SAMPLES`. No son samples grabados de La Chilinga.
 
 Ningún toque está **VALIDATED** en esta pasada (cotejo completo contra el PDF).
