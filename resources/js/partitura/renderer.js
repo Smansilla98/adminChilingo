@@ -3,6 +3,10 @@
  * Redoblante y Repique comparten un único sistema. Las voces de un mismo
  * compás se formatean juntas (Formatter.joinVoices) para alinear la coordenada X.
  *
+ * Grabado según hoja Equivalencias del cuadernillo: cabeza en la línea del
+ * medio, plica abajo, barras horizontales debajo (2 corcheas / 4 semis / 8 fusas
+ * por tiempo), igual que la hoja Equivalencias. También en Redo+Repi / Agudos.
+ *
  * Orden VexFlow: notas → beams/tuplets → Voice → format → stave.draw →
  * voice.draw → beam.draw. Los beams se construyen ANTES del formateo.
  */
@@ -142,7 +146,6 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
 
             sis.members.forEach((inst, vi) => {
                 const vozData = m.voces[inst.def.id] || [];
-                const stem = sis.compartido ? (vi === 0 ? 1 : -1) : (inst.def.stem || -1);
                 const pitch = inst.def.pitch || 'b/4';
                 const built = [];
                 const tuplets = [];
@@ -150,7 +153,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 let grupoNotas = [];
 
                 const tickables = (vozData.length ? vozData : [{ dur: 'w', rest: true, dots: 0, stroke: 'nota' }]).map((n, ni) => {
-                    const vf = construirNota(n, pitch, stem, ts);
+                    const vf = construirNota(n, pitch, ts);
                     built.push({ vf, data: n, idx: ni, instId: inst.def.id });
                     const gid = n.tuplet?.id || null;
                     if (gid !== grupoActual) {
@@ -173,9 +176,13 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 }
                 voice.setStave(stave);
 
-                const beams = Beam.generateBeams(built.map((b) => b.vf), {
+                const notasVf = built.map((b) => b.vf);
+                const beams = Beam.generateBeams(notasVf, {
                     beam_rests: false,
                     groups: gruposDeBeam(ts),
+                    stem_direction: -1,
+                    maintain_stem_directions: true,
+                    flat_beams: true,
                 });
                 vocesFmt.push({ voice, stave, built, tuplets, beams, instId: inst.def.id });
             });
@@ -197,6 +204,10 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             }
         }
 
+        vocesFmt.forEach(({ built }) => {
+            built.forEach(({ vf, data }) => forzarPlicaAbajo(vf, data));
+        });
+
         sistemasStave.forEach(({ stave }) => stave.setContext(ctx).draw());
 
         vocesFmt.forEach(({ voice, stave, built, tuplets, beams, instId }) => {
@@ -217,6 +228,10 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                     noteIdx: idx,
                     noteId: data.id,
                     rest: data.rest,
+                    dur: data.dur,
+                    stem: (!data.rest && data.dur !== 'w' && typeof vf.getStemDirection === 'function')
+                        ? vf.getStemDirection()
+                        : 0,
                     lineEl: wrap,
                     ...box,
                 });
@@ -241,7 +256,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     return wrap;
 }
 
-function construirNota(n, pitch, stem, ts) {
+function construirNota(n, pitch, ts) {
     const dur = n.dur + (n.rest ? 'r' : '');
 
     if (n.rest) {
@@ -260,7 +275,7 @@ function construirNota(n, pitch, stem, ts) {
     const note = new StaveNote({
         keys: [cabezaVexflow(pitch, n.stroke)],
         duration: dur,
-        stem_direction: stem || 1,
+        stem_direction: -1,
         clef: 'percussion',
     });
     aplicarPuntillos(note, n.dots);
@@ -277,7 +292,7 @@ function construirNota(n, pitch, stem, ts) {
                 duration: '16',
                 slash: true,
                 clef: 'percussion',
-                stem_direction: stem || 1,
+                stem_direction: -1,
             });
             note.addModifier(new GraceNoteGroup([grace], true));
         } catch {
@@ -322,6 +337,15 @@ function nuevoTuplet(grupo) {
 function gruposDeBeam(ts) {
     if (ts.den === 8 && ts.num % 3 === 0) return [new Fraction(3, 8)];
     return [new Fraction(1, 4)];
+}
+
+/** Hoja Equivalencias: plica abajo. No usar setStemDirection acá: borra el beam. */
+function forzarPlicaAbajo(vf, data) {
+    if (!vf || data.rest || data.dur === 'w') return;
+    vf.stem_direction = -1;
+    if (vf.stem && typeof vf.stem.setDirection === 'function') {
+        vf.stem.setDirection(-1);
+    }
 }
 
 function cajaDeNota(vf, stave) {

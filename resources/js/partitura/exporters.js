@@ -219,7 +219,7 @@ export function generarMusicXML(score) {
                     const voz = m.voces[mem.def.id] || [];
                     const notas = voz.length ? voz : [{ dur: 'w', rest: true, dots: 0, stroke: 'nota' }];
                     const beams = calcularBeams(notas, ts);
-                    const stem = p.sis.compartido ? (vi === 0 ? 'up' : 'down') : 'down';
+                    const stem = 'down';
                     notas.forEach((n, ni) => {
                         xml += notaXML(n, mem.def, {
                             voice: vi + 1,

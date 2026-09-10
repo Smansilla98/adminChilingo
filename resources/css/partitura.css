@@ -159,7 +159,12 @@
     font-style: normal;
     opacity: 0.55;
 }
-.pt-fig { font-family: 'Bravura Text', 'Noto Music', serif; line-height: 1; }
+.pt-fig {
+    display: block;
+    margin: 0 auto;
+    color: currentColor;
+    overflow: visible;
+}
 .pt-zoom-label { font-size: 11px; color: var(--pt-muted); min-width: 38px; text-align: center; }
 
 .pt-dropdown { position: relative; }

@@ -1077,8 +1077,24 @@ function parseRangos(txt, max) {
 }
 
 function figuraSvg(code) {
-    const glyph = { w: '𝅝', h: '𝅗𝅥', q: '𝅘𝅥', 8: '𝅘𝅥𝅮', 16: '𝅘𝅥𝅯', 32: '𝅘𝅥𝅰' }[code] || '♪';
-    return `<span class="pt-fig">${glyph}</span>`;
+    const oval = (fill) => fill
+        ? '<ellipse cx="9.2" cy="8.4" rx="5.1" ry="3.35" transform="rotate(-22 9.2 8.4)" fill="currentColor"/>'
+        : '<ellipse cx="9.2" cy="8.4" rx="5.1" ry="3.35" transform="rotate(-22 9.2 8.4)" fill="none" stroke="currentColor" stroke-width="1.35"/>';
+    const stem = '<path d="M4.35 9.1 V24.2" stroke="currentColor" stroke-width="1.25" fill="none"/>';
+    const flags = {
+        8: '<path d="M4.35 24.2 C8.8 22.2 11.2 19.6 10.4 16.4" fill="none" stroke="currentColor" stroke-width="1.2"/>',
+        16: '<path d="M4.35 24.2 C8.8 22.2 11.2 19.6 10.4 16.4M4.35 21.4 C8.4 19.6 10.6 17.4 10 14.8" fill="none" stroke="currentColor" stroke-width="1.2"/>',
+        32: '<path d="M4.35 24.2 C8.8 22.2 11.2 19.6 10.4 16.4M4.35 21.4 C8.4 19.6 10.6 17.4 10 14.8M4.35 18.6 C8 17 9.9 15.2 9.5 13.2" fill="none" stroke="currentColor" stroke-width="1.15"/>',
+    };
+    const inner = {
+        w: oval(false),
+        h: oval(false) + stem,
+        q: oval(true) + stem,
+        8: oval(true) + stem + flags[8],
+        16: oval(true) + stem + flags[16],
+        32: oval(true) + stem + flags[32],
+    }[code] || oval(true) + stem;
+    return `<svg class="pt-fig" viewBox="0 0 16 28" width="14" height="22" aria-hidden="true">${inner}</svg>`;
 }
 
 function esc(s) {

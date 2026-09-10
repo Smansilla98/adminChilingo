@@ -4,7 +4,7 @@
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
-import { crearPartitura, crearNota, ajustarVoz, ticksDeCompas } from '../../resources/js/partitura/model.js';
+import { crearPartitura, crearNota, crearCompas, ajustarVoz, ticksDeCompas } from '../../resources/js/partitura/model.js';
 import { renderScore } from '../../resources/js/partitura/renderer.js';
 
 describe('render VexFlow', () => {
@@ -112,8 +112,38 @@ describe('render VexFlow', () => {
     it('genera beams de corchea (barras de agrupación)', () => {
         const host = document.createElement('div');
         document.body.appendChild(host);
-        renderScore(host, scorePrueba(), { anchoPagina: 900 });
+        const { hits } = renderScore(host, scorePrueba(), { anchoPagina: 900 });
         const beams = host.querySelectorAll('g.vf-beam');
         assert.ok(beams.length >= 1, `beams: ${beams.length}`);
+        hits.filter((h) => !h.rest && h.dur !== 'w').forEach((h) => {
+            assert.equal(h.stem, -1, `${h.instId} plica abajo (Equivalencias)`);
+        });
+    });
+
+    it('Equivalencias: plica abajo y barras de a 2 / 4 / 8 por tiempo', () => {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        const score = crearPartitura({ title: 'Equivalencias', instrumentos: ['surdo_grave'] });
+        const cap = ticksDeCompas(score.timeSignature);
+        const n = (dur) => crearNota({ dur, stroke: 'nota' });
+        const sec = score.sections[0];
+        sec.measures = [
+            crearCompas(['surdo_grave'], score.timeSignature),
+            crearCompas(['surdo_grave'], score.timeSignature),
+            crearCompas(['surdo_grave'], score.timeSignature),
+        ];
+        sec.measures[0].voces.surdo_grave = ajustarVoz(Array.from({ length: 8 }, () => n('8')), cap);
+        sec.measures[1].voces.surdo_grave = ajustarVoz(Array.from({ length: 16 }, () => n('16')), cap);
+        sec.measures[2].voces.surdo_grave = ajustarVoz(Array.from({ length: 32 }, () => n('32')), cap);
+        score.sections = [sec];
+
+        const { hits } = renderScore(host, score, { anchoPagina: 1100 });
+        const conPlica = hits.filter((h) => !h.rest && h.dur !== 'w');
+        assert.ok(conPlica.length >= 8 + 16 + 32, `notas: ${conPlica.length}`);
+        conPlica.forEach((h) => {
+            assert.equal(h.stem, -1, `plica abajo dur=${h.dur}`);
+        });
+        const beams = host.querySelectorAll('g.vf-beam');
+        assert.equal(beams.length, 12, `2 corcheas / 4 semis / 8 fusas × 4 tiempos = 12 barras, obtuvo ${beams.length}`);
     });
 });

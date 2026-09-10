@@ -32,7 +32,7 @@ El PDF imprime la llamada inicial en unísono `Todos` con semis densas. En panta
 - Compás **C**
 - Clave de percusión
 - Cabeza en la **línea del medio** (`b/4`)
-- **Plicas abajo** (Equivalencias); en Redo+Repi del toque, voz de arriba / abajo
+- **Plicas abajo** (Equivalencias), también en Agudos / Redo+Repi
 - Barras por negra (2 corcheas / 4 semis)
 - Llamada: `section.agrupar = agudos-graves`
 

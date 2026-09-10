@@ -32,7 +32,9 @@ Misma duración que la figura homónima (`-` / `--` / `----` / etc. en el DSL).
 
 - Cabeza en la **línea del medio** del pentagrama de 5 líneas.
 - **Plica abajo** en todas las figuras (blanca, negra, corchea, semi, fusa).
-- Barras **debajo** de las cabezas: 2 corcheas / 4 semis / 8 fusas por tiempo.
+- Barras **horizontales, debajo** de las cabezas: 2 corcheas / 4 semis / 8 fusas por tiempo.
+- El renderer (`resources/js/partitura/renderer.js`) copia esa grafía: plica abajo siempre
+  (también en Agudos / Redo+Repi) y `flat_beams: true`. No se invierte la figura.
 
 ## Reglas de escritura
 
