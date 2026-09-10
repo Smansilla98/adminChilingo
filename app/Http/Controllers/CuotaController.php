@@ -6,6 +6,7 @@ use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\Sede;
+use App\Models\WhatsappMensaje;
 use App\Services\AmbitoSedeService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -172,7 +173,19 @@ class CuotaController extends Controller
     {
         $cuota->loadCount('pagoDetalles')->load(['bloque', 'sede', 'alumnos']);
 
-        return view('cuotas.show', compact('cuota'));
+        $recordatoriosWhatsapp = collect();
+        if (Schema::hasTable('whatsapp_mensajes')) {
+            $recordatoriosWhatsapp = WhatsappMensaje::query()
+                ->where('cuota_id', $cuota->id)
+                ->where('tipo', WhatsappMensaje::TIPO_CUOTA)
+                ->with('alumno')
+                ->orderByDesc('id')
+                ->get()
+                ->unique('alumno_id')
+                ->values();
+        }
+
+        return view('cuotas.show', compact('cuota', 'recordatoriosWhatsapp'));
     }
 
     public function edit(Cuota $cuota)

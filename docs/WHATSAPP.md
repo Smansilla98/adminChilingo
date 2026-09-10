@@ -19,9 +19,12 @@ El sistema puede enviar mensajes por WhatsApp usando la API de **Twilio**. Sirve
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=tu_auth_token
 TWILIO_WHATSAPP_FROM=+14155238886
+TWILIO_STATUS_CALLBACK_URL=https://tu-dominio.up.railway.app/webhooks/twilio/whatsapp-status
 ```
 
-(Sin el prefijo `whatsapp:`; el código lo agrega solo.)
+(Sin el prefijo `whatsapp:` en `TWILIO_WHATSAPP_FROM`; el código lo agrega solo.)
+
+`TWILIO_STATUS_CALLBACK_URL` tiene que ser una URL **pública HTTPS**. Twilio no puede llamar a `localhost`; ver sección 8.
 
 ## 3. Probar envío (mensaje de prueba)
 
@@ -136,8 +139,67 @@ $whatsapp = app(WhatsAppService::class);
 $result = $whatsapp->send('Texto del mensaje', '+5491112345678');
 
 if ($result['success']) {
-    // enviado; $result['sid'] tiene el ID del mensaje
+    // Twilio aceptó (hay SID). No implica entregado.
+    // $result['sid'], $result['status'], $result['delivered_to_recipient']
 } else {
     // $result['error'] tiene el mensaje de error
 }
 ```
+
+`success = true` **no** significa que WhatsApp entregó el mensaje. Solo que Twilio aceptó la solicitud y devolvió un Message SID. El estado real (`queued` → `sent` → `delivered` / `read`, o `failed` / `undelivered`) llega por **status callback**.
+
+## 8. Status callback (estado real)
+
+Twilio notifica los cambios de estado con un POST firmado.
+
+### Variables
+
+```env
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=tu_auth_token
+TWILIO_WHATSAPP_FROM=+14155238886
+TWILIO_STATUS_CALLBACK_URL=https://tu-dominio.up.railway.app/webhooks/twilio/whatsapp-status
+```
+
+- `TWILIO_WHATSAPP_FROM`: número sandbox o WhatsApp Business, **sin** el prefijo `whatsapp:`.
+- `TWILIO_STATUS_CALLBACK_URL`: URL **pública HTTPS** del webhook. Si está vacía, la app usa `APP_URL` + `/webhooks/twilio/whatsapp-status`, salvo que `APP_URL` sea localhost (Twilio no puede llamar a tu máquina).
+
+En la consola de Twilio, el mismo URL puede configurarse a nivel de messaging service; el envío ya manda `statusCallback` en cada mensaje.
+
+### Localhost
+
+Twilio no alcanza `http://localhost`. Para probar callbacks en desarrollo:
+
+1. Exponé la app con un túnel (`ngrok http 8000` o similar).
+2. Poné esa URL HTTPS en `TWILIO_STATUS_CALLBACK_URL` y en `APP_URL` si hace falta que la firma coincida.
+
+### Staging / producción
+
+`APP_URL` y `TWILIO_STATUS_CALLBACK_URL` tienen que ser el dominio público real (HTTPS). Railway: `https://admin-chilingo.up.railway.app/webhooks/twilio/whatsapp-status`.
+
+### Estados
+
+| Estado Twilio | En pantalla (cuota) | Significado |
+|---|---|---|
+| `queued` / `sending` | Pendiente de confirmación | Twilio aceptó; todavía no hay entrega |
+| `sent` | Enviado | Salió hacia WhatsApp |
+| `delivered` | Entregado | Llegó al dispositivo |
+| `read` | Leído | WhatsApp informó lectura (si el receptor lo permite) |
+| `failed` | Fallido | Error (se guarda `ErrorCode` / `ErrorMessage`) |
+| `undelivered` | No entregado | No llegó |
+
+Progresión: no se retrocede (`delivered` no vuelve a `sent`). Los callbacks pueden repetirse o llegar desordenados; se ignora un estado más viejo. `failed` y `undelivered` son terminales (no pasan a `sent`/`delivered`). Un mensaje ya `delivered`/`read` no pasa a `failed`.
+
+`--dry-run` / vista previa **no** llama a Twilio y **no** crea filas en `whatsapp_mensajes`.
+
+En **Cuotas → ver cuota** aparece el último recordatorio WhatsApp por alumno, con SID y error si falló.
+
+## 9. Sandbox y producción Meta
+
+El **sandbox** de Twilio solo entrega a números que hicieron `join …`. Un SID aceptado puede terminar en `failed` si el destinatario no se unió.
+
+Producción: número WhatsApp Business aprobado por Twilio/Meta. Los mensajes iniciados por el negocio suelen requerir **plantillas** aprobadas; el texto libre de estos recordatorios puede estar restringido según la cuenta.
+
+## 10. Firma del webhook
+
+El endpoint `POST /webhooks/twilio/whatsapp-status` valida `X-Twilio-Signature` con `Twilio\Security\RequestValidator` y el `TWILIO_AUTH_TOKEN`. No lleva CSRF (excepción solo de esa ruta). No loguea el Auth Token.

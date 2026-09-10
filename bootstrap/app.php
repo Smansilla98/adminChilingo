@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'profesor_o_admin' => \App\Http\Middleware\EnsureProfesorOrAdmin::class,
             'modulo' => \App\Http\Middleware\CheckModuloAccess::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/twilio/whatsapp-status',
+        ]);
         // Detrás de Railway/HTTPS: confiar en proxies para URL y esquema correctos
         $middleware->trustProxies(at: '*');
     })

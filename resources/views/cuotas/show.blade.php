@@ -45,6 +45,42 @@
             <dt class="col-sm-3">Registros de pago</dt>
             <dd class="col-sm-9">{{ $cuota->pago_detalles_count }}</dd>
         </dl>
+
+        <h2 class="h5 mt-4">Recordatorios WhatsApp</h2>
+        <p class="text-muted small">Twilio aceptó el envío no significa que WhatsApp lo haya entregado. El estado real llega por callback.</p>
+        @if(($recordatoriosWhatsapp ?? collect())->isEmpty())
+            <p class="mb-3">Aún no hay envíos de recordatorio para esta cuota.</p>
+        @else
+            <table class="ito-table mb-3">
+                <thead>
+                    <tr>
+                        <th>Alumno</th>
+                        <th>Teléfono</th>
+                        <th>Estado</th>
+                        <th>SID</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($recordatoriosWhatsapp as $msg)
+                        <tr>
+                            <td>{{ $msg->alumno?->nombre_apellido ?? '—' }}</td>
+                            <td>{{ $msg->telefono }}</td>
+                            <td>{{ $msg->etiquetaEstado() }}</td>
+                            <td><code>{{ $msg->twilio_sid }}</code></td>
+                            <td>
+                                @if($msg->error_code || $msg->error_message)
+                                    {{ $msg->error_code }} {{ $msg->error_message }}
+                                @else
+                                    —
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
         <a href="{{ route('cuotas.edit', $cuota) }}" class="btn btn-warning">Editar</a>
         <a href="{{ route('cuotas.index') }}" class="btn btn-secondary">Volver</a>
 </x-ito.shell-page>

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Alumno;
 use App\Models\Cuota;
 use App\Models\Evento;
+use App\Models\WhatsappMensaje;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -95,9 +96,14 @@ class WhatsAppRecordatoriosCommand extends Command
 
                 continue;
             }
-            $result = $whatsapp->send($mensaje, $alumno->telefono);
+            $result = $whatsapp->send($mensaje, $alumno->telefono, [
+                'tipo' => WhatsappMensaje::TIPO_CUOTA,
+                'alumno_id' => $alumno->id,
+                'cuota_id' => $cuotaActiva->id,
+            ]);
             if ($result['success']) {
                 $enviados++;
+                $this->line('  '.$alumno->nombre.': Twilio aceptó SID '.($result['sid'] ?? ''));
             } else {
                 $errores++;
                 $this->warn("  {$alumno->nombre}: ".($result['error'] ?? ''));
@@ -143,7 +149,10 @@ class WhatsAppRecordatoriosCommand extends Command
 
                 continue;
             }
-            $result = $whatsapp->send($mensaje, $alumno->telefono);
+            $result = $whatsapp->send($mensaje, $alumno->telefono, [
+                'tipo' => WhatsappMensaje::TIPO_EVENTO,
+                'alumno_id' => $alumno->id,
+            ]);
             if ($result['success']) {
                 $enviados++;
             } else {

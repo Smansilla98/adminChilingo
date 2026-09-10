@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\WhatsappMensaje;
 
 class WhatsAppResumenAdminService
 {
@@ -77,7 +78,10 @@ class WhatsAppResumenAdminService
                 continue;
             }
 
-            $result = $this->whatsapp->send($mensaje, $telefono);
+            $result = $this->whatsapp->send($mensaje, $telefono, [
+                'tipo' => WhatsappMensaje::TIPO_RESUMEN_ADMIN,
+                'user_id' => $admin->id,
+            ]);
             if ($result['success']) {
                 $enviados++;
                 $detalles[] = [
@@ -100,9 +104,9 @@ class WhatsAppResumenAdminService
         $mensajeResumen = $dryRun
             ? "Vista previa para {$enviados} destinatario(s)."
             : ($ok
-                ? "Enviado a {$enviados} destinatario(s)."
+                ? "Twilio aceptó el envío a {$enviados} destinatario(s). La entrega se confirma después por callback."
                 : ($enviados > 0
-                    ? "Enviado a {$enviados}, con {$errores} error(es)."
+                    ? "Twilio aceptó {$enviados}, con {$errores} error(es)."
                     : 'No se pudo enviar a ningún destinatario.'));
 
         return [

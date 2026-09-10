@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\WhatsappMensaje;
 use App\Services\WhatsAppService;
 use Illuminate\Console\Command;
 
@@ -35,10 +36,13 @@ class SendWhatsAppTestCommand extends Command
         }
 
         $this->info("Enviando mensaje a {$numero}...");
-        $result = $whatsapp->send($message, $numero);
+        $result = $whatsapp->send($message, $numero, [
+            'tipo' => WhatsappMensaje::TIPO_TEST,
+        ]);
 
         if ($result['success']) {
-            $this->info('Mensaje enviado correctamente. SID: '.($result['sid'] ?? ''));
+            $this->info('Twilio aceptó el envío. SID: '.($result['sid'] ?? '').' Estado inicial: '.($result['status'] ?? 'queued'));
+            $this->line('Eso no significa que WhatsApp lo haya entregado. El estado real llega por status callback.');
 
             return self::SUCCESS;
         }

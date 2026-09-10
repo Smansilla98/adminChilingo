@@ -26,7 +26,7 @@ class WhatsAppResumenAdminCommand extends Command
         } else {
             foreach ($resultado['detalles'] as $detalle) {
                 if ($detalle['success'] ?? false) {
-                    $this->info('Enviado a '.($detalle['etiqueta'] ?? ''));
+                    $this->info('Twilio aceptó el envío a '.($detalle['etiqueta'] ?? ''));
                 } else {
                     $this->warn(($detalle['etiqueta'] ?? '').': '.($detalle['error'] ?? 'Error'));
                 }

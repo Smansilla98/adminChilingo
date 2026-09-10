@@ -43,6 +43,7 @@ use App\Http\Controllers\VillaGesellController;
 use App\Http\Controllers\VillaGesellGastoController;
 use App\Http\Controllers\VillaGesellInscriptoController;
 use App\Http\Controllers\VillaGesellInsumoController;
+use App\Http\Controllers\TwilioWhatsAppStatusController;
 use App\Models\Bloque;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +62,10 @@ Route::get('/tambor/{codigo}', [InventarioPublicoController::class, 'show'])
     ->middleware('throttle:40,1')
     ->where('codigo', '[A-Za-z0-9._-]{2,40}')
     ->name('inventario.publico');
+
+Route::post('/webhooks/twilio/whatsapp-status', TwilioWhatsAppStatusController::class)
+    ->middleware('throttle:120,1')
+    ->name('webhooks.twilio.whatsapp-status');
 
 Route::get('/salud', function () {
     $db = true;

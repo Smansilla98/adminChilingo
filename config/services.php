@@ -42,14 +42,15 @@ return [
     | Para recordatorios y notificaciones. Número "from" debe ser el de Twilio
     | (sandbox ej. +14155238886). Destinos con código país, ej. +5491112345678.
     */
-    'twilio' => [
-        'account_sid' => env('TWILIO_ACCOUNT_SID'),
-        'auth_token' => env('TWILIO_AUTH_TOKEN'),
-        'whatsapp_from' => env('TWILIO_WHATSAPP_FROM', ''), // ej. +14155238886 (sin prefijo whatsapp:)
-        'admin_whatsapp_numbers' => array_values(array_filter(array_map(
-            'trim',
-            explode(',', (string) env('WHATSAPP_ADMIN_NUMBERS', ''))
-        ))),
-    ],
+        'twilio' => [
+            'account_sid' => env('TWILIO_ACCOUNT_SID'),
+            'auth_token' => env('TWILIO_AUTH_TOKEN'),
+            'whatsapp_from' => env('TWILIO_WHATSAPP_FROM', ''), // ej. +14155238886 (sin prefijo whatsapp:)
+            'status_callback_url' => env('TWILIO_STATUS_CALLBACK_URL', ''),
+            'admin_whatsapp_numbers' => array_values(array_filter(array_map(
+                'trim',
+                explode(',', (string) env('WHATSAPP_ADMIN_NUMBERS', ''))
+            ))),
+        ],
 
 ];
