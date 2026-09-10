@@ -3,8 +3,11 @@
  */
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { JSDOM } from 'jsdom';
-import { crearPartitura, crearNota, crearCompas, ajustarVoz, ticksDeCompas } from '../../resources/js/partitura/model.js';
+import { crearPartitura, crearNota, crearCompas, ajustarVoz, ticksDeCompas, ops } from '../../resources/js/partitura/model.js';
 import { renderScore } from '../../resources/js/partitura/renderer.js';
 
 describe('render VexFlow', () => {
@@ -145,5 +148,24 @@ describe('render VexFlow', () => {
         });
         const beams = host.querySelectorAll('g.vf-beam');
         assert.equal(beams.length, 12, `2 corcheas / 4 semis / 8 fusas × 4 tiempos = 12 barras, obtuvo ${beams.length}`);
+    });
+
+    it('Toque de Chilinga se dibuja y sigue dibujándose al agregar un compás', () => {
+        const p = join(dirname(fileURLToPath(import.meta.url)), '../../database/data/partituras-v4/01-toque-de-chilinga.json');
+        const score = JSON.parse(readFileSync(p, 'utf8'));
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+
+        for (const ancho of [560, 900, 1400]) {
+            const { hits } = renderScore(host, score, { anchoPagina: ancho });
+            assert.ok(host.querySelector('svg'), `SVG a ${ancho}px`);
+            assert.ok(hits.length > 0, `hits a ${ancho}px`);
+        }
+
+        ops.agregarCompas(score, 0, 0);
+        const { hits } = renderScore(host, score, { anchoPagina: 900 });
+        assert.ok(host.querySelectorAll('svg').length >= 1, 'SVG después de + compás');
+        assert.ok(hits.length > 0, 'hits después de + compás');
+        assert.ok(host.querySelectorAll('g.vf-stave').length > 0, 'hay pentagramas');
     });
 });

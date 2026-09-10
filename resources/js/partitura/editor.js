@@ -266,10 +266,22 @@ export class EditorPartitura {
     /** ------------------------------------------------------------- render */
 
     render() {
-        const ancho = Math.max(560, Math.floor((this.el.wrap.clientWidth - 48) / this.zoom));
-        const r = renderScore(this.el.canvas, this.score, { anchoPagina: ancho });
-        this.hits = r.hits;
-        this.measureBoxes = r.measureBoxes;
+        const anchoRaw = Math.floor(((this.el.wrap?.clientWidth || 900) - 48) / this.zoom);
+        const ancho = Math.max(560, Number.isFinite(anchoRaw) ? anchoRaw : 900);
+        const tmp = document.createElement('div');
+        tmp.className = 'pt-canvas';
+        try {
+            const r = renderScore(tmp, this.score, { anchoPagina: ancho });
+            this.el.canvas.replaceChildren(...tmp.childNodes);
+            this.hits = r.hits;
+            this.measureBoxes = r.measureBoxes;
+        } catch (err) {
+            console.error('Partitura: no se pudo dibujar', err);
+            if (!this.el.canvas.childNodes.length) {
+                this.el.canvas.innerHTML = '<p class="pt-empty">No se pudo dibujar el pentagrama. Recargá la página.</p>';
+            }
+            this.aviso('No se pudo dibujar el pentagrama.');
+        }
         this.el.page.style.transform = `scale(${this.zoom})`;
         this.el.zoomLabel.textContent = `${Math.round(this.zoom * 100)}%`;
         this.pintarInspector();

@@ -7,8 +7,9 @@
  * medio, plica abajo, barras horizontales debajo (2 corcheas / 4 semis / 8 fusas
  * por tiempo), igual que la hoja Equivalencias. También en Redo+Repi / Agudos.
  *
- * Orden VexFlow: notas → beams/tuplets → Voice → format → stave.draw →
- * voice.draw → beam.draw. Los beams se construyen ANTES del formateo.
+ * Orden VexFlow: notas → Voice → format → plica abajo → beams/tuplets →
+ * stave.draw → voice.draw → beam.draw. Los beams van DESPUÉS del formateo
+ * porque StaveNote.format llama setStemDirection y eso borra note.beam.
  */
 import {
     Renderer, Stave, StaveNote, GhostNote, Beam, Tuplet, Formatter, Articulation,
@@ -66,7 +67,11 @@ export function renderScore(host, score, opts = {}) {
         for (let start = 0; start < sec.measures.length; start += porLinea) {
             const idxs = [];
             for (let k = start; k < Math.min(start + porLinea, sec.measures.length); k++) idxs.push(k);
-            secEl.appendChild(renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes));
+            try {
+                secEl.appendChild(renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes));
+            } catch (e) {
+                console.warn('Partitura: no se pudo dibujar una línea', e);
+            }
         }
 
         host.appendChild(secEl);
@@ -103,7 +108,9 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     const voiceTime = { num_beats: ts.num, beat_value: ts.den };
 
     idxs.forEach((mi, k) => {
+        try {
         const m = sec.measures[mi];
+        if (!m) return;
         const x = LABEL_W + k * measureW;
         const vocesFmt = [];
         const sistemasStave = [];
@@ -153,7 +160,13 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 let grupoNotas = [];
 
                 const tickables = (vozData.length ? vozData : [{ dur: 'w', rest: true, dots: 0, stroke: 'nota' }]).map((n, ni) => {
-                    const vf = construirNota(n, pitch, ts);
+                    let vf;
+                    try {
+                        vf = construirNota(n, pitch, ts);
+                    } catch (e) {
+                        console.warn('Partitura: nota inválida, se dibuja como silencio', e);
+                        vf = new StaveNote({ keys: [pitch], duration: '4r', clef: 'percussion' });
+                    }
                     built.push({ vf, data: n, idx: ni, instId: inst.def.id });
                     const gid = n.tuplet?.id || null;
                     if (gid !== grupoActual) {
@@ -176,15 +189,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 }
                 voice.setStave(stave);
 
-                const notasVf = built.map((b) => b.vf);
-                const beams = Beam.generateBeams(notasVf, {
-                    beam_rests: false,
-                    groups: gruposDeBeam(ts),
-                    stem_direction: -1,
-                    maintain_stem_directions: true,
-                    flat_beams: true,
-                });
-                vocesFmt.push({ voice, stave, built, tuplets, beams, instId: inst.def.id });
+                vocesFmt.push({ voice, stave, built, tuplets, beams: [], instId: inst.def.id });
             });
         });
 
@@ -204,11 +209,32 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             }
         }
 
+        // Format puede invertir plicas (voces juntas) y borrar beams con setStemDirection.
+        // Equivalencias: plica abajo en todas, barras después del formato.
         vocesFmt.forEach(({ built }) => {
             built.forEach(({ vf, data }) => forzarPlicaAbajo(vf, data));
         });
+        vocesFmt.forEach((entry) => {
+            try {
+                entry.beams = Beam.generateBeams(entry.built.map((b) => b.vf), {
+                    beam_rests: false,
+                    groups: gruposDeBeam(ts),
+                    stem_direction: -1,
+                    flat_beams: true,
+                });
+            } catch (e) {
+                console.warn('Partitura: no se pudieron agrupar las barras', e);
+                entry.beams = [];
+            }
+        });
 
-        sistemasStave.forEach(({ stave }) => stave.setContext(ctx).draw());
+        sistemasStave.forEach(({ stave }) => {
+            try {
+                stave.setContext(ctx).draw();
+            } catch (e) {
+                console.warn('Partitura: no se pudo dibujar el pentagrama', e);
+            }
+        });
 
         vocesFmt.forEach(({ voice, stave, built, tuplets, beams, instId }) => {
             try {
@@ -216,8 +242,20 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             } catch (e) {
                 console.warn('Partitura: no se pudo dibujar la voz', e);
             }
-            beams.forEach((b) => b.setContext(ctx).draw());
-            tuplets.forEach((t) => t.setContext(ctx).draw());
+            beams.forEach((b) => {
+                try {
+                    b.setContext(ctx).draw();
+                } catch (e) {
+                    console.warn('Partitura: no se pudo dibujar una barra', e);
+                }
+            });
+            tuplets.forEach((t) => {
+                try {
+                    t.setContext(ctx).draw();
+                } catch (e) {
+                    console.warn('Partitura: no se pudo dibujar un tresillo', e);
+                }
+            });
 
             built.forEach(({ vf, data, idx }) => {
                 const box = cajaDeNota(vf, stave);
@@ -229,9 +267,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                     noteId: data.id,
                     rest: data.rest,
                     dur: data.dur,
-                    stem: (!data.rest && data.dur !== 'w' && typeof vf.getStemDirection === 'function')
-                        ? vf.getStemDirection()
-                        : 0,
+                    stem: direccionPlica(vf, data),
                     lineEl: wrap,
                     ...box,
                 });
@@ -250,6 +286,9 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 h: sistemas.length * STAVE_H + 8,
                 sistemas: sistemas.map((s) => s.id),
             });
+        }
+        } catch (e) {
+            console.warn('Partitura: no se pudo dibujar el compás', mi, e);
         }
     });
 
@@ -339,13 +378,21 @@ function gruposDeBeam(ts) {
     return [new Fraction(1, 4)];
 }
 
-/** Hoja Equivalencias: plica abajo. No usar setStemDirection acá: borra el beam. */
+/** Hoja Equivalencias: plica abajo. No usar setStemDirection: borra el beam. */
 function forzarPlicaAbajo(vf, data) {
     if (!vf || data.rest || data.dur === 'w') return;
     vf.stem_direction = -1;
     if (vf.stem && typeof vf.stem.setDirection === 'function') {
         vf.stem.setDirection(-1);
     }
+}
+
+function direccionPlica(vf, data) {
+    if (!vf || data.rest || data.dur === 'w') return 0;
+    try {
+        if (typeof vf.getStemDirection === 'function') return vf.getStemDirection();
+    } catch { /* sin plica */ }
+    return typeof vf.stem_direction === 'number' ? vf.stem_direction : -1;
 }
 
 function cajaDeNota(vf, stave) {
