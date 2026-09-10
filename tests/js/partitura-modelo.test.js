@@ -6,7 +6,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
     TPQ, ticksDeCompas, tickAPosicion, eventosMusicales, duracionNegra,
-    segundosDeTicks, crearPartitura, crearNota, ajustarVoz,
+    segundosDeTicks, crearPartitura, crearNota, ajustarVoz, ops, herramientaPorId,
+    ticksDeVoz, ticksDeNota,
 } from '../../resources/js/partitura/model.js';
 import {
     MAPA_SAMPLES, nombreArchivoSample, sistemasVisuales, instrumentoPorId,
@@ -236,5 +237,58 @@ describe('PDF Toques — Oxosi agudo y source', () => {
     it('midiDeGolpe distingue agudo de nota en redoblante', () => {
         assert.notEqual(midiDeGolpe('redoblante', 'agudo'), midiDeGolpe('redoblante', 'nota'));
         assert.equal(midiDeGolpe('redoblante', 'agudo'), midiDeGolpe('repique', 'agudo'));
+    });
+});
+
+describe('herramientas de figura', () => {
+    function selDe(score) {
+        return { sectionIdx: 0, measureIdx: 0, instId: score.instruments[0].id, noteIdx: 0 };
+    }
+
+    it('vaciarPartitura deja una parte y un compás de silencios', () => {
+        const score = crearPartitura({ title: 'X', instrumentos: ['surdo_grave', 'redoblante'] });
+        score.sections[0].measures[0].voces.surdo_grave = [crearNota({ dur: 'q' })];
+        ops.vaciarPartitura(score);
+        assert.equal(score.title, 'X');
+        assert.equal(score.sections.length, 1);
+        assert.equal(score.sections[0].measures.length, 1);
+        assert.equal(score.instruments.length, 2);
+        const voz = score.sections[0].measures[0].voces.surdo_grave;
+        assert.ok(voz.every((n) => n.rest));
+        assert.equal(ticksDeVoz(voz), ticksDeCompas(score.timeSignature));
+    });
+
+    it('4 semicorcheas llenan 1 tiempo', () => {
+        const score = crearPartitura({ instrumentos: ['surdo_grave'] });
+        const sel = selDe(score);
+        const n = ops.aplicarHerramienta(score, sel, herramientaPorId('16x4'));
+        assert.equal(n, 4);
+        const voz = score.sections[0].measures[0].voces.surdo_grave;
+        const primeras = voz.filter((x) => !x.rest);
+        assert.equal(primeras.length, 4);
+        primeras.forEach((x) => assert.equal(x.dur, '16'));
+        assert.equal(primeras.reduce((s, x) => s + ticksDeNota(x), 0), 48);
+    });
+
+    it('tresillo de corcheas ocupa 1 tiempo', () => {
+        const score = crearPartitura({ instrumentos: ['surdo_grave'] });
+        const sel = selDe(score);
+        ops.aplicarHerramienta(score, sel, herramientaPorId('3:2-8'));
+        const tres = score.sections[0].measures[0].voces.surdo_grave.filter((x) => x.tuplet);
+        assert.equal(tres.length, 3);
+        assert.equal(tres.reduce((s, x) => s + ticksDeNota(x), 0), 48);
+    });
+});
+
+describe('guía del editor (tooltip)', () => {
+    it('recorre cada zona con un paso y un título', async () => {
+        const { PASOS_TOUR } = await import('../../resources/js/partitura/tour.js');
+        assert.equal(PASOS_TOUR.length, 10);
+        const ids = PASOS_TOUR.map((p) => p.id);
+        assert.equal(new Set(ids).size, ids.length);
+        PASOS_TOUR.forEach((p) => {
+            assert.ok(p.titulo.length > 8, p.id);
+            assert.match(p.html, /<ol>/);
+        });
     });
 });

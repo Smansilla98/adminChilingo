@@ -26,6 +26,38 @@ export const DURACIONES = [
     { code: '32', label: 'Fusa', tiempos: 0.125, ticks: TPQ / 8, tecla: '6' },
 ];
 
+/**
+ * Herramientas de escritura (como en Flat.io / la hoja Figuras y silencios).
+ * `tiempos` es el texto corto bajo el botón (en 4/4, negra = 1 tiempo).
+ */
+export const HERRAMIENTAS_FIGURA = [
+    { id: 'w', grupo: 'figuras', kind: 'nota', dur: 'w', dots: 0, label: 'Redonda', tiempos: '4 t', tecla: '1' },
+    { id: 'h', grupo: 'figuras', kind: 'nota', dur: 'h', dots: 0, label: 'Blanca', tiempos: '2 t', tecla: '2' },
+    { id: 'h.', grupo: 'figuras', kind: 'nota', dur: 'h', dots: 1, label: 'Blanca con puntillo', tiempos: '3 t' },
+    { id: 'q', grupo: 'figuras', kind: 'nota', dur: 'q', dots: 0, label: 'Negra', tiempos: '1 t', tecla: '3' },
+    { id: 'q.', grupo: 'figuras', kind: 'nota', dur: 'q', dots: 1, label: 'Negra con puntillo', tiempos: '1½ t' },
+    { id: '8', grupo: 'figuras', kind: 'nota', dur: '8', dots: 0, label: 'Corchea', tiempos: '½ t', tecla: '4' },
+    { id: '8.', grupo: 'figuras', kind: 'nota', dur: '8', dots: 1, label: 'Corchea con puntillo', tiempos: '¾ t' },
+    { id: '16', grupo: 'figuras', kind: 'nota', dur: '16', dots: 0, label: 'Semicorchea', tiempos: '¼ t', tecla: '5' },
+    { id: '32', grupo: 'figuras', kind: 'nota', dur: '32', dots: 0, label: 'Fusa', tiempos: '⅛ t', tecla: '6' },
+    { id: '8x2', grupo: 'grupos', kind: 'grupo', dur: '8', count: 2, label: '2 corcheas', tiempos: '1 t' },
+    { id: '16x2', grupo: 'grupos', kind: 'grupo', dur: '16', count: 2, label: '2 semicorcheas', tiempos: '½ t' },
+    { id: '16x4', grupo: 'grupos', kind: 'grupo', dur: '16', count: 4, label: '4 semicorcheas', tiempos: '1 t' },
+    { id: '32x8', grupo: 'grupos', kind: 'grupo', dur: '32', count: 8, label: '8 fusas', tiempos: '1 t' },
+    { id: '3:2-8', grupo: 'grupos', kind: 'tuplet', dur: '8', num: 3, den: 2, label: 'Tresillo de corcheas', tiempos: '1 t' },
+    { id: '3:2-16', grupo: 'grupos', kind: 'tuplet', dur: '16', num: 3, den: 2, label: 'Tresillo de semicorcheas', tiempos: '½ t' },
+    { id: '6:4-16', grupo: 'grupos', kind: 'tuplet', dur: '16', num: 6, den: 4, label: 'Sextillo', tiempos: '1 t' },
+    { id: 'wr', grupo: 'silencios', kind: 'silencio', dur: 'w', label: 'Silencio de redonda', tiempos: '4 t' },
+    { id: 'hr', grupo: 'silencios', kind: 'silencio', dur: 'h', label: 'Silencio de blanca', tiempos: '2 t' },
+    { id: 'qr', grupo: 'silencios', kind: 'silencio', dur: 'q', label: 'Silencio de negra', tiempos: '1 t' },
+    { id: '8r', grupo: 'silencios', kind: 'silencio', dur: '8', label: 'Silencio de corchea', tiempos: '½ t' },
+    { id: '16r', grupo: 'silencios', kind: 'silencio', dur: '16', label: 'Silencio de semicorchea', tiempos: '¼ t' },
+];
+
+export function herramientaPorId(id) {
+    return HERRAMIENTAS_FIGURA.find((h) => h.id === id) || null;
+}
+
 const DUR_TICKS = DURACIONES.reduce((acc, d) => ({ ...acc, [d.code]: d.ticks }), {});
 
 let uid = 0;
@@ -421,6 +453,32 @@ export const ops = {
         return true;
     },
 
+    /** Reemplaza la nota seleccionada (o inserta después) por una figura / grupo / silencio. */
+    aplicarHerramienta(score, sel, herramienta, { insertar = false } = {}) {
+        const voz = vozDe(score, sel);
+        if (!voz || !herramienta) return false;
+        const idx = insertar ? sel.noteIdx + 1 : sel.noteIdx;
+        if (idx < 0 || idx > voz.length || (!insertar && !voz[idx])) return false;
+        const stroke = golpeDefault(sel.instId);
+        const notas = notasDeHerramienta(herramienta, stroke);
+        if (!notas.length) return false;
+        if (insertar) voz.splice(idx, 0, ...notas);
+        else voz.splice(idx, 1, ...notas);
+        reajustar(score, sel);
+        return notas.length;
+    },
+
+    /** Deja una sola parte con un compás vacío (se puede deshacer). Conserva título, tempo e instrumentos. */
+    vaciarPartitura(score) {
+        const ids = (score.instruments || []).map((i) => i.id).filter((id) => instrumentoPorId(id));
+        const instrumentos = ids.length ? ids : INSTRUMENTOS_DEFAULT;
+        if (!score.instruments?.length) {
+            score.instruments = instrumentos.map((id) => instrumentoConfig(id));
+        }
+        score.sections = [crearSeccion('Llamada', score.instruments.map((i) => i.id), score.timeSignature, 1)];
+        return true;
+    },
+
     toggleDot(score, sel, dots = 1) {
         const nota = notaDe(score, sel);
         if (!nota) return false;
@@ -607,6 +665,28 @@ export function vozDe(score, sel) {
     const m = score.sections[sel.sectionIdx]?.measures[sel.measureIdx];
     if (!m) return null;
     return m.voces[sel.instId] || null;
+}
+
+function notasDeHerramienta(h, stroke) {
+    if (h.kind === 'nota') {
+        return [crearNota({ dur: h.dur, dots: h.dots || 0, rest: false, stroke })];
+    }
+    if (h.kind === 'silencio') {
+        return [crearNota({ dur: h.dur, dots: h.dots || 0, rest: true })];
+    }
+    if (h.kind === 'grupo') {
+        const n = Math.max(2, h.count || 2);
+        return Array.from({ length: n }, () => crearNota({ dur: h.dur, rest: false, stroke }));
+    }
+    if (h.kind === 'tuplet') {
+        const num = Math.max(2, h.num || 3);
+        const den = Math.max(1, h.den || 2);
+        const gid = nextId('t');
+        return Array.from({ length: num }, () => crearNota({
+            dur: h.dur, rest: false, stroke, tuplet: { id: gid, num, den },
+        }));
+    }
+    return [];
 }
 
 function reajustar(score, sel) {

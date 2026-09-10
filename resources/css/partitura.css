@@ -165,6 +165,66 @@
     color: currentColor;
     overflow: visible;
 }
+.pt-btn-warn {
+    border-color: color-mix(in srgb, #ef4444 55%, var(--pt-line));
+    color: #fecaca;
+}
+.pt-btn-warn:hover { background: color-mix(in srgb, #ef4444 22%, var(--pt-panel)); }
+
+.pt-notation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.7rem 1.05rem;
+    padding: 0.4rem 0.7rem 0.5rem;
+    background: color-mix(in srgb, var(--pt-panel) 96%, transparent);
+    border-bottom: 1px solid var(--pt-line);
+}
+.pt-not-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.22rem;
+    max-width: 100%;
+}
+.pt-not-label {
+    flex: 1 0 100%;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pt-muted);
+    margin: 0 0 0.12rem;
+}
+.pt-fig-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.12rem;
+    min-width: 36px;
+    height: 48px;
+    padding: 0.2rem 0.32rem 0.18rem;
+    border-radius: 8px;
+    border: 1px solid var(--pt-line);
+    background: color-mix(in srgb, var(--pt-brass) 6%, var(--pt-panel));
+    color: var(--pt-text);
+    cursor: pointer;
+    line-height: 1;
+}
+.pt-fig-btn small {
+    font-size: 9px;
+    color: var(--pt-muted);
+    white-space: nowrap;
+}
+.pt-fig-btn:hover { background: color-mix(in srgb, var(--pt-brass) 20%, var(--pt-panel)); }
+.pt-fig-btn.on {
+    background: var(--pt-brass);
+    border-color: var(--pt-brass);
+    color: var(--accent-on, #fff);
+    font-weight: 700;
+}
+.pt-fig-btn.on small { color: inherit; opacity: 0.88; }
+
 .pt-zoom-label { font-size: 11px; color: var(--pt-muted); min-width: 38px; text-align: center; }
 
 .pt-dropdown { position: relative; }
@@ -421,6 +481,88 @@
 }
 .pt-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ----------------------------------------------------------- guía (tooltip grande) */
+
+.pt-tour {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    pointer-events: none;
+}
+.pt-tour[hidden] { display: none !important; }
+.pt-tour-spot {
+    position: fixed;
+    border-radius: 10px;
+    box-shadow: 0 0 0 9999px rgba(5, 8, 18, 0.62);
+    outline: 2px solid var(--pt-accent);
+    pointer-events: none;
+    transition: top 0.18s ease, left 0.18s ease, width 0.18s ease, height 0.18s ease;
+}
+.pt-tour-spot[hidden] { display: none; }
+.pt-tour-card {
+    position: fixed;
+    width: min(440px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+    pointer-events: auto;
+    background: var(--pt-panel);
+    color: var(--pt-text);
+    border: 1px solid color-mix(in srgb, var(--pt-accent) 45%, var(--pt-line));
+    border-radius: 14px;
+    padding: 1.05rem 1.15rem 0.85rem;
+}
+.pt-tour-kicker {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pt-accent);
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+.pt-tour-card h2 {
+    margin: 0 0 0.55rem;
+    font-size: 1.12rem;
+    font-family: var(--font-display, Manrope, sans-serif);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
+.pt-tour-body { font-size: 13px; line-height: 1.45; color: var(--pt-text); }
+.pt-tour-body p { margin: 0 0 0.55rem; }
+.pt-tour-body ol {
+    margin: 0 0 0.65rem;
+    padding-left: 1.15rem;
+}
+.pt-tour-body li { margin: 0.22rem 0; }
+.pt-tour-note {
+    margin: 0;
+    font-size: 12px;
+    color: var(--pt-muted);
+}
+.pt-tour-body kbd {
+    display: inline-block;
+    min-width: 1.35em;
+    padding: 0.05em 0.38em;
+    border: 1px solid var(--pt-line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: color-mix(in srgb, #000 30%, var(--pt-bg));
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 700;
+    text-align: center;
+}
+.pt-tour-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.85rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--pt-line);
+}
+.pt-tour-nav-spacer { flex: 1; }
+.pt-tour-nav .pt-btn:disabled { opacity: 0.35; pointer-events: none; }
+
 /* ----------------------------------------------------------- visor */
 
 .pt-viewer { display: block; }
@@ -466,10 +608,12 @@
 
 @media print {
     .pt-toolbar,
+    .pt-notation,
     .pt-palette,
     .pt-side,
     .pt-ref,
     .pt-status,
+    .pt-tour,
     .pt-viewer-actions { display: none !important; }
     .pt-app { height: auto; overflow: visible; }
     .pt-canvas-wrap { padding: 0; background: #fff; overflow: visible; }

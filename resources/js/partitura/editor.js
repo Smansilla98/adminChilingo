@@ -6,13 +6,14 @@
  */
 import {
     DURACIONES, ops, normalizarPartitura, clonar, resumen, notaDe, vozDe,
-    ticksDeCompas, ticksDeVoz, crearPartitura,
+    ticksDeCompas, ticksDeVoz, crearPartitura, HERRAMIENTAS_FIGURA, herramientaPorId,
 } from './model.js';
 import { INSTRUMENTOS, instrumentoPorId, golpesDe, GOLPES, DINAMICAS, MARCAS_TEXTO, DIGITACIONES } from './instruments.js';
 import { renderScore } from './renderer.js';
 import { MotorAudio } from './audio.js';
 import { exportarPNG, exportarPDF, exportarMusicXML, exportarMIDI } from './exporters.js';
 import { importarMusicXML, importarScoreJson, tipoArchivoImport } from './importers.js';
+import { TourPartitura } from './tour.js';
 
 const MAX_UNDO = 60;
 
@@ -36,6 +37,7 @@ export class EditorPartitura {
         this.score = normalizarPartitura(opts.score || crearPartitura());
         this.sel = null;              // {sectionIdx, measureIdx, instId, noteIdx}
         this.durActiva = 'q';
+        this.herramientaId = 'q';
         this.dotsActivos = 0;
         this.modoSilencio = false;
         this.zoom = 1;
@@ -65,8 +67,10 @@ export class EditorPartitura {
         this.root.addEventListener('pointerdown', () => {
             this.audio.asegurarContexto().then(() => this.audio.precargarSamples(this.score)).catch(() => {});
         }, { once: true });
+        this.tour = new TourPartitura(this.root);
         this.render();
         this.seleccionInicial();
+        this.tour.maybeStart();
     }
 
     /** ------------------------------------------------------------- construcción UI */
@@ -80,15 +84,13 @@ export class EditorPartitura {
                     <input class="pt-input pt-input-title" data-f="title" value="${attr(this.score.title)}" placeholder="Título del toque" ${this.readonly ? 'disabled' : ''}>
                     <input class="pt-input pt-input-autor" data-f="autor" value="${attr(this.score.autor || '')}" placeholder="Autor / arreglo" ${this.readonly ? 'disabled' : ''}>
                 </div>
-                <div class="pt-tb-group">
+                <div class="pt-tb-group" data-tour="transporte">
                     <button class="pt-btn pt-btn-play" data-a="play" title="Reproducir (Espacio)">▶</button>
                     <button class="pt-btn" data-a="pause" title="Pausa">❚❚</button>
                     <button class="pt-btn" data-a="stop" title="Detener">■</button>
                     <button class="pt-btn pt-toggle" data-a="loop" title="Repetir">↻</button>
                     <button class="pt-btn pt-toggle on" data-a="countin" title="Conteo de un compás antes de entrar">1·2·3·4</button>
                     <button class="pt-btn pt-toggle" data-a="metro" title="Metrónomo">Metrónomo</button>
-                </div>
-                <div class="pt-tb-group">
                     <label class="pt-field pt-field-tempo" title="Bajar el tempo es el gesto del bloque">
                         <span>Tempo</span>
                         <input class="pt-tempo-slider" type="range" min="60" max="100" data-f="tempo-slider" value="${this.score.tempo}">
@@ -103,11 +105,6 @@ export class EditorPartitura {
                         </select>
                     </label>
                 </div>
-                <div class="pt-tb-group pt-tb-dur" data-zone="duraciones">
-                    ${DURACIONES.map((d) => `<button class="pt-btn pt-dur" data-dur="${d.code}" title="${d.label} = ${d.tiempos} tiempo${d.tiempos === 1 ? '' : 's'} (${d.tecla})">${figuraSvg(d.code)}<em>${d.tecla}</em></button>`).join('')}
-                    <button class="pt-btn pt-dot" data-a="dot" title="Puntillo (.)">.</button>
-                    <button class="pt-btn pt-rest" data-a="rest" title="Silencio (R)">𝄽</button>
-                </div>
                 <div class="pt-tb-group">
                     <button class="pt-btn" data-a="undo" title="Deshacer (Ctrl+Z)">⟲</button>
                     <button class="pt-btn" data-a="redo" title="Rehacer (Ctrl+Y)">⟳</button>
@@ -115,7 +112,8 @@ export class EditorPartitura {
                     <span class="pt-zoom-label">100%</span>
                     <button class="pt-btn" data-a="zoom-in" title="Zoom +">+</button>
                 </div>
-                <div class="pt-tb-group pt-tb-right">
+                <div class="pt-tb-group pt-tb-right" data-tour="archivo">
+                    <button class="pt-btn" data-a="tour" title="Cómo escribir la partitura">?</button>
                     ${this.readonly ? '' : `
                     <div class="pt-dropdown">
                         <button class="pt-btn" data-a="import-menu">Importar ▾</button>
@@ -138,6 +136,28 @@ export class EditorPartitura {
                     ${this.readonly ? '' : '<button class="pt-btn pt-btn-primary" data-a="save">Guardar</button>'}
                 </div>
             </header>
+            <div class="pt-notation" data-tour="figuras">
+                <div class="pt-not-group" data-tour="compases">
+                    <span class="pt-not-label">Compases</span>
+                    <button class="pt-btn" data-a="measure-add" title="Agregar un compás después del seleccionado">+ Compás</button>
+                    <button class="pt-btn" data-a="measure-del" title="Borrar el compás seleccionado">− Compás</button>
+                    <button class="pt-btn" data-a="measure-clear" title="Silencios en esta línea de este compás">Limpiar voz</button>
+                    <button class="pt-btn" data-a="measure-copy" title="Copiar esta línea a otros instrumentos">Copiar voz</button>
+                    ${this.readonly ? '' : '<button class="pt-btn pt-btn-warn" data-a="score-clear" title="Borrar todo y dejar un compás vacío">Partitura en blanco</button>'}
+                </div>
+                <div class="pt-not-group">
+                    <span class="pt-not-label">Figuras</span>
+                    ${botonesFigura('figuras')}
+                </div>
+                <div class="pt-not-group">
+                    <span class="pt-not-label">Grupos y tresillos</span>
+                    ${botonesFigura('grupos')}
+                </div>
+                <div class="pt-not-group">
+                    <span class="pt-not-label">Silencios</span>
+                    ${botonesFigura('silencios')}
+                </div>
+            </div>
             <input type="file" hidden data-import="ref" accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf">
             <input type="file" hidden data-import="xml" accept=".musicxml,.xml,application/xml,text/xml">
             <input type="file" hidden data-import="json" accept=".json,application/json">
@@ -155,15 +175,17 @@ export class EditorPartitura {
                     </div>
                     <div class="pt-ref-body" data-ref-body></div>
                 </aside>
-                <main class="pt-canvas-wrap" tabindex="0">
+                <main class="pt-canvas-wrap" tabindex="0" data-tour="lienzo">
                     <div class="pt-page" data-zone="page">
                         <div class="pt-canvas" data-zone="canvas"></div>
                     </div>
                 </main>
                 <aside class="pt-side">
+                    <div data-tour="inspector">
                     <div class="pt-side-block" data-zone="inspector"></div>
                     <div class="pt-side-block" data-zone="mixer"></div>
-                    <div class="pt-side-block" data-zone="estructura"></div>
+                    </div>
+                    <div class="pt-side-block" data-zone="estructura" data-tour="partes"></div>
                 </aside>
             </div>
 
@@ -209,10 +231,11 @@ export class EditorPartitura {
 
     pintarPaleta() {
         this.el.paleta.innerHTML = `
-            <div class="pt-pal-block">
+            <div class="pt-pal-block" data-tour="golpes">
                 <h3>Golpes</h3>
                 <div class="pt-pal-grid" data-zone="golpes"></div>
             </div>
+            <div data-tour="expresion">
             <div class="pt-pal-block">
                 <h3>Dinámicas</h3>
                 <div class="pt-pal-grid">
@@ -227,12 +250,6 @@ export class EditorPartitura {
                 </div>
                 <p class="pt-muted" style="font-size:.72rem;margin:.35rem 0 0">D = derecha · I = izquierda (debajo del pentagrama)</p>
             </div>
-            <div class="pt-pal-block">
-                <h3>Grupos</h3>
-                <div class="pt-pal-grid">
-                    <button class="pt-chip pt-chip-wide" data-a="tuplet-3" title="Tresillo de corchea (Ctrl+3)">Tresillo 3</button>
-                    <button class="pt-chip pt-chip-wide" data-a="tuplet-6" title="Sextillo (Ctrl+6)">Sextillo 6</button>
-                </div>
             </div>
             <div class="pt-pal-block">
                 <h3>Repeticiones</h3>
@@ -249,15 +266,6 @@ export class EditorPartitura {
                 <div class="pt-pal-grid">
                     ${MARCAS_TEXTO.map((m) => `<button class="pt-chip pt-chip-wide" data-marca="${m.id}">${m.label}</button>`).join('')}
                     <button class="pt-chip pt-chip-wide" data-a="marca-off">Quitar marca</button>
-                </div>
-            </div>
-            <div class="pt-pal-block">
-                <h3>Compases</h3>
-                <div class="pt-pal-grid">
-                    <button class="pt-chip pt-chip-wide" data-a="measure-add">+ Compás</button>
-                    <button class="pt-chip pt-chip-wide" data-a="measure-del">− Compás</button>
-                    <button class="pt-chip pt-chip-wide" data-a="measure-clear">Limpiar voz</button>
-                    <button class="pt-chip pt-chip-wide" data-a="measure-copy">Copiar voz →</button>
                 </div>
             </div>
         `;
@@ -291,6 +299,7 @@ export class EditorPartitura {
         this.pintarStatus();
         this.marcarSeleccion();
         this.marcarBotonesDuracion();
+        if (this.tour?.abierto) this.tour.colocar();
     }
 
     seleccionInicial() {
@@ -467,9 +476,7 @@ export class EditorPartitura {
     }
 
     marcarBotonesDuracion() {
-        this.root.querySelectorAll('.pt-dur').forEach((b) => b.classList.toggle('on', b.dataset.dur === this.durActiva));
-        this.root.querySelector('.pt-dot')?.classList.toggle('on', this.dotsActivos > 0);
-        this.root.querySelector('.pt-rest')?.classList.toggle('on', this.modoSilencio);
+        this.root.querySelectorAll('[data-fig]').forEach((b) => b.classList.toggle('on', b.dataset.fig === this.herramientaId));
     }
 
     /** ------------------------------------------------------------- eventos */
@@ -503,12 +510,13 @@ export class EditorPartitura {
     }
 
     onClick(e) {
-        const btn = e.target.closest('[data-a],[data-stroke],[data-dyn],[data-dur],[data-marca],[data-digitacion]');
+        const btn = e.target.closest('[data-a],[data-stroke],[data-dyn],[data-dur],[data-fig],[data-marca],[data-digitacion]');
         if (!btn) return;
         const a = btn.dataset.a;
         const secRow = btn.closest('[data-section]');
         const mixRow = btn.closest('[data-inst]');
 
+        if (btn.dataset.fig) return this.aplicarHerramientaUI(btn.dataset.fig);
         if (btn.dataset.dur) return this.aplicarDuracion(btn.dataset.dur);
         if (btn.dataset.stroke) return this.editar(() => ops.setGolpe(this.score, this.sel, btn.dataset.stroke), btn.dataset.stroke);
         if (btn.dataset.dyn) return this.editar(() => ops.setDinamica(this.score, this.sel, btn.dataset.dyn));
@@ -522,6 +530,7 @@ export class EditorPartitura {
         }
 
         switch (a) {
+            case 'tour': return this.tour.start(0);
             case 'play': return this.play();
             case 'pause': return this.audio.pause();
             case 'stop': return this.audio.stop();
@@ -578,6 +587,7 @@ export class EditorPartitura {
                 });
             case 'measure-clear': return this.editar(() => ops.limpiarCompas(this.score, this.sel));
             case 'measure-copy': return this.copiarVozDialogo();
+            case 'score-clear': return this.vaciarPartituraUI();
             case 'sec-add': return this.editar(() => ops.agregarSeccion(this.score, `Parte ${this.score.sections.length + 1}`));
             case 'sec-del':
                 if (!secRow) return;
@@ -665,6 +675,7 @@ export class EditorPartitura {
 
     bindTeclado() {
         document.addEventListener('keydown', (e) => {
+            if (this.tour?.abierto) return;
             if (e.target.matches('input, textarea, select')) return;
             const mod = e.ctrlKey || e.metaKey;
 
@@ -672,14 +683,18 @@ export class EditorPartitura {
             if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); return this.undo(); }
             if (mod && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); return this.redo(); }
             if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); return this.guardar(); }
-            if (mod && e.key === '3') { e.preventDefault(); return this.editar(() => ops.tuplet(this.score, this.sel, 3, 2)); }
-            if (mod && e.key === '6') { e.preventDefault(); return this.editar(() => ops.tuplet(this.score, this.sel, 6, 4)); }
+            if (mod && e.key === '3') { e.preventDefault(); return this.aplicarHerramientaUI('3:2-8'); }
+            if (mod && e.key === '6') { e.preventDefault(); return this.aplicarHerramientaUI('6:4-16'); }
             if (mod) return;
 
             const dur = DURACIONES.find((d) => d.tecla === e.key);
             if (dur) { e.preventDefault(); return this.aplicarDuracion(dur.code); }
-            if (e.key === '.') { e.preventDefault(); return this.editar(() => ops.toggleDot(this.score, this.sel, 1)); }
-            if (e.key.toLowerCase() === 'r') { e.preventDefault(); return this.editar(() => ops.toggleSilencio(this.score, this.sel)); }
+            if (e.key === '.') { e.preventDefault(); return this.aplicarHerramientaUI(this.durActiva === 'h' ? 'h.' : this.durActiva === '8' ? '8.' : 'q.'); }
+            if (e.key.toLowerCase() === 'r') {
+                e.preventDefault();
+                const restId = `${this.durActiva}r`;
+                return this.aplicarHerramientaUI(herramientaPorId(restId) ? restId : 'qr');
+            }
             if (e.key === 'Enter') { e.preventDefault(); return this.insertar(); }
             if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); return this.editar(() => ops.borrar(this.score, this.sel)); }
             if (e.key === 'ArrowRight') { e.preventDefault(); return this.mover(1); }
@@ -703,18 +718,47 @@ export class EditorPartitura {
     /** ------------------------------------------------------------- acciones */
 
     aplicarDuracion(dur) {
-        this.durActiva = dur;
+        return this.aplicarHerramientaUI(dur);
+    }
+
+    aplicarHerramientaUI(id) {
+        const h = herramientaPorId(id);
+        if (!h) return;
+        this.herramientaId = h.id;
+        this.durActiva = h.dur;
+        this.dotsActivos = h.dots || 0;
+        this.modoSilencio = h.kind === 'silencio';
         this.marcarBotonesDuracion();
         if (!this.sel) return;
-        this.editar(() => ops.setDuracion(this.score, this.sel, dur));
+        this.editar(() => {
+            const n = ops.aplicarHerramienta(this.score, this.sel, h);
+            return n !== false && n !== 0;
+        });
+    }
+
+    vaciarPartituraUI() {
+        if (this.readonly) return;
+        if (!window.confirm('¿Borrar toda la partitura y empezar de cero?\nQueda un compás vacío. Se puede deshacer con Ctrl+Z.')) return;
+        this.editar(() => {
+            const ok = ops.vaciarPartitura(this.score);
+            if (ok) {
+                const inst = this.score.instruments[0];
+                this.sel = inst
+                    ? { sectionIdx: 0, measureIdx: 0, instId: inst.id, noteIdx: 0 }
+                    : null;
+            }
+            return ok;
+        });
     }
 
     insertar() {
         if (!this.sel) return;
+        const h = herramientaPorId(this.herramientaId) || herramientaPorId(this.durActiva);
+        if (!h) return;
         this.editar(() => {
-            const ok = ops.insertarDespues(this.score, this.sel, { dur: this.durActiva, rest: this.modoSilencio });
-            if (ok) this.sel.noteIdx += 1;
-            return ok;
+            const n = ops.aplicarHerramienta(this.score, this.sel, h, { insertar: true });
+            if (n) this.sel.noteIdx += 1;
+            return n !== false && n !== 0;
         });
     }
 
@@ -1088,25 +1132,71 @@ function parseRangos(txt, max) {
     return Array.from(out);
 }
 
-function figuraSvg(code) {
-    const oval = (fill) => fill
+function botonesFigura(grupo) {
+    return HERRAMIENTAS_FIGURA.filter((h) => h.grupo === grupo)
+        .map((h) => `<button type="button" class="pt-fig-btn" data-fig="${h.id}" title="${attr(h.label)} = ${h.tiempos}${h.tecla ? ` (${h.tecla})` : ''}">
+            ${iconoHerramienta(h)}<small>${h.tiempos}</small>
+        </button>`)
+        .join('');
+}
+
+function iconoHerramienta(h) {
+    if (h.kind === 'silencio') return silencioSvg(h.dur);
+    if (h.kind === 'grupo') return grupoSvg(h.dur, h.count);
+    if (h.kind === 'tuplet') return grupoSvg(h.dur, Math.min(3, h.num), { tuplet: `${h.num}` });
+    return figuraSvg(h.dur, h.dots || 0);
+}
+
+function figuraSvg(code, dots = 0) {
+    const fill = code !== 'w' && code !== 'h';
+    const oval = fill
         ? '<ellipse cx="9.2" cy="8.4" rx="5.1" ry="3.35" transform="rotate(-22 9.2 8.4)" fill="currentColor"/>'
         : '<ellipse cx="9.2" cy="8.4" rx="5.1" ry="3.35" transform="rotate(-22 9.2 8.4)" fill="none" stroke="currentColor" stroke-width="1.35"/>';
-    const stem = '<path d="M4.35 9.1 V24.2" stroke="currentColor" stroke-width="1.25" fill="none"/>';
+    const stem = code === 'w' ? '' : '<path d="M4.35 9.1 V24.2" stroke="currentColor" stroke-width="1.25" fill="none"/>';
     const flags = {
         8: '<path d="M4.35 24.2 C8.8 22.2 11.2 19.6 10.4 16.4" fill="none" stroke="currentColor" stroke-width="1.2"/>',
         16: '<path d="M4.35 24.2 C8.8 22.2 11.2 19.6 10.4 16.4M4.35 21.4 C8.4 19.6 10.6 17.4 10 14.8" fill="none" stroke="currentColor" stroke-width="1.2"/>',
         32: '<path d="M4.35 24.2 C8.8 22.2 11.2 19.6 10.4 16.4M4.35 21.4 C8.4 19.6 10.6 17.4 10 14.8M4.35 18.6 C8 17 9.9 15.2 9.5 13.2" fill="none" stroke="currentColor" stroke-width="1.15"/>',
     };
+    const dot = dots ? '<circle cx="16.6" cy="8.4" r="1.35" fill="currentColor"/>' : '';
+    const inner = oval + stem + (flags[code] || '') + dot;
+    const w = dots ? 20 : 16;
+    return `<svg class="pt-fig" viewBox="0 0 ${w} 28" width="${dots ? 17 : 14}" height="22" aria-hidden="true">${inner}</svg>`;
+}
+
+function silencioSvg(dur) {
     const inner = {
-        w: oval(false),
-        h: oval(false) + stem,
-        q: oval(true) + stem,
-        8: oval(true) + stem + flags[8],
-        16: oval(true) + stem + flags[16],
-        32: oval(true) + stem + flags[32],
-    }[code] || oval(true) + stem;
+        w: '<rect x="3.5" y="7.2" width="10" height="3.6" fill="currentColor"/>',
+        h: '<rect x="3.5" y="11.6" width="10" height="3.6" fill="currentColor"/>',
+        q: '<path d="M8.2 5.2 C11.8 8.4 6.4 11.2 9.8 14.6 C6.2 13.2 5.4 16.8 8.8 19.6 C5.2 18 6.6 22.8 10.4 24.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M10.4 24.4 C8.2 26.2 6.4 25.2 6.8 23.6" fill="currentColor"/>',
+        8: '<path d="M11.2 6.4 C7.2 9.6 7.6 13.2 11 14.2 L6.4 24.4" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="10.4" cy="14.2" r="1.7" fill="currentColor"/>',
+        16: '<path d="M11.4 5.2 C7.4 8.2 7.8 11.4 11.2 12.4 M11.2 10.6 C7.2 13.6 7.6 16.6 11 17.6 L6.2 24.6" fill="none" stroke="currentColor" stroke-width="1.25"/><circle cx="10.6" cy="12.4" r="1.5" fill="currentColor"/><circle cx="10.4" cy="17.6" r="1.5" fill="currentColor"/>',
+    }[dur] || '<rect x="5" y="12" width="6" height="3" fill="currentColor"/>';
     return `<svg class="pt-fig" viewBox="0 0 16 28" width="14" height="22" aria-hidden="true">${inner}</svg>`;
+}
+
+function grupoSvg(dur, count, opts = {}) {
+    const n = Math.min(4, Math.max(2, count || 2));
+    const gap = 11;
+    const w = 8 + gap * (n - 1) + 10;
+    const beams = dur === '32' ? 3 : dur === '16' ? 2 : 1;
+    let notes = '';
+    for (let i = 0; i < n; i++) {
+        const x = 8 + i * gap;
+        notes += `<ellipse cx="${x + 4.8}" cy="8.4" rx="4.4" ry="2.9" transform="rotate(-22 ${x + 4.8} 8.4)" fill="currentColor"/>`;
+        notes += `<path d="M${x} 9.1 V22.4" stroke="currentColor" stroke-width="1.2" fill="none"/>`;
+    }
+    const x1 = 8;
+    const x2 = 8 + (n - 1) * gap;
+    let beam = '';
+    for (let b = 0; b < beams; b++) {
+        const y = 21.4 - b * 2.4;
+        beam += `<path d="M${x1} ${y} H${x2}" stroke="currentColor" stroke-width="1.7" stroke-linecap="square"/>`;
+    }
+    const num = opts.tuplet
+        ? `<text x="${(x1 + x2) / 2}" y="27.2" text-anchor="middle" font-size="7.5" font-weight="700" fill="currentColor">${opts.tuplet}</text>`
+        : '';
+    return `<svg class="pt-fig pt-fig-g" viewBox="0 0 ${w} 28" width="${Math.round(w * 0.9)}" height="22" aria-hidden="true">${notes}${beam}${num}</svg>`;
 }
 
 function esc(s) {
