@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { JSDOM } from 'jsdom';
-import { crearPartitura, crearNota, crearCompas, ajustarVoz, ticksDeCompas, ops } from '../../resources/js/partitura/model.js';
+import { crearPartitura, crearNota, crearCompas, ajustarVoz, ticksDeCompas, ops, herramientaPorId } from '../../resources/js/partitura/model.js';
 import { renderScore } from '../../resources/js/partitura/renderer.js';
 
 describe('render VexFlow', () => {
@@ -179,5 +179,32 @@ describe('render VexFlow', () => {
         assert.ok(host.querySelectorAll('g.vf-stave').length >= 2, 'hay pentagramas vacíos');
         assert.ok(hits.length > 0, 'los silencios se pueden seleccionar');
         assert.ok(hits.every((h) => h.rest), 'todo es silencio');
+    });
+
+    it('escribir figuras sobre partitura en blanco dibuja las notas', () => {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        const score = crearPartitura({
+            title: 'Vacía',
+            instrumentos: ['surdo_grave', 'surdo_agudo', 'redoblante', 'repique', 'timbal'],
+        });
+        ops.vaciarPartitura(score);
+        const sel = { sectionIdx: 0, measureIdx: 0, instId: 'surdo_grave', noteIdx: 0 };
+        ops.aplicarHerramienta(score, sel, herramientaPorId('q'));
+        const warns = [];
+        const prev = console.warn;
+        console.warn = (...a) => warns.push(a.map(String).join(' '));
+        const { hits } = renderScore(host, score, { anchoPagina: 900, todasLasVoces: true });
+        console.warn = prev;
+        const golpes = hits.filter((h) => !h.rest);
+        assert.ok(golpes.length >= 1, `hay golpes dibujados, obtuvo ${golpes.length}`);
+        assert.equal(golpes[0].dur, 'q');
+        assert.ok(host.querySelectorAll('g.vf-stavenote').length > 0, 'hay notas VexFlow');
+        assert.equal(warns.filter((w) => /IncompleteVoice|UnformattedNote|NoTickContext/.test(w)).length, 0, warns.join('\n'));
+
+        ops.aplicarHerramienta(score, sel, herramientaPorId('8x2'));
+        const r2 = renderScore(host, score, { anchoPagina: 900, todasLasVoces: true });
+        assert.equal(r2.hits.filter((h) => !h.rest && h.dur === '8').length, 2, '2 corcheas visibles');
+        assert.ok(host.querySelectorAll('g.vf-beam').length >= 1, 'barra de 2 corcheas');
     });
 });

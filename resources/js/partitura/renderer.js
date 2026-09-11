@@ -13,7 +13,7 @@
  */
 import {
     Renderer, Stave, StaveNote, GhostNote, Beam, Tuplet, Formatter, Articulation,
-    Barline, Volta, Annotation, Dot, Fraction, Voice, GraceNote, GraceNoteGroup,
+    Barline, Volta, Annotation, Fraction, Voice, GraceNote, GraceNoteGroup,
 } from 'vexflow';
 import { instrumentoPorId, cabezaVexflow, GOLPES, sistemasVisuales } from './instruments.js';
 import { TPQ, ticksDeNota, ticksDeCompas } from './model.js';
@@ -183,17 +183,10 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 });
                 if (grupoActual && grupoNotas.length > 1) tuplets.push(nuevoTuplet(grupoNotas));
 
-                const voice = new Voice(voiceTime).setMode(Voice.Mode.STRICT);
-                try {
-                    voice.addTickables(tickables);
-                } catch (e) {
-                    console.warn('Partitura: voz no encaja en el compás, se formatea en SOFT', e);
-                    voice.setMode(Voice.Mode.SOFT);
-                    try { voice.addTickables(tickables); } catch { /* ya avisado */ }
-                }
+                const voice = vozConTickables(tickables, voiceTime);
                 voice.setStave(stave);
 
-                vocesFmt.push({ voice, stave, built, tuplets, beams: [], instId: inst.def.id });
+                vocesFmt.push({ voice, stave, built, tuplets, beams: [], instId: inst.def.id, di });
             });
         });
 
@@ -201,7 +194,13 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
         if (voices.length) {
             try {
                 const fmt = new Formatter();
-                fmt.joinVoices(voices);
+                // Cada pentagrama es un joinVoices aparte. Juntar Surdo + Redo + Timbal
+                // como una sola voz múltiple explota al escribir (IncompleteVoice) y
+                // el compás queda en blanco: el caso de «Partitura en blanco» + negra.
+                sistemasStave.forEach((_, di) => {
+                    const vs = vocesFmt.filter((v) => v.di === di).map((v) => v.voice);
+                    if (vs.length) fmt.joinVoices(vs);
+                });
                 const first = sistemasStave[0]?.stave;
                 const indent = first
                     ? Math.max(8, first.getNoteStartX() - first.getX())
@@ -210,6 +209,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 fmt.format(voices, anchoUtil);
             } catch (e) {
                 console.warn('Partitura: formato conjunto falló', e);
+                formatearVocesUnaAUna(vocesFmt, measureW, k === 0);
             }
         }
 
@@ -262,7 +262,12 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             });
 
             built.forEach(({ vf, data, idx }) => {
-                const box = cajaDeNota(vf, stave);
+                let box;
+                try {
+                    box = cajaDeNota(vf, stave);
+                } catch {
+                    box = { x: stave.getX() + 8, y: stave.getYForTopText(1), w: 16, h: 36 };
+                }
                 hits.push({
                     sectionIdx: si,
                     measureIdx: mi,
@@ -299,20 +304,52 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     return wrap;
 }
 
+function vozConTickables(tickables, voiceTime) {
+    const intentar = (mode) => {
+        const voice = new Voice(voiceTime).setMode(mode);
+        voice.addTickables(tickables);
+        return voice;
+    };
+    try {
+        return intentar(Voice.Mode.STRICT);
+    } catch (e) {
+        console.warn('Partitura: voz no encaja en el compás, se formatea en SOFT', e);
+        try {
+            return intentar(Voice.Mode.SOFT);
+        } catch {
+            return new Voice(voiceTime).setMode(Voice.Mode.SOFT);
+        }
+    }
+}
+
+function formatearVocesUnaAUna(vocesFmt, measureW, primerCompas) {
+    vocesFmt.forEach(({ voice, stave }) => {
+        try {
+            const indent = stave
+                ? Math.max(8, stave.getNoteStartX() - stave.getX())
+                : (primerCompas ? 56 : 12);
+            const anchoUtil = Math.max(48, measureW - indent - 10);
+            new Formatter().joinVoices([voice]).format([voice], anchoUtil);
+        } catch (e) {
+            console.warn('Partitura: formato individual falló', e);
+        }
+    });
+}
+
 function construirNota(n, pitch, ts) {
-    const dur = n.dur + (n.rest ? 'r' : '');
+    const dots = Math.min(2, Math.max(0, n.dots || 0));
+    // VexFlow cuenta el puntillo en la duración (`qd`, `hdr`), no en el modificador Dot.
+    const dur = n.dur + (dots === 2 ? 'dd' : dots === 1 ? 'd' : '') + (n.rest ? 'r' : '');
 
     if (n.rest) {
         const cap = ticksDeCompas(ts || { num: 4, den: 4 });
         const entero = ticksDeNota(n) >= cap;
-        const rest = new StaveNote({
+        return new StaveNote({
             keys: [pitch],
             duration: dur,
             clef: 'percussion',
             ...(entero ? { align_center: true } : {}),
         });
-        aplicarPuntillos(rest, n.dots);
-        return rest;
     }
 
     const note = new StaveNote({
@@ -321,7 +358,6 @@ function construirNota(n, pitch, ts) {
         stem_direction: -1,
         clef: 'percussion',
     });
-    aplicarPuntillos(note, n.dots);
 
     const golpe = GOLPES[n.stroke];
     if (golpe?.articulacion) {
@@ -361,12 +397,6 @@ function construirNota(n, pitch, ts) {
         );
     }
     return note;
-}
-
-function aplicarPuntillos(note, dots) {
-    for (let d = 0; d < (dots || 0); d++) {
-        Dot.buildAndAttach([note], { all: true });
-    }
 }
 
 function nuevoTuplet(grupo) {
