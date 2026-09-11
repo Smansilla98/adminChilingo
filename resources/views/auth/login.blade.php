@@ -1,24 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Chilinga</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('css/chilinga-admin.css') }}?v=15">
+    @include('layouts.partials.head-ito', ['headTitle' => 'La Chilinga'])
 </head>
 <body class="auth-page-ito">
+<a class="ito-skip" href="#contenido-principal">Ir al contenido</a>
     <div class="auth-shell">
         <div class="auth-card auth-card--ito">
             <div class="auth-card-ito__logo-ring" aria-hidden="true">
-                <img src="{{ asset('images/brand/logo.png') }}" alt="ITO">
+                <img src="{{ asset('images/brand/logo.png') }}" alt="La Chilinga">
             </div>
             <div class="auth-card-ito__head">
                 <h1 class="auth-card-ito__title">Iniciar sesión</h1>
                 <p class="auth-card-ito__sub">Entrá con tu usuario y contraseña</p>
             </div>
-            <div class="auth-card-ito__body">
+            <div class="auth-card-ito__body" id="contenido-principal" tabindex="-1">
                 @if(session('success'))
                     <div class="auth-alerts"><div class="alert alert-success mb-0 py-2">{{ session('success') }}</div></div>
                 @endif

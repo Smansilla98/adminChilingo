@@ -307,7 +307,7 @@
     transition: all 0.2s ease;
     text-decoration: none;
     color: inherit;
-    border-left: 3px solid var(--accent, #3e7bfa);
+    border-left: 3px solid var(--accent);
 }
 
 @media (min-width: 768px) {

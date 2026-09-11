@@ -402,10 +402,10 @@
     const css = getComputedStyle(document.documentElement);
     const muted = css.getPropertyValue('--muted-2').trim() || 'rgba(255,255,255,.45)';
     const line = 'rgba(233,237,245,0.08)';
-    const brick = css.getPropertyValue('--brick').trim() || '#3e7bfa';
-    const verdigris = css.getPropertyValue('--verdigris').trim() || '#22c55e';
-    const brass = css.getPropertyValue('--brass').trim() || '#3e7bfa';
-    const s3 = css.getPropertyValue('--surface-3').trim() || '#1e2a45';
+    const brick = css.getPropertyValue('--brick').trim() || '#f26422';
+    const verdigris = css.getPropertyValue('--verdigris').trim() || '#3daf3a';
+    const brass = css.getPropertyValue('--brass').trim() || '#3ec8ea';
+    const s3 = css.getPropertyValue('--surface-3').trim() || '#242424';
 
     const chartDefaults = {
         responsive: true,

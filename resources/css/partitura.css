@@ -4,13 +4,13 @@
  */
 
 :root {
-    --pt-bg: var(--bg, #0a0e1a);
-    --pt-panel: var(--s1, #111827);
-    --pt-line: var(--border, rgba(233, 237, 245, 0.08));
-    --pt-text: var(--text, #e9edf5);
-    --pt-muted: var(--muted, #a8b3c9);
-    --pt-brass: var(--accent, #3e7bfa);
-    --pt-accent: var(--accent, #3e7bfa);
+    --pt-bg: var(--bg);
+    --pt-panel: var(--s1);
+    --pt-line: var(--border);
+    --pt-text: var(--text);
+    --pt-muted: var(--muted);
+    --pt-brass: var(--accent);
+    --pt-accent: var(--accent);
     --pt-paper: #ffffff;
     --pt-toolbar-h: 56px;
 }
@@ -24,7 +24,7 @@
     min-height: 520px;
     background: var(--pt-bg);
     color: var(--pt-text);
-    font-family: var(--font-body, Inter, system-ui, sans-serif);
+    font-family: var(--font-body);
     overflow: hidden;
     position: relative;
 }
@@ -122,7 +122,7 @@
 .pt-btn.on,
 .pt-toggle.on { background: var(--pt-brass); border-color: var(--pt-brass); color: var(--accent-on, #fff); font-weight: 700; }
 .pt-btn-primary { background: var(--pt-accent); border-color: var(--pt-accent); color: var(--accent-on, #fff); font-weight: 600; padding: 0 0.9rem; }
-.pt-btn-primary:hover { background: var(--accent-hover, #2f66db); }
+.pt-btn-primary:hover { background: var(--accent-hover); }
 .pt-btn-ghost { background: transparent; }
 .pt-btn-play.on { background: var(--success, #22c55e); border-color: var(--success, #22c55e); color: #04140b; }
 
@@ -522,7 +522,7 @@
 .pt-tour-card h2 {
     margin: 0 0 0.55rem;
     font-size: 1.12rem;
-    font-family: var(--font-display, Manrope, sans-serif);
+    font-family: var(--font-display);
     font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 1.25;
@@ -575,7 +575,7 @@
 }
 .pt-viewer-title {
     margin: 0;
-    font-family: var(--font-display, Manrope, sans-serif);
+    font-family: var(--font-display);
     font-size: 1.15rem;
     font-weight: 800;
     letter-spacing: -0.02em;

@@ -423,7 +423,7 @@ body.auth-page-ito {
     radial-gradient(900px 480px at 92% 0%, rgba(62, 200, 234, 0.16), transparent 52%),
     #000;
   color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 body.auth-page-ito .auth-shell {
@@ -446,6 +446,31 @@ body.auth-page-ito .auth-card--ito {
   border-radius: 20px;
   box-shadow: 0 26px 70px rgba(0, 0, 0, 0.35);
   overflow: visible;
+}
+
+body.auth-page-ito .auth-card--ito-wide {
+  max-width: 560px;
+  padding-bottom: 8px;
+}
+
+body.auth-page-ito .auth-card--ito-wide .form-label {
+  color: var(--muted);
+  font-weight: 650;
+  font-size: 13px;
+}
+
+body.auth-page-ito .auth-card--ito-wide .form-text {
+  color: var(--muted-2);
+}
+
+body.auth-page-ito .auth-card--ito-wide .btn-outline-primary {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--accent);
+}
+
+body.auth-page-ito .auth-card--ito-wide .btn-outline-primary:hover {
+  background: var(--accent-soft);
+  color: var(--text);
 }
 
 body.auth-page-ito .auth-card-ito__logo-ring {
