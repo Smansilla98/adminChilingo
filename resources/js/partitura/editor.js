@@ -279,7 +279,7 @@ export class EditorPartitura {
         const tmp = document.createElement('div');
         tmp.className = 'pt-canvas';
         try {
-            const r = renderScore(tmp, this.score, { anchoPagina: ancho });
+            const r = renderScore(tmp, this.score, { anchoPagina: ancho, todasLasVoces: true });
             this.el.canvas.replaceChildren(...tmp.childNodes);
             this.hits = r.hits;
             this.measureBoxes = r.measureBoxes;

@@ -168,4 +168,16 @@ describe('render VexFlow', () => {
         assert.ok(hits.length > 0, 'hits después de + compás');
         assert.ok(host.querySelectorAll('g.vf-stave').length > 0, 'hay pentagramas');
     });
+
+    it('partitura en blanco dibuja pentagramas (silencios clicables)', () => {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        const score = crearPartitura({ title: 'Vacía', instrumentos: ['surdo_grave', 'redoblante', 'repique'] });
+        ops.vaciarPartitura(score);
+        const { hits } = renderScore(host, score, { anchoPagina: 900, todasLasVoces: true });
+        assert.ok(host.querySelector('svg'), 'hay SVG');
+        assert.ok(host.querySelectorAll('g.vf-stave').length >= 2, 'hay pentagramas vacíos');
+        assert.ok(hits.length > 0, 'los silencios se pueden seleccionar');
+        assert.ok(hits.every((h) => h.rest), 'todo es silencio');
+    });
 });

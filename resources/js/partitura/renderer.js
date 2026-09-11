@@ -49,7 +49,9 @@ export function renderScore(host, score, opts = {}) {
     }
 
     score.sections.forEach((sec, si) => {
-        const instrumentos = instrumentosDeSeccion(sec, todosLosInst);
+        const instrumentos = opts.todasLasVoces
+            ? todosLosInst
+            : instrumentosDeSeccion(sec, todosLosInst);
         if (!instrumentos.length) return;
 
         const secEl = document.createElement('section');
@@ -81,9 +83,11 @@ export function renderScore(host, score, opts = {}) {
 }
 
 function instrumentosDeSeccion(sec, todos) {
-    return todos.filter(({ def }) =>
+    const conGolpes = todos.filter(({ def }) =>
         sec.measures.some((m) => (m.voces[def.id] || []).some((n) => !n.rest))
     );
+    // Solo silencios (partitura en blanco): hay que dibujar el pentagrama igual.
+    return conGolpes.length ? conGolpes : todos;
 }
 
 function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes) {
