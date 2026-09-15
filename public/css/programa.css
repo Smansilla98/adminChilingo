@@ -110,7 +110,7 @@
   height: 0;
   overflow: hidden;
   border-radius: 12px;
-  background: #000;
+  background: var(--bg, #000);
   border: 1px solid var(--border);
 }
 
@@ -155,12 +155,12 @@
 }
 
 .programa-partitura-leyenda-img {
-  background: #fff;
+  background: var(--paper, #fff);
   max-width: 100%;
 }
 
 .programa-partitura-preview-img {
-  background: #fff;
+  background: var(--paper, #fff);
   max-height: min(85vh, 900px);
   width: 100%;
   object-fit: contain;
@@ -173,7 +173,7 @@
   height: min(75vh, 720px);
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--paper, #fff);
 }
 
 @media (max-width: 991.98px) {

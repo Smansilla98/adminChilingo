@@ -4,6 +4,7 @@
   min-height: 100vh;
   margin: 0;
   color: var(--text);
+  background: var(--bg);
   font-family: var(--font-body);
 }
 
@@ -297,7 +298,7 @@
   height: 36px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--ink, #111) 72%, transparent);
-  color: #fff;
+  color: var(--accent-on, #fff);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
 }
 .biblio-card-media > .biblio-share-btn:hover,
@@ -314,7 +315,7 @@
   padding: 10px 16px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--ink, #111) 92%, transparent);
-  color: #fff;
+  color: var(--accent-on, #fff);
   font-size: 13px;
   font-weight: 650;
   opacity: 0;
@@ -350,7 +351,7 @@
   width: 100%;
   height: min(72vh, 720px);
   border: 0;
-  background: #fff;
+  background: var(--paper, #fff);
 }
 .biblio-show-info { padding: 16px 18px 20px; }
 
@@ -363,7 +364,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   background: color-mix(in srgb, var(--ink, #111) 72%, transparent);
-  color: #fff;
+  color: var(--accent-on, #fff);
   border-radius: 999px;
   padding: 4px 8px;
 }
@@ -478,7 +479,7 @@
   height: 52px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--accent, #f26422) 92%, transparent);
-  color: #fff;
+  color: var(--accent-on, #fff);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -523,7 +524,7 @@ body.biblio-modal-open { overflow: hidden; }
   border: 0;
   border-radius: 50%;
   background: color-mix(in srgb, var(--ink, #111) 70%, transparent);
-  color: #fff;
+  color: var(--accent-on, #fff);
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
@@ -547,7 +548,7 @@ body.biblio-modal-open { overflow: hidden; }
   width: 100%;
   height: min(68vh, 640px);
   border: 0;
-  background: #fff;
+  background: var(--paper, #fff);
 }
 .biblio-modal-audio,
 .biblio-modal-link {

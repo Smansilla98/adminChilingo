@@ -103,8 +103,8 @@
 }
 
 .prog-pill--ok {
-  background: color-mix(in srgb, #3dd68c 18%, transparent);
-  color: #8ef0b8;
+  background: var(--success-soft, color-mix(in srgb, var(--success, #22c55e) 18%, transparent));
+  color: var(--success, #8ef0b8);
 }
 
 .prog-anio-head {
@@ -140,7 +140,7 @@
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
-  background: color-mix(in srgb, var(--s1) 92%, #000);
+  background: color-mix(in srgb, var(--s1) 92%, var(--bg));
   margin-bottom: 1.1rem;
 }
 
@@ -191,14 +191,14 @@
   justify-content: space-between;
   gap: 10px;
   padding: 8px 14px;
-  background: #14100c;
-  border-bottom: 1px solid #3a2e24;
-  color: #f3e9d8;
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
   font-size: 13px;
 }
 
 .pt-public-bar a {
-  color: #d1a054;
+  color: var(--accent);
   text-decoration: none;
   font-weight: 650;
 }
@@ -309,7 +309,7 @@
   margin-bottom: 6px;
 }
 .pt-nombre-error {
-  color: #fca5a5;
+  color: var(--danger, #fca5a5);
   font-size: 12px;
   margin: 8px 0 0;
 }
