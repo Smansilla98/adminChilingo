@@ -296,7 +296,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(10, 14, 26, 0.72);
+  background: color-mix(in srgb, var(--ink, #111) 72%, transparent);
   color: #fff;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
 }
@@ -313,7 +313,7 @@
   z-index: 120;
   padding: 10px 16px;
   border-radius: 999px;
-  background: rgba(10, 14, 26, 0.92);
+  background: color-mix(in srgb, var(--ink, #111) 92%, transparent);
   color: #fff;
   font-size: 13px;
   font-weight: 650;
@@ -332,7 +332,7 @@
   overflow: hidden;
 }
 .biblio-show-media {
-  background: #0b1220;
+  background: var(--s3, #1a1a1a);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -362,7 +362,7 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: rgba(10, 14, 26, 0.72);
+  background: color-mix(in srgb, var(--ink, #111) 72%, transparent);
   color: #fff;
   border-radius: 999px;
   padding: 4px 8px;
@@ -436,12 +436,12 @@
 /* PNG: damero para ver transparencia */
 .biblio-card-media.is-png,
 .biblio-modal-media.is-png {
-  background-color: #1a2236;
+  background-color: var(--s3, #1a1a1a);
   background-image:
-    linear-gradient(45deg, #243049 25%, transparent 25%),
-    linear-gradient(-45deg, #243049 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #243049 75%),
-    linear-gradient(-45deg, transparent 75%, #243049 75%);
+    linear-gradient(45deg, color-mix(in srgb, var(--border, #333) 80%, transparent) 25%, transparent 25%),
+    linear-gradient(-45deg, color-mix(in srgb, var(--border, #333) 80%, transparent) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, color-mix(in srgb, var(--border, #333) 80%, transparent) 75%),
+    linear-gradient(-45deg, transparent 75%, color-mix(in srgb, var(--border, #333) 80%, transparent) 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
 }
@@ -471,13 +471,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 14, 26, 0.28);
+  background: color-mix(in srgb, var(--ink, #111) 28%, transparent);
 }
 .biblio-card-play i {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: rgba(62, 123, 250, 0.92);
+  background: color-mix(in srgb, var(--accent, #f26422) 92%, transparent);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -499,7 +499,7 @@ body.biblio-modal-open { overflow: hidden; }
 .biblio-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(5, 8, 16, 0.78);
+  background: color-mix(in srgb, var(--ink, #111) 78%, transparent);
   backdrop-filter: blur(4px);
 }
 .biblio-modal-dialog {
@@ -522,14 +522,14 @@ body.biblio-modal-open { overflow: hidden; }
   height: 36px;
   border: 0;
   border-radius: 50%;
-  background: rgba(10, 14, 26, 0.7);
+  background: color-mix(in srgb, var(--ink, #111) 70%, transparent);
   color: #fff;
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
 }
 .biblio-modal-media {
-  background: #0b1220;
+  background: var(--s3, #1a1a1a);
   min-height: 180px;
   display: flex;
   align-items: center;

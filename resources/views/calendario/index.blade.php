@@ -228,8 +228,10 @@
     vertical-align: top;
     padding: 4px;
     position: relative;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--border);
     word-wrap: break-word;
+    background: var(--s2);
+    color: var(--text);
 }
 
 @media (min-width: 768px) {
@@ -240,18 +242,18 @@
 }
 
 .calendar-day.other-month {
-    background-color: #f8f9fa;
-    color: #adb5bd;
+    background-color: var(--s1);
+    color: var(--muted-2);
 }
 
 .calendar-day.today {
-    background-color: #e7f3ff;
-    border: 2px solid #0d6efd !important;
+    background-color: var(--accent-soft);
+    border: 2px solid var(--accent) !important;
     font-weight: 600;
 }
 
 .calendar-day.today .day-number {
-    color: #0d6efd;
+    color: var(--accent);
 }
 
 .day-number {
@@ -290,21 +292,21 @@
 }
 
 .day-events::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
+    background: color-mix(in srgb, var(--text) 25%, transparent);
     border-radius: 3px;
 }
 
 .event-item {
     padding: 3px 4px;
     margin-bottom: 2px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm, 4px);
     cursor: pointer;
     font-size: 0.65rem;
     line-height: 1.3;
     display: block;
     width: 100%;
     box-sizing: border-box;
-    transition: all 0.2s ease;
+    transition: all var(--duration) var(--ease-out);
     text-decoration: none;
     color: inherit;
     border-left: 3px solid var(--accent);
@@ -320,7 +322,7 @@
 
 .event-item:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-sm);
 }
 
 .event-text {
@@ -345,20 +347,20 @@
 }
 
 .event-evento {
-    background-color: #0d6efd;
-    color: white;
+    background-color: var(--blue);
+    color: var(--ink);
 }
 
 .event-show {
-    background-color: #dc3545;
-    color: white;
-    border-left: 3px solid #a71d2a;
+    background-color: var(--danger);
+    color: var(--accent-on);
+    border-left: 3px solid color-mix(in srgb, var(--danger) 70%, #000);
 }
 
 .event-taller {
-    background-color: #198754;
-    color: #fff;
-    border-left: 3px solid #146c43;
+    background-color: var(--success);
+    color: var(--accent-on);
+    border-left: 3px solid color-mix(in srgb, var(--success) 70%, #000);
 }
 
 @media (max-width: 767.98px) {
@@ -377,12 +379,12 @@
 .event-list-item {
     padding: 0.75rem !important;
     border-left: 3px solid transparent;
-    transition: all 0.2s ease;
+    transition: all var(--duration) var(--ease-out);
 }
 
 .event-list-item:hover {
-    background-color: rgba(13, 110, 253, 0.05);
-    border-left-color: #0d6efd;
+    background-color: var(--accent-soft);
+    border-left-color: var(--accent);
 }
 
 .event-status-badge {
@@ -401,16 +403,16 @@
 
 .event-arrow {
     font-size: 1.25rem;
-    color: #6c757d;
+    color: var(--muted);
 }
 
 .event-list-item--taller:hover {
-    background-color: rgba(25, 135, 84, 0.12);
-    border-left-color: #198754;
+    background-color: var(--success-soft);
+    border-left-color: var(--success);
 }
 
 .event-list-item--taller:hover .event-arrow {
-    color: #198754;
+    color: var(--success);
 }
 </style>
 @endpush

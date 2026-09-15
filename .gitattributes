@@ -1,5 +1,25 @@
 * text=auto eol=lf
 
+# PCM: si Git los trata como texto, `eol=lf` corrompe el audio (PLAY sucio / ruido).
+*.wav -text binary
+*.wav eol=unset
+*.mp3 -text binary
+*.mp3 eol=unset
+*.ogg -text binary
+*.ogg eol=unset
+*.flac -text binary
+*.flac eol=unset
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html

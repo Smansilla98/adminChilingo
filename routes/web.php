@@ -38,12 +38,12 @@ use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\SedeController;
 use App\Http\Controllers\SeguimientoPedagogicoController;
 use App\Http\Controllers\ShowController;
+use App\Http\Controllers\TwilioWhatsAppStatusController;
 use App\Http\Controllers\VillaGesellCalendarioController;
 use App\Http\Controllers\VillaGesellController;
 use App\Http\Controllers\VillaGesellGastoController;
 use App\Http\Controllers\VillaGesellInscriptoController;
 use App\Http\Controllers\VillaGesellInsumoController;
-use App\Http\Controllers\TwilioWhatsAppStatusController;
 use App\Models\Bloque;
 use Illuminate\Support\Facades\Route;
 
@@ -234,6 +234,21 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('profesores', ProfesorController::class)
             ->parameters(['profesores' => 'profesor']);
 
+        Route::post('disenos/medios', [DisenoController::class, 'storeMedio'])
+            ->middleware('modulo:admin.disenos')
+            ->name('disenos.medios.store');
+        Route::get('disenos/kit', [DisenoController::class, 'kitIndex'])
+            ->middleware(['modulo:admin.disenos', 'throttle:60,1'])
+            ->name('disenos.kit.index');
+        Route::post('disenos/kit', [DisenoController::class, 'kitStore'])
+            ->middleware(['modulo:admin.disenos', 'throttle:30,1'])
+            ->name('disenos.kit.store');
+        Route::delete('disenos/kit/{kit}', [DisenoController::class, 'kitDestroy'])
+            ->middleware('modulo:admin.disenos')
+            ->name('disenos.kit.destroy');
+        Route::get('disenos/biblioteca/items', [BibliotecaPublicController::class, 'apiItems'])
+            ->middleware(['modulo:admin.disenos', 'throttle:60,1'])
+            ->name('disenos.biblioteca.items');
         Route::resource('disenos', DisenoController::class)->middleware('modulo:admin.disenos');
 
         Route::resource('cuotas', CuotaController::class);

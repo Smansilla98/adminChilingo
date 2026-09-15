@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" width="400" height="520" fill="none">
+  <path d="M70 130
+    C70 90 110 55 200 55
+    C290 55 330 90 330 130
+    L360 175
+    C368 188 364 202 350 210
+    L320 224 L320 480
+    C320 496 306 508 290 508
+    L110 508
+    C94 508 80 496 80 480
+    L80 224 L50 210
+    C36 202 32 188 40 175 Z"
+    fill="rgba(20,20,20,0.08)" stroke="rgba(30,30,30,0.55)" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M120 130 C120 100 150 80 200 80 C250 80 280 100 280 130"
+    fill="none" stroke="rgba(30,30,30,0.4)" stroke-width="2.5"/>
+  <path d="M200 130 L200 508" stroke="rgba(30,30,30,0.25)" stroke-width="2" stroke-dasharray="4 6"/>
+  <rect x="130" y="240" width="140" height="150" rx="8"
+    fill="none" stroke="rgba(242,100,34,0.55)" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="200" y="320" text-anchor="middle" font-family="Manrope, system-ui, sans-serif" font-size="13" fill="rgba(242,100,34,0.7)">Zona de estampa</text>
+</svg>

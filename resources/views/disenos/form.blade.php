@@ -10,7 +10,8 @@
 <form method="POST"
       action="{{ $diseno->exists ? route('disenos.update', $diseno) : route('disenos.store') }}"
       id="disenoForm"
-      class="diseno-studio">
+      class="diseno-studio{{ empty($canEdit) && $diseno->exists ? ' diseno-readonly' : '' }}"
+      @if(empty($canEdit) && $diseno->exists) data-readonly="1" @endif>
     @csrf
     @if($diseno->exists)
         @method('PUT')
@@ -27,7 +28,7 @@
                     <button type="button" class="diseno-menu-item" data-menu-toggle="archivo" aria-expanded="false" aria-haspopup="true">Archivo</button>
                     <div class="diseno-menu-drop" data-menu-panel="archivo" hidden>
                         <button type="button" class="diseno-menu-option" data-menu-action="save"><i class="bi bi-cloud-check"></i> Guardar</button>
-                        <button type="button" class="diseno-menu-option" data-menu-action="export"><i class="bi bi-download"></i> Exportar PNG</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="export"><i class="bi bi-download"></i> Exportar…</button>
                         <hr class="diseno-menu-sep">
                         <a href="{{ route('disenos.create') }}" class="diseno-menu-option"><i class="bi bi-file-earmark-plus"></i> Diseño nuevo</a>
                         <a href="{{ route('disenos.index') }}" class="diseno-menu-option"><i class="bi bi-folder2-open"></i> Abrir diseños…</a>
@@ -55,6 +56,7 @@
                         <button type="button" class="diseno-menu-option" data-menu-action="zoom-100"><i class="bi bi-aspect-ratio"></i> Zoom 100%</button>
                         <hr class="diseno-menu-sep">
                         <button type="button" class="diseno-menu-option" data-menu-action="panel-plantillas"><i class="bi bi-layout-wtf"></i> Plantillas</button>
+                        <button type="button" class="diseno-menu-option" data-menu-action="panel-biblioteca"><i class="bi bi-images"></i> Biblioteca</button>
                         <button type="button" class="diseno-menu-option" data-menu-action="panel-elementos"><i class="bi bi-bounding-box"></i> Elementos</button>
                         <button type="button" class="diseno-menu-option" data-menu-action="panel-marca"><i class="bi bi-droplet-half"></i> Paleta de marca</button>
                     </div>
@@ -76,19 +78,30 @@
                 <i class="bi bi-arrow-clockwise"></i>
             </button>
             <button type="button" class="diseno-btn diseno-btn-ghost" id="disenoExportBtn">
-                <i class="bi bi-download"></i> Exportar PNG
+                <i class="bi bi-download"></i> Exportar
             </button>
+            @if(!empty($canEdit) || !$diseno->exists)
             <button type="submit" class="diseno-btn diseno-btn-primary">
                 <i class="bi bi-cloud-check"></i> Guardar
             </button>
+            @else
+            <span class="diseno-readonly-badge" title="Solo lectura: plantilla de estudio o sin permiso de edición">Solo lectura</span>
+            @endif
         </div>
     </header>
 
     <div class="diseno-body" id="disenoApp"
          data-ancho="{{ old('ancho', $diseno->ancho) }}"
          data-alto="{{ old('alto', $diseno->alto) }}"
-         data-formato="{{ old('formato', $diseno->formato) }}">
+         data-formato="{{ old('formato', $diseno->formato) }}"
+         data-upload-url="{{ $uploadUrl ?? route('disenos.medios.store') }}"
+         data-biblioteca-api="{{ $bibliotecaApiUrl ?? route('disenos.biblioteca.items') }}"
+         data-kit-upload-url="{{ $kitUploadUrl ?? route('disenos.kit.store') }}"
+         data-kit-list-url="{{ $kitListUrl ?? route('disenos.kit.index') }}"
+         data-kit-destroy-url="{{ url('disenos/kit') }}"
+         data-can-manage-kit="{{ !empty($canManageKit) ? '1' : '0' }}">
         <script type="application/json" id="disenoInitialJson">@json($diseno->canvas_json)</script>
+        <script type="application/json" id="disenoBrandAssets">@json($brandAssets ?? [])</script>
 
         <aside class="diseno-rail" aria-label="Herramientas">
             <button type="button" class="diseno-rail-btn active" data-panel="select" title="Seleccionar">
@@ -96,6 +109,9 @@
             </button>
             <button type="button" class="diseno-rail-btn" data-panel="plantillas" title="Plantillas">
                 <i class="bi bi-layout-wtf"></i><span>Plantillas</span>
+            </button>
+            <button type="button" class="diseno-rail-btn" data-panel="biblioteca" title="Biblioteca">
+                <i class="bi bi-images"></i><span>Biblioteca</span>
             </button>
             <button type="button" class="diseno-rail-btn" data-panel="texto" title="Texto">
                 <i class="bi bi-type"></i><span>Texto</span>
@@ -114,7 +130,7 @@
         <aside class="diseno-drawer" id="disenoDrawer">
             <div class="diseno-drawer-panel" data-drawer="select">
                 <h3 class="diseno-drawer-title">Selección</h3>
-                <p class="diseno-hint">Hacé clic en el lienzo para mover y redimensionar elementos. Usá las flechas del teclado para ajustar posición.</p>
+                <p class="diseno-hint">Hacé clic en el lienzo para mover y redimensionar. Flechas = 1 px · Shift+flechas = 10 px. Guías al alinear.</p>
                 <div class="diseno-quick-actions">
                     <button type="button" class="diseno-chip" data-action="duplicate"><i class="bi bi-copy"></i> Duplicar</button>
                     <button type="button" class="diseno-chip" data-action="delete"><i class="bi bi-trash"></i> Borrar</button>
@@ -123,30 +139,12 @@
                 </div>
             </div>
             <div class="diseno-drawer-panel d-none" data-drawer="plantillas">
-                <h3 class="diseno-drawer-title">Plantillas</h3>
-                <p class="diseno-hint">Elegí el formato del lienzo. Cambiar plantilla vacía el diseño actual.</p>
-                <div class="diseno-template-grid" id="disenoTemplateGrid">
-                    <button type="button" class="diseno-template-card" data-formato="flyer_feed" data-w="1080" data-h="1350">
-                        <span class="diseno-template-ratio ratio-45"></span>
-                        <strong>Flyer feed</strong>
-                        <small>1080 × 1350</small>
-                    </button>
-                    <button type="button" class="diseno-template-card" data-formato="historia" data-w="1080" data-h="1920">
-                        <span class="diseno-template-ratio ratio-916"></span>
-                        <strong>Historia</strong>
-                        <small>1080 × 1920</small>
-                    </button>
-                    <button type="button" class="diseno-template-card" data-formato="afiche_a4" data-w="1240" data-h="1748">
-                        <span class="diseno-template-ratio ratio-a4"></span>
-                        <strong>Afiche A4</strong>
-                        <small>1240 × 1748</small>
-                    </button>
-                    <button type="button" class="diseno-template-card" data-formato="banner_web" data-w="1200" data-h="628">
-                        <span class="diseno-template-ratio ratio-banner"></span>
-                        <strong>Banner web</strong>
-                        <small>1200 × 628</small>
-                    </button>
-                </div>
+                <h3 class="diseno-drawer-title">Tamaño y plantillas</h3>
+                <p class="diseno-hint">Presets de redes, print y merch. Cambiar tamaño puede vaciar el lienzo.</p>
+                <div class="diseno-template-grid" id="disenoTemplateGrid"></div>
+            </div>
+            <div class="diseno-drawer-panel d-none" data-drawer="biblioteca">
+                {{-- Se rellena por JS (initBibliotecaPanel) --}}
             </div>
             <div class="diseno-drawer-panel d-none" data-drawer="texto">
                 <h3 class="diseno-drawer-title">Texto</h3>
@@ -159,6 +157,12 @@
                 <button type="button" class="diseno-add-btn" data-action="text-body">
                     <i class="bi bi-text-paragraph"></i> Párrafo
                 </button>
+                <h4 class="diseno-drawer-subtitle">Alineación</h4>
+                <div class="diseno-quick-actions">
+                    <button type="button" class="diseno-chip" data-action="align-left" title="Izquierda"><i class="bi bi-text-left"></i></button>
+                    <button type="button" class="diseno-chip" data-action="align-center" title="Centro"><i class="bi bi-text-center"></i></button>
+                    <button type="button" class="diseno-chip" data-action="align-right" title="Derecha"><i class="bi bi-text-right"></i></button>
+                </div>
             </div>
             <div class="diseno-drawer-panel d-none" data-drawer="elementos">
                 <h3 class="diseno-drawer-title">Elementos</h3>
@@ -173,6 +177,20 @@
                         <i class="bi bi-dash-lg"></i>
                     </button>
                 </div>
+                <h4 class="diseno-drawer-subtitle">Fondos rápidos</h4>
+                <div class="diseno-quick-actions">
+                    <button type="button" class="diseno-chip" data-action="bg-white">Blanco</button>
+                    <button type="button" class="diseno-chip" data-action="bg-black">Negro</button>
+                    <button type="button" class="diseno-chip" data-action="bg-accent">Naranja</button>
+                    <button type="button" class="diseno-chip" data-action="bg-cream">Crema</button>
+                </div>
+                <h4 class="diseno-drawer-subtitle">Bloques de flyer</h4>
+                <button type="button" class="diseno-add-btn" data-action="flyer-banner">
+                    <i class="bi bi-layout-sidebar-inset"></i> Franja superior + título
+                </button>
+                <button type="button" class="diseno-add-btn" data-action="flyer-cta">
+                    <i class="bi bi-cursor-fill"></i> Botón CTA
+                </button>
             </div>
             <div class="diseno-drawer-panel d-none" data-drawer="marca">
                 <h3 class="diseno-drawer-title">Paleta de marca</h3>
@@ -185,7 +203,7 @@
                     <input type="file" id="disenoImgInput" accept="image/*" class="d-none" multiple>
                     <i class="bi bi-cloud-arrow-up"></i>
                     <span>Arrastrá una imagen o hacé clic</span>
-                    <small>JPG, PNG, WebP</small>
+                    <small>Se sube a Storage (JPG, PNG, WebP, SVG · máx. 8 MB)</small>
                 </label>
             </div>
         </aside>
@@ -208,8 +226,19 @@
 
         <aside class="diseno-inspector">
             <section class="diseno-inspector-section">
-                <h3 class="diseno-drawer-title">Capas</h3>
+                <div class="diseno-inspector-head">
+                    <h3 class="diseno-drawer-title">Capas</h3>
+                    <div class="diseno-layer-tools">
+                        <button type="button" class="diseno-btn diseno-btn-ghost diseno-btn-sm" id="disenoLayerGroup" title="Agrupar selección">Grupo</button>
+                        <button type="button" class="diseno-btn diseno-btn-ghost diseno-btn-sm" id="disenoLayerUngroup" title="Desagrupar">Desagrupar</button>
+                    </div>
+                </div>
+                <p class="diseno-hint">Doble clic renombrar · arrastrá reordenar · Ctrl+G agrupar</p>
                 <div id="disenoLayerList" class="diseno-layer-list"></div>
+            </section>
+            <section class="diseno-inspector-section">
+                <h3 class="diseno-drawer-title">Historial</h3>
+                <div id="disenoHistoryList" class="diseno-history-list"></div>
             </section>
             <section class="diseno-inspector-section" id="disenoPropsPanel">
                 <h3 class="diseno-drawer-title">Propiedades</h3>

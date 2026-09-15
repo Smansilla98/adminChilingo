@@ -50,9 +50,25 @@
 
   --radius: 14px;
   --radius-sm: 10px;
+  --radius-btn: 10px;
+  --radius-card: 18px;
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 22px 55px rgba(0, 0, 0, 0.32);
+  /* Papel / lienzo (partitura, diseño) — blanco editorial, no cream legado */
+  --paper: #ffffff;
+  --paper-ink: #1a1410;
   --font-display: 'Manrope', system-ui, sans-serif;
   --font-body: 'Manrope', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-score: 'Times New Roman', 'Liberation Serif', Georgia, serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-fast: 120ms;
   --duration: 180ms;
@@ -83,8 +99,8 @@ body {
 .card {
   background: var(--s2);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  box-shadow: 0 22px 55px rgba(0,0,0,.28);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
   color: var(--text);
 }
 .card-header {
@@ -168,18 +184,18 @@ body {
   min-width: 48px;
   border-radius: 8px;
 }
-.asist-cell-p { background: rgba(93, 184, 122, 0.18); }
-.asist-cell-t { background: rgba(245, 166, 35, 0.18); }
-.asist-cell-j { background: rgba(91, 158, 240, 0.18); }
-.asist-cell-i { background: rgba(232, 93, 43, 0.16); }
-.asist-cell-f { background: rgba(45, 212, 191, 0.14); }
-.asist-cell-s { background: rgba(148, 163, 184, 0.18); }
-.asist-badge-p { background: #5db87a; color: #0b1220; }
-.asist-badge-t { background: #f5a623; color: #0b1220; }
-.asist-badge-j { background: #5b9ef0; color: #0b1220; }
-.asist-badge-i { background: #e85d2b; color: #0b1220; }
-.asist-badge-f { background: #2dd4bf; color: #0b1220; }
-.asist-badge-s { background: #94a3b8; color: #0b1220; }
+.asist-cell-p { background: color-mix(in srgb, var(--success, #22c55e) 18%, transparent); }
+.asist-cell-t { background: color-mix(in srgb, var(--warning, #f59e0b) 18%, transparent); }
+.asist-cell-j { background: color-mix(in srgb, var(--accent2, #3ec8ea) 18%, transparent); }
+.asist-cell-i { background: color-mix(in srgb, var(--danger, #ef4444) 16%, transparent); }
+.asist-cell-f { background: color-mix(in srgb, #2dd4bf 14%, transparent); }
+.asist-cell-s { background: color-mix(in srgb, var(--muted, #94a3b8) 18%, transparent); }
+.asist-badge-p { background: var(--success, #5db87a); color: var(--ink, #111); }
+.asist-badge-t { background: var(--warning, #f5a623); color: var(--ink, #111); }
+.asist-badge-j { background: var(--accent2, #5b9ef0); color: var(--ink, #111); }
+.asist-badge-i { background: var(--danger, #e85d2b); color: var(--ink, #111); }
+.asist-badge-f { background: #2dd4bf; color: var(--ink, #111); }
+.asist-badge-s { background: var(--muted, #94a3b8); color: var(--ink, #111); }
 
 .asist-bulk-bar {
   display: flex;
@@ -217,7 +233,7 @@ body {
   --bs-pagination-focus-color: var(--text);
   --bs-pagination-active-bg: var(--accent);
   --bs-pagination-active-border-color: var(--accent);
-  --bs-pagination-active-color: #0b1220;
+  --bs-pagination-active-color: var(--ink, #111);
   --bs-pagination-disabled-bg: rgba(255, 255, 255, 0.03);
   --bs-pagination-disabled-border-color: rgba(255, 255, 255, 0.08);
   --bs-pagination-disabled-color: rgba(255, 255, 255, 0.45);
@@ -257,9 +273,12 @@ body {
 
 /* Buttons (Bootstrap variants) — set unificado */
 .btn {
-  border-radius: 10px;
+  border-radius: var(--radius-btn);
   font-weight: 600;
   font-size: 13px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  letter-spacing: .01em;
   transition: background var(--duration-fast) var(--ease-out),
     border-color var(--duration-fast) var(--ease-out),
     color var(--duration-fast) var(--ease-out),
@@ -1209,14 +1228,7 @@ body.shell-nav-open {
   }
 }
 
-/* Buttons */
-.btn {
-  border-radius: 16px;
-  font-weight: 800;
-  letter-spacing: .01em;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-}
+/* Buttons (variantes de producto; .btn base ya definido arriba) */
 .btn-pill {
   background: transparent;
   color: var(--text);
@@ -2163,8 +2175,8 @@ body.shell-nav-open {
   font-weight: 800;
   font-size: 12px;
   background: var(--accent-soft);
-  color: #9bb8ff;
-  border: 1px solid rgba(62, 123, 250, 0.25);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .ito-person-meta {
@@ -2252,7 +2264,7 @@ body.shell-nav-open {
 
 .ito-actions .dropdown-item:hover,
 .ito-actions .dropdown-item:focus {
-  background: rgba(62, 123, 250, 0.12);
+  background: var(--accent-soft);
   color: var(--text);
 }
 
@@ -2369,13 +2381,13 @@ body.shell-nav-open {
   --fc-border-color: var(--border);
   --fc-page-bg-color: transparent;
   --fc-neutral-bg-color: var(--s2);
-  --fc-list-event-hover-bg-color: rgba(62, 123, 250, 0.1);
+  --fc-list-event-hover-bg-color: color-mix(in srgb, var(--accent) 12%, transparent);
   --fc-button-bg-color: var(--s3);
   --fc-button-border-color: var(--border);
   --fc-button-hover-bg-color: var(--accent);
   --fc-button-hover-border-color: var(--accent);
   --fc-button-active-bg-color: var(--accent);
-  --fc-today-bg-color: rgba(62, 123, 250, 0.08);
+  --fc-today-bg-color: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 @media (max-width: 991.98px) {
@@ -3054,12 +3066,12 @@ body.ito-modal-open { overflow: hidden; }
 }
 
 /* Asistencias: no solo color */
-.asist-cell-p { box-shadow: inset 0 -3px 0 #22c55e; }
-.asist-cell-t { box-shadow: inset 0 -3px 0 #f59e0b; }
-.asist-cell-j { box-shadow: inset 0 -3px 0 #3ec8ea; }
-.asist-cell-i { box-shadow: inset 0 -3px 0 #ef4444; }
+.asist-cell-p { box-shadow: inset 0 -3px 0 var(--success, #22c55e); }
+.asist-cell-t { box-shadow: inset 0 -3px 0 var(--warning, #f59e0b); }
+.asist-cell-j { box-shadow: inset 0 -3px 0 var(--accent2, #3ec8ea); }
+.asist-cell-i { box-shadow: inset 0 -3px 0 var(--danger, #ef4444); }
 .asist-cell-f { box-shadow: inset 0 -3px 0 #2dd4bf; }
-.asist-cell-s { box-shadow: inset 0 -3px 0 #94a3b8; }
+.asist-cell-s { box-shadow: inset 0 -3px 0 var(--muted, #94a3b8); }
 .asist-legend {
   display: flex;
   flex-wrap: wrap;
@@ -3083,7 +3095,7 @@ body.ito-modal-open { overflow: hidden; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #0b1220;
+  color: var(--ink, #111);
   font-size: 11px;
 }
 

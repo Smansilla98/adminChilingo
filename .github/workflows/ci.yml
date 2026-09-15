@@ -45,8 +45,17 @@ jobs:
           npm ci --no-audit --no-fund || npm install --no-audit --no-fund
           npm run build
 
+      - name: Tests JS partitura
+        run: npm run test:partitura
+
       - name: Verificar formato de codigo (Pint)
         run: vendor/bin/pint --test
+
+      - name: Skip-link en layouts (a11y)
+        run: |
+          grep -q 'ito-skip' resources/views/layouts/app.blade.php
+          grep -q 'contenido-principal' resources/views/layouts/app.blade.php
+          grep -q 'prefers-reduced-motion' public/css/chilinga-admin.css
 
       - name: Ejecutar tests
         env:

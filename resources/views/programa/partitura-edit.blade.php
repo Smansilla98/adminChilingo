@@ -8,16 +8,16 @@
 .partitura-upload-block { max-width: 720px; }
 .partitura-dropzone {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 8px; padding: 36px 24px; border: 2px dashed var(--border, #3a2e24);
-    border-radius: 16px; background: color-mix(in srgb, var(--brass, #d1a054) 6%, var(--surface-2, #1d160f));
-    color: var(--muted, #b6a488); text-align: center; cursor: pointer; transition: border-color .15s, background .15s;
+    gap: 8px; padding: 36px 24px; border: 2px dashed var(--border);
+    border-radius: var(--radius-card, 16px); background: color-mix(in srgb, var(--accent) 6%, var(--s2));
+    color: var(--muted); text-align: center; cursor: pointer; transition: border-color .15s, background .15s;
 }
 .partitura-dropzone:hover, .partitura-dropzone.dragover {
-    border-color: var(--brass, #d1a054); background: color-mix(in srgb, var(--brass, #d1a054) 12%, var(--surface-2));
-    color: var(--skin, #f3e9d8);
+    border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--s2));
+    color: var(--text);
 }
-.partitura-dropzone i { font-size: 2.2rem; color: var(--brass, #d1a054); }
-.partitura-dropzone strong { color: var(--skin, #f3e9d8); font-size: 15px; }
+.partitura-dropzone i { font-size: 2.2rem; color: var(--accent); }
+.partitura-dropzone strong { color: var(--text); font-size: 15px; }
 .partitura-dropzone span { font-size: 13px; }
 .partitura-dropzone small { font-size: 11px; opacity: .85; }
 .partitura-upload-preview-box {

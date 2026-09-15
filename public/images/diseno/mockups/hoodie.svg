@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" width="400" height="520" fill="none">
+  <!-- Silueta hoodie  overlay de mockup (no se exporta en arte final) -->
+  <path d="M78 118
+    C78 78 118 48 200 48
+    C282 48 322 78 322 118
+    L348 168
+    C356 182 352 198 338 206
+    L312 220
+    L312 470
+    C312 488 298 500 280 500
+    L120 500
+    C102 500 88 488 88 470
+    L88 220
+    L62 206
+    C48 198 44 182 52 168
+    Z"
+    fill="rgba(20,20,20,0.08)"
+    stroke="rgba(30,30,30,0.55)"
+    stroke-width="3"
+    stroke-linejoin="round"/>
+  <!-- Capucha -->
+  <path d="M118 118
+    C118 88 150 68 200 68
+    C250 68 282 88 282 118
+    C282 148 250 168 200 168
+    C150 168 118 148 118 118Z"
+    fill="none"
+    stroke="rgba(30,30,30,0.4)"
+    stroke-width="2.5"/>
+  <!-- Cordones -->
+  <path d="M178 168 L170 210 M222 168 L230 210"
+    stroke="rgba(30,30,30,0.35)"
+    stroke-width="2"
+    stroke-linecap="round"/>
+  <!-- Zona de estampa (guía) -->
+  <rect x="130" y="230" width="140" height="160" rx="8"
+    fill="none"
+    stroke="rgba(242,100,34,0.55)"
+    stroke-width="2"
+    stroke-dasharray="6 5"/>
+  <text x="200" y="318" text-anchor="middle"
+    font-family="Manrope, system-ui, sans-serif"
+    font-size="13"
+    fill="rgba(242,100,34,0.7)">Zona de estampa</text>
+</svg>

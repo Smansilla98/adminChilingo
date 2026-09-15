@@ -11,7 +11,7 @@
     --pt-muted: var(--muted);
     --pt-brass: var(--accent);
     --pt-accent: var(--accent);
-    --pt-paper: #ffffff;
+    --pt-paper: var(--paper, #ffffff);
     --pt-toolbar-h: 56px;
 }
 
@@ -334,7 +334,7 @@
     margin-bottom: 0.25rem;
 }
 .pt-section-name {
-    font-family: 'Times New Roman', 'Liberation Serif', Georgia, serif;
+    font-family: var(--font-score, 'Times New Roman', 'Liberation Serif', Georgia, serif);
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.06em;

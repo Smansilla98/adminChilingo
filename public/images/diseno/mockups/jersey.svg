@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480" fill="none">
+  <path d="M95 95
+    C95 70 130 48 200 48
+    C270 48 305 70 305 95
+    L340 150
+    C346 160 342 172 330 178
+    L305 190 L305 450
+    C305 464 292 474 278 474
+    L122 474
+    C108 474 95 464 95 450
+    L95 190 L70 178
+    C58 172 54 160 60 150 Z"
+    fill="rgba(20,20,20,0.07)" stroke="rgba(30,30,30,0.55)" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M130 95 C130 78 155 65 200 65 C245 65 270 78 270 95" fill="none" stroke="rgba(30,30,30,0.35)" stroke-width="2"/>
+  <circle cx="200" cy="210" r="8" fill="none" stroke="rgba(30,30,30,0.35)" stroke-width="2"/>
+  <rect x="125" y="230" width="150" height="140" rx="6"
+    fill="none" stroke="rgba(242,100,34,0.55)" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="200" y="305" text-anchor="middle" font-family="Manrope, system-ui, sans-serif" font-size="13" fill="rgba(242,100,34,0.7)">Zona pecho</text>
+</svg>

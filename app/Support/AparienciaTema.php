@@ -8,7 +8,7 @@ class AparienciaTema
     public const DEFAULTS = [
         'accent' => '#f26422',
         'font_display' => 'Manrope',
-        'font_body' => 'Inter',
+        'font_body' => 'Manrope',
     ];
 
     /** @var array<string, array{hex: string, label: string}> */
@@ -51,6 +51,11 @@ class AparienciaTema
 
     /** @var array<string, array{family: string, google: string, sample: string}> */
     public const FUENTES_CUERPO = [
+        'Manrope' => [
+            'family' => 'Manrope',
+            'google' => 'Manrope:wght@400;500;600;700;800',
+            'sample' => 'Texto de apoyo y formularios del sistema.',
+        ],
         'Inter' => [
             'family' => 'Inter',
             'google' => 'Inter:wght@400;500;600;700',
@@ -182,8 +187,8 @@ class AparienciaTema
             "--brass: {$accent};",
             "--brass-soft: {$soft};",
             "--accent2: {$accent};",
-            "--font-display: '{$display}', 'Inter', system-ui, sans-serif;",
-            "--font-body: '{$body}', system-ui, sans-serif;",
+            "--font-display: '{$display}', 'Manrope', system-ui, sans-serif;",
+            "--font-body: '{$body}', 'Manrope', system-ui, sans-serif;",
         ];
 
         return ":root {\n  ".implode("\n  ", $lines)."\n}";
