@@ -72,7 +72,7 @@ class WhatsAppStatusTrackingTest extends TestCase
         $client = Mockery::mock(Client::class);
         $client->messages = $messages;
 
-        $service = new WhatsAppService();
+        $service = new WhatsAppService;
         $service->setClient($client);
         $result = $service->send('Hola', '91112345678', [
             'tipo' => WhatsappMensaje::TIPO_CUOTA,

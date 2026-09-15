@@ -153,7 +153,6 @@ class ProgramaRitmoMedios
     }
 
     /**
-     * @param  mixed  $raw
      * @return list<array{nombre: string, at: string, ip: string|null}>
      */
     public static function normalizarEdiciones(mixed $raw): array
