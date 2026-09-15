@@ -12,6 +12,14 @@ class AccesibilidadLayoutsTest extends TestCase
         foreach (['app.blade.php', 'guest.blade.php', 'admin.blade.php', 'publico.blade.php'] as $file) {
             $html = file_get_contents($base.'/'.$file);
             $this->assertNotFalse($html, $file);
+
+            // admin es alias deprecado de layouts.app (hereda a11y del canónico).
+            if ($file === 'admin.blade.php') {
+                $this->assertStringContainsString("@extends('layouts.app')", $html, $file);
+
+                continue;
+            }
+
             $this->assertStringContainsString('lang="es"', $html, $file);
             $this->assertStringContainsString('ito-skip', $html, $file);
             $this->assertStringContainsString('contenido-principal', $html, $file);
