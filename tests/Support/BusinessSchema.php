@@ -22,8 +22,12 @@ class BusinessSchema
         Schema::dropIfExists('asistencias');
         Schema::dropIfExists('cuota_alumno');
         Schema::dropIfExists('cuotas');
+        Schema::dropIfExists('gastos');
         Schema::dropIfExists('alumno_bloque');
         Schema::dropIfExists('bloque_profesor');
+        Schema::dropIfExists('profesor_sede');
+        Schema::dropIfExists('coordinador_area');
+        Schema::dropIfExists('cuota_alumno');
         Schema::dropIfExists('alumnos');
         Schema::dropIfExists('bloques');
         Schema::dropIfExists('profesores');
@@ -109,7 +113,49 @@ class BusinessSchema
             $table->string('instrumento_principal')->nullable();
             $table->foreignId('sede_id')->nullable()->constrained('sedes')->nullOnDelete();
             $table->foreignId('bloque_id')->nullable()->constrained('bloques')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->boolean('activo')->default(true);
+            $table->timestamps();
+        });
+
+        Schema::create('alumno_bloque', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('alumno_id')->constrained('alumnos')->cascadeOnDelete();
+            $table->foreignId('bloque_id')->constrained('bloques')->cascadeOnDelete();
+            $table->boolean('es_principal')->default(false);
+            $table->timestamps();
+            $table->unique(['alumno_id', 'bloque_id']);
+        });
+
+        Schema::create('profesor_sede', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('profesor_id')->constrained('profesores')->cascadeOnDelete();
+            $table->foreignId('sede_id')->constrained('sedes')->cascadeOnDelete();
+            $table->string('rol', 32);
+            $table->timestamps();
+            $table->unique(['profesor_id', 'sede_id', 'rol']);
+        });
+
+        Schema::create('coordinador_area', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('profesor_id')->constrained('profesores')->cascadeOnDelete();
+            $table->string('area', 50);
+            $table->timestamps();
+            $table->unique(['profesor_id', 'area']);
+        });
+
+        Schema::create('gastos', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('sede_id')->nullable()->constrained('sedes')->nullOnDelete();
+            $table->foreignId('bloque_id')->nullable()->constrained('bloques')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->date('fecha');
+            $table->string('tipo', 30);
+            $table->string('subtipo', 40)->nullable();
+            $table->string('descripcion')->nullable();
+            $table->decimal('monto', 14, 2);
+            $table->string('proveedor')->nullable();
+            $table->text('notas')->nullable();
             $table->timestamps();
         });
 
@@ -123,6 +169,14 @@ class BusinessSchema
             $table->string('alcance')->nullable();
             $table->boolean('activo')->default(true);
             $table->timestamps();
+        });
+
+        Schema::create('cuota_alumno', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('cuota_id')->constrained('cuotas')->cascadeOnDelete();
+            $table->foreignId('alumno_id')->constrained('alumnos')->cascadeOnDelete();
+            $table->timestamps();
+            $table->unique(['cuota_id', 'alumno_id']);
         });
 
         Schema::create('pagos', function (Blueprint $table) {
