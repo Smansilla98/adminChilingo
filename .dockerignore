@@ -13,3 +13,8 @@ storage/framework/views/*
 bootstrap/cache/*
 .DS_Store
 Thumbs.db
+
+# App móvil: se compila con EAS, no forma parte de la imagen del backend.
+mobile
+# Documentación y tests no se necesitan en producción.
+docs

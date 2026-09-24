@@ -18,30 +18,8 @@ class EventoController extends Controller
         try {
             /** @var \App\Models\User|null $user */
             $user = auth()->user();
-            $ambito = app(\App\Services\AmbitoSedeService::class);
-            $filtroSedes = $ambito->idsPara($user);
-
             $query = Evento::with(['sede', 'profesor', 'bloque', 'creador']);
-
-            if ($filtroSedes !== null) {
-                $ambito->aplicarEventos($query, $filtroSedes);
-            } elseif ($user && $user->isProfesor() && ! $user->isAdmin()) {
-                $prof = $user->profesor;
-                if ($prof) {
-                    $bloqueIds = Bloque::query()
-                        ->where(function ($q) use ($prof) {
-                            $q->where('profesor_id', $prof->id)
-                                ->orWhereHas('profesores', fn ($q2) => $q2->where('profesores.id', $prof->id));
-                        })
-                        ->pluck('id');
-                    $query->where(function ($sub) use ($prof, $bloqueIds) {
-                        $sub->where('profesor_id', $prof->id)
-                            ->orWhereIn('bloque_id', $bloqueIds);
-                    });
-                } else {
-                    $query->whereRaw('1=0');
-                }
-            }
+            $user->acceso()->alcance('eventos.view')->aplicarEventos($query);
 
             if ($request->filled('sede_id')) {
                 $query->where('sede_id', $request->sede_id);
@@ -69,6 +47,7 @@ class EventoController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Evento::class);
         $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
 
         try {
@@ -86,6 +65,7 @@ class EventoController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Evento::class);
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -100,6 +80,7 @@ class EventoController extends Controller
         ]);
 
         $validated['created_by'] = auth()->id();
+        $this->asegurarAmbitoEvento('eventos.create', $validated);
 
         Evento::create($validated);
 
@@ -109,6 +90,7 @@ class EventoController extends Controller
 
     public function show(Evento $evento)
     {
+        $this->authorize('view', $evento);
         $evento->load(['sede', 'profesor', 'bloque', 'creador']);
 
         return view('eventos.show', compact('evento'));
@@ -116,6 +98,7 @@ class EventoController extends Controller
 
     public function edit(Evento $evento)
     {
+        $this->authorize('update', $evento);
         $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
 
         try {
@@ -133,6 +116,7 @@ class EventoController extends Controller
 
     public function update(Request $request, Evento $evento)
     {
+        $this->authorize('update', $evento);
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -146,6 +130,7 @@ class EventoController extends Controller
             'cantidad_personas' => 'nullable|integer|min:0',
         ]);
 
+        $this->asegurarAmbitoEvento('eventos.update', $validated);
         $evento->update($validated);
 
         return redirect()->route('eventos.index')
@@ -154,9 +139,28 @@ class EventoController extends Controller
 
     public function destroy(Evento $evento)
     {
+        $this->authorize('delete', $evento);
         $evento->delete();
 
         return redirect()->route('eventos.index')
             ->with('success', 'Evento eliminado exitosamente.');
+    }
+
+    /**
+     * El evento resultante (bloque / sede / toda la escuela) tiene que quedar dentro del alcance.
+     *
+     * @param  array<string, mixed>  $datos
+     */
+    private function asegurarAmbitoEvento(string $permiso, array $datos): void
+    {
+        $acceso = auth()->user()->acceso();
+        $ok = match (true) {
+            ! empty($datos['bloque_id']) => $acceso->puedeEnBloque($permiso, (int) $datos['bloque_id']),
+            ! empty($datos['sede_id']) => $acceso->puedeEnSede($permiso, (int) $datos['sede_id']),
+            default => $acceso->puedeGlobal($permiso),
+        };
+        if (! $ok) {
+            abort(403, 'No podés crear o mover eventos a ese ámbito.');
+        }
     }
 }

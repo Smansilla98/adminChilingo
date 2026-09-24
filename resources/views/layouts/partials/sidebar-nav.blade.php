@@ -3,8 +3,9 @@
         'academico' => [
             'label' => 'Académico',
             'accent' => 'academico',
-            'patterns' => ['alumnos.*', 'profesores.*', 'bloques.*', 'sedes.*', 'asistencias.*', 'calendario.*'],
+            'patterns' => ['personas.*', 'alumnos.*', 'profesores.*', 'bloques.*', 'sedes.*', 'asistencias.*', 'calendario.*'],
             'links' => array_filter([
+                auth()->user()->tieneAccesoModulo('admin.personas') ? ['route' => 'personas.index', 'label' => 'Personas', 'pattern' => 'personas.*', 'badge' => 'nuevo'] : null,
                 auth()->user()->tieneAccesoModulo('admin.alumnos') ? ['route' => 'alumnos.index', 'label' => 'Alumnos', 'pattern' => 'alumnos.*'] : null,
                 auth()->user()->tieneAccesoModulo('admin.profesores') ? ['route' => 'profesores.index', 'label' => 'Profesores', 'pattern' => 'profesores.*'] : null,
                 auth()->user()->tieneAccesoModulo('admin.bloques') ? ['route' => 'bloques.index', 'label' => 'Bloques', 'pattern' => 'bloques.*'] : null,
@@ -71,17 +72,19 @@
             'links' => array_filter([
                 auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
                 auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
-                auth()->user()->isAdmin() && auth()->user()->tieneAccesoModulo('admin.disenos') ? ['route' => 'disenos.index', 'label' => 'Diseño', 'pattern' => 'disenos.*', 'badge' => 'nuevo'] : null,
-                auth()->user()->isAdmin() ? ['route' => 'biblioteca.admin.index', 'label' => 'Biblioteca', 'pattern' => 'biblioteca.admin.*'] : null,
+                auth()->user()->tieneAccesoModulo('admin.disenos') ? ['route' => 'disenos.index', 'label' => 'Diseño', 'pattern' => 'disenos.*', 'badge' => 'nuevo'] : null,
+                auth()->user()->can('biblioteca.admin') ? ['route' => 'biblioteca.admin.index', 'label' => 'Biblioteca', 'pattern' => 'biblioteca.admin.*'] : null,
             ]),
         ],
         'config' => [
             'label' => 'Configuración',
             'accent' => 'config',
-            'patterns' => ['accesos.*', 'ayuda', 'apariencia.*', 'operativo.cierre-mes'],
+            'patterns' => ['accesos.*', 'usuarios.*', 'auditoria.*', 'ayuda', 'apariencia.*', 'operativo.cierre-mes'],
             'links' => array_filter([
-                auth()->user()->isAdmin() ? ['route' => 'accesos.index', 'label' => 'Accesos', 'pattern' => 'accesos.*'] : null,
-                auth()->user()->isAdmin() ? ['route' => 'operativo.cierre-mes', 'label' => 'Cierre de mes', 'pattern' => 'operativo.cierre-mes'] : null,
+                auth()->user()->can('usuarios.view') ? ['route' => 'usuarios.index', 'label' => 'Usuarios y permisos', 'pattern' => 'usuarios.*', 'badge' => 'nuevo'] : null,
+                auth()->user()->can('auditoria.view') ? ['route' => 'auditoria.index', 'label' => 'Auditoría', 'pattern' => 'auditoria.*'] : null,
+                auth()->user()->can('usuarios.permissions') ? ['route' => 'accesos.index', 'label' => 'Visibilidad del menú', 'pattern' => 'accesos.*'] : null,
+                auth()->user()->can('facturacion.view') ? ['route' => 'operativo.cierre-mes', 'label' => 'Cierre de mes', 'pattern' => 'operativo.cierre-mes'] : null,
                 ['route' => 'apariencia.edit', 'label' => 'Apariencia', 'pattern' => 'apariencia.*'],
                 auth()->user()->tieneAccesoModulo('ayuda') ? ['route' => 'ayuda', 'label' => 'Ayuda', 'pattern' => 'ayuda'] : null,
             ]),
@@ -128,6 +131,29 @@
         ['route' => 'apariencia.edit', 'label' => 'Apariencia', 'pattern' => 'apariencia.*'],
         $navUser->tieneAccesoModulo('ayuda') ? ['route' => 'ayuda', 'label' => 'Ayuda', 'pattern' => 'ayuda'] : null,
     ]);
+
+    // Una persona puede tener varias funciones: si gestiona y además da clase o cursa,
+    // su espacio docente / familiar aparece como un grupo más del menú.
+    if ($navUser->puedeGestionarOperativo()) {
+        $extra = [];
+        if ($navUser->isProfesor()) {
+            $extra['docente'] = ['label' => 'Docente', 'accent' => 'profesor', 'patterns' => ['profesor.*'],
+                'links' => array_values(array_filter($profesorLinks, fn ($l) => $l['route'] !== 'dashboard'))];
+        }
+        if ($navUser->isAlumno()) {
+            $extra['familia'] = ['label' => 'Mi espacio (alumno)', 'accent' => 'alumno', 'patterns' => ['comprobante-cuota-public.*'],
+                'links' => array_values(array_filter($alumnoLinks, fn ($l) => $l['route'] !== 'dashboard'))];
+        }
+        $navGroups = $extra + $navGroups;
+        foreach ($navGroups as $key => $group) {
+            foreach ($group['patterns'] as $pattern) {
+                if (request()->routeIs($pattern)) {
+                    $activeGroup = $key;
+                    break 2;
+                }
+            }
+        }
+    }
 
     $mostrarPendientes = $navUser->puedeGestionarOperativo() || $navUser->isProfesor();
     $espacioLinks = $navUser->isAlumno() ? $alumnoLinks : $profesorLinks;

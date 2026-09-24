@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PagoDetalle extends Model
 {
+    use Auditable;
+
     protected $table = 'pago_detalles';
 
     protected $fillable = [
@@ -26,6 +29,21 @@ class PagoDetalle extends Model
         'abono_base' => 'decimal:2',
         'abono_porcentaje' => 'decimal:2',
     ];
+
+    /**
+     * Los detalles de pagos anulados no cuentan (saldos, reportes, "ya pagó").
+     * Desde el propio pago se ven igual (Pago::detalles quita este scope).
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('pago_vigente', function (\Illuminate\Database\Eloquent\Builder $query) {
+            static $hayAnulacion = null;
+            $hayAnulacion ??= \Illuminate\Support\Facades\Schema::hasColumn('pagos', 'anulado_at');
+            if ($hayAnulacion) {
+                $query->whereHas('pago', fn ($q) => $q->whereNull('pagos.anulado_at'));
+            }
+        });
+    }
 
     public function pago(): BelongsTo
     {

@@ -18,13 +18,10 @@ class OperativoController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-        $esAdmin = $user->isAdmin();
-        $filtroSedes = $ambito->idsPara($user);
-        $bloqueIds = [];
-
-        if (! $esAdmin && $filtroSedes === null && $user->isProfesor()) {
-            $bloqueIds = $user->profesor?->bloqueIdsDondeParticipa()->all() ?? [];
-        }
+        $acceso = $user->acceso();
+        // Cuotas pendientes: alcance de cuotas.view (null = toda la escuela).
+        $filtroSedes = $ambito->idsPara($user, 'cuotas.view');
+        $esAdmin = $acceso->puedeGlobal('cuotas.view');
 
         $comprobantes = collect();
         if (Schema::hasTable('comprobantes_cuota_alumnos')) {
@@ -33,10 +30,11 @@ class OperativoController extends Controller
                 ->where('estado', 'pendiente')
                 ->latest()
                 ->limit(20);
-            if ($filtroSedes !== null) {
-                $ambito->aplicarComprobantes($q, $filtroSedes);
-            } elseif (! $esAdmin) {
-                $q->whereHas('items', fn ($i) => $i->whereIn('bloque_id', $bloqueIds !== [] ? $bloqueIds : [0]));
+            $alcance = $acceso->alcance('comprobantes.view');
+            if (! $alcance->esGlobal()) {
+                $q->where(fn ($w) => $w->whereIn('sede_id', $alcance->sedeIds() ?: [0])
+                    ->orWhereHas('items', fn ($i) => $i->whereIn('bloque_id', $alcance->bloqueIds() ?: [0]))
+                    ->orWhereHas('items.bloque', fn ($b) => $b->whereIn('sede_id', $alcance->sedeIds() ?: [0])));
             }
             $comprobantes = $q->get();
         }
@@ -45,11 +43,7 @@ class OperativoController extends Controller
         $hoy = now()->toDateString();
         if (Schema::hasTable('bloques') && Schema::hasTable('asistencias')) {
             $bloquesQ = Bloque::query()->where('activo', true)->with('sede');
-            if ($filtroSedes !== null) {
-                $ambito->aplicarBloques($bloquesQ, $filtroSedes);
-            } elseif (! $esAdmin) {
-                $bloquesQ->whereIn('id', $bloqueIds !== [] ? $bloqueIds : [0]);
-            }
+            $acceso->alcance('asistencias.create')->aplicarBloques($bloquesQ);
             $bloques = $bloquesQ->orderBy('nombre')->get();
             foreach ($bloques as $b) {
                 $diaIso = (int) now()->dayOfWeekIso;
@@ -78,7 +72,7 @@ class OperativoController extends Controller
         }
 
         $cuotasPendientes = collect();
-        $puedeVerCuotas = $esAdmin || $filtroSedes !== null;
+        $puedeVerCuotas = $acceso->puede('cuotas.view');
         if ($puedeVerCuotas && Schema::hasTable('cuotas') && Schema::hasTable('pago_detalles')) {
             $mes = (int) now()->month;
             $anio = (int) now()->year;
@@ -118,7 +112,8 @@ class OperativoController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-        if (! $user->isAdmin()) {
+        // El cierre de mes es de toda la escuela.
+        if (! $user->acceso()->puedeGlobal('facturacion.view')) {
             abort(403);
         }
 

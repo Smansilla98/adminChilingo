@@ -296,6 +296,9 @@ class ProgramaController extends Controller
 
     public function updateToque(Request $request, ProgramaRitmo $programaRitmo)
     {
+        if (! config('chilinga.edicion_publica_programa') && ! auth()->user()?->can('partituras.admin')) {
+            abort(403, 'La edición del programa requiere iniciar sesión con permiso.');
+        }
         $this->abortSiToqueNoPublico($programaRitmo);
 
         $esAdmin = (bool) auth()->user()?->isAdmin();

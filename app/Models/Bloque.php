@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Bloque extends Model
 {
+    use Auditable;
+
     /** Tambores disponibles (igual que en Excel: Repique, Medio, Redoblante, Fondo Agudo, Fondo Grave, Timbal) */
     public const TAMBORES_DISPONIBLES = [
         'Repique',

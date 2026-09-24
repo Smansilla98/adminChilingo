@@ -170,11 +170,11 @@ class EspacioAlumnoService
         }
 
         if (Schema::hasTable('comprobantes_cuota_alumnos')) {
+            // El comprobante no guarda año/mes: se identifica por las cuotas de sus ítems.
             $enRevision = ComprobanteCuotaAlumno::query()
                 ->where('alumno_id', $alumno->id)
                 ->where('estado', 'pendiente')
-                ->where('año', $anio)
-                ->where('mes', $mes)
+                ->whereHas('items', fn ($q) => $q->whereIn('cuota_id', array_map(fn (Cuota $c) => $c->id, $pendientes)))
                 ->exists();
             if ($enRevision) {
                 return [

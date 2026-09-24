@@ -58,6 +58,10 @@ php artisan migrate --force --no-interaction || {
     echo "   El servidor arranca igual; la app puede tener funcionalidad limitada."
 }
 
+# Catálogo de permisos y roles (config/permisos.php → tablas de Spatie). Idempotente.
+echo "=== Permisos y roles ==="
+php artisan chilinga:permisos:sync --no-interaction || echo "⚠️  No se pudo sincronizar permisos."
+
 # Tablas/columnas de cuaderno pedagógico, comprobantes e índices.
 # Laravel las saltea si ya están en `migrations`; se listan para que Railway
 # no dependa de un migrate olvidado a mano.

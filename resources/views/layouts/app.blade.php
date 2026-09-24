@@ -16,6 +16,11 @@
     $sideUserName = auth()->user()->name ?: auth()->user()->username ?: 'Usuario';
     $sideUserInitials = collect(preg_split('/\s+/', trim($sideUserName)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('') ?: 'U';
     $sideUserRole = auth()->user()->etiquetaRol();
+    $sideContextos = app(\App\Domain\Acceso\PresentadorAcceso::class)->contextos(auth()->user()->acceso());
+    $sideContextoActual = collect($sideContextos)->firstWhere('clave', session('contexto'));
+    if ($sideContextoActual) {
+        $sideUserRole = $sideContextoActual['etiqueta'];
+    }
 @endphp
 <div class="shell shell--maxton" id="appShell">
     <button type="button" class="nav-backdrop" id="navBackdrop" aria-label="Cerrar menú"></button>
@@ -46,6 +51,33 @@
                     <i class="bi bi-chevron-expand side-user-chevron" aria-hidden="true"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-dark side-user-menu shadow-lg" aria-labelledby="sideUserMenuBtn">
+                    @if(count($sideContextos) > 1)
+                        <li><h6 class="dropdown-header">Estoy trabajando como</h6></li>
+                        @foreach($sideContextos as $ctx)
+                            <li>
+                                <form method="POST" action="{{ route('contexto.cambiar') }}" class="m-0">
+                                    @csrf
+                                    <input type="hidden" name="contexto" value="{{ $ctx['clave'] }}">
+                                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2" @if(session('contexto') === $ctx['clave']) aria-current="true" @endif>
+                                        <i class="bi {{ session('contexto') === $ctx['clave'] ? 'bi-check-circle-fill' : 'bi-circle' }}" aria-hidden="true"></i>
+                                        {{ $ctx['etiqueta'] }}
+                                    </button>
+                                </form>
+                            </li>
+                        @endforeach
+                        @if(session('contexto'))
+                            <li>
+                                <form method="POST" action="{{ route('contexto.cambiar') }}" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item small py-1">Ver todo</button>
+                                </form>
+                            </li>
+                        @endif
+                        <li><hr class="dropdown-divider"></li>
+                    @endif
+                    @if(auth()->user()->persona_id)
+                        <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('personas.show', auth()->user()->persona_id) }}"><i class="bi bi-person-vcard" aria-hidden="true"></i> Mi ficha</a></li>
+                    @endif
                     <li>
                         <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 ito-pref-btn"
                                 data-ito-pref="ito-a11y-lg"
@@ -95,6 +127,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                 </div>
             @endif
+            {{-- Errores de operaciones sin formulario propio (borrado protegido, anulaciones, fusiones) --}}
+            @foreach(['eliminar', 'pago', 'persona', 'asignacion'] as $claveError)
+                @if($errors->has($claveError))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">{{ $errors->first($claveError) }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                    </div>
+                @endif
+            @endforeach
             @if(auth()->user()?->isAdmin() && ! env('PERSISTENT_STORAGE_PATH') && app()->environment('production'))
                 <div class="alert alert-warning small">
                     <strong>Storage:</strong> no hay <code>PERSISTENT_STORAGE_PATH</code> configurado. Los comprobantes/PDFs pueden perderse al redesplegar. Configurá un volumen persistente o S3.

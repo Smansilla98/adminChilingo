@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Datos\EliminacionSegura;
+use App\Domain\Personas\PersonaService;
 use App\Exports\AlumnosExport;
 use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\PagoDetalle;
+use App\Models\Persona;
 use App\Models\Profesor;
 use App\Models\Sede;
 use App\Services\AlumnosListadoService;
@@ -83,8 +86,12 @@ class AlumnoController extends Controller
         $procedenciasTambor = self::TAMBOR_PROCEDENCIAS;
 
         $profesoresSinVinculo = $this->profesoresDisponiblesParaVinculo();
+        $persona = request()->integer('persona_id') ? Persona::query()->find(request()->integer('persona_id')) : null;
+        if ($persona) {
+            $this->authorize('view', $persona);
+        }
 
-        return view('alumnos.create', compact('sedes', 'bloques', 'instrumentos', 'tiposTambor', 'procedenciasTambor', 'profesoresSinVinculo'));
+        return view('alumnos.create', compact('sedes', 'bloques', 'instrumentos', 'tiposTambor', 'procedenciasTambor', 'profesoresSinVinculo', 'persona'));
     }
 
     /**
@@ -108,13 +115,31 @@ class AlumnoController extends Controller
             'activo' => 'boolean',
             'crear_perfil_profesor' => 'nullable|boolean',
             'vincular_profesor_id' => 'nullable|exists:profesores,id',
+            'persona_id' => 'nullable|exists:personas,id',
         ]);
+        // Mismo DNI en otro formato = misma persona: se agrega el bloque a su ficha, no se crea otra.
+        if ($existente = app(PersonaService::class)->alumnoPorDni($request->input('dni'), null)) {
+            throw ValidationException::withMessages([
+                'dni' => "Ese DNI ya es de {$existente->nombre_apellido}. Para inscribirlo en otro bloque, editá su ficha y agregá el bloque.",
+            ]);
+        }
 
         $validated['activo'] = $request->boolean('activo');
-        $this->asegurarSedeYBloquesPermitidos((int) $validated['sede_id'], array_map('intval', $request->input('bloque_ids', [])));
+        $this->asegurarSedeYBloquesPermitidos('alumnos.create', (int) $validated['sede_id'], array_map('intval', $request->input('bloque_ids', [])));
         $bloqueIds = array_map('intval', $request->input('bloque_ids', []));
         $principalId = $request->integer('bloque_principal_id') ?: ($bloqueIds[0] ?? null);
         $validated['bloque_id'] = $principalId;
+
+        if (! empty($validated['persona_id'])) {
+            // Inscribir a una persona existente (ej. un profesor que empieza a cursar).
+            $persona = Persona::query()->findOrFail($validated['persona_id']);
+            $this->authorize('view', $persona);
+            if ($persona->alumnos()->exists()) {
+                throw ValidationException::withMessages([
+                    'persona_id' => 'Esta persona ya tiene ficha de alumno. Agregale el bloque desde su ficha.',
+                ]);
+            }
+        }
 
         $alumno = Alumno::create($validated);
         $this->sincronizarBloquesAlumno($alumno, $bloqueIds, $principalId);
@@ -129,7 +154,7 @@ class AlumnoController extends Controller
      */
     public function show(Alumno $alumno)
     {
-        $this->autorizarFichaAlumno($alumno);
+        $this->authorize('view', $alumno);
 
         $alumno->load(['bloque.profesor', 'bloques.sede', 'bloques.profesor', 'sede', 'asistencias', 'user']);
         if (\Illuminate\Support\Facades\Schema::hasTable('observaciones_pedagogicas')) {
@@ -229,7 +254,7 @@ class AlumnoController extends Controller
      */
     public function edit(Alumno $alumno)
     {
-        $this->autorizarFichaAlumno($alumno);
+        $this->authorize('update', $alumno);
         try {
             $sedes = Sede::where('activo', true)->get();
             $bloques = Bloque::where('activo', true)->with('sede')->get();
@@ -253,7 +278,7 @@ class AlumnoController extends Controller
      */
     public function update(Request $request, Alumno $alumno)
     {
-        $this->autorizarFichaAlumno($alumno);
+        $this->authorize('update', $alumno);
         $validated = $request->validate([
             'nombre_apellido' => 'required|string|max:255',
             'dni' => 'nullable|string|unique:alumnos,dni,'.$alumno->id.'|max:20',
@@ -271,9 +296,15 @@ class AlumnoController extends Controller
             'crear_perfil_profesor' => 'nullable|boolean',
             'vincular_profesor_id' => 'nullable|exists:profesores,id',
         ]);
+        // Mismo DNI en otro formato = misma persona: se agrega el bloque a su ficha, no se crea otra.
+        if ($existente = app(PersonaService::class)->alumnoPorDni($request->input('dni'), $alumno->id)) {
+            throw ValidationException::withMessages([
+                'dni' => "Ese DNI ya es de {$existente->nombre_apellido}. Para inscribirlo en otro bloque, editá su ficha y agregá el bloque.",
+            ]);
+        }
 
         $validated['activo'] = $request->boolean('activo');
-        $this->asegurarSedeYBloquesPermitidos((int) $validated['sede_id'], array_map('intval', $request->input('bloque_ids', [])));
+        $this->asegurarSedeYBloquesPermitidos('alumnos.update', (int) $validated['sede_id'], array_map('intval', $request->input('bloque_ids', [])));
         $bloqueIds = array_map('intval', $request->input('bloque_ids', []));
         $principalId = $request->integer('bloque_principal_id') ?: ($bloqueIds[0] ?? null);
         $validated['bloque_id'] = $principalId;
@@ -289,9 +320,10 @@ class AlumnoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Alumno $alumno)
+    public function destroy(Alumno $alumno, EliminacionSegura $eliminacion)
     {
-        $this->autorizarFichaAlumno($alumno);
+        $this->authorize('delete', $alumno);
+        $eliminacion->verificar($alumno);
         $alumno->delete();
 
         return redirect()->route('alumnos.index')
@@ -561,7 +593,10 @@ class AlumnoController extends Controller
     private function buildAlumnoLookup(array $mapped): array
     {
         if (! empty($mapped['dni'])) {
-            return ['dni' => $mapped['dni']];
+            // Reusar la ficha aunque el DNI esté guardado con puntos: se agrega el bloque.
+            $existente = app(PersonaService::class)->alumnoPorDni($mapped['dni']);
+
+            return $existente ? ['id' => $existente->id] : ['dni' => $mapped['dni']];
         }
 
         return [
@@ -653,11 +688,15 @@ class AlumnoController extends Controller
 
         $pid = $request->integer('vincular_profesor_id');
         if ($pid > 0) {
+            // "Este alumno es este profesor": misma persona.
             $prof = Profesor::query()->find($pid);
-            if ($prof && ! $prof->user_id && $alumno->user_id) {
-                $prof->update(['user_id' => $alumno->user_id]);
-                $prof->sincronizarRolesUsuario();
+            $personaAlumno = $alumno->persona;
+            $personaProfe = $prof?->persona;
+            if ($prof && $personaAlumno && $personaProfe && ! $personaAlumno->is($personaProfe)) {
+                [$conservar, $duplicada] = $personaProfe->user ? [$personaProfe, $personaAlumno] : [$personaAlumno, $personaProfe];
+                app(PersonaService::class)->fusionar($conservar, $duplicada);
             }
+            $prof?->sincronizarRolesUsuario();
 
             return;
         }
@@ -667,6 +706,7 @@ class AlumnoController extends Controller
         }
 
         $prof = Profesor::create([
+            'persona_id' => $alumno->persona_id,
             'nombre' => $alumno->nombre_apellido,
             'telefono' => $alumno->telefono,
             'email' => null,
@@ -693,18 +733,6 @@ class AlumnoController extends Controller
         }
     }
 
-    private function autorizarFichaAlumno(Alumno $alumno): void
-    {
-        $user = auth()->user();
-        if (! $user || $user->isAdmin()) {
-            return;
-        }
-        $alumno->loadMissing(['bloques', 'bloque']);
-        if (! $user->puedeGestionarAlumno($alumno)) {
-            abort(403);
-        }
-    }
-
     /**
      * @param  \Illuminate\Support\Collection<int, Sede>  $sedes
      * @param  \Illuminate\Support\Collection<int, Bloque>  $bloques
@@ -712,35 +740,36 @@ class AlumnoController extends Controller
      */
     private function acotarSedesYBloques($sedes, $bloques): array
     {
-        $user = auth()->user();
-        if ($user && $user->acotaPorSede()) {
-            $ids = $user->sedeIdsOperativas() ?: [0];
-            $sedes = $sedes->whereIn('id', $ids)->values();
-            $bloques = $bloques->whereIn('sede_id', $ids)->values();
+        $alcance = auth()->user()->acceso()->alcance('alumnos.create')->unir(auth()->user()->acceso()->alcance('alumnos.update'));
+        if ($alcance->esGlobal()) {
+            return [$sedes, $bloques];
         }
+        $sedesIds = $alcance->sedesTocadas();
+        $bloques = $bloques->filter(fn ($b) => $alcance->incluyeBloque((int) $b->id, (int) $b->sede_id))->values();
 
-        return [$sedes, $bloques];
+        return [$sedes->whereIn('id', $sedesIds)->values(), $bloques];
     }
 
     /**
+     * La sede principal y cada bloque tienen que estar dentro del alcance del permiso.
+     *
      * @param  list<int>  $bloqueIds
      */
-    private function asegurarSedeYBloquesPermitidos(int $sedeId, array $bloqueIds): void
+    private function asegurarSedeYBloquesPermitidos(string $permiso, int $sedeId, array $bloqueIds): void
     {
-        $user = auth()->user();
-        if (! $user || $user->isAdmin() || ! $user->acotaPorSede()) {
+        $acceso = auth()->user()->acceso();
+        $alcance = $acceso->alcance($permiso);
+        if ($alcance->esGlobal()) {
             return;
         }
-        $permitidas = $user->sedeIdsOperativas();
-        if (! in_array($sedeId, $permitidas, true)) {
-            abort(403);
+        // La sede principal alcanza si la gestiona o si da clase en un bloque de esa sede.
+        if (! in_array($sedeId, $alcance->sedesTocadas(), true)) {
+            abort(403, 'No podés asignar alumnos a esa sede.');
         }
-        if ($bloqueIds === []) {
-            return;
-        }
-        $ajenos = Bloque::query()->whereIn('id', $bloqueIds)->whereNotIn('sede_id', $permitidas ?: [0])->exists();
-        if ($ajenos) {
-            abort(403);
+        foreach ($bloqueIds as $bloqueId) {
+            if (! $acceso->puedeEnBloque($permiso, $bloqueId)) {
+                abort(403, 'No podés asignar alumnos a ese bloque.');
+            }
         }
     }
 }

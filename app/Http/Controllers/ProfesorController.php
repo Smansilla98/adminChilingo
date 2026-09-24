@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Datos\EliminacionSegura;
 use App\Models\Bloque;
+use App\Models\Persona;
 use App\Models\Profesor;
 use App\Models\Sede;
 use App\Models\User;
@@ -12,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
 class ProfesorController extends Controller
@@ -19,7 +22,14 @@ class ProfesorController extends Controller
     public function index()
     {
         try {
-            $profesores = Profesor::withCount('bloques')->orderBy('nombre')->paginate(20);
+            $query = Profesor::withCount('bloques')->orderBy('nombre');
+            $alcance = auth()->user()->acceso()->alcance('profesores.view');
+            if (! $alcance->esGlobal()) {
+                // Plantel de las sedes/bloques donde tiene alcance.
+                $query->where(fn ($q) => $q->whereHas('bloques', fn ($b) => $alcance->aplicarBloques($b))
+                    ->orWhereHas('sedesConRol', fn ($ps) => $ps->whereIn('sedes.id', $alcance->sedesTocadas() ?: [0])));
+            }
+            $profesores = $query->paginate(20);
         } catch (QueryException $e) {
             $profesores = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
         }
@@ -33,17 +43,34 @@ class ProfesorController extends Controller
         $sedes = Sede::where('activo', true)->orderBy('nombre')->get();
         $usuarios = $this->usuariosParaVincular();
         $hasUsername = $this->hasUsernameColumn();
+        // Alta a partir de una persona existente (p. ej. un alumno que empieza a dar clase).
+        $persona = request()->integer('persona_id') ? Persona::query()->with('user')->find(request()->integer('persona_id')) : null;
 
-        return view('profesores.create', compact('bloquesParaAsignar', 'sedes', 'usuarios', 'hasUsername'));
+        return view('profesores.create', compact('bloquesParaAsignar', 'sedes', 'usuarios', 'hasUsername', 'persona'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate($this->reglasFicha($request));
+        $validated = $request->validate($this->reglasFicha($request) + ['persona_id' => ['nullable', 'exists:personas,id']]);
         $validated['activo'] = $request->boolean('activo');
         unset($validated['cuenta_modo'], $validated['login_username'], $validated['login_password'], $validated['login_password_confirmation']);
 
         $modo = (string) $request->input('cuenta_modo', 'ninguna');
+        $persona = ! empty($validated['persona_id']) ? Persona::query()->with('user')->find($validated['persona_id']) : null;
+        if ($persona) {
+            if (Profesor::query()->where('persona_id', $persona->id)->exists()) {
+                throw ValidationException::withMessages(['persona_id' => 'Esta persona ya tiene ficha docente.']);
+            }
+            if ($persona->user) {
+                // Una persona, una cuenta: el docente usa la cuenta que ya tiene.
+                if ($modo === 'nueva') {
+                    throw ValidationException::withMessages(['cuenta_modo' => 'Esta persona ya tiene cuenta ('.$persona->user->username.').']);
+                }
+                $modo = 'existente';
+                $validated['user_id'] = $persona->user->id;
+            }
+        }
+
         if ($modo === 'nueva') {
             $validated['user_id'] = $this->crearUsuarioParaProfesor($request, $validated)->id;
         } elseif ($modo === 'existente') {
@@ -121,8 +148,9 @@ class ProfesorController extends Controller
             ->with('success', 'Profesor actualizado exitosamente.');
     }
 
-    public function destroy(Profesor $profesor)
+    public function destroy(Profesor $profesor, EliminacionSegura $eliminacion)
     {
+        $eliminacion->verificar($profesor);
         $profesor->delete();
 
         return redirect()->route('profesores.index')
@@ -267,6 +295,9 @@ class ProfesorController extends Controller
             $payload['telefono'] = $ficha['telefono'];
         }
 
+        if ($request->filled('persona_id')) {
+            $payload['persona_id'] = (int) $request->input('persona_id');
+        }
         $user = User::query()->create($payload);
         Role::firstOrCreate(['name' => 'profesor', 'guard_name' => 'web']);
         $user->syncRoles(['profesor']);

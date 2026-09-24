@@ -29,6 +29,15 @@ class DashboardController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        // Contexto elegido en "Estoy trabajando como…" (solo cambia la vista inicial).
+        $rolContexto = explode(':', (string) session('contexto'))[0] ?: null;
+        if ($rolContexto === 'alumno' && $user->isAlumno()) {
+            return $this->dashboardAlumno();
+        }
+        if ($rolContexto === 'profesor' && $user->isProfesor()) {
+            return $this->dashboardProfesor();
+        }
+
         // Si es alumno (sin rol docente/gestión), espacio simple
         if ($user->isAlumno() && ! $user->isProfesor() && ! $user->isAdmin() && ! $user->puedeGestionarOperativo()) {
             return $this->dashboardAlumno();
@@ -260,7 +269,7 @@ class DashboardController extends Controller
             $recaudacion = collect(range(5, 0))->map(function ($i) use ($filtroSedes, $ambito) {
                 $inicio = Carbon::now()->startOfWeek(Carbon::MONDAY)->subWeeks($i);
                 $fin = $inicio->copy()->endOfWeek(Carbon::SUNDAY);
-                $q = Pago::query()->whereBetween('fecha_pago', [$inicio->toDateString(), $fin->toDateString()]);
+                $q = Pago::query()->vigentes()->whereBetween('fecha_pago', [$inicio->toDateString(), $fin->toDateString()]);
                 if ($filtroSedes !== null) {
                     $ambito->aplicarPagos($q, $filtroSedes);
                 }
@@ -268,7 +277,7 @@ class DashboardController extends Controller
                 return (float) $q->sum('monto_total');
             });
 
-            $cobradoMesQ = Pago::query()
+            $cobradoMesQ = Pago::query()->vigentes()
                 ->whereYear('fecha_pago', $anioActual)
                 ->whereMonth('fecha_pago', $mesActual);
             if ($filtroSedes !== null) {
@@ -314,7 +323,7 @@ class DashboardController extends Controller
             for ($i = 5; $i >= 0; $i--) {
                 $d = now()->subMonths($i);
                 $chartLabels[] = $d->locale('es')->translatedFormat('M y');
-                $ingQ = Pago::query()
+                $ingQ = Pago::query()->vigentes()
                     ->whereYear('fecha_pago', $d->year)
                     ->whereMonth('fecha_pago', $d->month);
                 if ($filtroSedes !== null) {

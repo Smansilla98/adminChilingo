@@ -101,7 +101,7 @@ return [
      * Set this to false if you want to implement custom logic for checking permissions.
      */
 
-    'register_permission_check_method' => true,
+    'register_permission_check_method' => false, // La autorización con alcance la resuelve App\Domain\Acceso (Gate::before en AppServiceProvider).
 
     /*
      * When set to true, Laravel\Octane\Events\OperationTerminated event listener will be registered

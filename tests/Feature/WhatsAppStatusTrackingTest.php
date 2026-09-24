@@ -4,8 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\WhatsappMensaje;
 use App\Services\WhatsAppService;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 use Twilio\Rest\Client;
@@ -13,6 +12,8 @@ use Twilio\Security\RequestValidator;
 
 class WhatsAppStatusTrackingTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -25,29 +26,6 @@ class WhatsAppStatusTrackingTest extends TestCase
             'app.url' => 'http://localhost',
         ]);
 
-        if (! extension_loaded('pdo_sqlite')) {
-            return;
-        }
-
-        Schema::dropIfExists('whatsapp_mensajes');
-        Schema::create('whatsapp_mensajes', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('alumno_id')->nullable();
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->unsignedBigInteger('cuota_id')->nullable();
-            $table->string('telefono', 32);
-            $table->string('tipo', 32);
-            $table->string('twilio_sid', 64)->unique();
-            $table->string('status', 32);
-            $table->string('error_code', 32)->nullable();
-            $table->text('error_message')->nullable();
-            $table->timestamp('accepted_at')->nullable();
-            $table->timestamp('sent_at')->nullable();
-            $table->timestamp('delivered_at')->nullable();
-            $table->timestamp('read_at')->nullable();
-            $table->timestamp('failed_at')->nullable();
-            $table->timestamps();
-        });
     }
 
     protected function tearDown(): void
@@ -59,6 +37,10 @@ class WhatsAppStatusTrackingTest extends TestCase
     public function test_twilio_acepta_guarda_sid_y_estado_inicial(): void
     {
         $this->requireSqlite();
+        // La tabla real tiene claves foráneas: alumno y cuota tienen que existir.
+        $sede = \App\Models\Sede::query()->create(['nombre' => 'Sede', 'activo' => true]);
+        $alumno = \App\Models\Alumno::query()->create(['nombre_apellido' => 'Alumno', 'sede_id' => $sede->id, 'activo' => true]);
+        $cuota = \App\Models\Cuota::query()->create(['nombre' => 'Marzo', 'año' => 2026, 'mes' => 3, 'monto' => 1000, 'alcance' => 'general', 'activo' => true]);
         $msg = (object) ['sid' => 'SM123aceptado', 'status' => 'queued'];
         $messages = Mockery::mock();
         $messages->shouldReceive('create')
@@ -76,8 +58,8 @@ class WhatsAppStatusTrackingTest extends TestCase
         $service->setClient($client);
         $result = $service->send('Hola', '91112345678', [
             'tipo' => WhatsappMensaje::TIPO_CUOTA,
-            'alumno_id' => 7,
-            'cuota_id' => 3,
+            'alumno_id' => $alumno->id,
+            'cuota_id' => $cuota->id,
         ]);
 
         $this->assertTrue($result['success']);
@@ -91,8 +73,8 @@ class WhatsAppStatusTrackingTest extends TestCase
         $this->assertSame('queued', $row->status);
         $this->assertSame('+5491112345678', $row->telefono);
         $this->assertSame(WhatsappMensaje::TIPO_CUOTA, $row->tipo);
-        $this->assertSame(7, $row->alumno_id);
-        $this->assertSame(3, $row->cuota_id);
+        $this->assertSame($alumno->id, $row->alumno_id);
+        $this->assertSame($cuota->id, $row->cuota_id);
     }
 
     public function test_callback_delivered(): void
@@ -157,12 +139,8 @@ class WhatsAppStatusTrackingTest extends TestCase
         $this->assertSame('delivered', WhatsappMensaje::query()->where('twilio_sid', 'SMnuevo')->value('status'));
     }
 
-    private function requireSqlite(): void
-    {
-        if (! extension_loaded('pdo_sqlite')) {
-            $this->markTestSkipped('Requiere pdo_sqlite.');
-        }
-    }
+    /** Heredado: los tests ya no dependen de SQLite (corren en cualquier motor). */
+    private function requireSqlite(): void {}
 
     private function seedMensaje(string $sid): WhatsappMensaje
     {

@@ -15,6 +15,12 @@
 
     <form action="{{ route('profesores.store') }}" method="POST" class="ito-form">
         @csrf
+        @isset($persona)
+            @if($persona)
+                <input type="hidden" name="persona_id" value="{{ $persona->id }}">
+                <div class="alert alert-info">Se va a crear para <strong>{{ $persona->nombre_completo }}</strong> (ficha existente): no se duplica la persona.@if($persona->user ?? null) Usará su cuenta <span class="ito-mono">{{ $persona->user->username }}</span>.@endif</div>
+            @endif
+        @endisset
         <x-ito.form-steps
             :steps="['Datos', 'Cuenta', 'Bloques', 'Sedes']"
             submit-label="Guardar profesor"
@@ -27,17 +33,17 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nombre *</label>
-                        <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required>
+                        <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre', isset($persona) ? $persona?->nombre_completo : null) }}" required>
                         @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Teléfono</label>
-                        <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}">
+                        <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono', isset($persona) ? $persona?->telefono : null) }}">
                         @error('telefono')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Correo electrónico</label>
-                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}">
+                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', isset($persona) ? $persona?->email : null) }}">
                         @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6 d-flex align-items-end">

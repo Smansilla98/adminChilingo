@@ -280,6 +280,10 @@ class AsistenciaController extends Controller
             ])->withInput();
         }
 
+        // Autorizar antes de validar: no revelar nada de bloques ajenos.
+        $bloque = Bloque::query()->findOrFail($request->integer('bloque_id'));
+        $this->authorize('tomarAsistencia', $bloque);
+
         $validated = $request->validate([
             'bloque_id' => 'required|exists:bloques,id',
             'fecha' => 'required|date',
@@ -289,29 +293,15 @@ class AsistenciaController extends Controller
             'asistencias.*.tipo_asistencia' => Asistencia::reglaValidacionTipo(),
         ]);
 
-        /** @var \App\Models\User|null $userStore */
-        $userStore = auth()->user();
-        if ($userStore && ! $userStore->puedeAccederBloque((int) $validated['bloque_id'])) {
-            abort(403);
-        }
-
         $fecha = $validated['fecha'];
         $bloqueId = $validated['bloque_id'];
 
+        $registros = [];
         foreach ($validated['asistencias'] as $asistenciaData) {
-            $tipo = $asistenciaData['tipo_asistencia'] ?? (isset($asistenciaData['presente']) && $asistenciaData['presente'] ? 'presente' : 'ausencia_injustificada');
-            Asistencia::updateOrCreate(
-                [
-                    'alumno_id' => $asistenciaData['alumno_id'],
-                    'bloque_id' => $bloqueId,
-                    'fecha' => $fecha,
-                ],
-                [
-                    'tipo_asistencia' => $tipo,
-                    'presente' => Asistencia::esPresente($tipo),
-                ]
-            );
+            $registros[(int) $asistenciaData['alumno_id']] = $asistenciaData['tipo_asistencia']
+                ?? (! empty($asistenciaData['presente']) ? 'presente' : 'ausencia_injustificada');
         }
+        app(\App\Domain\Asistencias\AsistenciaService::class)->registrar($bloque, $fecha, $registros, $request->user());
 
         $f = Carbon::parse($fecha);
         /** @var \App\Models\User|null $user */

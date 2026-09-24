@@ -28,8 +28,9 @@ return new class extends Migration
         if (! Schema::hasTable('comprobante_cuota_alumno_items')) {
             Schema::create('comprobante_cuota_alumno_items', function (Blueprint $table) {
                 $table->id();
+                // Nombre explícito: el autogenerado supera los 64 caracteres de MySQL.
                 $table->foreignId('comprobante_cuota_alumno_id')
-                    ->constrained('comprobantes_cuota_alumnos')
+                    ->constrained('comprobantes_cuota_alumnos', 'id', 'cca_items_comprobante_fk')
                     ->cascadeOnDelete();
                 $table->foreignId('cuota_id')->constrained('cuotas')->cascadeOnDelete();
                 $table->foreignId('bloque_id')->constrained('bloques')->cascadeOnDelete();

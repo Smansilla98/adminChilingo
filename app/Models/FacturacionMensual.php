@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FacturacionMensual extends Model
 {
+    use Auditable;
+
     protected $table = 'facturacion_mensual';
 
     protected $fillable = [

@@ -2,6 +2,59 @@
 
 **Guía completa de ejecución (local, Docker, Railway):** ver **[EJECUCION.md](EJECUCION.md)**.
 
+## Plataforma multirrol (septiembre 2026) — checklist de deploy
+
+La infraestructura en Railway **no cambia** (mismo `Dockerfile`, mismo `start.sh`, misma base MySQL).
+
+1. **Backup de la base** antes del deploy (Railway → MySQL → Backups, o `mysqldump --single-transaction`).
+2. Deploy normal. `start.sh`:
+   - `php artisan migrate --force` → crea personas, asignaciones, auditoría, becas, tokens, etc.
+     y ejecuta el backfill (ver [MIGRACIONES.md](MIGRACIONES.md));
+   - `php artisan chilinga:permisos:sync` → catálogo de permisos y roles.
+3. Verificar: `railway run php artisan chilinga:diagnose`.
+4. Los usuarios que eran **admin/dirección** quedan como **superadministradores** (mismos privilegios).
+   Si no hubiera ninguno: `railway run php artisan chilinga:superadmin <usuario> --force`.
+5. Revisar en **Configuración › Usuarios y permisos** que cada persona tenga sus funciones
+   (contadores, tesorería, encargados: se asignan ahí con su alcance).
+
+### Variables nuevas
+
+| Variable | Default | |
+|----------|---------|-|
+| `SANCTUM_TOKEN_MINUTOS` | `43200` (30 días) | vencimiento de los tokens de la app |
+| `PROGRAMA_EDICION_PUBLICA` | `true` | edición de partituras sin login (comportamiento histórico); `false` exige permiso |
+| `EXPO_PUSH_ENABLED` | `false` | envío de push a la app vía Expo |
+| `EXPO_ACCESS_TOKEN` | — | opcional, si el proyecto de Expo exige token para push |
+
+### Scheduler (cron)
+
+Además de los resúmenes existentes, el scheduler corre:
+
+| Comando | Cuándo |
+|---------|--------|
+| `chilinga:avisos cuotas-vencidas` | todos los días 11:00 |
+| `chilinga:avisos eventos` | todos los días 18:00 (eventos del día siguiente) |
+
+Railway no ejecuta cron dentro del contenedor web: crear un **servicio Cron** en Railway con
+el mismo repositorio y comando `php artisan schedule:run` cada minuto (o un Cron Job de
+Railway con `*/5 * * * *`). Los avisos son idempotentes: correrlos de más no duplica.
+
+### Colas
+
+`QUEUE_CONNECTION=database`. Las notificaciones actuales son síncronas (no requieren worker).
+Si en el futuro se encolan, agregar un servicio con `php artisan queue:work --tries=3`.
+
+### API y app
+
+- La API vive en el mismo servicio: `https://<dominio>/api/v1` ([API.md](API.md)).
+- La app móvil **no** se despliega en Railway: se compila con EAS ([APP_MOVIL.md](APP_MOVIL.md)).
+  `mobile/` está excluido de la imagen Docker (`.dockerignore`).
+- Configurar en `mobile/eas.json` la `EXPO_PUBLIC_API_URL` de producción (dominio de Railway).
+
+### Storage
+
+Sin cambios: comprobantes y archivos en `storage/app` (usar volumen persistente o S3 como hasta ahora).
+
 ## Salud
 
 - Laravel: `GET /up`

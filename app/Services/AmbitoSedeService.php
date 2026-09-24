@@ -8,28 +8,34 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Aísla datos operativos/financieros a las sedes del coordinador.
- * null = sin filtro (admin / vista escuela).
+ * Aísla datos operativos/financieros a las sedes donde el usuario tiene el permiso.
+ * null = sin filtro (alcance global para ese permiso).
  */
 class AmbitoSedeService
 {
     /**
+     * Sedes donde el permiso tiene alcance de sede. Un alcance solo por bloque (profesor)
+     * no habilita listados de gestión por sede: esos usuarios usan sus vistas propias.
+     *
      * @return list<int>|null
      */
-    public function idsPara(?User $user): ?array
+    public function idsPara(?User $user, string $permiso = 'alumnos.view'): ?array
     {
-        if (! $user || ! $user->acotaPorSede()) {
+        if (! $user) {
+            return [0];
+        }
+        $alcance = $user->acceso()->alcance($permiso);
+        if ($alcance->esGlobal()) {
             return null;
         }
+        $ids = $alcance->sedeIds();
 
-        $ids = $user->sedeIdsOperativas();
-
-        return $ids !== [] ? array_values(array_map('intval', $ids)) : [0];
+        return $ids !== [] ? $ids : [0];
     }
 
-    public function etiqueta(?User $user): string
+    public function etiqueta(?User $user, string $permiso = 'alumnos.view'): string
     {
-        return $this->idsPara($user) !== null
+        return $this->idsPara($user, $permiso) !== null
             ? 'Indicadores de tus sedes'
             : 'Vista general de la escuela';
     }

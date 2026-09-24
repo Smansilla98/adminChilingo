@@ -132,11 +132,17 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt([$credentialKey => $credentialValue, 'password' => $credentials['password']], $request->filled('remember'))) {
-            $request->session()->regenerate();
-
             $user = Auth::user();
-            $this->asegurarRolSpatie($user);
+            if (isset($user->activo) && ! $user->activo) {
+                Auth::logout();
 
+                return back()->withErrors(['username' => 'Tu cuenta está desactivada. Consultá con administración.'])->onlyInput('username');
+            }
+            $request->session()->regenerate();
+            $user->forceFill(['ultimo_acceso_at' => now()])->saveQuietly();
+
+            // Los permisos salen de funciones y asignaciones (App\Domain\Acceso): ya no se
+            // asigna un rol por defecto al ingresar.
             return redirect()->intended(route('dashboard'));
         }
 
@@ -155,30 +161,5 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
-    }
-
-    /**
-     * Alinea Spatie con users.role sin convertir alumnos en profesores.
-     */
-    private function asegurarRolSpatie(User $user): void
-    {
-        $mapa = [
-            'admin' => 'admin',
-            'direccion' => 'direccion',
-            'coordinador_sede' => 'coordinador_sede',
-            'coordinador_area' => 'coordinador_area',
-            'profesor' => 'profesor',
-            'alumno' => 'alumno',
-        ];
-
-        foreach ($mapa as $spatie) {
-            if ($user->hasRole($spatie)) {
-                return;
-            }
-        }
-
-        $objetivo = $mapa[$user->role ?? ''] ?? 'profesor';
-        Role::firstOrCreate(['name' => $objetivo]);
-        $user->assignRole($objetivo);
     }
 }

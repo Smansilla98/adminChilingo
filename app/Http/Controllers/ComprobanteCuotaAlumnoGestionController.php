@@ -23,19 +23,17 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
 
         /** @var User $user */
         $user = auth()->user();
-        $ambito = app(\App\Services\AmbitoSedeService::class);
-        $filtroSedes = $ambito->idsPara($user);
-
         $query = ComprobanteCuotaAlumno::query()
             ->with(['alumno', 'sede', 'items.bloque.sede', 'items.cuota', 'pago'])
             ->orderByDesc('created_at');
 
-        if ($filtroSedes !== null) {
-            $ambito->aplicarComprobantes($query, $filtroSedes);
-        } elseif ($user->isProfesor() && ! $user->isAdmin()) {
-            $prof = $user->profesor;
-            $ids = $prof ? $prof->bloqueIdsDondeParticipa()->all() : [];
-            $query->whereHas('items', fn ($q) => $q->whereIn('bloque_id', $ids !== [] ? $ids : [0]));
+        $alcance = $user->acceso()->alcance('comprobantes.view');
+        if (! $alcance->esGlobal()) {
+            $query->where(function ($q) use ($alcance) {
+                $q->whereIn('sede_id', $alcance->sedeIds() ?: [0])
+                    ->orWhereHas('items', fn ($i) => $i->whereIn('bloque_id', $alcance->bloqueIds() ?: [0]))
+                    ->orWhereHas('items.bloque', fn ($b) => $b->whereIn('sede_id', $alcance->sedeIds() ?: [0]));
+            });
         }
 
         if ($request->filled('estado')) {
@@ -52,10 +50,7 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
         $alumnos = $this->alumnosVisiblesParaCarga();
         $user = auth()->user();
         $bloquesQ = Bloque::query()->where('activo', true)->with('sede')->orderBy('nombre');
-        if ($user && ! $user->isAdmin()) {
-            $ids = $user->bloqueIdsPermitidos() ?: [0];
-            $bloquesQ->whereIn('id', $ids);
-        }
+        $user->acceso()->alcance('comprobantes.create')->aplicarBloques($bloquesQ);
         $bloques = $bloquesQ->get();
 
         return view('comprobante_cuota_gestion.create', compact('alumnos', 'bloques'));
@@ -77,7 +72,7 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
         $alumno = Alumno::query()->with(['bloques', 'bloque', 'sede'])->findOrFail($validated['alumno_id']);
         $user = auth()->user();
         $alumno->loadMissing(['bloques', 'bloque']);
-        if (! $user?->puedeGestionarAlumno($alumno) && ! $user?->isAdmin()) {
+        if (! $user->acceso()->puedeSobreAlumno('comprobantes.create', $alumno)) {
             abort(403);
         }
 
@@ -87,7 +82,7 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
         }
 
         foreach (array_map('intval', $validated['bloque_ids']) as $bid) {
-            if ($user && ! $user->isAdmin() && ! $user->puedeAccederBloque($bid)) {
+            if (! $user->acceso()->puedeEnBloque('comprobantes.create', $bid)) {
                 abort(403);
             }
         }
@@ -150,12 +145,13 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
 
     public function aprobarYRegistrarPago(Request $request, int $id, PagoDesdeComprobanteService $service)
     {
-        if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Solo administración puede registrar el pago desde el comprobante.');
-        }
-
         $comprobanteCuotaAlumno = ComprobanteCuotaAlumno::query()->findOrFail($id);
-        $this->authorizeVer($comprobanteCuotaAlumno);
+        // Aprobar genera un pago: requiere comprobantes.approve sobre el alumno del comprobante.
+        $comprobanteCuotaAlumno->loadMissing('alumno');
+        if (! $comprobanteCuotaAlumno->alumno
+            || ! auth()->user()->acceso()->puedeSobreAlumno('comprobantes.approve', $comprobanteCuotaAlumno->alumno)) {
+            abort(403, 'No podés registrar el pago de este comprobante.');
+        }
 
         try {
             $result = $service->aprobar(
@@ -177,26 +173,9 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
         $c->loadMissing(['items.bloque']);
         /** @var User $user */
         $user = auth()->user();
-        if ($user->isAdmin()) {
-            return;
-        }
-        if ($user->acotaPorSede()) {
-            $sedes = $user->sedeIdsOperativas();
-            $sid = (int) $c->sede_id;
-            $okSede = in_array($sid, $sedes, true)
-                || $c->items->contains(fn ($i) => $i->bloque && in_array((int) $i->bloque->sede_id, $sedes, true));
-            if (! $okSede) {
-                abort(403);
-            }
-
-            return;
-        }
-        if (! $user->isProfesor()) {
-            abort(403);
-        }
-        $prof = $user->profesor;
-        $ids = collect($prof ? $prof->bloqueIdsDondeParticipa()->all() : []);
-        $ok = $c->items->contains(fn ($i) => $ids->contains((int) $i->bloque_id));
+        $alcance = $user->acceso()->alcance('comprobantes.view');
+        $ok = $alcance->incluyeSede((int) $c->sede_id)
+            || $c->items->contains(fn ($i) => $alcance->incluyeBloque((int) $i->bloque_id, $i->bloque?->sede_id ? (int) $i->bloque->sede_id : null));
         if (! $ok) {
             abort(403);
         }
@@ -207,30 +186,13 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
      */
     private function alumnosVisiblesParaCarga()
     {
-        $user = auth()->user();
         $q = Alumno::query()->where('activo', true)->orderBy('nombre_apellido');
-        if ($user && $user->isAdmin()) {
-            return $q->limit(500)->get(['id', 'nombre_apellido', 'sede_id', 'bloque_id']);
+        $alcance = auth()->user()->acceso()->alcance('comprobantes.create');
+        if ($alcance->estaVacio()) {
+            return collect();
         }
-        if ($user && $user->acotaPorSede()) {
-            $ids = $user->sedeIdsOperativas() ?: [0];
-            $q->where(function ($inner) use ($ids) {
-                $inner->whereIn('sede_id', $ids)
-                    ->orWhereHas('bloques', fn ($b) => $b->whereIn('bloques.sede_id', $ids));
-            });
+        $alcance->aplicarAlumnos($q);
 
-            return $q->get(['id', 'nombre_apellido', 'sede_id', 'bloque_id']);
-        }
-        if ($user && $user->isProfesor()) {
-            $ids = $user->bloqueIdsPermitidos() ?: [0];
-            $q->where(function ($inner) use ($ids) {
-                $inner->whereIn('bloque_id', $ids)
-                    ->orWhereHas('bloques', fn ($b) => $b->whereIn('bloques.id', $ids));
-            });
-
-            return $q->get(['id', 'nombre_apellido', 'sede_id', 'bloque_id']);
-        }
-
-        return collect();
+        return $q->limit(1000)->get(['id', 'nombre_apellido', 'sede_id', 'bloque_id']);
     }
 }

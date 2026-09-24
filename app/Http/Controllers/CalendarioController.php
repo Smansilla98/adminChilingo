@@ -35,11 +35,8 @@ class CalendarioController extends Controller
             ->with(['horarios', 'sede', 'profesor'])
             ->whereHas('horarios');
 
-        if ($user && $user->isProfesor() && ! $user->isAdmin()) {
-            $prof = $user->profesor;
-            $ids = $prof ? $prof->bloqueIdsDondeParticipa()->all() : [];
-            $query->whereIn('id', $ids !== [] ? $ids : [0]);
-        }
+        // Clases de los bloques/sedes donde la persona participa (docente, alumno, coordinación).
+        $user?->acceso()->alcance('calendario.view')->aplicarBloques($query);
 
         return $query->orderBy('sede_id')->orderBy('nombre')->get();
     }
@@ -47,7 +44,7 @@ class CalendarioController extends Controller
     protected function urlBloqueDesdeCalendario(Bloque $bloque): string
     {
         $user = auth()->user();
-        if ($user && $user->isAdmin()) {
+        if ($user && $user->can('update', $bloque)) {
             return route('bloques.edit', $bloque);
         }
 
@@ -137,6 +134,7 @@ class CalendarioController extends Controller
         try {
             $eventos = Evento::with(['sede', 'profesor'])
                 ->whereBetween('fecha', [$startDate->toDateString(), $endDate->toDateString()])
+                ->tap(fn ($q) => auth()->user()->acceso()->alcance('calendario.view')->aplicarEventos($q))
                 ->orderBy('fecha')
                 ->orderBy('hora_inicio')
                 ->get();
@@ -293,6 +291,8 @@ class CalendarioController extends Controller
         try {
             $queryEventos = Evento::with(['sede', 'profesor', 'bloque'])
                 ->whereBetween('fecha', [$start->toDateString(), $end->toDateString()]);
+            // Eventos de la escuela, de sus sedes y de sus bloques.
+            auth()->user()->acceso()->alcance('calendario.view')->aplicarEventos($queryEventos);
             if ($request->filled('sede_id')) {
                 $queryEventos->where('sede_id', $request->sede_id);
             }

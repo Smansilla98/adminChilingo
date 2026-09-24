@@ -10,9 +10,30 @@
     subtitle="Detalle y trazabilidad por alumno"
 >
     <x-slot:actions>
-        <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+        @can('update', $pago)
+            <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+        @endcan
+        @can('reverse', $pago)
+            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="collapse" data-bs-target="#anular-pago"><i class="bi bi-x-octagon"></i> Anular</button>
+        @endcan
         <a href="{{ route('pagos.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
     </x-slot:actions>
+        @if($pago->estaAnulado())
+            <div class="alert alert-danger" role="status">
+                <strong>Pago anulado</strong> el {{ $pago->anulado_at->format('d/m/Y H:i') }}
+                @if($pago->anuladoPor) por {{ $pago->anuladoPor->name }} @endif.
+                Motivo: {{ $pago->motivo_anulacion }}. No cuenta para saldos ni reportes.
+            </div>
+        @endif
+        @can('reverse', $pago)
+            <form id="anular-pago" class="collapse card card-body mb-3" method="POST" action="{{ route('pagos.anular', $pago) }}">
+                @csrf
+                <label for="motivo-anulacion" class="form-label">Motivo de la anulación</label>
+                <textarea id="motivo-anulacion" name="motivo" class="form-control mb-2" rows="2" required minlength="5" maxlength="500"></textarea>
+                <p class="small text-muted mb-2">El pago queda en el historial pero deja de contar. Si vino de un comprobante del alumno, el comprobante vuelve a pendiente.</p>
+                <button class="btn btn-danger btn-sm align-self-start">Confirmar anulación</button>
+            </form>
+        @endcan
         <dl class="ito-dl">
             <dt class="col-sm-3">Monto total</dt>
             <dd class="col-sm-9">$ {{ number_format($pago->monto_total, 2, ',', '.') }}</dd>

@@ -10,6 +10,7 @@ class BloqueHorarioController extends Controller
 {
     public function store(Request $request, Bloque $bloque)
     {
+        $this->authorize('update', $bloque);
         $validated = $request->validate([
             'dia_semana' => 'required|integer|min:1|max:7',
             'hora_inicio' => 'required|date_format:H:i',
@@ -27,6 +28,7 @@ class BloqueHorarioController extends Controller
     public function destroy(BloqueHorario $bloqueHorario)
     {
         $bloque = $bloqueHorario->bloque;
+        $this->authorize('update', $bloque);
         $bloqueHorario->delete();
 
         return redirect()->route('bloques.edit', $bloque)->with('success', 'Horario eliminado.');

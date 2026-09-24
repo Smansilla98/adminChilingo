@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -18,6 +19,11 @@ return new class extends Migration
             $driver = Schema::getConnection()->getDriverName();
             if ($driver === 'mysql') {
                 DB::statement("ALTER TABLE eventos MODIFY tipo_evento VARCHAR(50) NOT NULL DEFAULT 'taller'");
+            } else {
+                // SQLite/Postgres (tests, instalaciones nuevas): el enum original crea un CHECK.
+                Schema::table('eventos', function (Blueprint $table) {
+                    $table->string('tipo_evento', 50)->default('taller')->change();
+                });
             }
         } catch (\Throwable $e) {
             // Ya modificado o no aplicable

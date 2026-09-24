@@ -103,7 +103,7 @@ class ReportesController extends Controller
      */
     private function sedeScopeIds(): ?array
     {
-        return app(\App\Services\AmbitoSedeService::class)->idsPara(auth()->user());
+        return app(\App\Services\AmbitoSedeService::class)->idsPara(auth()->user(), 'reportes.view');
     }
 
     private function compilarDatos(int $mes, int $año): array

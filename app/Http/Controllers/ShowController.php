@@ -51,6 +51,7 @@ class ShowController extends Controller
             'bloque_ids.*' => 'exists:bloques,id',
         ]);
         $validated['convocatoria_abierta'] = $request->boolean('convocatoria_abierta');
+        $this->asegurarBloquesGestionables($validated['bloque_ids'] ?? []);
         $show = Show::create([
             'titulo' => $validated['titulo'],
             'fecha' => $validated['fecha'],
@@ -76,6 +77,7 @@ class ShowController extends Controller
 
     public function edit(Show $show)
     {
+        $this->authorize('update', $show);
         try {
             $show->load('bloques');
             $bloques = Bloque::where('activo', true)->with('sede', 'profesor')->orderBy('sede_id')->orderBy('nombre')->get();
@@ -88,6 +90,7 @@ class ShowController extends Controller
 
     public function update(Request $request, Show $show)
     {
+        $this->authorize('update', $show);
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
             'fecha' => 'required|date',
@@ -100,6 +103,7 @@ class ShowController extends Controller
             'bloque_ids.*' => 'exists:bloques,id',
         ]);
         $validated['convocatoria_abierta'] = $request->boolean('convocatoria_abierta');
+        $this->asegurarBloquesGestionables($validated['bloque_ids'] ?? []);
         $show->update([
             'titulo' => $validated['titulo'],
             'fecha' => $validated['fecha'],
@@ -116,9 +120,31 @@ class ShowController extends Controller
 
     public function destroy(Show $show)
     {
+        $this->authorize('delete', $show);
         $show->bloques()->detach();
         $show->delete();
 
         return redirect()->route('shows.index')->with('success', 'Show eliminado.');
+    }
+
+    /**
+     * Sin alcance global, solo se convoca a bloques propios.
+     *
+     * @param  list<int|string>  $bloqueIds
+     */
+    private function asegurarBloquesGestionables(array $bloqueIds): void
+    {
+        $acceso = auth()->user()->acceso();
+        if ($acceso->puedeGlobal('shows.manage')) {
+            return;
+        }
+        if ($bloqueIds === []) {
+            abort(403, 'Elegí al menos un bloque de tu alcance.');
+        }
+        foreach ($bloqueIds as $id) {
+            if (! $acceso->puedeEnBloque('shows.manage', (int) $id)) {
+                abort(403, 'No podés convocar bloques fuera de tu alcance.');
+            }
+        }
     }
 }

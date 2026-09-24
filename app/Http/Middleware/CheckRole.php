@@ -35,6 +35,10 @@ class CheckRole
         abort(403, 'No tenés permisos para acceder a esta sección.');
     }
 
+    /**
+     * Compatibilidad: las rutas nuevas usan `permiso:*`. Los nombres de rol heredados
+     * se resuelven contra los roles contextuales de App\Domain\Acceso.
+     */
     private function matches(\App\Models\User $user, string $role): bool
     {
         // admin y dirección son equivalentes para el panel
@@ -48,6 +52,10 @@ class CheckRole
                 || $user->isCoordinadorArea();
         }
 
-        return $user->role === $role || $user->hasRole($role);
+        if ($role === 'coordinador_sede') {
+            return $user->isCoordinadorSede();
+        }
+
+        return $user->acceso()->tieneRol($role);
     }
 }

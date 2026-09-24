@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class Profesor extends Model
 {
+    use Auditable;
+
     public const ROLES_BLOQUE = ['titular', 'ayudante', 'suplente', 'coordinador_clase'];
 
     /** Roles del profesor en una sede (puede tener varios por sede). */
@@ -24,12 +27,21 @@ class Profesor extends Model
     /** Tabla real: 'profesores'. Laravel infiere 'profesors' por defecto. */
     protected $table = 'profesores';
 
+    /**
+     * Persona (identidad única) a la que pertenece este perfil.
+     */
+    public function persona(): BelongsTo
+    {
+        return $this->belongsTo(Persona::class);
+    }
+
     public function getTable(): string
     {
         return 'profesores';
     }
 
     protected $fillable = [
+        'persona_id',
         'user_id',
         'nombre',
         'telefono',
@@ -252,6 +264,12 @@ class Profesor extends Model
 
     public function alumnoPerfil(): ?Alumno
     {
+        if ($this->persona_id) {
+            $perfil = Alumno::query()->where('persona_id', $this->persona_id)->first();
+            if ($perfil) {
+                return $perfil;
+            }
+        }
         if ($this->user_id) {
             return Alumno::query()->where('user_id', $this->user_id)->first();
         }

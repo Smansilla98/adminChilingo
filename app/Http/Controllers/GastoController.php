@@ -16,7 +16,7 @@ class GastoController extends Controller
     {
         $gastos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25);
         $sedes = collect();
-        $filtroSedes = $ambito->idsPara(auth()->user());
+        $filtroSedes = $ambito->idsPara(auth()->user(), 'gastos.view');
 
         if (Schema::hasTable('gastos')) {
             try {
@@ -62,7 +62,7 @@ class GastoController extends Controller
     {
         $sedes = collect();
         $bloques = collect();
-        $filtroSedes = $ambito->idsPara(auth()->user());
+        $filtroSedes = $ambito->idsPara(auth()->user(), 'gastos.view');
         if (Schema::hasTable('sedes')) {
             try {
                 $sedesQ = Sede::orderBy('nombre');
@@ -103,13 +103,22 @@ class GastoController extends Controller
             'notas' => 'nullable|string',
         ]);
         $validated['created_by'] = auth()->id();
-        Gasto::create($validated);
+        $this->asegurarAlcanceGasto('gastos.create', $validated['sede_id'] ?? null);
+        // Quien no puede aprobar gastos los deja pendientes de aprobación.
+        $puedeAprobar = $this->puedeEnAlcance('gastos.approve', $validated['sede_id'] ?? null);
+        $gasto = new Gasto($validated);
+        $gasto->forceFill([
+            'estado' => $puedeAprobar ? 'aprobado' : 'pendiente',
+            'aprobado_por' => $puedeAprobar ? auth()->id() : null,
+            'aprobado_at' => $puedeAprobar ? now() : null,
+        ])->save();
 
-        return redirect()->route('gastos.index')->with('success', 'Gasto registrado.');
+        return redirect()->route('gastos.index')->with('success', $puedeAprobar ? 'Gasto registrado.' : 'Gasto registrado. Queda pendiente de aprobación.');
     }
 
     public function show(Gasto $gasto)
     {
+        $this->authorize('view', $gasto);
         $gasto->load(['sede', 'bloque', 'creador']);
 
         return view('gastos.show', compact('gasto'));
@@ -117,6 +126,7 @@ class GastoController extends Controller
 
     public function edit(Gasto $gasto)
     {
+        $this->authorize('update', $gasto);
         $sedes = collect();
         $bloques = collect();
         if (Schema::hasTable('sedes')) {
@@ -139,6 +149,7 @@ class GastoController extends Controller
 
     public function update(Request $request, Gasto $gasto)
     {
+        $this->authorize('update', $gasto);
         $validated = $request->validate([
             'sede_id' => 'nullable|exists:sedes,id',
             'bloque_id' => 'nullable|exists:bloques,id',
@@ -150,6 +161,7 @@ class GastoController extends Controller
             'proveedor' => 'nullable|string|max:255',
             'notas' => 'nullable|string',
         ]);
+        $this->asegurarAlcanceGasto('gastos.update', $validated['sede_id'] ?? null);
         $gasto->update($validated);
 
         return redirect()->route('gastos.index')->with('success', 'Gasto actualizado.');
@@ -157,8 +169,37 @@ class GastoController extends Controller
 
     public function destroy(Gasto $gasto)
     {
+        $this->authorize('delete', $gasto);
         $gasto->delete();
 
         return redirect()->route('gastos.index')->with('success', 'Gasto eliminado.');
+    }
+
+    public function aprobar(Request $request, Gasto $gasto)
+    {
+        $this->authorize('approve', $gasto);
+        $data = $request->validate(['decision' => 'required|in:aprobado,rechazado']);
+        $gasto->forceFill([
+            'estado' => $data['decision'],
+            'aprobado_por' => $request->user()->id,
+            'aprobado_at' => now(),
+        ])->save();
+
+        return back()->with('success', $data['decision'] === 'aprobado' ? 'Gasto aprobado.' : 'Gasto rechazado.');
+    }
+
+    private function puedeEnAlcance(string $permiso, $sedeId): bool
+    {
+        $acceso = auth()->user()->acceso();
+
+        return $sedeId ? $acceso->puedeEnSede($permiso, (int) $sedeId) : $acceso->puedeGlobal($permiso);
+    }
+
+    /** Gastos sin sede son de toda la escuela: requieren alcance global. */
+    private function asegurarAlcanceGasto(string $permiso, $sedeId): void
+    {
+        if (! $this->puedeEnAlcance($permiso, $sedeId)) {
+            abort(403, 'No podés registrar gastos en esa sede.');
+        }
     }
 }

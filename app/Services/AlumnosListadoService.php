@@ -21,53 +21,34 @@ class AlumnosListadoService
     }
 
     /**
+     * Sedes y bloques para los filtros, dentro del alcance de alumnos.view.
+     *
      * @return array{sedes: \Illuminate\Support\Collection, bloques: \Illuminate\Support\Collection}
      */
     public function filtrosCatalogo(?User $user): array
     {
-        if ($user && $user->acotaPorSede()) {
-            $sedeIds = $user->sedeIdsOperativas();
-            $ids = $sedeIds !== [] ? $sedeIds : [0];
-
-            return [
-                'sedes' => Sede::where('activo', true)->whereIn('id', $ids)->get(),
-                'bloques' => Bloque::where('activo', true)->whereIn('sede_id', $ids)->with('sede')->get(),
-            ];
+        $sedes = Sede::where('activo', true)->orderBy('nombre');
+        $bloques = Bloque::where('activo', true)->with('sede');
+        if ($user) {
+            $alcance = $user->acceso()->alcance('alumnos.view');
+            $alcance->aplicarPorSede($sedes, 'id', true);
+            $alcance->aplicarBloques($bloques);
         }
 
-        return [
-            'sedes' => Sede::where('activo', true)->get(),
-            'bloques' => Bloque::where('activo', true)->with('sede')->get(),
-        ];
+        return ['sedes' => $sedes->get(), 'bloques' => $bloques->get()];
     }
 
+    /**
+     * Alumnos que caen dentro del alcance (sede o bloque) de alumnos.view.
+     */
     private function aplicarAlcance(Builder $query, ?User $user): void
     {
-        if ($user && $user->acotaPorSede()) {
-            $sedeIds = $user->sedeIdsOperativas();
-            $ids = $sedeIds !== [] ? $sedeIds : [0];
-            $query->where(function ($q) use ($ids) {
-                $q->whereIn('sede_id', $ids)
-                    ->orWhereHas('bloques', fn ($b) => $b->whereIn('bloques.sede_id', $ids))
-                    ->orWhereHas('bloque', fn ($b) => $b->whereIn('sede_id', $ids));
-            });
+        if (! $user) {
+            $query->whereRaw('1 = 0');
 
             return;
         }
-
-        if ($user && $user->isProfesor() && ! $user->isAdmin() && ! $user->puedeGestionarOperativo()) {
-            $prof = $user->profesor;
-            if ($prof) {
-                $query->where(function ($sub) use ($prof) {
-                    $bloqueVisible = fn ($q) => $q->where('profesor_id', $prof->id)
-                        ->orWhereHas('profesores', fn ($q2) => $q2->where('profesores.id', $prof->id));
-                    $sub->whereHas('bloque', $bloqueVisible)
-                        ->orWhereHas('bloques', $bloqueVisible);
-                });
-            } else {
-                $query->whereRaw('1=0');
-            }
-        }
+        $user->acceso()->alcance('alumnos.view')->aplicarAlumnos($query);
     }
 
     private function aplicarFiltros(Builder $query, Request $request): void

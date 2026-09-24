@@ -25,7 +25,7 @@ class PagoController extends Controller
         $pagos = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
         $alumnos = collect();
         $cuotas = collect();
-        $filtroSedes = $ambito->idsPara(auth()->user());
+        $filtroSedes = $ambito->idsPara(auth()->user(), 'pagos.view');
 
         if (Schema::hasTable('pagos')) {
             try {
@@ -84,6 +84,7 @@ class PagoController extends Controller
 
     public function edit(Pago $pago)
     {
+        $this->authorize('update', $pago);
         $pago->load(['detalles.alumno', 'detalles.cuota']);
 
         return view('pagos.create', array_merge($this->pagoFormViewData(), [
@@ -97,7 +98,7 @@ class PagoController extends Controller
     private function pagoFormViewData(): array
     {
         $ambito = app(AmbitoSedeService::class);
-        $filtroSedes = $ambito->idsPara(auth()->user());
+        $filtroSedes = $ambito->idsPara(auth()->user(), 'pagos.view');
 
         $cuotas = collect();
         if (Schema::hasTable('cuotas')) {
@@ -286,6 +287,7 @@ class PagoController extends Controller
 
     public function update(Request $request, Pago $pago)
     {
+        $this->authorize('update', $pago);
         if (! $this->tablasPagoDisponibles()) {
             return back()->withErrors([
                 'general' => 'Faltan tablas requeridas para actualizar pagos. Ejecutá migraciones y reintentá.',
@@ -411,6 +413,10 @@ class PagoController extends Controller
                 ])->withInput();
             }
             $alumno = Alumno::query()->find($alumnoId);
+            $permiso = $exceptPagoId !== null ? 'pagos.update' : 'pagos.create';
+            if ($alumno && ! auth()->user()->acceso()->puedeSobreAlumno($permiso, $alumno)) {
+                abort(403, 'No podés registrar pagos de alumnos fuera de tu alcance.');
+            }
             if (! $alumno || ! $cuota->aplicaAAlumno($alumno)) {
                 return back()->withErrors([
                     'lineas.'.$idx.'.alumno_id' => 'El alumno de la línea '.($idx + 1).' no corresponde a la cuota según alcance / bloques.',
@@ -624,13 +630,24 @@ class PagoController extends Controller
 
     public function show(Pago $pago)
     {
-        $pago->load(['detalles.alumno', 'detalles.cuota', 'registradoPor']);
+        $this->authorize('view', $pago);
+        $pago->load(['detalles.alumno', 'detalles.cuota', 'registradoPor', 'anuladoPor']);
 
         return view('pagos.show', compact('pago'));
     }
 
+    public function anular(Request $request, Pago $pago, \App\Domain\Finanzas\PagoService $pagos)
+    {
+        $this->authorize('reverse', $pago);
+        $data = $request->validate(['motivo' => 'required|string|min:5|max:500']);
+        $pagos->anular($pago, $request->user(), $data['motivo']);
+
+        return redirect()->route('pagos.show', $pago)->with('success', 'Pago anulado. Ya no cuenta para saldos ni reportes.');
+    }
+
     public function downloadComprobante(Pago $pago)
     {
+        $this->authorize('view', $pago);
         if (! $pago->comprobante_path) {
             abort(404);
         }

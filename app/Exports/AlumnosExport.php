@@ -20,13 +20,10 @@ class AlumnosExport implements FromCollection, WithHeadings, WithMapping
     {
         $query = Alumno::with(['bloque', 'bloques', 'sede']);
 
-        if ($this->user && $this->user->acotaPorSede()) {
-            $ids = $this->user->sedeIdsOperativas() ?: [0];
-            $query->where(function ($q) use ($ids) {
-                $q->whereIn('sede_id', $ids)
-                    ->orWhereHas('bloques', fn ($b) => $b->whereIn('bloques.sede_id', $ids))
-                    ->orWhereHas('bloque', fn ($b) => $b->whereIn('sede_id', $ids));
-            });
+        if ($this->user) {
+            $this->user->acceso()->alcance('alumnos.view')->aplicarAlumnos($query);
+        } else {
+            $query->whereRaw('1 = 0');
         }
 
         if ($this->request instanceof Request) {

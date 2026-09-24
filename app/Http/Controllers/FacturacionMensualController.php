@@ -18,6 +18,7 @@ class FacturacionMensualController extends Controller
         if (Schema::hasTable('facturacion_mensual')) {
             try {
                 $query = FacturacionMensual::with('sede');
+                $request->user()->acceso()->alcance('facturacion.view')->aplicarPorSede($query, 'sede_id', false, $request->user()->acceso()->puedeGlobal('facturacion.view'));
                 if ($request->filled('sede_id')) {
                     $query->where('sede_id', $request->sede_id);
                 }

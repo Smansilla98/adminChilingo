@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Datos\EliminacionSegura;
 use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\Sede;
 use App\Models\WhatsappMensaje;
+use App\Policies\CuotaPolicy;
 use App\Services\AmbitoSedeService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -17,7 +19,7 @@ class CuotaController extends Controller
 {
     public function index(Request $request, AmbitoSedeService $ambito)
     {
-        $filtroSedes = $ambito->idsPara(auth()->user());
+        $filtroSedes = $ambito->idsPara(auth()->user(), 'cuotas.view');
 
         try {
             $query = Cuota::with(['bloque', 'sede']);
@@ -72,7 +74,7 @@ class CuotaController extends Controller
 
     public function create(AmbitoSedeService $ambito)
     {
-        $filtroSedes = $ambito->idsPara(auth()->user());
+        $filtroSedes = $ambito->idsPara(auth()->user(), 'cuotas.view');
         try {
             $bloquesQ = Bloque::where('activo', true)->with(['alumnos' => function ($q) {
                 $q->orderBy('nombre_apellido');
@@ -153,6 +155,7 @@ class CuotaController extends Controller
                 $validated['sede_id'] = null;
             }
 
+            $this->asegurarAlcanceCuota('cuotas.create', $alcance, $validated);
             $this->assertCuotaUnicaEnPeriodo(
                 $validated['año'],
                 (int) ($validated['mes'] ?? 0),
@@ -171,6 +174,7 @@ class CuotaController extends Controller
 
     public function show(Cuota $cuota)
     {
+        $this->authorize('view', $cuota);
         $cuota->loadCount('pagoDetalles')->load(['bloque', 'sede', 'alumnos']);
 
         $recordatoriosWhatsapp = collect();
@@ -190,6 +194,7 @@ class CuotaController extends Controller
 
     public function edit(Cuota $cuota)
     {
+        $this->authorize('update', $cuota);
         try {
             $bloques = Bloque::where('activo', true)->with(['alumnos' => function ($q) {
                 $q->orderBy('nombre_apellido');
@@ -214,6 +219,7 @@ class CuotaController extends Controller
 
     public function update(Request $request, Cuota $cuota)
     {
+        $this->authorize('update', $cuota);
         $hasAlcance = \Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance');
         $rules = [
             'nombre' => 'required|string|max:255',
@@ -259,6 +265,7 @@ class CuotaController extends Controller
                 $validated['sede_id'] = null;
             }
 
+            $this->asegurarAlcanceCuota('cuotas.update', $alcance, $validated);
             $this->assertCuotaUnicaEnPeriodo(
                 $validated['año'],
                 (int) ($validated['mes'] ?? 0),
@@ -275,11 +282,30 @@ class CuotaController extends Controller
         return redirect()->route('cuotas.index')->with('success', 'Cuota actualizada.');
     }
 
-    public function destroy(Cuota $cuota)
+    public function destroy(Cuota $cuota, EliminacionSegura $eliminacion)
     {
+        $this->authorize('delete', $cuota);
+        $eliminacion->verificar($cuota);
         $cuota->delete();
 
         return redirect()->route('cuotas.index')->with('success', 'Cuota eliminada.');
+    }
+
+    /**
+     * @param  array<string, mixed>  $datos
+     */
+    private function asegurarAlcanceCuota(string $permiso, string $alcance, array $datos): void
+    {
+        $ok = CuotaPolicy::puedeDefinir(
+            auth()->user(),
+            $permiso,
+            $alcance,
+            isset($datos['sede_id']) ? (int) $datos['sede_id'] : null,
+            isset($datos['bloque_id']) ? (int) $datos['bloque_id'] : null,
+        );
+        if (! $ok) {
+            abort(403, 'No podés definir cuotas con ese alcance.');
+        }
     }
 
     /**

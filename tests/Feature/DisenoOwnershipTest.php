@@ -5,39 +5,21 @@ namespace Tests\Feature;
 use App\Models\Diseno;
 use App\Models\User;
 use App\Policies\DisenoPolicy;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
-use Tests\Support\BusinessSchema;
 use Tests\TestCase;
 
 class DisenoOwnershipTest extends TestCase
 {
+    use RefreshDatabase;
+
     private DisenoPolicy $policy;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        if (! extension_loaded('pdo_sqlite')) {
-            $this->markTestSkipped('Requiere extensión pdo_sqlite.');
-        }
-
-        BusinessSchema::migrateMinimal();
-        Schema::dropIfExists('disenos');
-        Schema::create('disenos', function (Blueprint $table) {
-            $table->id();
-            $table->string('titulo');
-            $table->string('formato', 40)->default('flyer_feed');
-            $table->unsignedInteger('ancho')->default(1080);
-            $table->unsignedInteger('alto')->default(1350);
-            $table->json('canvas_json')->nullable();
-            $table->string('preview_path')->nullable();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamps();
-        });
 
         $this->policy = new DisenoPolicy;
     }
@@ -139,17 +121,6 @@ class DisenoOwnershipTest extends TestCase
     {
         Storage::fake('public');
 
-        Schema::dropIfExists('diseno_kit_assets');
-        Schema::create('diseno_kit_assets', function (Blueprint $table) {
-            $table->id();
-            $table->string('titulo', 120);
-            $table->string('path');
-            $table->string('mime', 80)->nullable();
-            $table->unsignedInteger('bytes')->nullable();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamps();
-        });
-
         $admin = $this->admin();
         $file = UploadedFile::fake()->image('kit-logo.png', 120, 120);
 
@@ -194,6 +165,14 @@ class DisenoOwnershipTest extends TestCase
         ]);
         \Spatie\Permission\Models\Role::findOrCreate('profesor', 'web');
         $profesor->assignRole('profesor');
+        // El acceso a Diseño es un permiso asignado (antes: matriz modulos_access).
+        \App\Models\Asignacion::create([
+            'persona_id' => $profesor->fresh()->persona_id,
+            'permission_id' => \Spatie\Permission\Models\Permission::findByName('disenos.manage', 'web')->id,
+            'ambito_tipo' => 'global',
+            'activo' => true,
+        ]);
+        $profesor = $profesor->fresh();
 
         $this->assertTrue($profesor->tieneAccesoModulo('admin.disenos'));
         $this->assertFalse($this->policy->manageKit($profesor));
@@ -212,6 +191,14 @@ class DisenoOwnershipTest extends TestCase
         ]);
         \Spatie\Permission\Models\Role::findOrCreate('profesor', 'web');
         $profesor->assignRole('profesor');
+        // El acceso a Diseño es un permiso asignado (antes: matriz modulos_access).
+        \App\Models\Asignacion::create([
+            'persona_id' => $profesor->fresh()->persona_id,
+            'permission_id' => \Spatie\Permission\Models\Permission::findByName('disenos.manage', 'web')->id,
+            'ambito_tipo' => 'global',
+            'activo' => true,
+        ]);
+        $profesor = $profesor->fresh();
 
         $plantilla = Diseno::create([
             'titulo' => 'Plantilla estudio',

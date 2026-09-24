@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Datos\EliminacionSegura;
 use App\Models\Bloque;
 use App\Models\Profesor;
 use App\Models\Sede;
@@ -15,11 +16,7 @@ class BloqueController extends Controller
         $user = auth()->user();
 
         $query = Bloque::with(['profesor', 'sede'])->orderBy('año')->orderBy('nombre');
-        if ($user && $user->isProfesor() && ! $user->isAdmin()) {
-            $prof = $user->profesor;
-            $ids = $prof ? $prof->bloqueIdsDondeParticipa()->all() : [];
-            $query->whereIn('id', $ids !== [] ? $ids : [0]);
-        }
+        $user->acceso()->alcance('bloques.view')->aplicarBloques($query);
 
         $bloques = $query->paginate(20);
 
@@ -28,8 +25,9 @@ class BloqueController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Bloque::class);
         $profesores = Profesor::where('activo', true)->get();
-        $sedes = Sede::where('activo', true)->get();
+        $sedes = $this->sedesGestionables();
         $tamboresDisponibles = Bloque::TAMBORES_DISPONIBLES;
 
         return view('bloques.create', compact('profesores', 'sedes', 'tamboresDisponibles'));
@@ -51,6 +49,7 @@ class BloqueController extends Controller
 
         $validated['activo'] = $request->boolean('activo');
         $validated['tambores'] = $request->input('tambores') ? array_values($request->input('tambores')) : null;
+        $this->asegurarSedeGestionable((int) $validated['sede_id']);
 
         $bloque = Bloque::create($validated);
         $bloque->syncProfesorTitularEnPivot();
@@ -61,6 +60,7 @@ class BloqueController extends Controller
 
     public function show(Bloque $bloque)
     {
+        $this->authorize('view', $bloque);
         $bloque->load(['profesor', 'profesores', 'sede', 'alumnos', 'eventos']);
 
         return view('bloques.show', compact('bloque'));
@@ -68,9 +68,10 @@ class BloqueController extends Controller
 
     public function edit(Bloque $bloque)
     {
+        $this->authorize('update', $bloque);
         $bloque->load('horarios');
         $profesores = Profesor::where('activo', true)->get();
-        $sedes = Sede::where('activo', true)->get();
+        $sedes = $this->sedesGestionables();
         $tamboresDisponibles = Bloque::TAMBORES_DISPONIBLES;
 
         return view('bloques.edit', compact('bloque', 'profesores', 'sedes', 'tamboresDisponibles'));
@@ -78,6 +79,7 @@ class BloqueController extends Controller
 
     public function update(Request $request, Bloque $bloque)
     {
+        $this->authorize('update', $bloque);
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'año' => 'required|integer|min:1|max:6',
@@ -92,6 +94,9 @@ class BloqueController extends Controller
 
         $validated['activo'] = $request->boolean('activo');
         $validated['tambores'] = $request->input('tambores') ? array_values($request->input('tambores')) : null;
+        if ((int) $validated['sede_id'] !== (int) $bloque->sede_id) {
+            $this->asegurarSedeGestionable((int) $validated['sede_id']);
+        }
 
         $bloque->update($validated);
         $bloque->syncProfesorTitularEnPivot();
@@ -100,11 +105,29 @@ class BloqueController extends Controller
             ->with('success', 'Bloque actualizado exitosamente.');
     }
 
-    public function destroy(Bloque $bloque)
+    public function destroy(Bloque $bloque, EliminacionSegura $eliminacion)
     {
+        $this->authorize('delete', $bloque);
+        $eliminacion->verificar($bloque);
         $bloque->delete();
 
         return redirect()->route('bloques.index')
             ->with('success', 'Bloque eliminado exitosamente.');
+    }
+
+    /** Sedes donde el usuario puede crear o mover bloques. */
+    private function sedesGestionables()
+    {
+        $query = Sede::where('activo', true)->orderBy('nombre');
+        $alcance = auth()->user()->acceso()->alcance('bloques.manage');
+
+        return $alcance->aplicarPorSede($query, 'id')->get();
+    }
+
+    private function asegurarSedeGestionable(int $sedeId): void
+    {
+        if (! auth()->user()->acceso()->puedeEnSede('bloques.manage', $sedeId)) {
+            abort(403, 'No podés gestionar bloques en esa sede.');
+        }
     }
 }

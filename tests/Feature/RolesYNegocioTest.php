@@ -13,21 +13,18 @@ use App\Models\Profesor;
 use App\Models\Sede;
 use App\Models\User;
 use App\Services\PagoDesdeComprobanteService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Tests\Support\BusinessSchema;
 use Tests\TestCase;
 
 class RolesYNegocioTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        if (! extension_loaded('pdo_sqlite')) {
-            $this->markTestSkipped('Requiere extensión pdo_sqlite (php8.3-sqlite3) para tests de negocio con DB.');
-        }
-
-        BusinessSchema::migrateMinimal();
     }
 
     public function test_profesor_no_accede_a_reportes(): void
@@ -78,7 +75,12 @@ class RolesYNegocioTest extends TestCase
         $user->assignRole('profesor');
         $user->assignRole('coordinador_sede');
 
-        $this->actingAs($user)
+        // El rol de coordinación ahora requiere contexto: coordina una sede concreta.
+        $sede = Sede::create(['nombre' => 'Quilmes', 'activo' => true]);
+        $profesor = Profesor::create(['user_id' => $user->id, 'nombre' => 'Coord', 'activo' => true]);
+        $profesor->sincronizarRolesSede([['sede_id' => $sede->id, 'rol' => 'coordinador']]);
+
+        $this->actingAs($user->fresh())
             ->get(route('reportes.index'))
             ->assertOk();
     }
@@ -96,7 +98,7 @@ class RolesYNegocioTest extends TestCase
 
         $sede = Sede::create(['nombre' => 'Sede Test']);
         $prof = Profesor::create(['nombre' => 'Profe', 'activo' => true]);
-        $bloque = Bloque::create([
+        $bloque = Bloque::create(['año' => 1, 'cantidad_max_alumnos' => 20,
             'nombre' => 'Bloque A',
             'sede_id' => $sede->id,
             'profesor_id' => $prof->id,
@@ -146,7 +148,7 @@ class RolesYNegocioTest extends TestCase
     public function test_asistencia_update_or_create(): void
     {
         $sede = Sede::create(['nombre' => 'Sede Asist']);
-        $bloque = Bloque::create(['nombre' => 'B1', 'sede_id' => $sede->id, 'activo' => true]);
+        $bloque = Bloque::create(['año' => 1, 'cantidad_max_alumnos' => 20, 'nombre' => 'B1', 'sede_id' => $sede->id, 'activo' => true]);
         $alumno = Alumno::create([
             'nombre_apellido' => 'A1',
             'sede_id' => $sede->id,
@@ -200,13 +202,13 @@ class RolesYNegocioTest extends TestCase
         $sede = Sede::create(['nombre' => 'Sede A']);
         $profA = Profesor::create(['nombre' => 'Profe A', 'activo' => true]);
         $profB = Profesor::create(['nombre' => 'Profe B', 'activo' => true]);
-        $bloqueA = Bloque::create([
+        $bloqueA = Bloque::create(['año' => 1, 'cantidad_max_alumnos' => 20,
             'nombre' => 'Bloque A',
             'sede_id' => $sede->id,
             'profesor_id' => $profA->id,
             'activo' => true,
         ]);
-        $bloqueB = Bloque::create([
+        $bloqueB = Bloque::create(['año' => 1, 'cantidad_max_alumnos' => 20,
             'nombre' => 'Bloque B',
             'sede_id' => $sede->id,
             'profesor_id' => $profB->id,
@@ -257,13 +259,13 @@ class RolesYNegocioTest extends TestCase
         $user->assignRole('profesor');
         $user->assignRole('coordinador_area');
         $prof = Profesor::create(['nombre' => 'Coord Área', 'activo' => true, 'user_id' => $user->id]);
-        $bloqueA = Bloque::create([
+        $bloqueA = Bloque::create(['año' => 1, 'cantidad_max_alumnos' => 20,
             'nombre' => 'Bloque A',
             'sede_id' => $sedeA->id,
             'profesor_id' => $prof->id,
             'activo' => true,
         ]);
-        $bloqueB = Bloque::create([
+        $bloqueB = Bloque::create(['año' => 1, 'cantidad_max_alumnos' => 20,
             'nombre' => 'Bloque B',
             'sede_id' => $sedeB->id,
             'profesor_id' => null,

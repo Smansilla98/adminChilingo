@@ -82,6 +82,11 @@ class VillaGesellInscriptoController extends Controller
             'nombre_apellido.required' => 'El nombre es obligatorio.',
             'dni.unique' => 'Ese DNI ya está cargado en el padrón.',
         ]);
+        if ($existente = app(\App\Domain\Personas\PersonaService::class)->alumnoPorDni($request->input('dni'))) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'dni' => "Ese DNI ya está cargado en el padrón ({$existente->nombre_apellido}).",
+            ]);
+        }
 
         $bloque = ! empty($data['bloque_id'])
             ? Bloque::query()->with('profesor')->find((int) $data['bloque_id'])

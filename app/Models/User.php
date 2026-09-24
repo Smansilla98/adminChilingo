@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Domain\Acceso\PermisosEfectivos;
+use App\Domain\Acceso\ResolvedorAcceso;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use Auditable, HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -25,6 +30,8 @@ class User extends Authenticatable
         'telefono',
         'password',
         'role',
+        'persona_id',
+        'activo',
     ];
 
     /**
@@ -35,29 +42,56 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'modulos_access',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'modulos_access' => 'array',
-        'apariencia_json' => 'array',
-    ];
+    /** Permisos efectivos calculados (una vez por request). */
+    protected ?PermisosEfectivos $accesoCalculado = null;
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
-            // legacy (kept for compatibility)
             'email_verified_at' => 'datetime',
+            'ultimo_acceso_at' => 'datetime',
             'password' => 'hashed',
+            'activo' => 'boolean',
             'modulos_access' => 'array',
             'apariencia_json' => 'array',
         ];
+    }
+
+    public function persona(): BelongsTo
+    {
+        return $this->belongsTo(Persona::class);
+    }
+
+    public function dispositivos(): HasMany
+    {
+        return $this->hasMany(Dispositivo::class);
+    }
+
+    /**
+     * Qué puede hacer este usuario y dónde (roles de todas sus funciones + asignaciones).
+     */
+    public function acceso(): PermisosEfectivos
+    {
+        return $this->accesoCalculado ??= app(ResolvedorAcceso::class)->paraUsuario($this);
+    }
+
+    /** Recalcular permisos tras cambiar asignaciones o perfiles en el mismo request. */
+    public function olvidarAcceso(): static
+    {
+        $this->accesoCalculado = null;
+
+        return $this;
+    }
+
+    public function puede(string $permiso): bool
+    {
+        return $this->acceso()->puede($permiso);
     }
 
     /**
@@ -72,184 +106,119 @@ class User extends Authenticatable
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers de compatibilidad
+    |--------------------------------------------------------------------------
+    | Vistas y controladores existentes preguntan por "roles". Estos métodos
+    | se resuelven ahora con permisos efectivos + alcance (App\Domain\Acceso).
+    */
+
     /**
-     * Admin o Dirección (mismo nivel de privilegios globales).
+     * Administrador global (dirección) o superadministrador.
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin'
-            || $this->role === 'direccion'
-            || $this->hasRole('admin')
-            || $this->hasRole('direccion');
+        return $this->acceso()->esAdministrador();
     }
 
     /**
-     * Verificar si el usuario es profesor (rol docente; no incluye solo-coordinador).
+     * Da clase en al menos un bloque (o tiene el rol asignado).
      */
     public function isProfesor(): bool
     {
-        return $this->role === 'profesor' || $this->hasRole('profesor');
+        return $this->acceso()->tieneRol('profesor');
     }
 
-    /**
-     * Verificar si el usuario es alumno
-     */
     public function isAlumno(): bool
     {
-        return $this->role === 'alumno' || $this->hasRole('alumno');
+        return $this->acceso()->tieneRol('alumno') || $this->role === 'alumno';
     }
 
-    /**
-     * IDs de bloques que el usuario puede ver/editar. Vacío + veTodosLosBloques = todos.
-     *
-     * @return list<int>
-     */
-    public function bloqueIdsPermitidos(): array
-    {
-        if ($this->veTodosLosBloques()) {
-            return [];
-        }
-        if ($this->acotaPorSede()) {
-            $sedes = $this->sedeIdsOperativas();
-
-            return Bloque::query()
-                ->whereIn('sede_id', $sedes !== [] ? $sedes : [0])
-                ->pluck('id')
-                ->map(fn ($id) => (int) $id)
-                ->all();
-        }
-        if ($this->isProfesor()) {
-            $prof = $this->profesor;
-
-            return $prof ? array_map('intval', $prof->bloqueIdsDondeParticipa()->all()) : [];
-        }
-
-        return [0];
-    }
-
-    public function veTodosLosBloques(): bool
-    {
-        return $this->isAdmin();
-    }
-
-    /**
-     * Coordinación (sede o área) ve datos de las sedes a las que pertenece, no de toda la escuela.
-     */
-    public function acotaPorSede(): bool
-    {
-        return ! $this->isAdmin() && ($this->isCoordinadorSede() || $this->isCoordinadorArea());
-    }
-
-    /**
-     * Sedes del rol operativo: coordinador de sede, o sedes del profesor (área / bloques / pivot).
-     *
-     * @return list<int>
-     */
-    public function sedeIdsOperativas(): array
-    {
-        if ($this->isCoordinadorSede()) {
-            $ids = $this->sedeIdsCoordinadas();
-            if ($ids !== []) {
-                return $ids;
-            }
-        }
-
-        $prof = $this->profesor;
-        if (! $prof) {
-            return $this->isCoordinadorSede() || $this->isCoordinadorArea() ? [] : [];
-        }
-
-        $ids = $this->sedeIdsCoordinadas();
-        if (\Illuminate\Support\Facades\Schema::hasTable('profesor_sede')) {
-            $ids = array_merge($ids, $prof->sedesConRol()->pluck('sedes.id')->all());
-        }
-        $ids = array_merge(
-            $ids,
-            Bloque::query()
-                ->whereIn('id', $prof->bloqueIdsDondeParticipa()->all() ?: [0])
-                ->pluck('sede_id')
-                ->all()
-        );
-
-        return array_values(array_unique(array_filter(array_map('intval', $ids))));
-    }
-
-    public function puedeGestionarAlumno(Alumno $alumno): bool
-    {
-        if ($this->isAdmin()) {
-            return true;
-        }
-        if ($this->acotaPorSede()) {
-            $sedes = $this->sedeIdsOperativas();
-            if ($sedes === []) {
-                return false;
-            }
-            $alumnoSedes = $alumno->bloques->pluck('sede_id')->filter()->map(fn ($id) => (int) $id)->all();
-            if ($alumno->sede_id) {
-                $alumnoSedes[] = (int) $alumno->sede_id;
-            }
-            if ($alumno->bloque?->sede_id) {
-                $alumnoSedes[] = (int) $alumno->bloque->sede_id;
-            }
-
-            return array_intersect($sedes, array_unique($alumnoSedes)) !== [];
-        }
-        if ($this->isProfesor()) {
-            $prof = $this->profesor;
-
-            return $prof && $alumno->bloqueIds()->intersect($prof->bloqueIdsDondeParticipa()->map(fn ($id) => (int) $id))->isNotEmpty();
-        }
-
-        return false;
-    }
-
-    public function puedeAccederBloque(int $bloqueId): bool
-    {
-        if ($this->veTodosLosBloques()) {
-            return true;
-        }
-
-        return in_array($bloqueId, $this->bloqueIdsPermitidos(), true);
-    }
-
-    /**
-     * Dirección / admin (alias explícito).
-     */
     public function isDireccion(): bool
     {
         return $this->isAdmin();
     }
 
-    /**
-     * Verificar si es coordinador de sede
-     */
     public function isCoordinadorSede(): bool
     {
-        return $this->hasRole('coordinador_sede');
+        return $this->acceso()->tieneRol('coordinador');
     }
 
-    /**
-     * Verificar si es coordinador de área
-     */
     public function isCoordinadorArea(): bool
     {
-        return $this->hasRole('coordinador_area');
+        return $this->acceso()->tieneRol('coordinador_area');
     }
 
     /**
-     * Puede ver el menú de gestión (no solo “Mi espacio”).
+     * IDs de bloques que el usuario puede ver/editar en asistencias. Vacío + veTodosLosBloques = todos.
+     *
+     * @return list<int>
+     */
+    public function bloqueIdsPermitidos(): array
+    {
+        $alcance = $this->acceso()->alcance('asistencias.view');
+        if ($alcance->esGlobal()) {
+            return [];
+        }
+        $ids = $alcance->bloqueIds();
+        if ($alcance->sedeIds() !== []) {
+            $ids = array_merge($ids, Bloque::query()->whereIn('sede_id', $alcance->sedeIds())->pluck('id')->all());
+        }
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+
+        return $ids !== [] ? $ids : [0];
+    }
+
+    public function veTodosLosBloques(): bool
+    {
+        return $this->acceso()->puedeGlobal('asistencias.view');
+    }
+
+    /**
+     * Gestiona alumnos por sede (coordinación) sin ser dirección.
+     */
+    public function acotaPorSede(): bool
+    {
+        $alcance = $this->acceso()->alcance('alumnos.view');
+
+        return ! $alcance->esGlobal() && $alcance->sedeIds() !== [];
+    }
+
+    /**
+     * Sedes donde tiene alcance de gestión sobre alumnos.
+     *
+     * @return list<int>
+     */
+    public function sedeIdsOperativas(): array
+    {
+        return $this->acceso()->alcance('alumnos.view')->sedeIds();
+    }
+
+    public function puedeGestionarAlumno(Alumno $alumno): bool
+    {
+        return $this->acceso()->puedeSobreAlumno('alumnos.view', $alumno);
+    }
+
+    public function puedeAccederBloque(int $bloqueId): bool
+    {
+        return $this->acceso()->puedeEnBloque('asistencias.view', $bloqueId);
+    }
+
+    /**
+     * Ve el panel de gestión (no solo "Mi espacio").
      */
     public function puedeGestionarOperativo(): bool
     {
-        return $this->isAdmin() || $this->isCoordinadorSede() || $this->isCoordinadorArea();
+        return $this->acceso()->puedeAlguno([
+            'alumnos.create', 'sedes.manage', 'bloques.manage', 'reportes.view', 'cuotas.view',
+            'pagos.create', 'gastos.view', 'inventario.view', 'facturacion.view', 'usuarios.view', 'personas.view',
+        ]);
     }
 
-    /**
-     * Puede ver reportes (global o de su sede).
-     */
     public function puedeVerReportes(): bool
     {
-        return $this->isAdmin() || $this->isCoordinadorSede();
+        return $this->acceso()->puede('reportes.view');
     }
 
     /**
@@ -257,83 +226,103 @@ class User extends Authenticatable
      */
     public function etiquetaRol(): string
     {
-        if ($this->role === 'direccion' || $this->hasRole('direccion')) {
-            return 'Dirección';
-        }
-        if ($this->role === 'admin' || $this->hasRole('admin')) {
-            return 'Administrador';
-        }
-        if ($this->isCoordinadorSede()) {
-            return 'Coordinador de sede';
-        }
-        if ($this->isCoordinadorArea()) {
-            return 'Coordinador de área';
-        }
-        if ($this->hasRole('profesor') || $this->role === 'profesor') {
-            return 'Profesor';
-        }
-        if ($this->isAlumno()) {
-            return 'Alumno';
+        $acceso = $this->acceso();
+        foreach ([
+            'superadministrador' => 'Superadministrador',
+            'administrador' => 'Administración',
+            'coordinador' => 'Coordinación',
+            'coordinador_area' => 'Coordinación de área',
+            'tesorero' => 'Tesorería',
+            'contador' => 'Contaduría',
+            'administrativo' => 'Administrativo',
+            'profesor' => 'Profesor',
+            'encargado' => 'Encargado',
+            'responsable_de_sede' => 'Responsable de sede',
+            'responsable_de_inventario' => 'Inventario',
+            'alumno' => 'Alumno',
+        ] as $rol => $etiqueta) {
+            if ($acceso->tieneRol($rol)) {
+                return $etiqueta;
+            }
         }
 
         return 'Usuario';
     }
 
     /**
-     * IDs de sedes que coordina (columna sedes.coordinador_id o pivot profesor_sede).
+     * IDs de sedes que coordina.
      *
      * @return list<int>
      */
     public function sedeIdsCoordinadas(): array
     {
-        $prof = $this->profesor;
-        if (! $prof) {
-            return [];
-        }
-
         $ids = [];
-        if (\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'coordinador_id')) {
-            $ids = array_merge(
-                $ids,
-                Sede::query()->where('coordinador_id', $prof->id)->pluck('id')->all()
-            );
-        }
-        if (\Illuminate\Support\Facades\Schema::hasTable('profesor_sede')) {
-            $ids = array_merge(
-                $ids,
-                $prof->sedesConRol()->wherePivot('rol', 'coordinador')->pluck('sedes.id')->all()
-            );
+        foreach ($this->acceso()->roles() as $r) {
+            if (in_array($r->rol, ['coordinador', 'administrador'], true) && $r->ambito === 'sede' && $r->sedeId) {
+                $ids[] = $r->sedeId;
+            }
         }
 
-        return array_values(array_unique(array_map('intval', $ids)));
+        return array_values(array_unique($ids));
     }
 
     /**
-     * Links del panel de gestión permitidos para coordinadores (admin ve todos).
+     * Clave de módulo del menú → permiso que la habilita.
      */
+    public const PERMISO_POR_MODULO = [
+        'programa' => null,
+        'ayuda' => null,
+        'calendario' => 'calendario.view',
+        'comprobantes' => 'comprobantes.view',
+        'profesor.mis_bloques' => 'bloques.view',
+        'profesor.asistencia' => 'asistencias.create',
+        'profesor.mis_alumnos' => 'alumnos.view',
+        'profesor.pagos_cuotas' => 'pagos.view',
+        'profesor.mis_eventos' => 'eventos.view',
+        'admin.alumnos' => 'alumnos.view',
+        'admin.importar' => 'alumnos.import',
+        'admin.profesores' => 'profesores.view',
+        'admin.bloques' => 'bloques.view',
+        'admin.sedes' => 'sedes.view',
+        'admin.cuotas' => 'cuotas.view',
+        'admin.pagos' => 'pagos.view',
+        'admin.eventos' => 'eventos.view',
+        'admin.asistencias' => 'asistencias.view',
+        'admin.reportes' => 'reportes.view',
+        'admin.facturacion_mensual' => 'facturacion.view',
+        'admin.inventarios' => 'inventario.view',
+        'admin.plan_compras' => 'compras.view',
+        'admin.ordenes_compra' => 'compras.view',
+        'admin.gastos' => 'gastos.view',
+        'admin.shows' => 'shows.view',
+        'admin.villa_gesell' => 'villa_gesell.manage',
+        'admin.disenos' => 'disenos.manage',
+        'admin.personas' => 'personas.view',
+        'admin.usuarios' => 'usuarios.view',
+    ];
+
     public function puedeVerLinkGestion(string $clave): bool
     {
-        if ($this->isAdmin()) {
-            return true;
+        return $this->tieneAccesoModulo($clave);
+    }
+
+    /**
+     * Acceso a un módulo del menú: requiere el permiso correspondiente y que el módulo
+     * no esté ocultado explícitamente en la matriz de visibilidad (users.modulos_access).
+     */
+    public function tieneAccesoModulo(string $clave): bool
+    {
+        $map = is_array($this->modulos_access) ? $this->modulos_access : [];
+        if (! $this->isAdmin() && array_key_exists($clave, $map) && ! (bool) $map[$clave]) {
+            return false;
         }
 
-        $sede = [
-            'admin.alumnos', 'admin.bloques', 'admin.sedes', 'admin.asistencias',
-            'admin.eventos', 'admin.shows', 'admin.villa_gesell', 'comprobantes', 'admin.reportes',
-            'programa', 'calendario', 'ayuda',
-        ];
-        $area = [
-            'admin.alumnos', 'admin.asistencias', 'programa', 'calendario', 'ayuda',
-        ];
-
-        if ($this->isCoordinadorSede()) {
-            return in_array($clave, $sede, true);
-        }
-        if ($this->isCoordinadorArea()) {
-            return in_array($clave, $area, true);
+        $permiso = self::PERMISO_POR_MODULO[$clave] ?? null;
+        if ($permiso === null) {
+            return array_key_exists($clave, self::PERMISO_POR_MODULO);
         }
 
-        return false;
+        return $this->acceso()->puede($permiso);
     }
 
     /**
@@ -358,35 +347,5 @@ class User extends Authenticatable
     public function eventos()
     {
         return $this->hasMany(Evento::class, 'created_by');
-    }
-
-    /**
-     * Control simple de accesos por módulo/submódulo.
-     *
-     * - Admin/dirección: siempre tiene acceso.
-     * - Coordinadores: acceso a su set operativo (salvo bloqueo explícito en modulos_access).
-     * - Otros: si la clave existe y es false → bloquea; si no existe → permite.
-     */
-    public function tieneAccesoModulo(string $clave): bool
-    {
-        if ($this->isAdmin()) {
-            return true;
-        }
-
-        $map = is_array($this->modulos_access) ? $this->modulos_access : [];
-
-        if (array_key_exists($clave, $map) && ! (bool) $map[$clave]) {
-            return false;
-        }
-
-        if ($this->isCoordinadorSede() || $this->isCoordinadorArea()) {
-            return $this->puedeVerLinkGestion($clave);
-        }
-
-        if (! array_key_exists($clave, $map)) {
-            return true;
-        }
-
-        return (bool) $map[$clave];
     }
 }

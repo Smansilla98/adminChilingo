@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -18,7 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
             'profesor_o_admin' => \App\Http\Middleware\EnsureProfesorOrAdmin::class,
             'modulo' => \App\Http\Middleware\CheckModuloAccess::class,
+            'permiso' => \App\Http\Middleware\CheckPermiso::class,
+            'activo' => \App\Http\Middleware\EnsureUsuarioActivo::class,
         ]);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        // Web: sesión. API: se aplica después de auth:sanctum (routes/api_v1.php).
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUsuarioActivo::class);
         $middleware->validateCsrfTokens(except: [
             'webhooks/twilio/whatsapp-status',
         ]);
@@ -80,6 +86,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->timezone(config('app.timezone'))
             ->withoutOverlapping()
             ->onOneServer();
+
+        // Avisos de la app (idempotentes: no se duplican aunque corran de nuevo).
+        $schedule->command('chilinga:avisos cuotas-vencidas')->dailyAt('11:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
+        $schedule->command('chilinga:avisos eventos')->dailyAt('18:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
 
         $schedule->command('mail:resumen-admin')
             ->weekdays()

@@ -7,7 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  tests:
+  backend:
+    name: Backend (SQLite) · estilo · assets
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +18,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, pdo, pdo_sqlite, bcmath, intl, zip, gd
+          extensions: mbstring, pdo, pdo_sqlite, pdo_mysql, bcmath, intl, zip, gd
           coverage: none
 
       - name: Cache de dependencias Composer
@@ -30,6 +31,9 @@ jobs:
       - name: Instalar dependencias
         run: composer install --prefer-dist --no-interaction --no-progress
 
+      - name: Auditoría de dependencias PHP
+        run: composer audit --locked
+
       - name: Preparar entorno
         run: |
           cp .env.example .env
@@ -38,7 +42,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Compilar assets del frontend (Vite)
         run: |
@@ -57,8 +61,98 @@ jobs:
           grep -q 'contenido-principal' resources/views/layouts/app.blade.php
           grep -q 'prefers-reduced-motion' public/css/chilinga-admin.css
 
-      - name: Ejecutar tests
+      - name: Validar rutas (web + API v1)
+        run: |
+          php artisan route:list --path=api/v1 --json > /tmp/rutas.json
+          php -r '$r = json_decode(file_get_contents("/tmp/rutas.json"), true); if (count($r) < 40) { fwrite(STDERR, "Faltan rutas de la API v1\n"); exit(1); } echo count($r), " rutas API v1\n";'
+
+      - name: Ejecutar tests (incluye API, autorización e identidad)
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ':memory:'
         run: php artisan test
+
+  mysql:
+    name: Migraciones y tests en MySQL
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: chilinga_ci
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: chilinga_ci
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pdo_mysql, bcmath, intl, zip, gd
+          coverage: none
+
+      - name: Instalar dependencias
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Preparar entorno
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Migrar base vacía (instalación nueva)
+        run: php artisan migrate --force
+
+      - name: Revertir y re-aplicar la migración de plataforma (down/up)
+        run: |
+          php artisan migrate:rollback --step=9 --force
+          php artisan migrate --force
+
+      - name: Diagnóstico de datos
+        run: php artisan chilinga:diagnose
+
+      - name: Tests sobre MySQL
+        run: php artisan test
+
+  mobile:
+    name: App móvil (typecheck · lint · bundle)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Bundle Android + iOS (sin compilar nativo)
+        env:
+          APP_VARIANT: production
+          EXPO_PUBLIC_API_URL: https://ci.invalid/api/v1
+        run: npx expo export --platform android --platform ios --output-dir /tmp/expo-dist

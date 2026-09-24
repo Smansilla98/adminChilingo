@@ -4,9 +4,30 @@
 
 Sistema de gestión administrativa para la escuela de percusión La Chilinga, fundada por Dani Buira.
 
+**Plataforma multi-sede, multi-rol y multi-contexto:** panel web (Laravel), API REST
+(`/api/v1`) y app móvil nativa (Expo) sobre el mismo backend.
+
+## 🧭 Plataforma
+
+- **Una persona, una identidad**: la misma persona puede ser alumna en Banfield, profesora en
+  Palomar, coordinadora en Quilmes, encargada de inventario en Varela y contadora global, con
+  **una sola cuenta**. → [docs/MODELO_PERSONAS.md](docs/MODELO_PERSONAS.md)
+- **Permisos granulares con alcance** (global / sede / bloque), roles asignables y roles que
+  surgen de los datos (inscripción, ficha docente, beca). → [docs/ROLES_Y_PERMISOS.md](docs/ROLES_Y_PERMISOS.md)
+- **Personas** (ficha central) y **Usuarios y permisos** ("¿qué puede hacer esta persona?") en el panel.
+- **Becas**, estado de cuenta con saldo, **anulación** de pagos, aprobación de gastos, **auditoría**.
+- **API v1** con Sanctum → [docs/API.md](docs/API.md)
+- **App móvil** (Android/iOS): inicio según funciones, asistencia rápida y offline, cuotas,
+  agenda, inventario con QR, partituras, avisos → [docs/APP_MOVIL.md](docs/APP_MOVIL.md)
+- **Notificaciones** internas, push (Expo), email y WhatsApp sin duplicados.
+- `php artisan chilinga:diagnose` detecta duplicados y datos inconsistentes.
+
+Documentación: [auditoría inicial](docs/AUDITORIA_ACTUAL.md) · [arquitectura](docs/ARQUITECTURA_OBJETIVO.md) ·
+[plan](docs/PLAN_MIGRACION_APP.md) · [migraciones](docs/MIGRACIONES.md) · [testing](docs/TESTING.md) · [deploy](docs/DEPLOY.md)
+
 ## 🚀 Características
 
-- **Autenticación con roles**: Admin y Profesor
+- **Autenticación**: usuario o email; permisos por persona según sus funciones
 - **Gestión completa de alumnos**: CRUD con validaciones, exportación a Excel
 - **Gestión de profesores**: CRUD completo
 - **Gestión de bloques**: Por año (1° a 6°), con asignación de profesores
@@ -42,9 +63,9 @@ El sistema incluye todos los CRUD necesarios para la carga y gestión de datos:
 
 ## 📋 Requisitos
 
-- PHP 8.1 o superior
+- PHP 8.2 o superior (CI: 8.3)
 - Composer
-- MySQL 5.7 o superior
+- MySQL 8 (producción). Los tests corren en SQLite o MySQL
 - Node.js y NPM
 
 ## 🚀 Ejecución rápida

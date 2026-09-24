@@ -20,6 +20,7 @@ class OrdenCompraController extends Controller
         if (Schema::hasTable('ordenes_compra')) {
             try {
                 $query = OrdenCompra::with(['sede', 'creador'])->orderByDesc('created_at');
+                $request->user()->acceso()->alcance('compras.view')->aplicarPorSede($query);
 
                 if ($request->filled('sede_id')) {
                     $query->where('sede_id', $request->sede_id);
@@ -78,6 +79,8 @@ class OrdenCompraController extends Controller
     {
         $validatedOrden = $this->validateOrden($request);
         $itemsData = $this->validateItems($request);
+        $this->asegurarAlcance('compras.create', (int) $validatedOrden['sede_id']);
+        $this->asegurarAprobacion(null, $validatedOrden);
 
         DB::transaction(function () use ($validatedOrden, $itemsData, &$orden) {
             $orden = OrdenCompra::create($validatedOrden);
@@ -99,6 +102,7 @@ class OrdenCompraController extends Controller
 
     public function show(OrdenCompra $ordenes_compra)
     {
+        $this->asegurarAlcance('compras.view', (int) $ordenes_compra->sede_id);
         $ordenes_compra->load(['sede', 'creador', 'items']);
 
         return view('ordenes-compra.show', ['orden' => $ordenes_compra]);
@@ -106,6 +110,7 @@ class OrdenCompraController extends Controller
 
     public function edit(OrdenCompra $ordenes_compra)
     {
+        $this->asegurarAlcance('compras.create', (int) $ordenes_compra->sede_id);
         $sedes = collect();
         if (Schema::hasTable('ordenes_compra') && Schema::hasTable('sedes')) {
             try {
@@ -126,8 +131,11 @@ class OrdenCompraController extends Controller
 
     public function update(Request $request, OrdenCompra $ordenes_compra)
     {
+        $this->asegurarAlcance('compras.create', (int) $ordenes_compra->sede_id);
         $validatedOrden = $this->validateOrden($request);
         $itemsData = $this->validateItems($request);
+        $this->asegurarAlcance('compras.create', (int) $validatedOrden['sede_id']);
+        $this->asegurarAprobacion($ordenes_compra, $validatedOrden);
 
         DB::transaction(function () use ($ordenes_compra, $validatedOrden, $itemsData) {
             $ordenes_compra->update($validatedOrden);
@@ -150,9 +158,32 @@ class OrdenCompraController extends Controller
 
     public function destroy(OrdenCompra $ordenes_compra)
     {
+        $this->asegurarAlcance('compras.create', (int) $ordenes_compra->sede_id);
         $ordenes_compra->delete();
 
         return redirect()->route('ordenes-compra.index')->with('success', 'Orden de compra eliminada.');
+    }
+
+    private function asegurarAlcance(string $permiso, int $sedeId): void
+    {
+        if (! auth()->user()->acceso()->puedeEnSede($permiso, $sedeId)) {
+            abort(403, 'No podés operar compras de esa sede.');
+        }
+    }
+
+    /**
+     * Pasar una orden a aprobada/recibida es una decisión de gasto: requiere compras.approve.
+     *
+     * @param  array<string, mixed>  $datos
+     */
+    private function asegurarAprobacion(?OrdenCompra $orden, array $datos): void
+    {
+        $nuevo = $datos['estado'] ?? null;
+        $cambia = $orden === null || $orden->estado !== $nuevo;
+        if ($cambia && in_array($nuevo, ['aprobada', 'recibida'], true)
+            && ! auth()->user()->acceso()->puedeEnSede('compras.approve', (int) $datos['sede_id'])) {
+            abort(403, 'Aprobar una orden de compra requiere permiso de aprobación.');
+        }
     }
 
     private function validateOrden(Request $request): array

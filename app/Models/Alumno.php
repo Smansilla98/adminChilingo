@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Alumno extends Model
 {
+    use Auditable;
+
     protected $fillable = [
+        'persona_id',
         'user_id',
         'nombre_apellido',
         'dni',
@@ -33,6 +37,14 @@ class Alumno extends Model
     /**
      * Usuario asociado (un alumno puede ser también profesor en otros bloques)
      */
+    /**
+     * Persona (identidad única) a la que pertenece este perfil.
+     */
+    public function persona(): BelongsTo
+    {
+        return $this->belongsTo(Persona::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -102,6 +114,11 @@ class Alumno extends Model
         return $this->asistencias()->where('bloque_id', $bloqueId);
     }
 
+    public function becas(): HasMany
+    {
+        return $this->hasMany(Beca::class);
+    }
+
     public function pagosDetalle(): HasMany
     {
         return $this->hasMany(PagoDetalle::class);
@@ -112,6 +129,12 @@ class Alumno extends Model
      */
     public function profesorPerfil(): ?Profesor
     {
+        if ($this->persona_id) {
+            $perfil = Profesor::query()->where('persona_id', $this->persona_id)->first();
+            if ($perfil) {
+                return $perfil;
+            }
+        }
         if ($this->user_id) {
             return Profesor::query()->where('user_id', $this->user_id)->first();
         }

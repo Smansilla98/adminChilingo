@@ -158,6 +158,10 @@ class AccesosController extends Controller
         }
 
         $data = $request->validate($rules, $messages);
+        // Crear cuentas de dirección equivale a asignar administración.
+        if (in_array($data['role'], ['admin', 'direccion'], true) && ! $request->user()->acceso()->puedeGlobal('usuarios.assign_admin')) {
+            throw ValidationException::withMessages(['role' => 'No tenés permiso para crear cuentas de administración.']);
+        }
 
         $user = DB::transaction(function () use ($data, $hasUsername) {
             $payload = [

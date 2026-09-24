@@ -25,11 +25,7 @@ class HubSearchController extends Controller
         $like = '%'.$q.'%';
         $results = [];
         $esAdmin = $user->isAdmin();
-        $filtroSedes = $ambito->idsPara($user);
-        $bloqueIds = [];
-        if (! $esAdmin && $filtroSedes === null && $user->isProfesor()) {
-            $bloqueIds = $user->profesor?->bloqueIdsDondeParticipa()->all() ?? [];
-        }
+        $acceso = $user->acceso();
 
         // Alumnos
         if (Schema::hasTable('alumnos') && ($esAdmin || $user->tieneAccesoModulo('profesor.mis_alumnos') || $user->tieneAccesoModulo('admin.alumnos'))) {
@@ -43,15 +39,7 @@ class HubSearchController extends Controller
                 ->where('activo', true)
                 ->limit(8);
 
-            if ($filtroSedes !== null) {
-                $ambito->aplicarAlumnos($aq, $filtroSedes);
-            } elseif (! $esAdmin) {
-                $aq->where(function ($w) use ($bloqueIds) {
-                    $ids = $bloqueIds !== [] ? $bloqueIds : [0];
-                    $w->whereIn('bloque_id', $ids)
-                        ->orWhereHas('bloques', fn ($b) => $b->whereIn('bloques.id', $ids));
-                });
-            }
+            $user->acceso()->alcance('alumnos.view')->aplicarAlumnos($aq);
 
             foreach ($aq->get() as $alumno) {
                 $bloques = $alumno->bloques->isNotEmpty()
@@ -80,11 +68,7 @@ class HubSearchController extends Controller
         // Bloques
         if (Schema::hasTable('bloques') && ($esAdmin || $user->tieneAccesoModulo('profesor.mis_bloques') || $user->tieneAccesoModulo('admin.bloques'))) {
             $bq = Bloque::query()->with('sede')->where('nombre', 'like', $like)->where('activo', true)->limit(6);
-            if ($filtroSedes !== null) {
-                $ambito->aplicarBloques($bq, $filtroSedes);
-            } elseif (! $esAdmin) {
-                $bq->whereIn('id', $bloqueIds !== [] ? $bloqueIds : [0]);
-            }
+            $acceso->alcance('bloques.view')->aplicarBloques($bq);
             foreach ($bq->get() as $bloque) {
                 $hrefMatrix = ($esAdmin || $user->puedeGestionarOperativo())
                     ? route('asistencias.index', ['bloque_id' => $bloque->id, 'mes' => now()->month, 'año' => now()->year])
@@ -112,10 +96,11 @@ class HubSearchController extends Controller
                 ->latest()
                 ->limit(5);
 
-            if ($filtroSedes !== null) {
-                $ambito->aplicarComprobantes($cq, $filtroSedes);
-            } elseif (! $esAdmin) {
-                $cq->whereHas('items', fn ($i) => $i->whereIn('bloque_id', $bloqueIds !== [] ? $bloqueIds : [0]));
+            $alcance = $acceso->alcance('comprobantes.view');
+            if (! $alcance->esGlobal()) {
+                $cq->where(fn ($w) => $w->whereIn('sede_id', $alcance->sedeIds() ?: [0])
+                    ->orWhereHas('items', fn ($i) => $i->whereIn('bloque_id', $alcance->bloqueIds() ?: [0]))
+                    ->orWhereHas('items.bloque', fn ($b) => $b->whereIn('sede_id', $alcance->sedeIds() ?: [0])));
             }
 
             foreach ($cq->get() as $c) {

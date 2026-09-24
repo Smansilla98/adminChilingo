@@ -42,6 +42,13 @@ return [
     | Para recordatorios y notificaciones. Número "from" debe ser el de Twilio
     | (sandbox ej. +14155238886). Destinos con código país, ej. +5491112345678.
     */
+    // Push de la app móvil (Expo Push Service). Desactivado por defecto: no genera tráfico externo.
+    'expo' => [
+        'push_habilitado' => filter_var(env('EXPO_PUSH_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+        'access_token' => env('EXPO_ACCESS_TOKEN'),
+        'url' => env('EXPO_PUSH_URL', 'https://exp.host/--/api/v2/push/send'),
+    ],
+
     'twilio' => [
         'account_sid' => env('TWILIO_ACCOUNT_SID'),
         'auth_token' => env('TWILIO_AUTH_TOKEN'),
