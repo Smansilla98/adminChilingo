@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Cuota;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -43,7 +44,7 @@ class AmbitoSedeService
     /**
      * @param  list<int>  $sedeIds
      */
-    public function aplicarAlumnos(Builder $query, array $sedeIds): void
+    public function aplicarAlumnos(Builder|Relation $query, array $sedeIds): void
     {
         $ids = $sedeIds !== [] ? $sedeIds : [0];
         $query->where(function ($q) use ($ids) {
@@ -58,7 +59,7 @@ class AmbitoSedeService
     /**
      * @param  list<int>  $sedeIds
      */
-    public function aplicarBloques(Builder $query, array $sedeIds): void
+    public function aplicarBloques(Builder|Relation $query, array $sedeIds): void
     {
         $query->whereIn('sede_id', $sedeIds !== [] ? $sedeIds : [0]);
     }
@@ -68,7 +69,7 @@ class AmbitoSedeService
      *
      * @param  list<int>  $sedeIds
      */
-    public function aplicarPagos(Builder $query, array $sedeIds): void
+    public function aplicarPagos(Builder|Relation $query, array $sedeIds): void
     {
         $query->whereHas('detalles.alumno', function ($q) use ($sedeIds) {
             $this->aplicarAlumnos($q, $sedeIds);
@@ -80,7 +81,7 @@ class AmbitoSedeService
      *
      * @param  list<int>  $sedeIds
      */
-    public function aplicarCuotas(Builder $query, array $sedeIds): void
+    public function aplicarCuotas(Builder|Relation $query, array $sedeIds): void
     {
         $ids = $sedeIds !== [] ? $sedeIds : [0];
 
@@ -136,7 +137,7 @@ class AmbitoSedeService
     /**
      * @param  list<int>  $sedeIds
      */
-    public function aplicarGastos(Builder $query, array $sedeIds): void
+    public function aplicarGastos(Builder|Relation $query, array $sedeIds): void
     {
         $query->whereIn('sede_id', $sedeIds !== [] ? $sedeIds : [0]);
     }
@@ -144,7 +145,7 @@ class AmbitoSedeService
     /**
      * @param  list<int>  $sedeIds
      */
-    public function aplicarEventos(Builder $query, array $sedeIds): void
+    public function aplicarEventos(Builder|Relation $query, array $sedeIds): void
     {
         $ids = $sedeIds !== [] ? $sedeIds : [0];
         $query->where(function ($q) use ($ids) {
@@ -156,7 +157,7 @@ class AmbitoSedeService
     /**
      * @param  list<int>  $sedeIds
      */
-    public function aplicarComprobantes(Builder $query, array $sedeIds): void
+    public function aplicarComprobantes(Builder|Relation $query, array $sedeIds): void
     {
         $ids = $sedeIds !== [] ? $sedeIds : [0];
         $query->where(function ($q) use ($ids) {
@@ -171,7 +172,7 @@ class AmbitoSedeService
     /**
      * @param  list<int>  $sedeIds
      */
-    public function aplicarSedesCatalogo(Builder $query, array $sedeIds): void
+    public function aplicarSedesCatalogo(Builder|Relation $query, array $sedeIds): void
     {
         $query->whereIn('id', $sedeIds !== [] ? $sedeIds : [0]);
     }

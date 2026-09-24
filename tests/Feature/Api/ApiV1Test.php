@@ -246,6 +246,8 @@ class ApiV1Test extends TestCase
 
         $items = collect($this->getJson('/api/v1/calendario?desde='.now()->toDateString().'&hasta='.now()->addDays(8)->toDateString())->assertOk()->json('items'));
         $this->assertTrue($items->contains('tipo', 'clase'));
+        // La hora sale como HH:MM (el cast datetime no debe filtrar la fecha).
+        $this->assertSame('18:00', $items->firstWhere('tipo', 'clase')['inicio']);
         $this->assertTrue($items->contains('titulo', 'Muestra Palomar'));
         $this->assertTrue($items->contains('titulo', 'Aniversario'));
         $this->assertFalse($items->contains('titulo', 'Reunión Varela'));

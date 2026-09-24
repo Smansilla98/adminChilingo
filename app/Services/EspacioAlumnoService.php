@@ -49,7 +49,7 @@ class EspacioAlumnoService
                     'bloque' => $bloque->nombre,
                     'sede' => $bloque->sede->nombre ?? $alumno->sede->nombre ?? null,
                     'dia' => BloqueHorario::DIAS_SEMANA[$h->dia_semana] ?? '',
-                    'hora' => $h->hora_inicio ? substr((string) $h->hora_inicio, 0, 5) : null,
+                    'hora' => $h->hora_inicio ? $h->hora_inicio?->format('H:i') : null,
                     'es_hoy' => (int) $h->dia_semana === $diaIso,
                 ];
             }
@@ -58,7 +58,7 @@ class EspacioAlumnoService
                     'bloque' => $bloque->nombre,
                     'sede' => $bloque->sede->nombre ?? $alumno->sede->nombre ?? null,
                     'dia' => BloqueHorario::DIAS_SEMANA[$h->dia_semana] ?? '',
-                    'hora' => $h->hora_inicio ? substr((string) $h->hora_inicio, 0, 5) : null,
+                    'hora' => $h->hora_inicio ? $h->hora_inicio?->format('H:i') : null,
                     'es_hoy' => true,
                 ];
                 break;

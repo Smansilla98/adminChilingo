@@ -72,8 +72,8 @@ class AgendaController extends Controller
                         'id' => 'clase-'.$b->id.'-'.$dia->format('Ymd'),
                         'titulo' => $b->nombre,
                         'fecha' => $dia->toDateString(),
-                        'inicio' => substr((string) $h->hora_inicio, 0, 5),
-                        'fin' => substr((string) $h->hora_fin, 0, 5),
+                        'inicio' => $h->hora_inicio?->format('H:i'),
+                        'fin' => $h->hora_fin?->format('H:i'),
                         'sede' => $b->sede?->nombre,
                         'bloque_id' => $b->id,
                     ];

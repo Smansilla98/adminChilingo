@@ -22,8 +22,8 @@ class BloqueResource extends JsonResource
             'horarios' => $this->whenLoaded('horarios', fn () => $this->horarios->map(fn ($h) => [
                 'dia' => (int) $h->dia_semana,
                 'dia_nombre' => self::DIAS[(int) $h->dia_semana] ?? null,
-                'inicio' => substr((string) $h->hora_inicio, 0, 5),
-                'fin' => substr((string) $h->hora_fin, 0, 5),
+                'inicio' => $h->hora_inicio?->format('H:i'),
+                'fin' => $h->hora_fin?->format('H:i'),
             ])->values()),
             'mi_rol' => $this->when(isset($this->mi_rol), fn () => $this->mi_rol),
         ];

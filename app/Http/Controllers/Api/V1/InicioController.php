@@ -61,7 +61,7 @@ class InicioController extends Controller
                     'bloque_id' => $b->id,
                     'nombre' => $b->nombre,
                     'sede' => $b->sede?->nombre,
-                    'inicio' => $h ? substr((string) $h->hora_inicio, 0, 5) : null,
+                    'inicio' => $h ? $h->hora_inicio?->format('H:i') : null,
                     'asistencia_tomada' => in_array($b->id, $tomadas, true),
                 ];
             })->sortBy('inicio')->values()];

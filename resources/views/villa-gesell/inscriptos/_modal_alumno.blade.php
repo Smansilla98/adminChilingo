@@ -72,7 +72,7 @@
                                         data-sede="{{ $bloque->sede_id }}"
                                         data-profesor="{{ $bloque->profesor_id }}"
                                     >
-                                        {{ $bloque->nombre }}@if($bloque->sede) · {{ $bloque->sede->nombre }}@endif@if($bloque->profesor) · {{ $bloque->profesor->nombre }}@endif
+                                        {{ $bloque->nombre }}{{ $bloque->sede ? ' · '.$bloque->sede->nombre : '' }}{{ $bloque->profesor ? ' · '.$bloque->profesor->nombre : '' }}
                                     </option>
                                 @endforeach
                             </select>

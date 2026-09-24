@@ -31,10 +31,9 @@ class VillaGesellGiraService
         $config = $this->config();
         $creados = 0;
         foreach ($config->rangoFechas() as $fecha) {
-            $dia = VillaGesellDia::query()->firstOrCreate(
-                ['fecha' => $fecha->toDateString()],
-                ['notas' => null]
-            );
+            // whereDate: en SQLite la fecha se guarda con hora y un where exacto no la encuentra.
+            $dia = VillaGesellDia::query()->whereDate('fecha', $fecha->toDateString())->first()
+                ?? VillaGesellDia::query()->create(['fecha' => $fecha->toDateString(), 'notas' => null]);
             if ($dia->wasRecentlyCreated) {
                 $creados++;
             }
