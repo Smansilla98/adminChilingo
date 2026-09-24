@@ -20,6 +20,8 @@ Sistema de gestión administrativa para la escuela de percusión La Chilinga, fu
 - **App móvil** (Android/iOS): inicio según funciones, asistencia rápida y offline, cuotas,
   agenda, inventario con QR, partituras, avisos → [docs/APP_MOVIL.md](docs/APP_MOVIL.md)
 - **Notificaciones** internas, push (Expo), email y WhatsApp sin duplicados.
+- **Diseño**: editor tipo Canva basado en [OpenDesign](https://github.com/clawnify/OpenDesign) (MIT),
+  con plantillas de La Chilinga, multi‑página, kit de marca y fotos de la Biblioteca.
 - `php artisan chilinga:diagnose` detecta duplicados y datos inconsistentes.
 
 Documentación: [auditoría inicial](docs/AUDITORIA_ACTUAL.md) · [arquitectura](docs/ARQUITECTURA_OBJETIVO.md) ·

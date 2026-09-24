@@ -62,6 +62,13 @@ php artisan migrate --force --no-interaction || {
 echo "=== Permisos y roles ==="
 php artisan chilinga:permisos:sync --no-interaction || echo "⚠️  No se pudo sincronizar permisos."
 
+# Diagnóstico de datos (solo lectura): duplicados, huérfanos, cuotas y pagos inconsistentes.
+# Queda en los logs del deploy; nunca frena el arranque. CHILINGA_DIAGNOSE=0 lo omite.
+if [ "${CHILINGA_DIAGNOSE:-1}" != "0" ]; then
+    echo "=== Diagnóstico de datos ==="
+    php artisan chilinga:diagnose --no-interaction || echo "⚠️  El diagnóstico no pudo completarse."
+fi
+
 # Tablas/columnas de cuaderno pedagógico, comprobantes e índices.
 # Laravel las saltea si ya están en `migrations`; se listan para que Railway
 # no dependa de un migrate olvidado a mano.
@@ -165,5 +172,12 @@ echo "Host: 0.0.0.0"
 echo "Port: ${PORT:-8000}"
 echo "=========================================="
 echo ""
+
+# Scheduler (avisos de cuotas vencidas y eventos, resúmenes por WhatsApp/mail) dentro del
+# mismo contenedor. Con varias réplicas, dejarlo activo en una sola: SCHEDULER_ENABLED=0 en el resto.
+if [ "${SCHEDULER_ENABLED:-1}" != "0" ]; then
+    echo "=== Scheduler en segundo plano (php artisan schedule:work) ==="
+    php artisan schedule:work --no-interaction 2>&1 &  # hereda la salida del contenedor (logs de Railway)
+fi
 
 exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}

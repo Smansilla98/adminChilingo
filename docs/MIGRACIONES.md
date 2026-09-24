@@ -31,6 +31,12 @@
 3. Todo lo demás → una persona por ficha. Homónimos sin DNI **no** se unen solos:
    `chilinga:diagnose` los lista y se fusionan a mano.
 
+## Módulo Diseño (2026-09-24)
+
+| Migración | Qué hace | Reversible |
+|-----------|----------|-----------|
+| `2026_09_24_100000_create_diseno_paginas_table` | páginas de cada diseño (editor OpenDesign). Los diseños existentes se abren con una página creada desde su `canvas_json` | sí |
+
 ## Correcciones a migraciones existentes
 
 Las migraciones históricas fallaban en una base vacía (instalación nueva o tests):

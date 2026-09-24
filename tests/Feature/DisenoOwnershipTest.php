@@ -2,215 +2,199 @@
 
 namespace Tests\Feature;
 
+use App\Models\BibliotecaItem;
 use App\Models\Diseno;
+use App\Models\DisenoKitAsset;
 use App\Models\User;
 use App\Policies\DisenoPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Tests\Support\Escenarios;
 use Tests\TestCase;
 
+/**
+ * Módulo Diseño con el editor OpenDesign: API del editor, dueño de cada diseño,
+ * plantillas de estudio de solo lectura, kit de marca y compatibilidad con los
+ * diseños del editor anterior.
+ */
 class DisenoOwnershipTest extends TestCase
 {
-    use RefreshDatabase;
+    use Escenarios, RefreshDatabase;
 
-    private DisenoPolicy $policy;
-
-    protected function setUp(): void
+    private function disenador(string $nombre = 'Diseñadora'): User
     {
-        parent::setUp();
+        $user = $this->usuario($nombre);
+        $this->asignarPermiso($user->persona, 'disenos.manage');
 
-        $this->policy = new DisenoPolicy;
+        return $user->fresh();
     }
 
-    private function admin(): User
+    private function diseno(?User $duenio, string $titulo = 'Diseño', ?array $canvas = null): Diseno
     {
-        $user = User::create([
-            'name' => 'Admin Diseño',
-            'username' => 'admindiseno',
-            'email' => 'admindiseno@test.local',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
+        return Diseno::query()->create([
+            'titulo' => $titulo, 'formato' => 'flyer_feed', 'ancho' => 1080, 'alto' => 1350,
+            'canvas_json' => $canvas ?? ['version' => '6.0.0', 'objects' => []],
+            'user_id' => $duenio?->id,
         ]);
-        $user->assignRole('admin');
-
-        return $user;
     }
 
-    public function test_admin_edita_y_borra_cualquier_diseno(): void
+    public function test_el_editor_carga_con_su_configuracion(): void
     {
+        $this->actingAs($this->disenador())->get('/disenos')->assertOk()
+            ->assertSee('window.__OPENDESIGN__', false)
+            ->assertSee('disenos\/api', false);
+        $this->actingAs($this->disenador('Otra'))->get('/disenos/design/5')->assertOk();
+    }
+
+    public function test_sin_permiso_no_entra_al_editor_ni_a_la_api(): void
+    {
+        $user = $this->usuario('Sin permiso');
+        $this->actingAs($user)->get('/disenos')->assertForbidden();
+        $this->actingAs($user)->getJson('/disenos/api/designs')->assertForbidden();
+    }
+
+    public function test_crear_editar_con_paginas_y_eliminar(): void
+    {
+        $user = $this->disenador();
+        $canvas = json_encode(['version' => '6.0.0', 'objects' => [['type' => 'rect', 'width' => 10, 'height' => 10]]]);
+
+        $d = $this->actingAs($user)->postJson('/disenos/api/designs', ['name' => 'Flyer muestra', 'canvas_json' => $canvas, 'width' => 1080, 'height' => 1350])
+            ->assertOk()->json();
+        $this->assertDatabaseHas('disenos', ['id' => $d['id'], 'user_id' => $user->id, 'formato' => 'flyer_feed']);
+
+        $completo = $this->getJson("/disenos/api/designs/{$d['id']}")->assertOk()->json();
+        $this->assertCount(1, $completo['pages']);
+        $pagina = $completo['pages'][0]['id'];
+
+        $nueva = $this->postJson("/disenos/api/designs/{$d['id']}/pages", ['after_sort_order' => 0])->assertOk()->json();
+        $this->assertSame('Página 2', $nueva['title']);
+        $this->postJson("/disenos/api/pages/{$pagina}/duplicate")->assertOk();
+        $this->putJson("/disenos/api/pages/{$pagina}", ['title' => 'Portada', 'canvas_json' => $canvas])->assertOk()->assertJsonPath('title', 'Portada');
+        $this->assertCount(3, $this->getJson("/disenos/api/designs/{$d['id']}")->json('pages'));
+
+        $this->putJson("/disenos/api/designs/{$d['id']}", ['name' => 'Flyer final', 'canvas_json' => '{no-es-json'])->assertStatus(422);
+        $this->putJson("/disenos/api/designs/{$d['id']}", ['name' => 'Flyer final'])->assertOk()->assertJsonPath('name', 'Flyer final');
+
+        $this->deleteJson("/disenos/api/designs/{$d['id']}")->assertOk();
+        $this->assertDatabaseMissing('disenos', ['id' => $d['id']]);
+        $this->assertDatabaseCount('diseno_paginas', 0);
+    }
+
+    public function test_no_se_elimina_la_unica_pagina(): void
+    {
+        $user = $this->disenador();
+        $d = $this->actingAs($user)->postJson('/disenos/api/designs', ['name' => 'Uno'])->json();
+        $pagina = $this->getJson("/disenos/api/designs/{$d['id']}")->json('pages.0.id');
+
+        $this->deleteJson("/disenos/api/pages/{$pagina}")->assertStatus(400);
+    }
+
+    public function test_cada_uno_ve_y_edita_solo_lo_suyo_y_admin_todo(): void
+    {
+        $ana = $this->disenador('Ana');
+        $beto = $this->disenador('Beto');
+        $deAna = $this->diseno($ana, 'De Ana');
         $admin = $this->admin();
-        $otro = User::create([
-            'name' => 'Otro',
-            'username' => 'otrodiseno',
-            'email' => 'otro@test.local',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
-        $otro->assignRole('admin');
 
-        $diseno = Diseno::create([
-            'titulo' => 'Ajeno',
-            'formato' => 'flyer_feed',
-            'ancho' => 1080,
-            'alto' => 1350,
-            'canvas_json' => ['version' => '6', 'objects' => []],
-            'user_id' => $otro->id,
-        ]);
+        $this->actingAs($beto)->getJson("/disenos/api/designs/{$deAna->id}")->assertForbidden();
+        $this->actingAs($beto)->putJson("/disenos/api/designs/{$deAna->id}", ['name' => 'Robado'])->assertForbidden();
+        $this->actingAs($beto)->deleteJson("/disenos/api/designs/{$deAna->id}")->assertForbidden();
+        $this->assertSame([], $this->actingAs($beto)->getJson('/disenos/api/designs')->json());
 
-        $this->assertTrue($this->policy->update($admin, $diseno));
-        $this->assertTrue($this->policy->delete($admin, $diseno));
-
-        $this->actingAs($admin)
-            ->delete(route('disenos.destroy', $diseno))
-            ->assertRedirect(route('disenos.index'));
-
-        $this->assertDatabaseMissing('disenos', ['id' => $diseno->id]);
+        $this->actingAs($admin)->getJson('/disenos/api/designs')->assertOk()->assertJsonFragment(['name' => 'De Ana']);
+        $this->actingAs($admin)->putJson("/disenos/api/designs/{$deAna->id}", ['name' => 'Revisado'])->assertOk();
+        $this->actingAs($admin)->deleteJson("/disenos/api/designs/{$deAna->id}")->assertOk();
     }
 
-    public function test_subir_medio_guarda_en_storage_y_devuelve_url(): void
+    public function test_paginas_ajenas_no_se_tocan_por_id(): void
+    {
+        $ana = $this->disenador('Ana');
+        $d = $this->actingAs($ana)->postJson('/disenos/api/designs', ['name' => 'Privado'])->json();
+        $pagina = $this->getJson("/disenos/api/designs/{$d['id']}")->json('pages.0.id');
+
+        $beto = $this->disenador('Beto');
+        $this->actingAs($beto)->putJson("/disenos/api/pages/{$pagina}", ['title' => 'x'])->assertForbidden();
+        $this->actingAs($beto)->postJson("/disenos/api/pages/{$pagina}/duplicate")->assertForbidden();
+        $this->actingAs($beto)->postJson("/disenos/api/designs/{$d['id']}/pages")->assertForbidden();
+    }
+
+    public function test_disenos_del_editor_anterior_se_abren_con_una_pagina(): void
+    {
+        $user = $this->disenador();
+        $viejo = $this->diseno($user, 'Viejo', ['version' => '6.9.1', 'objects' => [['type' => 'Textbox', 'text' => 'Hola']]]);
+
+        $r = $this->actingAs($user)->getJson("/disenos/api/designs/{$viejo->id}")->assertOk();
+        $this->assertCount(1, $r->json('pages'));
+        $this->assertStringContainsString('Hola', $r->json('pages.0.canvas_json'));
+    }
+
+    public function test_plantillas_incluyen_las_de_la_chilinga_y_las_de_estudio_de_solo_lectura(): void
+    {
+        $user = $this->disenador();
+        $estudio = $this->diseno(null, 'Plantilla estudio');
+
+        $plantillas = collect($this->actingAs($user)->getJson('/disenos/api/templates')->assertOk()->json());
+        $this->assertTrue($plantillas->contains('id', 'chl-show'));
+        $this->assertTrue($plantillas->contains('id', 'estudio-'.$estudio->id));
+        $this->actingAs($user)->getJson('/disenos/api/templates/chl-show')->assertOk()->assertJsonPath('width', 1080);
+
+        // Se puede ver para copiarla, pero no modificarla.
+        $this->assertTrue((new DisenoPolicy)->view($user, $estudio));
+        $this->actingAs($user)->putJson("/disenos/api/designs/{$estudio->id}", ['name' => 'x'])->assertForbidden();
+    }
+
+    public function test_subir_imagen_guarda_y_rechaza_svg(): void
     {
         Storage::fake('public');
-        $admin = $this->admin();
-        $file = UploadedFile::fake()->image('logo-chilinga.png', 200, 120);
+        $user = $this->disenador();
 
-        $res = $this->actingAs($admin)
-            ->postJson(route('disenos.medios.store'), ['archivo' => $file]);
+        $url = $this->actingAs($user)->post('/disenos/api/uploads', ['file' => UploadedFile::fake()->image('foto.png', 200, 200)], ['Accept' => 'application/json'])
+            ->assertOk()->json('url');
+        $this->assertStringContainsString('disenos/medios/'.$user->id, $url);
 
-        $res->assertOk()
-            ->assertJsonPath('ok', true)
-            ->assertJsonStructure(['url', 'path', 'name']);
-
-        Storage::disk('public')->assertExists($res->json('path'));
-        $this->assertStringContainsString('/storage/disenos/assets/', $res->json('url'));
+        $svg = UploadedFile::fake()->createWithContent('x.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
+        $this->post('/disenos/api/uploads', ['file' => $svg], ['Accept' => 'application/json'])->assertStatus(422);
     }
 
-    public function test_index_lista_disenos_para_admin(): void
-    {
-        $admin = $this->admin();
-        Diseno::create([
-            'titulo' => 'Flyer test',
-            'formato' => 'flyer_feed',
-            'ancho' => 1080,
-            'alto' => 1350,
-            'canvas_json' => ['objects' => []],
-            'user_id' => $admin->id,
-        ]);
-
-        $this->actingAs($admin)
-            ->get(route('disenos.index'))
-            ->assertOk()
-            ->assertSee('Flyer test')
-            ->assertSee('Eliminar');
-    }
-
-    public function test_api_biblioteca_items_para_editor(): void
-    {
-        $admin = $this->admin();
-
-        // Sin tabla de biblioteca → respuesta vacía ok
-        $this->actingAs($admin)
-            ->getJson(route('disenos.biblioteca.items'))
-            ->assertOk()
-            ->assertJsonPath('ok', true)
-            ->assertJsonStructure(['data', 'meta', 'tags']);
-    }
-
-    public function test_kit_solo_admin_puede_subir_y_borrar(): void
+    public function test_miniatura_se_guarda_al_actualizar(): void
     {
         Storage::fake('public');
+        $user = $this->disenador();
+        $d = $this->diseno($user);
+        $png = 'data:image/png;base64,'.base64_encode(UploadedFile::fake()->image('t.png', 20, 20)->getContent());
 
-        $admin = $this->admin();
-        $file = UploadedFile::fake()->image('kit-logo.png', 120, 120);
+        $this->actingAs($user)->putJson("/disenos/api/designs/{$d->id}", ['thumbnail_data' => $png])->assertOk();
 
-        $res = $this->actingAs($admin)
-            ->postJson(route('disenos.kit.store'), [
-                'archivo' => $file,
-                'titulo' => 'Logo kit',
-            ]);
-
-        $res->assertOk()
-            ->assertJsonPath('ok', true)
-            ->assertJsonPath('item.label', 'Logo kit');
-
-        $kitId = (int) $res->json('item.kit_id');
-        $this->assertGreaterThan(0, $kitId);
-        $this->assertDatabaseHas('diseno_kit_assets', ['id' => $kitId, 'titulo' => 'Logo kit']);
-
-        $path = \App\Models\DisenoKitAsset::query()->find($kitId)?->path;
-        $this->assertNotEmpty($path);
-        Storage::disk('public')->assertExists($path);
-
-        $this->actingAs($admin)
-            ->deleteJson(route('disenos.kit.destroy', ['kit' => $kitId]))
-            ->assertOk()
-            ->assertJsonPath('ok', true);
-
-        $this->assertDatabaseMissing('diseno_kit_assets', ['id' => $kitId]);
+        Storage::disk('public')->assertExists("disenos/previews/{$d->id}.png");
+        $this->assertNotNull($this->getJson("/disenos/api/designs/{$d->id}")->json('thumbnail_url'));
     }
 
-    public function test_kit_policy_solo_admin_o_direccion(): void
+    public function test_marca_lista_logos_kit_y_biblioteca(): void
     {
-        $admin = $this->admin();
-        $this->assertTrue($this->policy->manageKit($admin));
+        $user = $this->disenador();
+        DisenoKitAsset::query()->create(['titulo' => 'Logo sede', 'path' => 'disenos/kit/a.png', 'mime' => 'image/png', 'bytes' => 10]);
+        BibliotecaItem::query()->create(['titulo' => 'Foto show', 'tipo' => 'imagen', 'path' => 'biblioteca/f.jpg', 'mime' => 'image/jpeg', 'estado' => 'publicado']);
 
-        $profesor = User::create([
-            'name' => 'Profe Diseño',
-            'username' => 'profediseno',
-            'email' => 'profediseno@test.local',
-            'password' => Hash::make('password'),
-            'role' => 'profesor',
-            'modulos_access' => ['admin.disenos' => true],
-        ]);
-        \Spatie\Permission\Models\Role::findOrCreate('profesor', 'web');
-        $profesor->assignRole('profesor');
-        // El acceso a Diseño es un permiso asignado (antes: matriz modulos_access).
-        \App\Models\Asignacion::create([
-            'persona_id' => $profesor->fresh()->persona_id,
-            'permission_id' => \Spatie\Permission\Models\Permission::findByName('disenos.manage', 'web')->id,
-            'ambito_tipo' => 'global',
-            'activo' => true,
-        ]);
-        $profesor = $profesor->fresh();
-
-        $this->assertTrue($profesor->tieneAccesoModulo('admin.disenos'));
-        $this->assertFalse($this->policy->manageKit($profesor));
-        $this->assertTrue($this->policy->uploadAsset($profesor));
+        $grupos = collect($this->actingAs($user)->getJson('/disenos/api/marca')->assertOk()->json('grupos'))->keyBy('clave');
+        $this->assertNotEmpty($grupos['logos']['items']);
+        $this->assertSame('Logo sede', $grupos['kit']['items'][0]['label']);
+        $this->assertSame('Foto show', $grupos['biblioteca']['items'][0]['label']);
     }
 
-    public function test_view_permite_plantilla_estudio_sin_editar(): void
+    public function test_kit_de_marca_solo_lo_gestiona_administracion(): void
     {
-        $profesor = User::create([
-            'name' => 'Profe Vista',
-            'username' => 'profevista',
-            'email' => 'profevista@test.local',
-            'password' => Hash::make('password'),
-            'role' => 'profesor',
-            'modulos_access' => ['admin.disenos' => true],
-        ]);
-        \Spatie\Permission\Models\Role::findOrCreate('profesor', 'web');
-        $profesor->assignRole('profesor');
-        // El acceso a Diseño es un permiso asignado (antes: matriz modulos_access).
-        \App\Models\Asignacion::create([
-            'persona_id' => $profesor->fresh()->persona_id,
-            'permission_id' => \Spatie\Permission\Models\Permission::findByName('disenos.manage', 'web')->id,
-            'ambito_tipo' => 'global',
-            'activo' => true,
-        ]);
-        $profesor = $profesor->fresh();
+        Storage::fake('public');
+        $user = $this->disenador();
+        $admin = $this->admin();
+        $archivo = fn () => UploadedFile::fake()->image('kit.png', 100, 100);
 
-        $plantilla = Diseno::create([
-            'titulo' => 'Plantilla estudio',
-            'formato' => 'flyer_feed',
-            'ancho' => 1080,
-            'alto' => 1350,
-            'canvas_json' => ['objects' => []],
-            'user_id' => null,
-        ]);
+        $this->actingAs($user)->post('/disenos/api/marca/kit', ['archivo' => $archivo()], ['Accept' => 'application/json'])->assertForbidden();
 
-        $this->assertTrue($this->policy->view($profesor, $plantilla));
-        $this->assertFalse($this->policy->update($profesor, $plantilla));
-        $this->assertFalse($this->policy->delete($profesor, $plantilla));
+        $id = $this->actingAs($admin)->post('/disenos/api/marca/kit', ['archivo' => $archivo(), 'titulo' => 'Logo'], ['Accept' => 'application/json'])
+            ->assertOk()->json('id');
+        $this->actingAs($user)->deleteJson("/disenos/api/marca/kit/{$id}")->assertForbidden();
+        $this->actingAs($admin)->deleteJson("/disenos/api/marca/kit/{$id}")->assertOk();
+        $this->assertDatabaseMissing('diseno_kit_assets', ['id' => $id]);
     }
 }

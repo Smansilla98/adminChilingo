@@ -11,7 +11,7 @@ La infraestructura en Railway **no cambia** (mismo `Dockerfile`, mismo `start.sh
    - `php artisan migrate --force` → crea personas, asignaciones, auditoría, becas, tokens, etc.
      y ejecuta el backfill (ver [MIGRACIONES.md](MIGRACIONES.md));
    - `php artisan chilinga:permisos:sync` → catálogo de permisos y roles.
-3. Verificar: `railway run php artisan chilinga:diagnose`.
+3. `start.sh` también corre `chilinga:diagnose` (queda en los logs del deploy; `CHILINGA_DIAGNOSE=0` lo omite).
 4. Los usuarios que eran **admin/dirección** quedan como **superadministradores** (mismos privilegios).
    Si no hubiera ninguno: `railway run php artisan chilinga:superadmin <usuario> --force`.
 5. Revisar en **Configuración › Usuarios y permisos** que cada persona tenga sus funciones
@@ -25,6 +25,8 @@ La infraestructura en Railway **no cambia** (mismo `Dockerfile`, mismo `start.sh
 | `PROGRAMA_EDICION_PUBLICA` | `true` | edición de partituras sin login (comportamiento histórico); `false` exige permiso |
 | `EXPO_PUSH_ENABLED` | `false` | envío de push a la app vía Expo |
 | `EXPO_ACCESS_TOKEN` | — | opcional, si el proyecto de Expo exige token para push |
+| `SCHEDULER_ENABLED` | `1` | scheduler dentro del contenedor (`0` en réplicas adicionales) |
+| `CHILINGA_DIAGNOSE` | `1` | diagnóstico de datos en cada arranque |
 
 ### Scheduler (cron)
 
@@ -35,9 +37,9 @@ Además de los resúmenes existentes, el scheduler corre:
 | `chilinga:avisos cuotas-vencidas` | todos los días 11:00 |
 | `chilinga:avisos eventos` | todos los días 18:00 (eventos del día siguiente) |
 
-Railway no ejecuta cron dentro del contenedor web: crear un **servicio Cron** en Railway con
-el mismo repositorio y comando `php artisan schedule:run` cada minuto (o un Cron Job de
-Railway con `*/5 * * * *`). Los avisos son idempotentes: correrlos de más no duplica.
+`start.sh` levanta `php artisan schedule:work` en segundo plano dentro del mismo contenedor:
+no hace falta un servicio Cron aparte. Con **más de una réplica**, dejarlo activo en una sola
+(`SCHEDULER_ENABLED=0` en las demás). Los avisos son idempotentes: correrlos de más no duplica.
 
 ### Colas
 
@@ -50,6 +52,12 @@ Si en el futuro se encolan, agregar un servicio con `php artisan queue:work --tr
 - La app móvil **no** se despliega en Railway: se compila con EAS ([APP_MOVIL.md](APP_MOVIL.md)).
   `mobile/` está excluido de la imagen Docker (`.dockerignore`).
 - Configurar en `mobile/eas.json` la `EXPO_PUBLIC_API_URL` de producción (dominio de Railway).
+
+### Diseño (OpenDesign)
+
+El editor del módulo Diseño es [OpenDesign](https://github.com/clawnify/OpenDesign) (MIT),
+integrado en `resources/opendesign` con backend Laravel. `npm run build` compila el panel y
+luego el editor (`public/opendesign`). Ver `resources/opendesign/NOTICE.md`.
 
 ### Storage
 

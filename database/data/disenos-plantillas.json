@@ -1,0 +1,83 @@
+[
+ {
+  "id": "chl-show",
+  "name": "Flyer de show",
+  "category": "la-chilinga",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1080, \"height\": 1350, \"fill\": \"#000000\"}, {\"type\": \"rect\", \"left\": 0, \"top\": 980, \"width\": 1080, \"height\": 370, \"fill\": \"#f26422\"}, {\"type\": \"image\", \"src\": \"/images/brand/logo.png\", \"left\": 80, \"top\": 80, \"scaleX\": 0.18, \"scaleY\": 0.18}, {\"type\": \"textbox\", \"fontFamily\": \"Montserrat\", \"fill\": \"#ffffff\", \"textAlign\": \"left\", \"left\": 80, \"top\": 420, \"width\": 920, \"text\": \"LA CHILINGA EN VIVO\", \"fontSize\": 96, \"fontWeight\": \"800\"}, {\"type\": \"textbox\", \"fontFamily\": \"Montserrat\", \"fill\": \"#ffffff\", \"textAlign\": \"left\", \"left\": 80, \"top\": 1020, \"width\": 920, \"text\": \"Sábado 18 · 20 h\", \"fontSize\": 56, \"fontWeight\": \"700\"}, {\"type\": \"textbox\", \"fontFamily\": \"Montserrat\", \"fill\": \"#ffffff\", \"textAlign\": \"left\", \"left\": 80, \"top\": 1110, \"width\": 920, \"text\": \"Lugar · Dirección\", \"fontSize\": 36, \"fontWeight\": \"500\"}]}",
+  "width": 1080,
+  "height": 1350,
+  "sort_order": 1
+ },
+ {
+  "id": "chl-historia",
+  "name": "Historia promo",
+  "category": "la-chilinga",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1080, \"height\": 1920, \"fill\": \"#f26422\"}, {\"type\": \"image\", \"src\": \"/images/brand/logo.png\", \"left\": 80, \"top\": 80, \"scaleX\": 0.18, \"scaleY\": 0.18}, {\"type\": \"textbox\", \"fontFamily\": \"Montserrat\", \"fill\": \"#ffffff\", \"textAlign\": \"left\", \"left\": 80, \"top\": 700, \"width\": 920, \"text\": \"¡Sumate a tocar!\", \"fontSize\": 110, \"fontWeight\": \"800\"}, {\"type\": \"textbox\", \"fontFamily\": \"Montserrat\", \"fill\": \"#ffffff\", \"textAlign\": \"left\", \"left\": 80, \"top\": 1000, \"width\": 920, \"text\": \"Clases de percusión en todas las sedes\", \"fontSize\": 52, \"fontWeight\": \"500\"}]}",
+  "width": 1080,
+  "height": 1920,
+  "sort_order": 2
+ },
+ {
+  "id": "chl-clase-abierta",
+  "name": "Clase abierta",
+  "category": "la-chilinga",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1080, \"height\": 1350, \"fill\": \"#111111\"}, {\"type\": \"rect\", \"left\": 80, \"top\": 360, \"width\": 12, \"height\": 420, \"fill\": \"#f26422\"}, {\"type\": \"image\", \"src\": \"/images/brand/logo.png\", \"left\": 80, \"top\": 80, \"scaleX\": 0.18, \"scaleY\": 0.18}, {\"type\": \"textbox\", \"fontFamily\": \"Montserrat\", \"fill\": \"#ffffff\", \"textAlign\": \"left\", \"left\": 130, \"top\": 360, \"width\": 870, \"text\": \"CLASE ABIERTA\", \"fontSize\": 100, \"fontWeight\": \"800\"}, {\"type\": \"textbox\", \"fontFamily\": \"Montserrat\", \"fill\": \"#f26422\", \"textAlign\": \"left\", \"left\": 130, \"top\": 620, \"width\": 870, \"text\": \"Sede · Día · Horario\", \"fontSize\": 48, \"fontWeight\": \"600\"}, {\"type\": \"textbox\", \"fontFamily\": \"Montserrat\", \"fill\": \"#ffffff\", \"textAlign\": \"left\", \"left\": 130, \"top\": 720, \"width\": 870, \"text\": \"Traé ganas de tocar. Tambores a disposición.\", \"fontSize\": 36, \"fontWeight\": \"400\"}]}",
+  "width": 1080,
+  "height": 1350,
+  "sort_order": 3
+ },
+ {
+  "id": "od-quote-card",
+  "name": "Frase",
+  "category": "general",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1080, \"height\": 1080, \"fill\": \"#1a1a2e\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 300, \"width\": 920, \"text\": \"Tu frase va acá\", \"fontSize\": 48, \"fontFamily\": \"Playfair Display\", \"fontWeight\": \"700\", \"fill\": \"#ffffff\", \"textAlign\": \"center\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 900, \"width\": 920, \"text\": \"— Nombre\", \"fontSize\": 24, \"fontFamily\": \"Inter\", \"fontWeight\": \"500\", \"fill\": \"#a0a0b0\", \"textAlign\": \"center\"}]}",
+  "width": 1080,
+  "height": 1080,
+  "sort_order": 101
+ },
+ {
+  "id": "od-stats-highlight",
+  "name": "Dato destacado",
+  "category": "general",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1080, \"height\": 1080, \"fill\": \"#0f172a\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 200, \"width\": 920, \"text\": \"87%\", \"fontSize\": 120, \"fontFamily\": \"Montserrat\", \"fontWeight\": \"900\", \"fill\": \"#3b82f6\", \"textAlign\": \"center\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 400, \"width\": 920, \"text\": \"de nuestros alumnos\\ntocó en un show este año\", \"fontSize\": 36, \"fontFamily\": \"Inter\", \"fontWeight\": \"500\", \"fill\": \"#e2e8f0\", \"textAlign\": \"center\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 900, \"width\": 920, \"text\": \"Fuente: La Chilinga 2026\", \"fontSize\": 18, \"fontFamily\": \"Inter\", \"fontWeight\": \"400\", \"fill\": \"#64748b\", \"textAlign\": \"center\"}]}",
+  "width": 1080,
+  "height": 1080,
+  "sort_order": 102
+ },
+ {
+  "id": "od-announcement",
+  "name": "Anuncio",
+  "category": "general",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1200, \"height\": 627, \"fill\": \"#ffffff\"}, {\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 8, \"height\": 627, \"fill\": \"#2563eb\"}, {\"type\": \"textbox\", \"left\": 60, \"top\": 80, \"width\": 400, \"text\": \"NUEVO\", \"fontSize\": 16, \"fontFamily\": \"Montserrat\", \"fontWeight\": \"800\", \"fill\": \"#2563eb\", \"letterSpacing\": 4}, {\"type\": \"textbox\", \"left\": 60, \"top\": 120, \"width\": 1080, \"text\": \"Tenemos una noticia\\npara compartir\", \"fontSize\": 48, \"fontFamily\": \"Montserrat\", \"fontWeight\": \"700\", \"fill\": \"#0f172a\"}, {\"type\": \"textbox\", \"left\": 60, \"top\": 500, \"width\": 1080, \"text\": \"Más info en nuestras redes\", \"fontSize\": 20, \"fontFamily\": \"Inter\", \"fontWeight\": \"500\", \"fill\": \"#64748b\"}]}",
+  "width": 1200,
+  "height": 627,
+  "sort_order": 103
+ },
+ {
+  "id": "od-tips-list",
+  "name": "Lista de consejos",
+  "category": "general",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1080, \"height\": 1080, \"fill\": \"#fafaf9\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 80, \"width\": 920, \"text\": \"5 consejos para\\nestudiar percusión\", \"fontSize\": 44, \"fontFamily\": \"Montserrat\", \"fontWeight\": \"800\", \"fill\": \"#1c1917\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 280, \"width\": 920, \"text\": \"1. Practicá con metrónomo\\n\\n2. Empezá lento\\n\\n3. Grabate y escuchate\\n\\n4. Descansá las manos\\n\\n5. Tocá con otros\", \"fontSize\": 28, \"fontFamily\": \"Inter\", \"fontWeight\": \"400\", \"fill\": \"#44403c\", \"lineHeight\": 1.6}]}",
+  "width": 1080,
+  "height": 1080,
+  "sort_order": 104
+ },
+ {
+  "id": "od-profile-card",
+  "name": "Presentación",
+  "category": "general",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1080, \"height\": 1080, \"fill\": \"#18181b\"}, {\"type\": \"circle\", \"left\": 440, \"top\": 180, \"radius\": 100, \"fill\": \"#3f3f46\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 420, \"width\": 920, \"text\": \"Nombre Apellido\", \"fontSize\": 40, \"fontFamily\": \"Montserrat\", \"fontWeight\": \"700\", \"fill\": \"#fafafa\", \"textAlign\": \"center\"}, {\"type\": \"textbox\", \"left\": 80, \"top\": 490, \"width\": 920, \"text\": \"Profe de repique · Sede\", \"fontSize\": 22, \"fontFamily\": \"Inter\", \"fontWeight\": \"400\", \"fill\": \"#a1a1aa\", \"textAlign\": \"center\"}, {\"type\": \"textbox\", \"left\": 140, \"top\": 600, \"width\": 800, \"text\": \"Contá en pocas palabras quién sos y qué enseñás.\", \"fontSize\": 20, \"fontFamily\": \"Inter\", \"fontWeight\": \"400\", \"fill\": \"#d4d4d8\", \"textAlign\": \"center\"}]}",
+  "width": 1080,
+  "height": 1080,
+  "sort_order": 105
+ },
+ {
+  "id": "od-minimal-text",
+  "name": "Texto simple",
+  "category": "general",
+  "canvas_json": "{\"version\": \"6.0.0\", \"objects\": [{\"type\": \"rect\", \"left\": 0, \"top\": 0, \"width\": 1080, \"height\": 1080, \"fill\": \"#f8fafc\"}, {\"type\": \"textbox\", \"left\": 120, \"top\": 380, \"width\": 840, \"text\": \"Menos es más.\", \"fontSize\": 64, \"fontFamily\": \"Playfair Display\", \"fontWeight\": \"600\", \"fill\": \"#0f172a\", \"textAlign\": \"center\"}, {\"type\": \"textbox\", \"left\": 120, \"top\": 520, \"width\": 840, \"text\": \"A veces el mensaje más simple\\nes el que más llega.\", \"fontSize\": 22, \"fontFamily\": \"Inter\", \"fontWeight\": \"400\", \"fill\": \"#64748b\", \"textAlign\": \"center\"}]}",
+  "width": 1080,
+  "height": 1080,
+  "sort_order": 106
+ }
+]

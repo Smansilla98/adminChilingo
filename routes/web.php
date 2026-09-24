@@ -19,7 +19,7 @@ use App\Http\Controllers\ComunidadAgendaController;
 use App\Http\Controllers\ContextoController;
 use App\Http\Controllers\CuotaController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DisenoController;
+use App\Http\Controllers\DisenoEditorController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\FacturacionMensualController;
 use App\Http\Controllers\GastoController;
@@ -300,14 +300,28 @@ Route::middleware(['auth'])->group(function () {
         ->middlewareFor(['edit', 'update'], 'permiso:profesores.update')
         ->middlewareFor('destroy', 'permiso:profesores.delete');
 
-    // Diseño
-    Route::middleware(['permiso:disenos.manage', 'modulo:admin.disenos'])->group(function () {
-        Route::post('disenos/medios', [DisenoController::class, 'storeMedio'])->name('disenos.medios.store');
-        Route::get('disenos/kit', [DisenoController::class, 'kitIndex'])->middleware('throttle:60,1')->name('disenos.kit.index');
-        Route::post('disenos/kit', [DisenoController::class, 'kitStore'])->middleware('throttle:30,1')->name('disenos.kit.store');
-        Route::delete('disenos/kit/{kit}', [DisenoController::class, 'kitDestroy'])->name('disenos.kit.destroy');
-        Route::get('disenos/biblioteca/items', [BibliotecaPublicController::class, 'apiItems'])->middleware('throttle:60,1')->name('disenos.biblioteca.items');
-        Route::resource('disenos', DisenoController::class);
+    // Diseño: editor OpenDesign (SPA) + su API (resources/opendesign, DisenoEditorController)
+    Route::middleware(['permiso:disenos.manage', 'modulo:admin.disenos'])->prefix('disenos')->name('disenos.')->group(function () {
+        Route::get('/', [DisenoEditorController::class, 'app'])->name('index');
+        Route::get('/design/{id}', [DisenoEditorController::class, 'app'])->whereNumber('id')->name('editor');
+
+        Route::prefix('api')->name('api.')->middleware('throttle:300,1')->group(function () {
+            Route::get('designs', [DisenoEditorController::class, 'index'])->name('index');
+            Route::post('designs', [DisenoEditorController::class, 'store'])->name('store');
+            Route::get('designs/{diseno}', [DisenoEditorController::class, 'show'])->whereNumber('diseno')->name('show');
+            Route::put('designs/{diseno}', [DisenoEditorController::class, 'update'])->whereNumber('diseno')->name('update');
+            Route::delete('designs/{diseno}', [DisenoEditorController::class, 'destroy'])->whereNumber('diseno')->name('destroy');
+            Route::post('designs/{diseno}/pages', [DisenoEditorController::class, 'storePage'])->whereNumber('diseno')->name('pages.store');
+            Route::post('pages/{pagina}/duplicate', [DisenoEditorController::class, 'duplicatePage'])->whereNumber('pagina')->name('pages.duplicate');
+            Route::put('pages/{pagina}', [DisenoEditorController::class, 'updatePage'])->whereNumber('pagina')->name('pages.update');
+            Route::delete('pages/{pagina}', [DisenoEditorController::class, 'destroyPage'])->whereNumber('pagina')->name('pages.destroy');
+            Route::get('templates', [DisenoEditorController::class, 'templates'])->name('templates');
+            Route::get('templates/{id}', [DisenoEditorController::class, 'template'])->name('template');
+            Route::post('uploads', [DisenoEditorController::class, 'upload'])->middleware('throttle:60,1')->name('uploads');
+            Route::get('marca', [DisenoEditorController::class, 'marca'])->name('marca');
+            Route::post('marca/kit', [DisenoEditorController::class, 'kitStore'])->middleware('throttle:30,1')->name('kit.store');
+            Route::delete('marca/kit/{kit}', [DisenoEditorController::class, 'kitDestroy'])->whereNumber('kit')->name('kit.destroy');
+        });
     });
 
     // Finanzas

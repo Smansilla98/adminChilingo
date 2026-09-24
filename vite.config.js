@@ -7,10 +7,8 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
-                'resources/css/diseno-canvas.css',
                 'resources/js/app.js',
                 'resources/js/partitura.js',
-                'resources/js/diseno-canvas.js',
             ],
             refresh: true,
         }),

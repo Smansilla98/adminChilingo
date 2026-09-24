@@ -3,9 +3,10 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "vite build && npm run build:disenos",
         "dev": "vite",
-        "test:partitura": "node --test tests/js/*.test.js"
+        "test:partitura": "node --test tests/js/*.test.js",
+        "build:disenos": "npm --prefix resources/opendesign ci --no-audit --no-fund && npm --prefix resources/opendesign run build"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -22,10 +23,8 @@
         "@fullcalendar/timegrid": "^6.1.20",
         "bootstrap": "^5.3.8",
         "chart.js": "^4.5.1",
-        "fabric": "^6.9.1",
         "fullcalendar": "^6.1.20",
         "jspdf": "^2.5.2",
-        "svg2pdf.js": "^2.8.1",
         "vexflow": "^4.2.5"
     }
 }
