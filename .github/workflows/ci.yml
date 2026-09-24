@@ -124,7 +124,16 @@ jobs:
         run: php artisan chilinga:diagnose
 
       - name: Tests sobre MySQL
-        run: php artisan test
+        run: |
+          set -o pipefail
+          php artisan test 2>&1 | tee /tmp/tests-mysql.log
+
+      - name: Publicar fallos como anotación
+        if: failure()
+        run: |
+          # Las anotaciones son visibles sin permisos de admin (los logs completos no).
+          resumen=$(grep -E -A12 "FAILED|Failed asserting|SQLSTATE|Error:" /tmp/tests-mysql.log | head -120 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+          echo "::error title=Tests MySQL::${resumen}"
 
   mobile:
     name: App móvil (typecheck · lint · bundle)
