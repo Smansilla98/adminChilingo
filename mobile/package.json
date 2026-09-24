@@ -54,6 +54,7 @@
     "export": "expo export --platform android --platform ios",
     "build:dev": "eas build --profile development",
     "build:staging": "eas build --profile staging",
+    "build:apk": "eas build --platform android --profile preview",
     "build:prod": "eas build --profile production"
   },
   "private": true

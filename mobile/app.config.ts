@@ -71,10 +71,11 @@ const config: ExpoConfig = {
     typedRoutes: false,
     reactCompiler: true,
   },
+  owner: 'smansilla',
   extra: {
     variante: VARIANT,
-    // El projectId de EAS se completa con `npx eas-cli init` (necesario para push). No es secreto.
-    eas: process.env.EAS_PROJECT_ID ? { projectId: process.env.EAS_PROJECT_ID } : undefined,
+    // Proyecto de EAS (cuenta smansilla). Necesario para builds y notificaciones push. No es secreto.
+    eas: { projectId: process.env.EAS_PROJECT_ID ?? '92097bd6-c5a8-43fd-b41e-87e6981b6891' },
   },
 };
 

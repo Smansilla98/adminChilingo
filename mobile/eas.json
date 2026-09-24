@@ -19,14 +19,26 @@
         "APP_VARIANT": "staging",
         "EXPO_PUBLIC_API_URL": "https://staging.ejemplo-chilinga.invalid/api/v1"
       },
-      "android": { "buildType": "apk" }
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "production",
+        "EXPO_PUBLIC_API_URL": "https://admin-chilingo.up.railway.app/api/v1"
+      },
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
       "channel": "production",
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production",
-        "EXPO_PUBLIC_API_URL": "https://REEMPLAZAR-POR-DOMINIO-DE-RAILWAY/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://admin-chilingo.up.railway.app/api/v1"
       }
     }
   },

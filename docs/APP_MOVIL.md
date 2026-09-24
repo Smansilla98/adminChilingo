@@ -66,8 +66,9 @@ Sin eso, los avisos igual llegan a la bandeja interna.
 | production | `production` | Chilinga | `org.lachilinga.ito` |
 
 - `app.config.ts`: nombre, ícono, splash, permisos (cámara; sin micrófono), plugins.
-- `eas.json`: perfiles `development`, `staging` (APK interno), `production` con su `EXPO_PUBLIC_API_URL`.
-  **Reemplazar** `REEMPLAZAR-POR-DOMINIO-DE-RAILWAY` por el dominio real antes del primer build.
+- `eas.json`: perfiles `development`, `staging` (APK interno), `preview` (APK instalable contra producción)
+  y `production` (AAB para Play Store). Producción: `https://admin-chilingo.up.railway.app/api/v1`.
+- Proyecto EAS: `@smansilla/chilinga` (`projectId` en `app.config.ts`). El keystore de Android lo guarda EAS.
 - El identificador `org.lachilinga.ito` puede cambiarse **antes** de la primera publicación
   (después las tiendas no lo permiten).
 - No hay credenciales en el repo: firmas y claves las guarda EAS.
@@ -94,6 +95,7 @@ npx eas-cli login
 npx eas-cli init                   # crea el proyecto y el projectId
 npm run build:dev                  # development build
 npm run build:staging              # APK para probar
+npm run build:apk                  # APK contra producción (instalable directo)
 npm run build:prod                 # AAB (Play Store) / IPA (App Store)
 npx eas-cli submit --profile production
 ```
