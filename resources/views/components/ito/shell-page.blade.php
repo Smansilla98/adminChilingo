@@ -1,8 +1,9 @@
 @props([
     'title' => null,
     'subtitle' => null,
-    'eyebrow' => 'ITO · Gestión',
+    'eyebrow' => null,
     'flush' => false,
+    'plain' => false,
 ])
 {{-- Shell de página unificado (create / edit / show). Misma cabeza que list-page. --}}
 <div {{ $attributes->merge(['class' => 'ito-page']) }}>
@@ -33,9 +34,16 @@
         </div>
     @endisset
 
-    <div @class(['ito-card', 'ito-card--flush' => $flush, 'ito-card--body' => ! $flush])>
-        {{ $slot }}
-    </div>
+    @if($plain)
+        {{-- Sin tarjeta envolvente: las secciones del contenido son las tarjetas. --}}
+        <div class="ito-page-body">
+            {{ $slot }}
+        </div>
+    @else
+        <div @class(['ito-card', 'ito-card--flush' => $flush, 'ito-card--body' => ! $flush])>
+            {{ $slot }}
+        </div>
+    @endif
 
     @isset($aside)
         <div class="ito-page-aside">

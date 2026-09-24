@@ -3,7 +3,7 @@
     $values = $values ?? [];
 @endphp
 
-<x-ito.form-step :index="0" title="Identidad" help="Sede, tipo, nombre y de quién es el ítem.">
+<x-ito.form-section title="Qué es y de quién" icon="bi-box-seam" help="Sede, tipo, nombre, código y a quién pertenece.">
     <div class="row g-3">
         <div class="col-md-4">
             <label class="form-label">Sede *</label>
@@ -55,8 +55,8 @@
         </div>
 
         <div class="col-md-3">
-            <div class="form-check mt-4">
-                <input class="form-check-input" type="checkbox" name="es_consumible" id="es_consumible" value="1" {{ old('es_consumible', $item?->es_consumible) ? 'checked' : '' }}>
+            <div class="form-check form-switch mt-md-4 pt-md-2">
+                <input class="form-check-input" type="checkbox" role="switch" name="es_consumible" id="es_consumible" value="1" {{ old('es_consumible', $item?->es_consumible) ? 'checked' : '' }}>
                 <label class="form-check-label" for="es_consumible">Es consumible (cantidad)</label>
             </div>
         </div>
@@ -70,15 +70,15 @@
             <input type="text" name="unidad" class="form-control" value="{{ old('unidad', $item?->unidad) }}" placeholder="u, pares, mts, kg...">
         </div>
         <div class="col-md-3">
-            <div class="form-check mt-4">
-                <input class="form-check-input" type="checkbox" name="utilitario" id="utilitario" value="1" {{ old('utilitario', $item?->utilitario) ? 'checked' : '' }}>
+            <div class="form-check form-switch mt-md-4 pt-md-2">
+                <input class="form-check-input" type="checkbox" role="switch" name="utilitario" id="utilitario" value="1" {{ old('utilitario', $item?->utilitario) ? 'checked' : '' }}>
                 <label class="form-check-label" for="utilitario">Utilitario / repuesto</label>
             </div>
         </div>
     </div>
-</x-ito.form-step>
+</x-ito.form-section>
 
-<x-ito.form-step :index="1" title="Especificaciones" help="Marca, medida y detalles físicos (opcional).">
+<x-ito.form-section title="Especificaciones" icon="bi-rulers" help="Opcional: marca, medida y detalles físicos.">
     <div class="row g-3">
         <div class="col-md-3">
             <label class="form-label">Marca</label>
@@ -117,14 +117,14 @@
             <input type="number" name="anio_fabricacion" class="form-control" min="1900" max="2100" value="{{ old('anio_fabricacion', $item?->anio_fabricacion) }}">
         </div>
     </div>
-</x-ito.form-step>
+</x-ito.form-section>
 
-<x-ito.form-step :index="2" title="Adquisición y estado" help="Origen, precio, estado y notas de reparación.">
+<x-ito.form-section title="Estado y adquisición" icon="bi-clipboard-check" help="Estado actual, de dónde vino y reparaciones.">
     <div class="row g-3">
         <div class="col-md-3">
             <label class="form-label">Origen</label>
             <select name="origen_adquisicion" class="form-select @error('origen_adquisicion') is-invalid @enderror">
-                <option value="">—</option>
+                <option value="">Sin indicar</option>
                 @foreach($origenes as $k => $label)
                 <option value="{{ $k }}" {{ old('origen_adquisicion', $item?->origen_adquisicion) == $k ? 'selected' : '' }}>{{ $label }}</option>
                 @endforeach
@@ -137,7 +137,7 @@
         </div>
         <div class="col-md-3">
             <label class="form-label">Precio</label>
-            <input type="number" name="precio" class="form-control" step="0.01" min="0" value="{{ old('precio', $item?->precio) }}">
+            <div class="input-group"><span class="input-group-text">$</span><input type="number" name="precio" class="form-control" step="0.01" min="0" value="{{ old('precio', $item?->precio) }}"></div>
         </div>
         <div class="col-md-3">
             <label class="form-label">Estado *</label>
@@ -161,7 +161,7 @@
             <textarea name="notas" class="form-control" rows="2">{{ old('notas', $item?->notas) }}</textarea>
         </div>
     </div>
-</x-ito.form-step>
+</x-ito.form-section>
 
 @push('scripts')
 <script>

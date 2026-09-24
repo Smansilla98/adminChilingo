@@ -1,34 +1,36 @@
 @extends('layouts.app')
 
-@section('title', 'Ver asistencia')
+@section('title', 'Asistencia')
 @section('page-title', 'Detalle de asistencia')
 
 @section('content')
-<x-ito.shell-page
-    title="Asistencia"
-    eyebrow="Asistencias"
-    subtitle="Detalle del registro"
->
+@php
+    $tipo = $asistencia->tipo_asistencia;
+    $tono = match (true) {
+        $tipo === 'presente' => 'success',
+        $tipo === 'tarde' => 'warning',
+        in_array($tipo, ['ausencia_justificada', 'justificado'], true) => 'info',
+        in_array($tipo, ['ausencia_injustificada', 'ausente'], true) => 'danger',
+        default => 'neutral',
+    };
+@endphp
+<x-ito.shell-page :title="$asistencia->alumno->nombre_apellido ?? 'Asistencia'" :subtitle="ucfirst($asistencia->fecha->locale('es')->translatedFormat('l j \d\e F Y'))" :plain="true">
+    <x-slot:actions>
+        <x-ito.status :tone="$tono" :label="\App\Models\Asistencia::TIPOS_ASISTENCIA[$tipo] ?? $tipo" />
+        <a href="{{ route('asistencias.index', ['bloque_id' => $asistencia->bloque_id]) }}" class="btn btn-outline-secondary">Volver a la planilla</a>
+        <a href="{{ route('asistencias.edit', $asistencia) }}" class="btn btn-primary"><i class="bi bi-pencil" aria-hidden="true"></i> Corregir</a>
+    </x-slot:actions>
 
-        <dl class="row">
-            <dt class="col-sm-3">Fecha</dt>
-            <dd class="col-sm-9">{{ $asistencia->fecha->format('d/m/Y') }}</dd>
-
-            <dt class="col-sm-3">Alumno</dt>
-            <dd class="col-sm-9">{{ $asistencia->alumno->nombre_apellido ?? '-' }}</dd>
-
-            <dt class="col-sm-3">Bloque</dt>
-            <dd class="col-sm-9">{{ $asistencia->bloque->nombre ?? '-' }}</dd>
-
-            <dt class="col-sm-3">Tipo de asistencia</dt>
-            <dd class="col-sm-9">
-                <span class="badge bg-{{ $asistencia->tipo_asistencia === 'presente' || $asistencia->tipo_asistencia === 'tarde' ? 'success' : ($asistencia->tipo_asistencia === 'justificado' ? 'info' : 'secondary') }}">
-                    {{ \App\Models\Asistencia::TIPOS_ASISTENCIA[$asistencia->tipo_asistencia] ?? $asistencia->tipo_asistencia }}
-                </span>
-            </dd>
-        </dl>
-        <a href="{{ route('asistencias.edit', $asistencia) }}" class="btn btn-warning">Editar</a>
-        <a href="{{ route('asistencias.index') }}" class="btn btn-secondary">Volver</a>
+    <x-ito.facts>
+        <x-ito.fact label="Fecha" :value="$asistencia->fecha->format('d/m/Y')" />
+        <x-ito.fact label="Bloque" :value="$asistencia->bloque->nombre ?? null" />
+        <x-ito.fact label="Alumno">
+            @if($asistencia->alumno)
+                <a href="{{ route('alumnos.show', $asistencia->alumno) }}">{{ $asistencia->alumno->nombre_apellido }}</a>
+            @else
+                —
+            @endif
+        </x-ito.fact>
+    </x-ito.facts>
 </x-ito.shell-page>
-
 @endsection

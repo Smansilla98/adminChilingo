@@ -4,85 +4,89 @@
 @section('page-title', $cuota->nombre)
 
 @section('content')
-<x-ito.shell-page
-    title="{{ $cuota->nombre }}"
-    eyebrow="Cuotas"
-    subtitle="Detalle de la cuota"
->
-
-        <dl class="row">
-            <dt class="col-sm-3">Nombre</dt>
-            <dd class="col-sm-9">{{ $cuota->nombre }}</dd>
-            @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance'))
-            <dt class="col-sm-3">Para quién</dt>
-            <dd class="col-sm-9">
-                @if(($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_GENERAL)
-                    General (toda la escuela)
-                @elseif(($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_SEDE)
-                    Diferencial — sede {{ $cuota->sede?->nombre ?? '—' }}
-                @else
-                    Bloque: {{ $cuota->bloque?->nombre ?? '—' }} @if($cuota->bloque?->sede) ({{ $cuota->bloque->sede->nombre }}) @endif
-                @endif
-            </dd>
-            @elseif($cuota->bloque)
-            <dt class="col-sm-3">Bloque</dt>
-            <dd class="col-sm-9">{{ $cuota->bloque->nombre }} @if($cuota->bloque->sede)({{ $cuota->bloque->sede->nombre }})@endif</dd>
-            @endif
-            <dt class="col-sm-3">Año / Mes</dt>
-            <dd class="col-sm-9">{{ $cuota->año }} {{ $cuota->nombre_mes ? '- ' . $cuota->nombre_mes : '' }}</dd>
-            <dt class="col-sm-3">Monto</dt>
-            <dd class="col-sm-9">$ {{ number_format($cuota->monto, 2, ',', '.') }}</dd>
-            <dt class="col-sm-3">Alumnos que pueden pagar</dt>
-            <dd class="col-sm-9">@if($cuota->alumnos->isEmpty())
-                @if(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance') && ($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_GENERAL)
-                    Todos los alumnos con bloque
-                @elseif(\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance') && ($cuota->alcance ?? 'bloque') === \App\Models\Cuota::ALCANCE_SEDE)
-                    Todos los alumnos de la sede (o lista abajo)
-                @else
-                    Todos los del bloque
-                @endif
-            @else {{ $cuota->alumnos->pluck('nombre_apellido')->join(', ') }} @endif</dd>
-            <dt class="col-sm-3">Registros de pago</dt>
-            <dd class="col-sm-9">{{ $cuota->pago_detalles_count }}</dd>
-        </dl>
-
-        <h2 class="h5 mt-4">Recordatorios WhatsApp</h2>
-        <p class="text-muted small">Twilio aceptó el envío no significa que WhatsApp lo haya entregado. El estado real llega por callback.</p>
-        @if(($recordatoriosWhatsapp ?? collect())->isEmpty())
-            <p class="mb-3">Aún no hay envíos de recordatorio para esta cuota.</p>
+@php
+    $conAlcance = \Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance');
+    $alcance = $conAlcance ? ($cuota->alcance ?? 'bloque') : 'bloque';
+    $paraQuien = match ($alcance) {
+        \App\Models\Cuota::ALCANCE_GENERAL => 'Toda la escuela',
+        \App\Models\Cuota::ALCANCE_SEDE => 'Sede '.($cuota->sede?->nombre ?? '—'),
+        default => $cuota->bloque ? $cuota->bloque->nombre.($cuota->bloque->sede ? ' ('.$cuota->bloque->sede->nombre.')' : '') : '—',
+    };
+    $vencida = $cuota->fecha_vencimiento && $cuota->fecha_vencimiento->isPast();
+    $recordatorios = $recordatoriosWhatsapp ?? collect();
+    $tonoWa = [
+        \App\Models\WhatsappMensaje::STATUS_READ => 'success',
+        \App\Models\WhatsappMensaje::STATUS_DELIVERED => 'success',
+        \App\Models\WhatsappMensaje::STATUS_SENT => 'info',
+        \App\Models\WhatsappMensaje::STATUS_FAILED => 'danger',
+        \App\Models\WhatsappMensaje::STATUS_UNDELIVERED => 'danger',
+    ];
+@endphp
+<x-ito.shell-page :title="$cuota->nombre" :subtitle="trim(($cuota->nombre_mes ? ucfirst($cuota->nombre_mes).' ' : '').$cuota->año).' · '.$paraQuien" :plain="true">
+    <x-slot:actions>
+        @if(! $cuota->activo)
+            <x-ito.status tone="neutral" label="Inactiva" />
+        @elseif($vencida)
+            <x-ito.status tone="danger" label="Vencida" />
         @else
-            <table class="ito-table mb-3">
-                <thead>
-                    <tr>
-                        <th>Alumno</th>
-                        <th>Teléfono</th>
-                        <th>Estado</th>
-                        <th>SID</th>
-                        <th>Error</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($recordatoriosWhatsapp as $msg)
-                        <tr>
-                            <td>{{ $msg->alumno?->nombre_apellido ?? '—' }}</td>
-                            <td>{{ $msg->telefono }}</td>
-                            <td>{{ $msg->etiquetaEstado() }}</td>
-                            <td><code>{{ $msg->twilio_sid }}</code></td>
-                            <td>
-                                @if($msg->error_code || $msg->error_message)
-                                    {{ $msg->error_code }} {{ $msg->error_message }}
-                                @else
-                                    —
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <x-ito.status tone="success" label="Vigente" />
         @endif
+        <a href="{{ route('cuotas.index') }}" class="btn btn-outline-secondary">Volver</a>
+        @can('update', $cuota)
+            <a href="{{ route('cuotas.edit', $cuota) }}" class="btn btn-primary"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</a>
+        @endcan
+    </x-slot:actions>
 
-        <a href="{{ route('cuotas.edit', $cuota) }}" class="btn btn-warning">Editar</a>
-        <a href="{{ route('cuotas.index') }}" class="btn btn-secondary">Volver</a>
+    <x-ito.facts>
+        <x-ito.fact label="Monto">$ {{ number_format($cuota->monto, 2, ',', '.') }}</x-ito.fact>
+        <x-ito.fact label="Vence" :value="$cuota->fecha_vencimiento?->format('d/m/Y') ?? 'Sin vencimiento'" />
+        <x-ito.fact label="Para quién" :value="$paraQuien" />
+        <x-ito.fact label="Pagos registrados" :value="$cuota->pago_detalles_count" />
+    </x-ito.facts>
+
+    <div class="ito-detail-grid">
+        <x-ito.detail-section title="Recordatorios por WhatsApp" icon="bi-whatsapp" help="“Enviado” quiere decir que Twilio lo aceptó; la entrega real se confirma después." :flush="true">
+            @if($recordatorios->isEmpty())
+                <x-ito.empty icon="bi-chat-dots" title="Sin recordatorios" description="Todavía no se enviaron recordatorios para esta cuota." />
+            @else
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead><tr><th>Alumno</th><th>Teléfono</th><th>Estado</th><th>Error</th></tr></thead>
+                        <tbody>
+                            @foreach($recordatorios as $msg)
+                                <tr>
+                                    <td>{{ $msg->alumno?->nombre_apellido ?? '—' }}</td>
+                                    <td class="ito-mono">{{ $msg->telefono }}</td>
+                                    <td><x-ito.status :tone="$tonoWa[$msg->status] ?? 'warning'" :label="$msg->etiquetaEstado()" /></td>
+                                    <td class="small text-muted">{{ trim(($msg->error_code ?? '').' '.($msg->error_message ?? '')) ?: '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </x-ito.detail-section>
+
+        <x-ito.detail-section title="Quiénes la pagan" icon="bi-people">
+            @if($cuota->alumnos->isEmpty())
+                <p class="mb-0">
+                    @if($alcance === \App\Models\Cuota::ALCANCE_GENERAL)
+                        Todos los alumnos con bloque.
+                    @elseif($alcance === \App\Models\Cuota::ALCANCE_SEDE)
+                        Todos los alumnos de la sede.
+                    @else
+                        Todos los alumnos del bloque.
+                    @endif
+                </p>
+            @else
+                @foreach($cuota->alumnos as $al)
+                    <div class="hub-list-item"><x-ito.person :name="$al->nombre_apellido" /></div>
+                @endforeach
+            @endif
+            @if($cuota->descripcion)
+                <p class="small text-muted mt-3 mb-0">{{ $cuota->descripcion }}</p>
+            @endif
+        </x-ito.detail-section>
+    </div>
 </x-ito.shell-page>
-
 @endsection

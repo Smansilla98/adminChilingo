@@ -24,22 +24,22 @@
     <div class="card-header">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
             <div>
-                <h5 class="mb-0">
+                <h2 class="h5 mb-0 text-capitalize">
                     {{ $startDate->locale('es')->translatedFormat('F Y') }}
-                </h5>
-                <div class="asist-legend mt-2 mb-0" aria-label="Leyenda del calendario">
-                    <span><i class="asist-badge-j" aria-hidden="true">E</i> Evento</span>
-                    <span><i class="asist-badge-p" aria-hidden="true">T</i> Taller / bloque</span>
-                    <span><i class="asist-badge-i" aria-hidden="true">S</i> Show</span>
+                </h2>
+                <div class="cal-legend mt-2" aria-label="Leyenda del calendario">
+                    <span class="cal-legend-item cal-legend-item--evento">Evento</span>
+                    <span class="cal-legend-item cal-legend-item--taller">Clase / taller</span>
+                    <span class="cal-legend-item cal-legend-item--show">Show</span>
                 </div>
             </div>
-            <div class="btn-group w-100 w-md-auto">
+            <div class="btn-group" role="group" aria-label="Cambiar mes">
                 <a href="{{ route('calendario.index', ['year' => $prevMonth->year, 'month' => $prevMonth->month]) }}"
                    class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-chevron-left"></i> <span class="d-none d-sm-inline">Anterior</span>
                 </a>
                 <a href="{{ route('calendario.index') }}" class="btn btn-sm btn-outline-secondary">
-                    Hoy
+                    Este mes
                 </a>
                 <a href="{{ route('calendario.index', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}"
                    class="btn btn-sm btn-outline-secondary">
@@ -48,9 +48,10 @@
             </div>
         </div>
     </div>
-    <div class="card-body p-1 p-md-3">
+    <div class="card-body p-2 p-md-3">
+        <p class="cal-grid-note text-muted small mb-0" style="display:none">En el celular te mostramos la agenda del mes en forma de lista, más abajo.</p>
         <div class="calendar-container">
-            <table class="table table-bordered calendar-table mb-0">
+            <table class="table calendar-table mb-0" data-ito-no-cards>
                 <thead>
                     <tr>
                         <th class="text-center calendar-header">Dom</th>
@@ -78,7 +79,7 @@
                                 $dayEvents = $dateKey && isset($eventsByDay[$dateKey]) ? $eventsByDay[$dateKey] : [];
                             @endphp
                             <td class="calendar-day {{ $isToday ? 'today' : '' }} {{ !$isCurrentMonth ? 'other-month' : '' }}">
-                                <div class="day-number">{{ $isCurrentMonth ? $cellDay : '' }}</div>
+                                <div class="day-number">@if($isToday)<span class="visually-hidden">Hoy, </span>@endif{{ $isCurrentMonth ? $cellDay : '' }}</div>
                                 <div class="day-events">
                                     @foreach($dayEvents as $item)
                                         @if($item['type'] === 'evento')
@@ -90,7 +91,7 @@
                                                     @if($evento->hora_inicio)
                                                         <span class="event-time">{{ $evento->hora_inicio->format('H:i') }}hs</span>
                                                     @endif
-                                                    <span class="event-name">{{ \Illuminate\Support\Str::limit($evento->titulo, 15) }}</span>
+                                                    <span class="event-name">{{ \Illuminate\Support\Str::limit($evento->titulo, 40) }}</span>
                                                 </small>
                                             </a>
                                         @elseif($item['type'] === 'bloque_taller')
@@ -112,7 +113,7 @@
                                                     @if($tIni)
                                                         <span class="event-time">{{ $tIni }}hs</span>
                                                     @endif
-                                                    <span class="event-name">{{ \Illuminate\Support\Str::limit($bloqueT->nombre, 16) }}</span>
+                                                    <span class="event-name">{{ \Illuminate\Support\Str::limit($bloqueT->nombre, 40) }}</span>
                                                 </small>
                                             </a>
                                         @elseif($item['type'] === 'show')
@@ -124,7 +125,7 @@
                                                     @if($show->hora_inicio)
                                                         <span class="event-time">{{ $show->hora_inicio->format('H:i') }}hs</span>
                                                     @endif
-                                                    <span class="event-name">{{ \Illuminate\Support\Str::limit($show->titulo, 12) }}</span>
+                                                    <span class="event-name">{{ \Illuminate\Support\Str::limit($show->titulo, 40) }}</span>
                                                 </small>
                                             </a>
                                         @endif
@@ -143,7 +144,7 @@
 @if($listItems->isNotEmpty())
 <div class="ito-card">
     <div class="card-header">
-        <h5 class="mb-0">Eventos, shows y talleres fijos — {{ $startDate->locale('es')->translatedFormat('F Y') }}</h5>
+        <h2 class="h5 mb-0">Agenda de {{ $startDate->locale('es')->translatedFormat('F Y') }}</h2>
     </div>
     <div class="card-body p-2 p-md-3">
         <div class="list-group list-group-flush">
@@ -154,9 +155,9 @@
                     <div class="flex-grow-1">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                             @php
-                                $badgeBg = $item->tipo === 'show' ? 'danger' : ($item->tipo === 'bloque_taller' ? 'success' : 'primary');
+                                $tonoTipo = $item->tipo === 'show' ? 'danger' : ($item->tipo === 'bloque_taller' ? 'success' : 'info');
                             @endphp
-                            <span class="badge bg-{{ $badgeBg }} event-status-badge">{{ $item->tipo_badge }}</span>
+                            <x-ito.status :tone="$tonoTipo" :label="$item->tipo_badge" />
                             <h6 class="mb-0 event-title">{{ $item->titulo }}</h6>
                         </div>
                         <div class="event-meta mb-1">
@@ -192,227 +193,69 @@
 
 @push('styles')
 <style>
-/* Contenedor del calendario */
-.calendar-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-}
-
-.calendar-table {
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-.calendar-header {
-    width: calc(100% / 7);
-    padding: 0.5rem 0.25rem !important;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-@media (min-width: 768px) {
-    .calendar-header {
-        padding: 0.75rem 0.5rem !important;
-        font-size: 0.875rem;
-    }
-}
-
-.calendar-day {
-    width: calc(100% / 7);
-    height: 80px;
-    vertical-align: top;
-    padding: 4px;
-    position: relative;
-    border: 1px solid var(--border);
-    word-wrap: break-word;
+.calendar-container { width: 100%; overflow-x: auto; }
+.calendar-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.calendar-table > thead > tr > th.calendar-header {
+    padding: 8px 4px;
     background: var(--s2);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+.calendar-table > tbody > tr > td.calendar-day {
+    height: 118px;
+    padding: 6px;
+    vertical-align: top;
+    border: 1px solid var(--border);
+    background: var(--s1);
     color: var(--text);
 }
-
-@media (min-width: 768px) {
-    .calendar-day {
-        height: 120px;
-        padding: 8px;
-    }
-}
-
-.calendar-day.other-month {
-    background-color: var(--s1);
-    color: var(--muted-2);
-}
-
-.calendar-day.today {
-    background-color: var(--accent-soft);
-    border: 2px solid var(--accent) !important;
-    font-weight: 600;
-}
-
-.calendar-day.today .day-number {
-    color: var(--accent);
-}
-
+.calendar-day.other-month { background: var(--s2) !important; }
 .day-number {
-    font-weight: bold;
-    margin-bottom: 2px;
-    font-size: 0.875rem;
-    line-height: 1.2;
+    display: inline-grid;
+    place-items: center;
+    min-width: 26px;
+    height: 26px;
+    margin-bottom: 4px;
+    border-radius: 50%;
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 600;
 }
-
-@media (min-width: 768px) {
-    .day-number {
-        font-size: 1.1em;
-        margin-bottom: 5px;
-    }
-}
-
-.day-events {
-    max-height: 60px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-}
-
-@media (min-width: 768px) {
-    .day-events {
-        max-height: 80px;
-    }
-}
-
-.day-events::-webkit-scrollbar {
-    width: 3px;
-}
-
-.day-events::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.day-events::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--text) 25%, transparent);
-    border-radius: 3px;
-}
-
+.calendar-day.today .day-number { background: var(--primary); color: var(--primary-on); }
+.day-events { display: grid; gap: 3px; max-height: 76px; overflow-y: auto; scrollbar-width: thin; }
 .event-item {
-    padding: 3px 4px;
-    margin-bottom: 2px;
-    border-radius: var(--radius-sm, 4px);
-    cursor: pointer;
-    font-size: 0.65rem;
-    line-height: 1.3;
     display: block;
-    width: 100%;
-    box-sizing: border-box;
-    transition: all var(--duration) var(--ease-out);
+    padding: 3px 6px;
+    border-left: 3px solid var(--info);
+    border-radius: var(--radius-xs);
+    background: var(--info-soft);
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.35;
     text-decoration: none;
-    color: inherit;
-    border-left: 3px solid var(--accent);
 }
-
-@media (min-width: 768px) {
-    .event-item {
-        padding: 4px 6px;
-        font-size: 0.75rem;
-        margin-bottom: 3px;
-    }
-}
-
-.event-item:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-}
-
-.event-text {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.event-time {
-    font-weight: 600;
-    flex-shrink: 0;
-}
-
-.event-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-    min-width: 0;
-}
-
-.event-evento {
-    background-color: var(--blue);
-    color: var(--ink);
-}
-
-.event-show {
-    background-color: var(--danger);
-    color: var(--accent-on);
-    border-left: 3px solid color-mix(in srgb, var(--danger) 70%, #000);
-}
-
-.event-taller {
-    background-color: var(--success);
-    color: var(--accent-on);
-    border-left: 3px solid color-mix(in srgb, var(--success) 70%, #000);
-}
-
+.event-item:hover { color: var(--text); filter: brightness(0.97); }
+.event-text { display: flex; gap: 4px; min-width: 0; overflow: hidden; white-space: nowrap; }
+.event-time { flex-shrink: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.event-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.event-taller { border-left-color: var(--success); background: var(--success-soft); }
+.event-show { border-left-color: var(--danger); background: var(--danger-soft); }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 12px; }
+.cal-legend-item { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 12.5px; }
+.cal-legend-item::before { content: ''; width: 12px; height: 12px; border-radius: 3px; border-left: 3px solid var(--info); background: var(--info-soft); }
+.cal-legend-item--taller::before { border-left-color: var(--success); background: var(--success-soft); }
+.cal-legend-item--show::before { border-left-color: var(--danger); background: var(--danger-soft); }
+.event-list-item { padding: 12px 14px !important; border-left: 3px solid transparent; }
+.event-list-item:hover { background: var(--s2); border-left-color: var(--accent); }
+.event-title { font-size: 15px; font-weight: 600; }
+.event-arrow { color: var(--muted); }
+/* En celular la grilla mensual no entra: se muestra la agenda del mes. */
 @media (max-width: 767.98px) {
-    .calendar-container {
-        margin: 0 -15px;
-        padding: 0 15px;
-    }
-    .calendar-day {
-        min-height: 80px;
-    }
-    .event-name {
-        max-width: 60px;
-    }
-}
-
-.event-list-item {
-    padding: 0.75rem !important;
-    border-left: 3px solid transparent;
-    transition: all var(--duration) var(--ease-out);
-}
-
-.event-list-item:hover {
-    background-color: var(--accent-soft);
-    border-left-color: var(--accent);
-}
-
-.event-status-badge {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
-}
-
-.event-title {
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.event-meta {
-    font-size: 0.85rem;
-}
-
-.event-arrow {
-    font-size: 1.25rem;
-    color: var(--muted);
-}
-
-.event-list-item--taller:hover {
-    background-color: var(--success-soft);
-    border-left-color: var(--success);
-}
-
-.event-list-item--taller:hover .event-arrow {
-    color: var(--success);
+    .calendar-container { display: none; }
+    .cal-grid-note { display: block !important; }
 }
 </style>
 @endpush

@@ -7,7 +7,7 @@
 <div class="ito-page">
     <div class="ito-page-head mb-3">
         <div>
-            <p class="hub-eyebrow">Operativo</p>
+            
             <h1 class="ito-page-title">Cierre de mes</h1>
             <p class="ito-page-sub">Checklist para {{ $mesLabel }}.</p>
         </div>

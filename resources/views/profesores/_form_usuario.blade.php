@@ -5,9 +5,7 @@
     $defaultModo = $tieneCuenta ? 'existente' : 'nueva';
     $modo = old('cuenta_modo', $defaultModo);
 @endphp
-<div class="border rounded p-3 mb-3" style="border-color: var(--border) !important;">
-    <h2 class="h6 mb-2">Usuario y contraseña para entrar al sistema</h2>
-    <p class="text-muted small mb-3">Si le creás una cuenta, va a poder iniciar sesión con ese usuario y esa clave.</p>
+<x-ito.form-section title="Cuenta de acceso" icon="bi-key" help="Opcional. Con una cuenta puede entrar al sistema y a la app con su usuario y contraseña.">
 
     <div class="mb-3">
         <label class="form-label" for="cuenta_modo">Qué hacer</label>
@@ -80,4 +78,4 @@
         </div>
     </div>
     @endunless
-</div>
+</x-ito.form-section>

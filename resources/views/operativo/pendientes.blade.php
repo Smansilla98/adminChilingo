@@ -7,7 +7,7 @@
 <div class="hub hub--operativo">
     <div class="hub-hero">
         <div class="hub-hero-main">
-            <p class="hub-eyebrow">Operativo · La Chilinga</p>
+            
             <h1 class="hub-greeting">Qué <em>necesita</em> tu atención</h1>
             <p class="hub-lead">Comprobantes, asistencias de hoy{{ $esAdmin ? ' y cuotas del mes' : '' }}.</p>
         </div>

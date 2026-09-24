@@ -4,32 +4,29 @@
 @section('page-title', 'Editar asistencia')
 
 @section('content')
-<x-ito.shell-page
-    title="Editar asistencia"
-    eyebrow="Asistencias"
-    subtitle="Cambiá el tipo y guardá."
->
-
-        <form action="{{ route('asistencias.update', $asistencia) }}" method="POST">
-            @csrf
-            @method('PUT')
-            <p class="text-muted small mb-3">{{ $asistencia->alumno->nombre_apellido ?? '-' }} — {{ $asistencia->fecha->format('d/m/Y') }} — {{ $asistencia->bloque->nombre ?? '-' }}. Elegí el tipo correcto y guardá.</p>
-            @php
-                $valorActual = $asistencia->tipo_asistencia;
-                if ($valorActual === 'ausente') $valorActual = 'ausencia_injustificada';
-                if ($valorActual === 'justificado') $valorActual = 'ausencia_justificada';
-            @endphp
-            <div class="mb-3">
-                <label class="form-label">Tipo de asistencia</label>
-                <select name="tipo_asistencia" class="form-select">
-                    @foreach($tiposAsistencia as $valor => $etiqueta)
-                    <option value="{{ $valor }}" {{ old('tipo_asistencia', $valorActual) == $valor ? 'selected' : '' }}>{{ $etiqueta }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <a href="{{ route('asistencias.index') }}" class="btn btn-secondary">Cancelar</a>
-        </form>
+@php
+    $valorActual = $asistencia->tipo_asistencia;
+    if ($valorActual === 'ausente') { $valorActual = 'ausencia_injustificada'; }
+    if ($valorActual === 'justificado') { $valorActual = 'ausencia_justificada'; }
+    $seleccion = old('tipo_asistencia', $valorActual);
+@endphp
+<x-ito.shell-page :title="$asistencia->alumno->nombre_apellido ?? 'Asistencia'" :subtitle="ucfirst($asistencia->fecha->locale('es')->translatedFormat('l j \d\e F')).' · '.($asistencia->bloque->nombre ?? '—')" :plain="true">
+    <form action="{{ route('asistencias.update', $asistencia) }}" method="POST">
+        @csrf
+        @method('PUT')
+        <x-ito.form-section title="¿Cómo fue la asistencia?" icon="bi-check2-square">
+            <fieldset class="asist-chips" role="radiogroup" aria-label="Tipo de asistencia">
+                @foreach($tiposAsistencia as $valor => $etiqueta)
+                    <label class="asist-chip asist-chip--{{ $valor }}">
+                        <input type="radio" name="tipo_asistencia" value="{{ $valor }}" @checked($seleccion === $valor)>
+                        <span class="asist-chip-letra" aria-hidden="true">{{ \App\Models\Asistencia::letraTipo($valor) }}</span>
+                        <span class="asist-chip-texto">{{ $etiqueta }}</span>
+                    </label>
+                @endforeach
+            </fieldset>
+            @error('tipo_asistencia')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        </x-ito.form-section>
+        <x-ito.form-actions :cancel="route('asistencias.show', $asistencia)" submit="Guardar" />
+    </form>
 </x-ito.shell-page>
-
 @endsection

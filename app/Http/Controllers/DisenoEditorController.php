@@ -46,6 +46,7 @@ class DisenoEditorController extends Controller
                 'basePath' => '/disenos',
                 'apiBase' => url('/disenos/api'),
                 'panelUrl' => route('dashboard'),
+                'logoUrl' => asset('images/brand/logo.png'),
                 'csrfToken' => csrf_token(),
                 'puedeGestionarKit' => $request->user()->can('manageKit', Diseno::class),
             ],

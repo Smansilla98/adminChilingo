@@ -104,7 +104,8 @@
             <p class="text-warning">No hay alumnos activos en este bloque.</p>
             @else
             <div class="asist-sticky-save">
-                <button type="submit" class="btn btn-primary btn-lg w-100">Guardar asistencias</button>
+                <div class="asist-resumen" id="asist-resumen" aria-live="polite"></div>
+                <button type="submit" class="btn btn-primary btn-lg">Guardar asistencias</button>
             </div>
             @endif
         </form>
@@ -125,8 +126,31 @@
     }
     var p = document.getElementById('asist-dia-all-presente');
     var a = document.getElementById('asist-dia-all-ausente');
-    if (p) p.addEventListener('click', function () { setAll('presente'); });
-    if (a) a.addEventListener('click', function () { setAll('ausencia_injustificada'); });
+    if (p) p.addEventListener('click', function () { setAll('presente'); resumen(); });
+    if (a) a.addEventListener('click', function () { setAll('ausencia_injustificada'); resumen(); });
+
+    // Resumen en vivo: cuántos presentes, tarde, justificados y ausentes quedan marcados.
+    var caja = document.getElementById('asist-resumen');
+    var grupos = [
+        ['presente', 'Presentes', 'success'],
+        ['tarde', 'Tarde', 'warning'],
+        ['ausencia_justificada', 'Justificadas', 'info'],
+        ['ausencia_injustificada', 'Ausentes', 'danger'],
+    ];
+    function resumen() {
+        if (!caja) return;
+        caja.innerHTML = '';
+        grupos.forEach(function (g) {
+            var n = form.querySelectorAll('input.asist-dia-radio[value="' + g[0] + '"]:checked').length;
+            var el = document.createElement('span');
+            el.className = 'ito-status ito-status--' + (n ? g[2] : 'neutral');
+            el.innerHTML = '<span class="ito-status-dot" aria-hidden="true"></span><span></span>';
+            el.lastChild.textContent = g[1] + ': ' + n;
+            caja.appendChild(el);
+        });
+    }
+    form.addEventListener('change', resumen);
+    resumen();
 })();
 </script>
 @endpush

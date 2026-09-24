@@ -16,7 +16,7 @@
 <div class="hub hub--familia">
     <div class="hub-hero">
         <div class="hub-hero-main">
-            <p class="hub-eyebrow">Portal familia · La Chilinga</p>
+            <p class="hub-eyebrow">Portal familia</p>
             <h1 class="hub-greeting">{{ $saludo }}, <em>{{ $primer }}</em>.</h1>
             <p class="hub-lead">
                 @if($alumno)

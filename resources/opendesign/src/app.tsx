@@ -48,10 +48,10 @@ export function App() {
     return (
       <>
       {hostNav}
-      <div class="flex items-center justify-center h-full bg-[#F3F4F7]">
+      <div class="flex items-center justify-center h-full bg-surface">
         <div class="text-center">
           <div class="spinner !w-6 !h-6 !border-accent/30 !border-t-accent mb-3 mx-auto" />
-          <p class="text-zinc-400 text-sm">Cargando…</p>
+          <p class="text-zinc-500 text-sm">Cargando…</p>
         </div>
       </div>
       </>

@@ -74,7 +74,7 @@
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 mt-4">
-                        <button type="submit" class="btn btn-warning">
+                        <button type="submit" class="btn btn-outline-primary">
                             <i class="bi bi-check-lg"></i> Guardar y pasar al editor
                         </button>
                         <a href="{{ route('programa.partituras.index') }}" class="btn btn-outline-secondary">Volver al catálogo</a>

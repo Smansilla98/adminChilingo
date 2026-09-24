@@ -62,15 +62,15 @@ export function MarcaPanel({ onAgregar }: { onAgregar: (url: string) => void }) 
     await cargar();
   };
 
-  if (error) return <p class="text-[11px] text-red-500">{error}</p>;
-  if (!grupos) return <p class="text-[11px] text-zinc-400">Cargando…</p>;
+  if (error) return <p class="text-xs text-red-500">{error}</p>;
+  if (!grupos) return <p class="text-xs text-zinc-500">Cargando…</p>;
 
   return (
     <div class="flex flex-col gap-4">
       {CONFIG.puedeGestionarKit && (
         <div>
           <button
-            class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold border border-dashed border-zinc-300 bg-white text-zinc-600 cursor-pointer hover:border-accent"
+            class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border border-dashed border-zinc-300 bg-white text-zinc-600 cursor-pointer hover:border-accent"
             onClick={() => inputRef.current?.click()}
             disabled={subiendo}
           >
@@ -81,9 +81,9 @@ export function MarcaPanel({ onAgregar }: { onAgregar: (url: string) => void }) 
       )}
       {grupos.map((g) => (
         <section key={g.clave}>
-          <h3 class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider m-0 mb-2">{g.titulo}</h3>
+          <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider m-0 mb-2">{g.titulo}</h3>
           {g.items.length === 0 ? (
-            <p class="text-[11px] text-zinc-400 m-0">Vacío.</p>
+            <p class="text-xs text-zinc-500 m-0">Vacío.</p>
           ) : (
             <div class="grid grid-cols-2 gap-2">
               {g.items.map((it) => (
@@ -106,7 +106,7 @@ export function MarcaPanel({ onAgregar }: { onAgregar: (url: string) => void }) 
                       <Trash2 size={11} />
                     </button>
                   )}
-                  <p class="text-[10px] text-zinc-500 truncate m-0 mt-0.5">{it.label}</p>
+                  <p class="text-[11px] text-zinc-500 truncate m-0 mt-0.5">{it.label}</p>
                 </div>
               ))}
             </div>

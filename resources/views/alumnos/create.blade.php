@@ -6,14 +6,12 @@
 @section('content')
 <x-ito.shell-page
     title="Nuevo alumno"
-    subtitle="Alta en tres pasos: datos, instrumentos y clases."
+    subtitle="Datos personales, instrumento y clases."
     eyebrow="Alumnos"
+    :plain="true"
 >
-    <x-slot:actions>
-        <a href="{{ route('alumnos.index') }}" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
-    </x-slot:actions>
 
-    <form action="{{ route('alumnos.store') }}" method="POST" class="ito-form">
+    <form action="{{ route('alumnos.store') }}" method="POST" >
         @csrf
         @isset($persona)
             @if($persona)
@@ -22,14 +20,7 @@
             @endif
         @endisset
         @php($alumno = ($persona ?? null) ? new \App\Models\Alumno(['nombre_apellido' => $persona->nombre_completo, 'dni' => $persona->dni, 'fecha_nacimiento' => $persona->fecha_nacimiento, 'telefono' => $persona->telefono]) : ($alumno ?? null))
-        <x-ito.form-steps
-            :steps="['Datos', 'Instrumentos', 'Clases']"
-            submit-label="Guardar alumno"
-        >
-            <x-slot:cancel>
-                <a href="{{ route('alumnos.index') }}" class="btn btn-outline-secondary">Cancelar</a>
-            </x-slot:cancel>
-            @include('alumnos._form', [
+        @include('alumnos._form', [
                 'alumno' => $alumno,
                 'instrumentos' => $instrumentos,
                 'tiposTambor' => $tiposTambor,
@@ -38,7 +29,7 @@
                 'bloques' => $bloques,
                 'profesoresSinVinculo' => $profesoresSinVinculo ?? collect(),
             ])
-        </x-ito.form-steps>
+        <x-ito.form-actions :cancel="route('alumnos.index')" submit="Crear alumno" />
     </form>
 </x-ito.shell-page>
 @endsection

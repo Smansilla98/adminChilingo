@@ -5,7 +5,7 @@
 @if($hrefEditor)
     <a
         href="{{ $hrefEditor }}"
-        class="{{ $variant === 'primary' ? 'btn btn-warning' : 'btn btn-sm btn-warning' }}"
+        class="{{ $variant === 'primary' ? 'btn btn-outline-primary' : 'btn btn-sm btn-outline-primary' }}"
         data-biblio-ignore
         title="Abrir el editor con este original al lado"
     >

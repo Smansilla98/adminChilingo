@@ -1,40 +1,36 @@
 @extends('layouts.app')
 
-@section('title', 'Ver gasto')
-@section('page-title', 'Ver gasto')
+@section('title', 'Gasto #'.$gasto->id)
+@section('page-title', 'Gasto #'.$gasto->id)
 
 @section('content')
-<x-ito.shell-page
-    title="Gasto #{{ $gasto->id }}"
-    subtitle="Detalle del egreso"
-    eyebrow="Gastos"
->
+@php
+    $tipo = \App\Models\Gasto::TIPOS[$gasto->tipo] ?? $gasto->tipo;
+    $subtipo = $gasto->subtipo ? ((\App\Models\Gasto::SUBTIPOS[$gasto->tipo] ?? [])[$gasto->subtipo] ?? $gasto->subtipo) : null;
+@endphp
+<x-ito.shell-page :title="$gasto->descripcion ?: $tipo" :subtitle="'Gasto #'.$gasto->id.' · '.$gasto->fecha->format('d/m/Y')" :plain="true">
     <x-slot:actions>
-        <a href="{{ route('gastos.edit', $gasto) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
-        <a href="{{ route('gastos.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
+        <a href="{{ route('gastos.index') }}" class="btn btn-outline-secondary">Volver</a>
+        @can('update', $gasto)
+            <a href="{{ route('gastos.edit', $gasto) }}" class="btn btn-primary"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</a>
+        @endcan
     </x-slot:actions>
 
-    <dl class="ito-dl">
-        <div><dt>Fecha</dt><dd>{{ $gasto->fecha->format('d/m/Y') }}</dd></div>
-        <div><dt>Tipo</dt><dd>{{ \App\Models\Gasto::TIPOS[$gasto->tipo] ?? $gasto->tipo }}</dd></div>
-        @if($gasto->subtipo)
-        <div><dt>Subtipo</dt><dd>{{ $gasto->subtipo }}</dd></div>
-        @endif
-        <div><dt>Monto</dt><dd><strong>$ {{ number_format($gasto->monto, 2, ',', '.') }}</strong></dd></div>
-        <div><dt>Sede</dt><dd>{{ $gasto->sede?->nombre ?? '—' }}</dd></div>
-        <div><dt>Bloque</dt><dd>{{ $gasto->bloque?->nombre ?? '—' }}</dd></div>
-        @if($gasto->descripcion)
-        <div><dt>Descripción</dt><dd>{{ $gasto->descripcion }}</dd></div>
-        @endif
-        @if($gasto->proveedor)
-        <div><dt>Proveedor</dt><dd>{{ $gasto->proveedor }}</dd></div>
-        @endif
-        @if($gasto->notas)
-        <div><dt>Notas</dt><dd>{{ $gasto->notas }}</dd></div>
-        @endif
-        @if($gasto->creador)
-        <div><dt>Registrado por</dt><dd>{{ $gasto->creador->name ?? $gasto->creador->username }}</dd></div>
-        @endif
-    </dl>
+    <x-ito.facts>
+        <x-ito.fact label="Monto">$ {{ number_format($gasto->monto, 2, ',', '.') }}</x-ito.fact>
+        <x-ito.fact label="Tipo" :value="$tipo.($subtipo ? ' · '.$subtipo : '')" />
+        <x-ito.fact label="Sede" :value="$gasto->sede?->nombre" />
+        <x-ito.fact label="Bloque" :value="$gasto->bloque?->nombre" />
+        <x-ito.fact label="Proveedor" :value="$gasto->proveedor" />
+    </x-ito.facts>
+
+    @if($gasto->notas || $gasto->creador)
+        <x-ito.detail-section title="Notas" icon="bi-journal-text">
+            <p class="mb-0" style="white-space: pre-line">{{ $gasto->notas ?: 'Sin notas.' }}</p>
+            @if($gasto->creador)
+                <p class="small text-muted mt-3 mb-0">Registrado por {{ $gasto->creador->name ?? $gasto->creador->username }}{{ $gasto->created_at ? ' el '.$gasto->created_at->format('d/m/Y') : '' }}.</p>
+            @endif
+        </x-ito.detail-section>
+    @endif
 </x-ito.shell-page>
 @endsection

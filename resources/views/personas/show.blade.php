@@ -10,142 +10,197 @@
 @endphp
 
 @section('content')
+@php
+    $pestanas = ['resumen' => 'Resumen'];
+    if ($persona->alumnos->isNotEmpty()) { $pestanas['alumno'] = 'Alumno y cuenta'; }
+    if ($permisos) { $pestanas['permisos'] = 'Permisos'; }
+@endphp
 <x-ito.shell-page
     :title="$persona->nombre_completo"
-    eyebrow="Personas"
-    :subtitle="collect([$persona->dni ? 'DNI '.$persona->dni : null, $persona->edad ? $persona->edad.' años' : null, \App\Models\Persona::ESTADOS[$persona->estado] ?? null])->filter()->join(' · ')"
+    :subtitle="collect([$persona->dni ? 'DNI '.$persona->dni : null, $persona->edad ? $persona->edad.' años' : null, $persona->telefono])->filter()->join(' · ')"
+    :plain="true"
 >
     <x-slot:actions>
+        <x-ito.status :tone="$persona->estado === 'activo' ? 'success' : 'neutral'" :label="\App\Models\Persona::ESTADOS[$persona->estado] ?? ucfirst($persona->estado ?? '')" />
         @can('update', $persona)
-            <a href="{{ route('personas.edit', $persona) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Editar datos</a>
+            <a href="{{ route('personas.edit', $persona) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil" aria-hidden="true"></i> Editar datos</a>
         @endcan
-        @if($persona->alumnos->isEmpty())
-            @can('alumnos.create')
-                <a href="{{ route('alumnos.create', ['persona_id' => $persona->id]) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-mortarboard"></i> Inscribir como alumno</a>
-            @endcan
-        @endif
-        @if(! $persona->profesor)
-            @can('profesores.create')
-                <a href="{{ route('profesores.create', ['persona_id' => $persona->id]) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-person-video3"></i> Sumar al plantel docente</a>
-            @endcan
-        @endif
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Más</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                @if($persona->alumnos->isEmpty())
+                    @can('alumnos.create')
+                        <li><a class="dropdown-item" href="{{ route('alumnos.create', ['persona_id' => $persona->id]) }}"><i class="bi bi-mortarboard" aria-hidden="true"></i> Inscribir como alumno</a></li>
+                    @endcan
+                @endif
+                @if(! $persona->profesor)
+                    @can('profesores.create')
+                        <li><a class="dropdown-item" href="{{ route('profesores.create', ['persona_id' => $persona->id]) }}"><i class="bi bi-person-video3" aria-hidden="true"></i> Sumar al plantel docente</a></li>
+                    @endcan
+                @endif
+                <li><a class="dropdown-item" href="{{ route('personas.index') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Volver al listado</a></li>
+            </ul>
+        </div>
         @if($persona->user)
             @can('view', $persona->user)
-                <a href="{{ route('usuarios.show', $persona->user) }}" class="btn btn-primary btn-sm"><i class="bi bi-shield-lock"></i> Cuenta y permisos</a>
+                <a href="{{ route('usuarios.show', $persona->user) }}" class="btn btn-primary"><i class="bi bi-shield-lock" aria-hidden="true"></i> Cuenta y permisos</a>
             @endcan
         @else
             @can('usuarios.create')
-                <a href="{{ route('usuarios.create', ['persona_id' => $persona->id]) }}" class="btn btn-primary btn-sm"><i class="bi bi-key"></i> Crear cuenta de acceso</a>
+                <a href="{{ route('usuarios.create', ['persona_id' => $persona->id]) }}" class="btn btn-primary"><i class="bi bi-key" aria-hidden="true"></i> Crear cuenta de acceso</a>
             @endcan
         @endif
     </x-slot:actions>
 
     @if($persona->fusionadaEn)
-        <div class="alert alert-warning">Esta ficha se fusionó en <a href="{{ route('personas.show', $persona->fusionadaEn) }}">{{ $persona->fusionadaEn->nombre_completo }}</a>.</div>
+        <div class="alert alert-warning mb-0">Esta ficha se fusionó en <a href="{{ route('personas.show', $persona->fusionadaEn) }}">{{ $persona->fusionadaEn->nombre_completo }}</a>.</div>
     @endif
 
-    {{-- ¿Qué hace esta persona? --}}
-    <section class="mb-4" aria-labelledby="funciones-titulo">
-        <h2 id="funciones-titulo" class="h5">Funciones</h2>
-        @if($funciones === [])
-            <p class="text-muted">Todavía no tiene funciones en la escuela.</p>
-        @else
-            <div class="table-responsive">
-                <table class="table table-sm align-middle">
-                    <thead><tr><th>Rol</th><th>Dónde</th><th>Origen</th></tr></thead>
-                    <tbody>
-                        @foreach($funciones as $f)
-                            <tr>
-                                <td class="fw-semibold">{{ $f['rol_nombre'] }}</td>
-                                <td>{{ $f['ambito_nombre'] }}</td>
-                                <td class="small text-muted">{{ $f['origen_etiqueta'] }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    <x-ito.tabs id="personaTabs" :tabs="$pestanas">
+        <x-ito.tab tabs="personaTabs" name="resumen" :active="true">
+            <x-ito.detail-section title="Funciones" icon="bi-diagram-3" :flush="true">
+                @if($funciones === [])
+                    <x-ito.empty icon="bi-diagram-3" title="Sin funciones" description="Todavía no tiene funciones en la escuela." />
+                @else
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0" data-ito-no-cards>
+                            <thead><tr><th>Rol</th><th>Dónde</th><th>Origen</th></tr></thead>
+                            <tbody>
+                                @foreach($funciones as $f)
+                                    <tr>
+                                        <td class="fw-semibold">{{ $f['rol_nombre'] }}</td>
+                                        <td>{{ $f['ambito_nombre'] }}</td>
+                                        <td class="small text-muted">{{ $f['origen_etiqueta'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </x-ito.detail-section>
+
+            <div class="ito-detail-grid">
+                <div class="ito-detail-col">
+                    <x-ito.detail-section title="Datos personales" icon="bi-person">
+                        <dl class="ito-dl">
+                            <div><dt>Teléfono</dt><dd>{{ $persona->telefono ?? '—' }}</dd></div>
+                            <div><dt>Email</dt><dd>{{ $persona->email ?? '—' }}</dd></div>
+                            <div><dt>Nacimiento</dt><dd>{{ $persona->fecha_nacimiento?->format('d/m/Y') ?? '—' }}</dd></div>
+                            <div><dt>Dirección</dt><dd>{{ $persona->direccion ?? '—' }}</dd></div>
+                            <div><dt>Emergencia</dt><dd>{{ trim(($persona->contacto_emergencia_nombre ?? '').' '.($persona->contacto_emergencia_telefono ?? '')) ?: '—' }}</dd></div>
+                            @if($persona->observaciones)<div><dt>Observaciones</dt><dd>{{ $persona->observaciones }}</dd></div>@endif
+                        </dl>
+                    </x-ito.detail-section>
+
+                    @if($persona->profesor)
+                        <x-ito.detail-section title="Docente" icon="bi-person-badge">
+                            <x-slot:actions>
+                                @can('profesores.view')<a class="btn btn-sm btn-ghost" href="{{ route('profesores.show', $persona->profesor) }}">Ver ficha docente</a>@endcan
+                            </x-slot:actions>
+                            @forelse($persona->profesor->bloques as $b)
+                                <div class="hub-list-item">
+                                    <span class="fw-semibold">{{ $b->nombre }}</span>
+                                    <span class="small text-muted ms-auto">{{ $b->sede?->nombre }} · {{ $b->pivot->rol }}</span>
+                                </div>
+                            @empty
+                                <p class="text-muted mb-0">Sin bloques asignados.</p>
+                            @endforelse
+                        </x-ito.detail-section>
+                    @endif
+                </div>
+
+                <div class="ito-detail-col">
+                    <x-ito.detail-section title="Cuenta de acceso" icon="bi-key">
+                        @if($persona->user)
+                            <dl class="ito-dl">
+                                <div><dt>Usuario</dt><dd class="ito-mono">{{ $persona->user->username }}</dd></div>
+                                <div><dt>Estado</dt><dd><x-ito.status :tone="$persona->user->activo ? 'success' : 'neutral'" :label="$persona->user->activo ? 'Activa' : 'Desactivada'" /></dd></div>
+                                <div><dt>Última actividad</dt><dd>{{ $persona->user->ultimo_acceso_at?->diffForHumans() ?? 'Sin registro' }}</dd></div>
+                            </dl>
+                        @else
+                            <p class="text-muted mb-0">No tiene cuenta. Puede ser alumno o docente sin entrar al sistema.</p>
+                        @endif
+                    </x-ito.detail-section>
+
+                    <x-ito.detail-section title="Próximos eventos" icon="bi-calendar-event">
+                        @forelse($eventos as $e)
+                            <div class="hub-list-item">
+                                <span class="agenda-date" aria-hidden="true"><span class="agenda-date-d">{{ $e->fecha->format('d') }}</span><span class="agenda-date-m">{{ $e->fecha->locale('es')->translatedFormat('M') }}</span></span>
+                                <span class="fw-semibold">{{ $e->titulo }}</span>
+                            </div>
+                        @empty
+                            <p class="text-muted mb-0">Sin eventos próximos.</p>
+                        @endforelse
+                    </x-ito.detail-section>
+
+                    @if($asistencias->isNotEmpty())
+                        <x-ito.detail-section title="Asistencias recientes" icon="bi-check2-square">
+                            @foreach($asistencias as $a)
+                                <div class="hub-list-item small">
+                                    <span>{{ $a->fecha->format('d/m') }} · {{ $a->bloque?->nombre }}</span>
+                                    <strong class="ms-auto">{{ \App\Models\Asistencia::TIPOS_ASISTENCIA[$a->tipo_asistencia] ?? ($a->presente ? 'Presente' : 'Ausente') }}</strong>
+                                </div>
+                            @endforeach
+                        </x-ito.detail-section>
+                    @endif
+
+                    @if($inventario->isNotEmpty())
+                        <x-ito.detail-section title="Instrumentos a su nombre" icon="bi-box-seam">
+                            @foreach($inventario as $i)
+                                <div class="hub-list-item small"><span class="ito-mono">{{ $i->codigo }}</span> {{ $i->nombre }} <span class="text-muted ms-auto">{{ $i->sede?->nombre }}</span></div>
+                            @endforeach
+                        </x-ito.detail-section>
+                    @endif
+                </div>
             </div>
-        @endif
-    </section>
 
-    <div class="row g-4">
-        <section class="col-lg-6" aria-labelledby="datos-titulo">
-            <h2 id="datos-titulo" class="h5">Datos personales</h2>
-            <dl class="ito-dl">
-                <dt>Teléfono</dt><dd>{{ $persona->telefono ?? '—' }}</dd>
-                <dt>Email</dt><dd>{{ $persona->email ?? '—' }}</dd>
-                <dt>Nacimiento</dt><dd>{{ $persona->fecha_nacimiento?->format('d/m/Y') ?? '—' }}</dd>
-                <dt>Dirección</dt><dd>{{ $persona->direccion ?? '—' }}</dd>
-                <dt>Emergencia</dt><dd>{{ trim(($persona->contacto_emergencia_nombre ?? '').' '.($persona->contacto_emergencia_telefono ?? '')) ?: '—' }}</dd>
-                @if($persona->observaciones)<dt>Observaciones</dt><dd>{{ $persona->observaciones }}</dd>@endif
-            </dl>
-        </section>
-
-        <section class="col-lg-6" aria-labelledby="cuenta-titulo">
-            <h2 id="cuenta-titulo" class="h5">Cuenta de acceso</h2>
-            @if($persona->user)
-                <dl class="ito-dl">
-                    <dt>Usuario</dt><dd class="ito-mono">{{ $persona->user->username }}</dd>
-                    <dt>Estado</dt><dd><x-ito.status :tone="$persona->user->activo ? 'success' : 'neutral'" :label="$persona->user->activo ? 'Activa' : 'Desactivada'" /></dd>
-                    <dt>Última actividad</dt><dd>{{ $persona->user->ultimo_acceso_at?->diffForHumans() ?? 'Sin registro' }}</dd>
-                </dl>
-            @else
-                <p class="text-muted">No tiene cuenta. Puede existir como alumno o docente sin ingresar al sistema.</p>
-            @endif
-        </section>
-    </div>
-
-    @if($permisos)
-        <section class="mt-4" aria-labelledby="permisos-titulo">
-            <h2 id="permisos-titulo" class="h5">Qué puede hacer en el sistema</h2>
-            @include('usuarios.partials.permisos', ['permisos' => $permisos])
-        </section>
+    @if($puedeFusionar && ! $persona->fusionadaEn)
+        <details class="ito-details">
+            <summary>¿Esta persona está duplicada?</summary>
+            <form method="POST" action="{{ route('personas.fusionar', $persona) }}" class="d-flex flex-wrap gap-2 align-items-end mt-2" data-confirm="Se van a unificar fichas, cuenta y asignaciones en esta persona. ¿Continuar?">
+                @csrf
+                <input type="hidden" name="persona_id" value="{{ $persona->id }}">
+                <div>
+                    <label class="form-label small" for="duplicada_id">N° de la persona duplicada (se absorbe en esta)</label>
+                    <input id="duplicada_id" type="number" name="duplicada_id" class="form-control form-control-sm" required min="1">
+                </div>
+                <button class="btn btn-outline-danger btn-sm">Fusionar en esta ficha</button>
+            </form>
+            <p class="small text-muted mt-1">El número figura en la URL de cada ficha. <code>php artisan chilinga:diagnose</code> lista posibles duplicados.</p>
+        </details>
     @endif
+        </x-ito.tab>
 
-    {{-- Perfil docente --}}
-    @if($persona->profesor)
-        <section class="mt-4" aria-labelledby="docente-titulo">
-            <h2 id="docente-titulo" class="h5">Docente
-                @can('profesores.view')<a class="small ms-2" href="{{ route('profesores.show', $persona->profesor) }}">ver ficha docente</a>@endcan
-            </h2>
-            <ul class="list-unstyled mb-0">
-                @forelse($persona->profesor->bloques as $b)
-                    <li>{{ $b->nombre }} <span class="text-muted">· {{ $b->sede?->nombre }} · {{ $b->pivot->rol }}</span></li>
-                @empty
-                    <li class="text-muted">Sin bloques asignados.</li>
-                @endforelse
-            </ul>
-        </section>
-    @endif
-
-    {{-- Perfiles de alumno: inscripción, cuotas, becas, pagos --}}
+        @if($persona->alumnos->isNotEmpty())
+        <x-ito.tab tabs="personaTabs" name="alumno">
     @foreach($persona->alumnos as $alumno)
-        <section class="mt-4" aria-labelledby="alumno-{{ $alumno->id }}-titulo">
-            <h2 id="alumno-{{ $alumno->id }}-titulo" class="h5">Alumno
+        <section class="ito-detail-section" aria-labelledby="alumno-{{ $alumno->id }}-titulo"><div class="ito-detail-section-body">
+            <h2 id="alumno-{{ $alumno->id }}-titulo" class="ito-detail-section-title mb-2"><i class="bi bi-mortarboard" aria-hidden="true"></i> Alumno
                 @can('view', $alumno)<a class="small ms-2" href="{{ route('alumnos.show', $alumno) }}">ver ficha de alumno</a>@endcan
             </h2>
             <p class="mb-2">
                 {{ $alumno->bloques->map(fn ($b) => $b->nombre.' ('.($b->sede?->nombre ?? 's/sede').')')->join(', ') ?: 'Sin bloque' }}
-                @unless($alumno->activo)<span class="badge text-bg-secondary">inactivo</span>@endunless
+                @unless($alumno->activo)<x-ito.status tone="neutral" label="Inactivo" />@endunless
             </p>
 
             @isset($cuentas[$alumno->id])
-                @php($cuenta = $cuentas[$alumno->id])
-                <div class="d-flex flex-wrap gap-3 mb-2">
-                    <div><span class="text-muted small d-block">Cuotas {{ $cuenta['anio'] }}</span><strong>$ {{ number_format($cuenta['totales']['neto'], 0, ',', '.') }}</strong></div>
-                    <div><span class="text-muted small d-block">Pagado</span><strong>$ {{ number_format($cuenta['totales']['pagado'], 0, ',', '.') }}</strong></div>
-                    <div><span class="text-muted small d-block">Saldo</span><strong @class(['text-danger' => $cuenta['totales']['saldo'] > 0])>$ {{ number_format($cuenta['totales']['saldo'], 0, ',', '.') }}</strong></div>
+                @php $cuenta = $cuentas[$alumno->id]; @endphp
+                <div class="ito-facts mb-3">
+                    <div class="ito-fact"><dt>Cuotas {{ $cuenta['anio'] }}</dt><dd><strong>$ {{ number_format($cuenta['totales']['neto'], 0, ',', '.') }}</strong></dd></div>
+                    <div class="ito-fact"><dt>Pagado</dt><dd><strong>$ {{ number_format($cuenta['totales']['pagado'], 0, ',', '.') }}</strong></dd></div>
+                    <div class="ito-fact"><dt>Saldo</dt><dd><strong @class(['text-danger' => $cuenta['totales']['saldo'] > 0])>$ {{ number_format($cuenta['totales']['saldo'], 0, ',', '.') }}</strong></dd></div>
                     @if($cuenta['totales']['descuento'] > 0)
-                        <div><span class="text-muted small d-block">Descuento por beca</span><strong>$ {{ number_format($cuenta['totales']['descuento'], 0, ',', '.') }}</strong></div>
+                        <div class="ito-fact"><dt>Descuento por beca</dt><dd><strong>$ {{ number_format($cuenta['totales']['descuento'], 0, ',', '.') }}</strong></dd></div>
                     @endif
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-sm align-middle">
+                    <table class="table table-sm align-middle" data-ito-no-cards>
                         <thead><tr><th>Período</th><th>Cuota</th><th class="text-end">Importe</th><th class="text-end">Pagado</th><th class="text-end">Saldo</th><th>Estado</th></tr></thead>
                         <tbody>
                             @forelse($cuenta['items'] as $item)
                                 <tr>
                                     <td>{{ $item['periodo'] }}</td>
-                                    <td>{{ $item['nombre'] }} @if($item['beca'])<span class="badge text-bg-info">{{ $item['beca']['etiqueta'] }}</span>@endif</td>
+                                    <td>{{ $item['nombre'] }} @if($item['beca'])<span class="badge bg-info">{{ $item['beca']['etiqueta'] }}</span>@endif</td>
                                     <td class="text-end ito-mono">$ {{ number_format($item['neto'], 0, ',', '.') }}@if($item['descuento'] > 0)<div class="small text-muted text-decoration-line-through">$ {{ number_format($item['bruto'], 0, ',', '.') }}</div>@endif</td>
                                     <td class="text-end ito-mono">$ {{ number_format($item['pagado'], 0, ',', '.') }}</td>
                                     <td class="text-end ito-mono">$ {{ number_format($item['saldo'], 0, ',', '.') }}</td>
@@ -180,8 +235,8 @@
                 @endforelse
 
                 @can('gestionarBecas', $alumno)
-                    <details class="mt-2">
-                        <summary class="btn btn-outline-primary btn-sm">Otorgar beca</summary>
+                    <details class="ito-details mt-2">
+                        <summary>Otorgar beca</summary>
                         <form method="POST" action="{{ route('becas.store', $persona) }}" class="row g-2 mt-2">
                             @csrf
                             <input type="hidden" name="alumno_id" value="{{ $alumno->id }}">
@@ -216,56 +271,19 @@
                     </details>
                 @endcan
             @endisset
-        </section>
+        </div></section>
     @endforeach
 
-    <div class="row g-4 mt-1">
-        @if($asistencias->isNotEmpty())
-            <section class="col-lg-4" aria-labelledby="asist-titulo">
-                <h2 id="asist-titulo" class="h6">Asistencias recientes</h2>
-                <ul class="list-unstyled small mb-0">
-                    @foreach($asistencias as $a)
-                        <li>{{ $a->fecha->format('d/m') }} · {{ $a->bloque?->nombre }} · <strong>{{ \App\Models\Asistencia::TIPOS_ASISTENCIA[$a->tipo_asistencia] ?? ($a->presente ? 'Presente' : 'Ausente') }}</strong></li>
-                    @endforeach
-                </ul>
-            </section>
+        </x-ito.tab>
         @endif
-        <section class="col-lg-4" aria-labelledby="eventos-titulo">
-            <h2 id="eventos-titulo" class="h6">Próximos eventos</h2>
-            <ul class="list-unstyled small mb-0">
-                @forelse($eventos as $e)
-                    <li>{{ $e->fecha->format('d/m') }} · {{ $e->titulo }}</li>
-                @empty
-                    <li class="text-muted">Sin eventos próximos.</li>
-                @endforelse
-            </ul>
-        </section>
-        @if($inventario->isNotEmpty())
-            <section class="col-lg-4" aria-labelledby="inv-titulo">
-                <h2 id="inv-titulo" class="h6">Instrumentos a su nombre</h2>
-                <ul class="list-unstyled small mb-0">
-                    @foreach($inventario as $i)
-                        <li><span class="ito-mono">{{ $i->codigo }}</span> {{ $i->nombre }} · {{ $i->sede?->nombre }}</li>
-                    @endforeach
-                </ul>
-            </section>
-        @endif
-    </div>
 
-    @if($puedeFusionar && ! $persona->fusionadaEn)
-        <details class="mt-4">
-            <summary class="small text-muted">¿Esta persona está duplicada?</summary>
-            <form method="POST" action="{{ route('personas.fusionar', $persona) }}" class="d-flex flex-wrap gap-2 align-items-end mt-2" data-confirm="Se van a unificar fichas, cuenta y asignaciones en esta persona. ¿Continuar?">
-                @csrf
-                <input type="hidden" name="persona_id" value="{{ $persona->id }}">
-                <div>
-                    <label class="form-label small" for="duplicada_id">N° de la persona duplicada (se absorbe en esta)</label>
-                    <input id="duplicada_id" type="number" name="duplicada_id" class="form-control form-control-sm" required min="1">
-                </div>
-                <button class="btn btn-outline-danger btn-sm">Fusionar en esta ficha</button>
-            </form>
-            <p class="small text-muted mt-1">El número figura en la URL de cada ficha. <code>php artisan chilinga:diagnose</code> lista posibles duplicados.</p>
-        </details>
-    @endif
+        @if($permisos)
+        <x-ito.tab tabs="personaTabs" name="permisos">
+            <x-ito.detail-section title="Qué puede hacer en el sistema" icon="bi-shield-check">
+                @include('usuarios.partials.permisos', ['permisos' => $permisos])
+            </x-ito.detail-section>
+        </x-ito.tab>
+        @endif
+    </x-ito.tabs>
 </x-ito.shell-page>
 @endsection

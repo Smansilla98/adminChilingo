@@ -48,18 +48,49 @@
     let pendingForm = null;
     let lastFocus = null;
 
+    const titleEl = document.getElementById('itoConfirmTitle');
+    const DESTRUCTIVOS = ['eliminar', 'borrar', 'quitar', 'desactivar', 'sacar', 'anular', 'descartar', 'vaciar'];
+
+    /** "¿Eliminar este alumno?" → título, descripción y botón coherentes. */
+    function describir(message, form) {
+        const texto = String(message || '').trim();
+        const m = texto.match(/¿[^?]+\?/);
+        let titulo = m ? m[0] : '¿Confirmar acción?';
+        let desc = m ? texto.replace(m[0], '').trim() : texto;
+        const verbo = ((titulo.match(/¿\s*([A-Za-zÁÉÍÓÚáéíóúñÑ]+)/) || [])[1] || '').toLowerCase();
+        const metodo = (form.querySelector('input[name="_method"]')?.value || form.getAttribute('method') || '').toUpperCase();
+        const destructivo = form.dataset.confirmTone === 'danger' || metodo === 'DELETE' || DESTRUCTIVOS.indexOf(verbo) !== -1;
+        if (!desc) {
+            desc = destructivo ? 'Esta acción no se puede deshacer.' : 'Revisá antes de continuar.';
+        }
+        let ok = form.dataset.confirmOk || '';
+        if (!ok) {
+            ok = /(ar|er|ir)$/.test(verbo) ? verbo.charAt(0).toUpperCase() + verbo.slice(1) : 'Confirmar';
+        }
+        return { titulo: form.dataset.confirmTitle || titulo, desc: form.dataset.confirmText || desc, ok: ok, destructivo: destructivo };
+    }
+
     function openConfirm(message, form) {
         if (!modal || !msgEl) {
             if (window.confirm(message)) form.submit();
             return;
         }
+        const d = describir(message, form);
         pendingForm = form;
         lastFocus = document.activeElement;
-        msgEl.textContent = message;
+        if (titleEl) titleEl.textContent = d.titulo;
+        msgEl.textContent = d.desc;
+        if (okBtn) {
+            okBtn.textContent = d.ok;
+            okBtn.className = 'btn ' + (d.destructivo ? 'btn-danger' : 'btn-primary');
+        }
+        modal.classList.toggle('is-neutral', !d.destructivo);
+        const icon = modal.querySelector('.ito-confirm-icon i');
+        if (icon) icon.className = 'bi ' + (d.destructivo ? 'bi-exclamation-triangle' : 'bi-question-circle');
         modal.hidden = false;
         modal.classList.add('is-open');
         document.body.classList.add('ito-modal-open');
-        okBtn?.focus();
+        (d.destructivo ? cancelBtn : okBtn)?.focus();
         trapFocus(modal);
     }
 
@@ -141,6 +172,63 @@
         }
     });
 
+    // —— Formularios: etiquetas asociadas, obligatorios marcados y errores bajo cada campo ——
+    const CONTROL = 'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]), select, textarea';
+    let autoId = 0;
+    function controlDe(label) {
+        if (label.htmlFor) return document.getElementById(label.htmlFor);
+        if (label.querySelector(CONTROL)) return label.querySelector(CONTROL);
+        let el = label.nextElementSibling;
+        while (el && el.tagName !== 'LABEL') {
+            const c = el.matches(CONTROL) ? el : el.querySelector(CONTROL);
+            if (c) return c;
+            el = el.nextElementSibling;
+        }
+        return null;
+    }
+    document.querySelectorAll('label.form-label, .ito-field > label').forEach((label) => {
+        const control = controlDe(label);
+        if (control && !label.htmlFor && !label.contains(control)) {
+            if (!control.id) control.id = 'ito-campo-' + (++autoId);
+            label.htmlFor = control.id;
+        }
+        // "Nombre *" escrito a mano → misma marca visual que los required.
+        const ultimo = label.lastChild;
+        if (ultimo && ultimo.nodeType === 3 && /\s*\*\s*$/.test(ultimo.textContent)) {
+            ultimo.textContent = ultimo.textContent.replace(/\s*\*\s*$/, '');
+            label.classList.add('required');
+        } else if (control && control.required) {
+            label.classList.add('required');
+        }
+    });
+
+    // Errores del servidor que la vista no muestra junto al campo: se ubican debajo de él.
+    const erroresEl = document.getElementById('itoErrores');
+    if (erroresEl) {
+        let errores = {};
+        try { errores = JSON.parse(erroresEl.textContent || '{}'); } catch (e) { errores = {}; }
+        let primero = null;
+        Object.keys(errores).forEach((clave) => {
+            const partes = clave.split('.');
+            const nombre = partes[0] + partes.slice(1).map((p) => '[' + p + ']').join('');
+            const control = document.querySelector('[name="' + nombre + '"], [name="' + nombre + '[]"]');
+            if (!control || control.type === 'hidden') return;
+            primero = primero || control;
+            if (control.classList.contains('is-invalid')) return;
+            control.classList.add('is-invalid');
+            const ancla = control.closest('.input-group') || control;
+            if (!ancla.parentElement.querySelector('.invalid-feedback')) {
+                const fb = document.createElement('div');
+                fb.className = 'invalid-feedback d-block';
+                fb.textContent = (errores[clave] || [])[0] || '';
+                ancla.insertAdjacentElement('afterend', fb);
+            }
+        });
+        if (primero && !document.querySelector('[data-ito-form-steps]')) {
+            primero.focus({ preventScroll: true });
+        }
+    }
+
     // Formularios: aria-invalid / describedby
     document.querySelectorAll('.is-invalid').forEach((el, i) => {
         el.setAttribute('aria-invalid', 'true');
@@ -157,12 +245,6 @@
         a.setAttribute('aria-current', 'page');
     });
 
-    // Anunciar alertas de éxito al cargar
-    const success = document.querySelector('.alert-success');
-    if (success) {
-        success.setAttribute('role', 'status');
-        announce(success.textContent.trim());
-    }
     document.querySelectorAll('.alert-danger').forEach((el) => {
         el.setAttribute('role', 'alert');
     });

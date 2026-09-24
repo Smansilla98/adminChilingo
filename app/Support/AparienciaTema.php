@@ -9,6 +9,14 @@ class AparienciaTema
         'accent' => '#f26422',
         'font_display' => 'Manrope',
         'font_body' => 'Manrope',
+        'tema' => 'claro',
+    ];
+
+    /** Tema de color del panel. "sistema" sigue la preferencia del dispositivo. */
+    public const TEMAS = [
+        'claro' => ['label' => 'Claro', 'icon' => 'bi-sun'],
+        'oscuro' => ['label' => 'Oscuro', 'icon' => 'bi-moon-stars'],
+        'sistema' => ['label' => 'Según el dispositivo', 'icon' => 'bi-circle-half'],
     ];
 
     /** @var array<string, array{hex: string, label: string}> */
@@ -85,7 +93,7 @@ class AparienciaTema
 
     /**
      * @param  array<string, mixed>|null  $raw
-     * @return array{accent: string, font_display: string, font_body: string}
+     * @return array{accent: string, font_display: string, font_body: string, tema: string}
      */
     public static function normalizar(?array $raw): array
     {
@@ -107,6 +115,11 @@ class AparienciaTema
         $body = (string) ($raw['font_body'] ?? '');
         if (array_key_exists($body, self::FUENTES_CUERPO)) {
             $out['font_body'] = $body;
+        }
+
+        $tema = (string) ($raw['tema'] ?? '');
+        if (array_key_exists($tema, self::TEMAS)) {
+            $out['tema'] = $tema;
         }
 
         return $out;
@@ -163,35 +176,108 @@ class AparienciaTema
     }
 
     /**
-     * @param  array{accent: string, font_display: string, font_body: string}  $tema
+     * Variables CSS del acento y las fuentes elegidas. El color de marca se usa tal cual
+     * para indicadores; botones y enlaces se ajustan hasta tener contraste AA (4.5:1)
+     * en el tema claro y en el oscuro.
+     *
+     * @param  array<string, string>  $tema
      */
     public static function cssVariables(array $tema): string
     {
         $tema = self::normalizar($tema);
         $accent = $tema['accent'];
-        $hover = self::oscurecer($accent, 0.82);
-        $soft = self::softRgba($accent, 0.16);
-        $softBtn = self::softRgba($accent, 0.15);
-        $onAccent = self::textoSobreAcento($accent);
         $display = $tema['font_display'];
         $body = $tema['font_body'];
 
-        $lines = [
+        $primario = self::ajustarContraste($accent, '#ffffff', 4.5, -1);
+        $fuerte = self::ajustarContraste($accent, '#ffffff', 4.8, -1);
+        $primarioOscuro = self::ajustarContraste($accent, '#111111', 4.5, 1);
+        $fuerteOscuro = self::ajustarContraste($accent, '#171a20', 4.5, 1);
+
+        $claro = [
             "--accent: {$accent};",
-            "--accent-hover: {$hover};",
-            "--accent-soft: {$soft};",
-            "--accent-on: {$onAccent};",
-            "--blue: {$accent};",
-            "--brick: {$accent};",
-            "--brick-soft: {$softBtn};",
-            "--brass: {$accent};",
-            "--brass-soft: {$soft};",
-            "--accent2: {$accent};",
+            '--accent-soft: '.self::softRgba($accent, 0.10).';',
+            '--accent-soft-2: '.self::softRgba($accent, 0.18).';',
+            "--accent-strong: {$fuerte};",
+            "--primary: {$primario};",
+            '--primary-hover: '.self::oscurecer($primario, 0.85).';',
+            '--primary-on: #ffffff;',
+            '--bs-primary-rgb: '.self::rgb($primario).';',
+            '--bs-link-color-rgb: '.self::rgb($fuerte).';',
             "--font-display: '{$display}', 'Manrope', system-ui, sans-serif;",
             "--font-body: '{$body}', 'Manrope', system-ui, sans-serif;",
         ];
+        $oscuro = [
+            "--accent: {$accent};",
+            '--accent-soft: '.self::softRgba($accent, 0.14).';',
+            '--accent-soft-2: '.self::softRgba($accent, 0.24).';',
+            "--accent-strong: {$fuerteOscuro};",
+            "--primary: {$primarioOscuro};",
+            '--primary-hover: '.self::aclarar($primarioOscuro, 0.12).';',
+            '--primary-on: #111111;',
+            '--bs-primary-rgb: '.self::rgb($primarioOscuro).';',
+            '--bs-link-color-rgb: '.self::rgb($fuerteOscuro).';',
+        ];
 
-        return ":root {\n  ".implode("\n  ", $lines)."\n}";
+        return ":root, [data-bs-theme=\"light\"] {\n  ".implode("\n  ", $claro)."\n}\n"
+            ."[data-bs-theme=\"dark\"] {\n  ".implode("\n  ", $oscuro)."\n}";
+    }
+
+    /** true si el usuario cambió acento o fuentes (el tema claro/oscuro no requiere CSS extra). */
+    public static function estiloPersonalizado(array $tema): bool
+    {
+        $tema = self::normalizar($tema);
+
+        return $tema['accent'] !== self::DEFAULTS['accent']
+            || $tema['font_display'] !== self::DEFAULTS['font_display']
+            || $tema['font_body'] !== self::DEFAULTS['font_body'];
+    }
+
+    public static function contraste(string $a, string $b): float
+    {
+        $la = self::luminancia($a);
+        $lb = self::luminancia($b);
+
+        return (max($la, $lb) + 0.05) / (min($la, $lb) + 0.05);
+    }
+
+    /** Oscurece (dir -1) o aclara (dir 1) el color hasta alcanzar el contraste pedido contra $fondo. */
+    public static function ajustarContraste(string $hex, string $fondo, float $minimo, int $dir): string
+    {
+        $color = $hex;
+        for ($i = 0; $i < 40 && self::contraste($color, $fondo) < $minimo; $i++) {
+            $color = $dir < 0 ? self::oscurecer($color, 0.94) : self::aclarar($color, 0.08);
+        }
+
+        return $color;
+    }
+
+    public static function aclarar(string $hex, float $cantidad = 0.1): string
+    {
+        $hex = ltrim($hex, '#');
+        $c = array_map(fn ($i) => hexdec(substr($hex, $i, 2)), [0, 2, 4]);
+        $c = array_map(fn ($v) => (int) round($v + (255 - $v) * $cantidad), $c);
+
+        return sprintf('#%02x%02x%02x', ...$c);
+    }
+
+    private static function luminancia(string $hex): float
+    {
+        $hex = ltrim($hex, '#');
+        $c = array_map(function ($i) use ($hex) {
+            $v = hexdec(substr($hex, $i, 2)) / 255;
+
+            return $v <= 0.03928 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4;
+        }, [0, 2, 4]);
+
+        return 0.2126 * $c[0] + 0.7152 * $c[1] + 0.0722 * $c[2];
+    }
+
+    private static function rgb(string $hex): string
+    {
+        $hex = ltrim($hex, '#');
+
+        return implode(', ', array_map(fn ($i) => hexdec(substr($hex, $i, 2)), [0, 2, 4]));
     }
 
     /**
@@ -233,6 +319,16 @@ class AparienciaTema
         $families[] = 'family=JetBrains+Mono:wght@400;600';
 
         return 'https://fonts.googleapis.com/css2?'.implode('&', $families).'&display=swap';
+    }
+
+    /** Tema elegido por el usuario autenticado (claro si no eligió o no hay sesión). */
+    public static function temaDe(?\App\Models\User $user): string
+    {
+        if (! $user || ! is_array($user->apariencia_json ?? null)) {
+            return self::DEFAULTS['tema'];
+        }
+
+        return self::normalizar($user->apariencia_json)['tema'];
     }
 
     public static function esDefault(array $tema): bool

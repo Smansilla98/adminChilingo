@@ -39,14 +39,14 @@ export function RightSidebar() {
     return (
       <aside class="w-[280px] bg-white border-l border-zinc-200 flex flex-col shrink-0">
         <div class="p-4 border-b border-zinc-200">
-          <h2 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Lienzo</h2>
+          <h2 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Lienzo</h2>
         </div>
         <div class="p-4 flex flex-col gap-3">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] text-zinc-400">Tamaño</span>
-            <span class="text-[11px] text-zinc-600 font-mono">{canvasWidth} x {canvasHeight}</span>
+            <span class="text-xs text-zinc-500">Tamaño</span>
+            <span class="text-xs text-zinc-600 font-mono">{canvasWidth} x {canvasHeight}</span>
           </div>
-          <label class="text-[11px] text-zinc-400">Color de fondo</label>
+          <label class="text-xs text-zinc-500">Color de fondo</label>
           <input
             type="color"
             class="w-full h-8 rounded-md border border-zinc-300 cursor-pointer bg-transparent"
@@ -61,12 +61,12 @@ export function RightSidebar() {
     <aside class="w-[280px] bg-white border-l border-zinc-200 flex flex-col shrink-0 overflow-y-auto">
       {/* Header */}
       <div class="p-4 border-b border-zinc-200 flex items-center justify-between">
-        <h2 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+        <h2 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
           {isText ? "Texto" : isImage ? "Imagen" : "Forma"}
         </h2>
         <div class="flex gap-1">
           <button
-            class="p-1 rounded text-zinc-400 bg-transparent border-none cursor-pointer hover:text-zinc-800 hover:bg-zinc-100 transition-all"
+            class="p-1 rounded text-zinc-500 bg-transparent border-none cursor-pointer hover:text-zinc-800 hover:bg-zinc-100 transition-all"
             onClick={async () => {
               if (!canvas || !selectedObject) return;
               const clone = await selectedObject.clone();
@@ -79,9 +79,10 @@ export function RightSidebar() {
             <Copy size={14} />
           </button>
           <button
-            class="p-1 rounded text-zinc-400 bg-transparent border-none cursor-pointer hover:text-red-400 hover:bg-red-500/10 transition-all"
+            class="p-1 rounded text-zinc-500 bg-transparent border-none cursor-pointer hover:text-red-400 hover:bg-red-500/10 transition-all"
             onClick={deleteSelected}
             title="Eliminar"
+          aria-label="Eliminar"
           >
             <Trash2 size={14} />
           </button>
@@ -94,7 +95,7 @@ export function RightSidebar() {
           <>
             {/* Font family */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 block">Tipografía</label>
+              <label class="text-xs text-zinc-500 mb-1 block">Tipografía</label>
               <select
                 class="w-full bg-white border border-zinc-300 rounded-md text-xs text-zinc-700 px-2 py-1.5 outline-none cursor-pointer focus:border-accent"
                 value={(selectedObject as any).fontFamily || "Inter"}
@@ -112,7 +113,7 @@ export function RightSidebar() {
 
             {/* Font size */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 block">Tamaño de letra</label>
+              <label class="text-xs text-zinc-500 mb-1 block">Tamaño de letra</label>
               <input
                 type="number"
                 class="w-full bg-white border border-zinc-300 rounded-md text-xs text-zinc-700 px-2 py-1.5 outline-none focus:border-accent"
@@ -127,13 +128,13 @@ export function RightSidebar() {
 
             {/* Bold / Italic / Underline */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 block">Estilo</label>
+              <label class="text-xs text-zinc-500 mb-1 block">Estilo</label>
               <div class="flex gap-1">
                 <button
                   class={`p-1.5 rounded-md border cursor-pointer transition-all ${
                     (selectedObject as any).fontWeight === "700" || (selectedObject as any).fontWeight === "bold"
-                      ? "bg-accent/20 border-accent text-accent"
-                      : "bg-transparent border-zinc-300 text-zinc-400 hover:text-zinc-900"
+                      ? "bg-accent/20 border-accent text-accent-strong"
+                      : "bg-transparent border-zinc-300 text-zinc-500 hover:text-zinc-900"
                   }`}
                   onClick={() =>
                     updateSelectedObject({
@@ -149,8 +150,8 @@ export function RightSidebar() {
                 <button
                   class={`p-1.5 rounded-md border cursor-pointer transition-all ${
                     (selectedObject as any).fontStyle === "italic"
-                      ? "bg-accent/20 border-accent text-accent"
-                      : "bg-transparent border-zinc-300 text-zinc-400 hover:text-zinc-900"
+                      ? "bg-accent/20 border-accent text-accent-strong"
+                      : "bg-transparent border-zinc-300 text-zinc-500 hover:text-zinc-900"
                   }`}
                   onClick={() =>
                     updateSelectedObject({
@@ -163,8 +164,8 @@ export function RightSidebar() {
                 <button
                   class={`p-1.5 rounded-md border cursor-pointer transition-all ${
                     (selectedObject as any).underline
-                      ? "bg-accent/20 border-accent text-accent"
-                      : "bg-transparent border-zinc-300 text-zinc-400 hover:text-zinc-900"
+                      ? "bg-accent/20 border-accent text-accent-strong"
+                      : "bg-transparent border-zinc-300 text-zinc-500 hover:text-zinc-900"
                   }`}
                   onClick={() =>
                     updateSelectedObject({ underline: !(selectedObject as any).underline })
@@ -177,7 +178,7 @@ export function RightSidebar() {
 
             {/* Text alignment */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 block">Alineación</label>
+              <label class="text-xs text-zinc-500 mb-1 block">Alineación</label>
               <div class="flex gap-1">
                 {[
                   { align: "left", icon: AlignLeft },
@@ -188,8 +189,8 @@ export function RightSidebar() {
                     key={align}
                     class={`p-1.5 rounded-md border cursor-pointer transition-all ${
                       (selectedObject as any).textAlign === align
-                        ? "bg-accent/20 border-accent text-accent"
-                        : "bg-transparent border-zinc-300 text-zinc-400 hover:text-zinc-900"
+                        ? "bg-accent/20 border-accent text-accent-strong"
+                        : "bg-transparent border-zinc-300 text-zinc-500 hover:text-zinc-900"
                     }`}
                     onClick={() => updateSelectedObject({ textAlign: align })}
                   >
@@ -201,7 +202,7 @@ export function RightSidebar() {
 
             {/* Text color */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 block">Color</label>
+              <label class="text-xs text-zinc-500 mb-1 block">Color</label>
               <div class="flex items-center gap-2">
                 <input
                   type="color"
@@ -224,9 +225,9 @@ export function RightSidebar() {
 
             {/* Line height */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 flex justify-between">
+              <label class="text-xs text-zinc-500 mb-1 flex justify-between">
                 Interlineado
-                <span class="text-zinc-400 font-mono">{((selectedObject as any).lineHeight || 1.2).toFixed(1)}</span>
+                <span class="text-zinc-500 font-mono">{((selectedObject as any).lineHeight || 1.2).toFixed(1)}</span>
               </label>
               <input
                 type="range"
@@ -245,9 +246,9 @@ export function RightSidebar() {
 
             {/* Letter spacing */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 flex justify-between">
+              <label class="text-xs text-zinc-500 mb-1 flex justify-between">
                 Espaciado
-                <span class="text-zinc-400 font-mono">{(selectedObject as any).charSpacing || 0}</span>
+                <span class="text-zinc-500 font-mono">{(selectedObject as any).charSpacing || 0}</span>
               </label>
               <input
                 type="range"
@@ -271,7 +272,7 @@ export function RightSidebar() {
           <>
             {/* Fill color */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 block">Relleno</label>
+              <label class="text-xs text-zinc-500 mb-1 block">Relleno</label>
               <div class="flex items-center gap-2">
                 <input
                   type="color"
@@ -294,7 +295,7 @@ export function RightSidebar() {
 
             {/* Stroke */}
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 block">Borde</label>
+              <label class="text-xs text-zinc-500 mb-1 block">Borde</label>
               <div class="flex items-center gap-2">
                 <input
                   type="color"
@@ -322,9 +323,9 @@ export function RightSidebar() {
             {/* Border radius (for rect) */}
             {selectedObject instanceof fabric.Rect && (
               <div>
-                <label class="text-[11px] text-zinc-400 mb-1 flex justify-between">
+                <label class="text-xs text-zinc-500 mb-1 flex justify-between">
                   Bordes redondeados
-                  <span class="text-zinc-400 font-mono">{(selectedObject as any).rx || 0}px</span>
+                  <span class="text-zinc-500 font-mono">{(selectedObject as any).rx || 0}px</span>
                 </label>
                 <input
                   type="range"
@@ -346,13 +347,13 @@ export function RightSidebar() {
         {isImage && (
           <>
             <div>
-              <label class="text-[11px] text-zinc-400 mb-1 block">Espejar</label>
+              <label class="text-xs text-zinc-500 mb-1 block">Espejar</label>
               <div class="flex gap-1">
                 <button
                   class={`p-1.5 rounded-md border cursor-pointer transition-all ${
                     selectedObject.flipX
-                      ? "bg-accent/20 border-accent text-accent"
-                      : "bg-transparent border-zinc-300 text-zinc-400 hover:text-zinc-900"
+                      ? "bg-accent/20 border-accent text-accent-strong"
+                      : "bg-transparent border-zinc-300 text-zinc-500 hover:text-zinc-900"
                   }`}
                   onClick={() => updateSelectedObject({ flipX: !selectedObject.flipX })}
                 >
@@ -361,8 +362,8 @@ export function RightSidebar() {
                 <button
                   class={`p-1.5 rounded-md border cursor-pointer transition-all ${
                     selectedObject.flipY
-                      ? "bg-accent/20 border-accent text-accent"
-                      : "bg-transparent border-zinc-300 text-zinc-400 hover:text-zinc-900"
+                      ? "bg-accent/20 border-accent text-accent-strong"
+                      : "bg-transparent border-zinc-300 text-zinc-500 hover:text-zinc-900"
                   }`}
                   onClick={() => updateSelectedObject({ flipY: !selectedObject.flipY })}
                 >
@@ -375,9 +376,9 @@ export function RightSidebar() {
 
         {/* ── Common: Opacity ───────────────────────────────────────── */}
         <div>
-          <label class="text-[11px] text-zinc-400 mb-1 flex justify-between">
+          <label class="text-xs text-zinc-500 mb-1 flex justify-between">
             Opacidad
-            <span class="text-zinc-400 font-mono">{Math.round((selectedObject.opacity ?? 1) * 100)}%</span>
+            <span class="text-zinc-500 font-mono">{Math.round((selectedObject.opacity ?? 1) * 100)}%</span>
           </label>
           <input
             type="range"

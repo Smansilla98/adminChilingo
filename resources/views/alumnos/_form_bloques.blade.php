@@ -6,9 +6,7 @@
         ? ($alumno->bloques->firstWhere('pivot.es_principal', true)?->id ?? $alumno->bloque_id)
         : null);
 @endphp
-<div class="ito-form-section mb-3">
-    <h3 class="ito-form-section-title">Bloques</h3>
-    <p class="ito-form-section-help">Si va a más de una clase, tildá cada bloque. El círculo marca cuál es su grupo principal.</p>
+<x-ito.form-section title="Clases" icon="bi-collection" help="Tildá cada bloque al que va. El círculo marca cuál es su grupo principal.">
     @if($bloques->isEmpty())
     <p class="text-muted mb-0">No hay bloques activos.</p>
     @else
@@ -45,7 +43,7 @@
     @error('bloque_ids')<div class="text-danger small">{{ $message }}</div>@enderror
     @error('bloque_principal_id')<div class="text-danger small">{{ $message }}</div>@enderror
     @endif
-</div>
+</x-ito.form-section>
 @push('scripts')
 <script>
 (function () {

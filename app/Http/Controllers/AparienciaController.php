@@ -21,6 +21,7 @@ class AparienciaController extends Controller
             'acentos' => AparienciaTema::ACENTOS,
             'fuentesTitulo' => AparienciaTema::FUENTES_TITULO,
             'fuentesCuerpo' => AparienciaTema::FUENTES_CUERPO,
+            'temas' => AparienciaTema::TEMAS,
             'defaults' => AparienciaTema::DEFAULTS,
             'esDefault' => AparienciaTema::esDefault($tema),
         ]);
@@ -47,11 +48,13 @@ class AparienciaController extends Controller
             ],
             'font_display' => ['required', 'string', Rule::in(array_keys(AparienciaTema::FUENTES_TITULO))],
             'font_body' => ['required', 'string', Rule::in(array_keys(AparienciaTema::FUENTES_CUERPO))],
+            'tema' => ['nullable', 'string', Rule::in(array_keys(AparienciaTema::TEMAS))],
         ]);
         $tema = AparienciaTema::normalizar([
             'accent' => $validated['accent'],
             'font_display' => $validated['font_display'],
             'font_body' => $validated['font_body'],
+            'tema' => $validated['tema'] ?? ($user->apariencia_json['tema'] ?? null),
         ]);
 
         $user->apariencia_json = $tema;
@@ -60,6 +63,24 @@ class AparienciaController extends Controller
         return redirect()
             ->route('apariencia.edit')
             ->with('success', 'Apariencia guardada. Se aplica en todo el sistema.');
+    }
+
+    /** Cambio rápido de tema desde el menú de usuario (claro / oscuro / sistema). */
+    public function tema(Request $request)
+    {
+        $validated = $request->validate([
+            'tema' => ['required', 'string', Rule::in(array_keys(AparienciaTema::TEMAS))],
+        ]);
+        $user = auth()->user();
+        if (! Schema::hasColumn('users', 'apariencia_json')) {
+            return back()->with('error', 'Falta migrar la columna de apariencia.');
+        }
+
+        $actual = is_array($user->apariencia_json) ? $user->apariencia_json : [];
+        $user->apariencia_json = AparienciaTema::normalizar(array_merge($actual, ['tema' => $validated['tema']]));
+        $user->save();
+
+        return back();
     }
 
     public function reset()

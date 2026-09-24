@@ -1,12 +1,12 @@
 @php
     $alumno = $alumno ?? null;
-    $isEdit = (bool) $alumno;
+    $isEdit = (bool) $alumno?->exists;
 @endphp
 
-<x-ito.form-step :index="0" title="Datos personales" help="Nombre, DNI, nacimiento y teléfono.">
+<x-ito.form-section title="Datos personales" icon="bi-person">
     <div class="row g-3">
         <div class="col-md-6">
-            <label for="nombre_apellido" class="form-label">Nombre y Apellido *</label>
+            <label for="nombre_apellido" class="form-label">Nombre y apellido</label>
             <input type="text" class="form-control @error('nombre_apellido') is-invalid @enderror"
                    id="nombre_apellido" name="nombre_apellido"
                    value="{{ old('nombre_apellido', $alumno?->nombre_apellido) }}" required>
@@ -15,9 +15,9 @@
         <div class="col-md-6">
             <label for="dni" class="form-label">
                 DNI
-                @php($dniActual = old('dni', $alumno?->dni))
-                @if(!$dniActual)
-                    <span class="badge bg-warning text-dark ms-1">Incompleto</span>
+                @php $dniActual = old('dni', $alumno?->dni); @endphp
+                @if($isEdit && !$dniActual)
+                    <span class="badge bg-warning ms-1">Falta cargar</span>
                 @endif
             </label>
             <input type="text" class="form-control @error('dni') is-invalid @enderror"
@@ -25,7 +25,7 @@
             @error('dni')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento *</label>
+            <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
             <input type="date" class="form-control @error('fecha_nacimiento') is-invalid @enderror"
                    id="fecha_nacimiento" name="fecha_nacimiento"
                    value="{{ old('fecha_nacimiento', $alumno?->fecha_nacimiento?->format('Y-m-d')) }}" required>
@@ -33,17 +33,17 @@
         </div>
         <div class="col-md-6">
             <label for="telefono" class="form-label">Teléfono</label>
-            <input type="text" class="form-control @error('telefono') is-invalid @enderror"
-                   id="telefono" name="telefono" value="{{ old('telefono', $alumno?->telefono) }}">
+            <input type="tel" class="form-control @error('telefono') is-invalid @enderror"
+                   id="telefono" name="telefono" autocomplete="tel" value="{{ old('telefono', $alumno?->telefono) }}">
             @error('telefono')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
     </div>
-</x-ito.form-step>
+</x-ito.form-section>
 
-<x-ito.form-step :index="1" title="Instrumentos y sede" help="Qué toca y en qué sede está.">
+<x-ito.form-section title="Instrumento y sede" icon="bi-music-note-beamed">
     <div class="row g-3">
         <div class="col-md-6">
-            <label for="instrumento_principal" class="form-label">Instrumento Principal *</label>
+            <label for="instrumento_principal" class="form-label">Instrumento principal</label>
             <select class="form-select @error('instrumento_principal') is-invalid @enderror"
                     id="instrumento_principal" name="instrumento_principal" required>
                 <option value="">Elegí…</option>
@@ -56,7 +56,7 @@
             @error('instrumento_principal')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label for="instrumento_secundario" class="form-label">Instrumento Secundario</label>
+            <label for="instrumento_secundario" class="form-label">Instrumento secundario</label>
             <select class="form-select @error('instrumento_secundario') is-invalid @enderror"
                     id="instrumento_secundario" name="instrumento_secundario">
                 <option value="">Ninguno</option>
@@ -95,7 +95,7 @@
             @error('tambor_procedencia')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label for="sede_id" class="form-label">Sede *</label>
+            <label for="sede_id" class="form-label">Sede</label>
             <select class="form-select @error('sede_id') is-invalid @enderror"
                     id="sede_id" name="sede_id" required>
                 <option value="">Elegí…</option>
@@ -108,19 +108,18 @@
             @error('sede_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
     </div>
-</x-ito.form-step>
+</x-ito.form-section>
 
-<x-ito.form-step :index="2" title="Clases y vínculo" help="Bloques, profesor vinculado y estado.">
-    @include('alumnos._form_bloques', ['bloques' => $bloques, 'alumno' => $alumno])
+@include('alumnos._form_bloques', ['bloques' => $bloques, 'alumno' => $alumno])
+
+<x-ito.form-section title="Estado y rol docente" icon="bi-toggle-on">
+    <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="activo" name="activo" value="1"
+               @checked(old('activo', $isEdit ? $alumno->activo : true))>
+        <label class="form-check-label" for="activo">Alumno activo</label>
+    </div>
     @include('alumnos._form_profesor_vinculo', [
         'alumno' => $alumno,
         'profesoresSinVinculo' => $profesoresSinVinculo ?? collect(),
     ])
-    <div class="mt-3">
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="activo" name="activo" value="1"
-                   {{ old('activo', $isEdit ? $alumno->activo : true) ? 'checked' : '' }}>
-            <label class="form-check-label" for="activo">Activo</label>
-        </div>
-    </div>
-</x-ito.form-step>
+</x-ito.form-section>

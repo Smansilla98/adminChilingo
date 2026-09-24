@@ -29,7 +29,7 @@ export function DesignList() {
       </button>
 
       {designs.length === 0 && (
-        <p class="text-zinc-400 text-[11px] text-center py-4">Todavía no hay diseños guardados</p>
+        <p class="text-zinc-500 text-xs text-center py-4">Todavía no hay diseños guardados</p>
       )}
 
       {designs.map((d) => (
@@ -61,7 +61,7 @@ export function DesignList() {
           ) : (
             <div class="flex-1 min-w-0">
               <span class="text-xs font-medium text-zinc-600 truncate block">{d.name}</span>
-              <span class="text-[10px] text-zinc-600">
+              <span class="text-[11px] text-zinc-600">
                 {d.width}x{d.height} &middot;{" "}
                 {new Date(d.updated_at).toLocaleDateString("es-AR")}
               </span>
@@ -69,7 +69,7 @@ export function DesignList() {
           )}
           <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
             <button
-              class="p-1 rounded text-zinc-400 bg-transparent border-none cursor-pointer hover:text-zinc-800 transition-colors"
+              class="p-1 rounded text-zinc-500 bg-transparent border-none cursor-pointer hover:text-zinc-800 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 startRename(d.id, d.name);
@@ -78,7 +78,7 @@ export function DesignList() {
               <Edit3 size={12} />
             </button>
             <button
-              class="p-1 rounded text-zinc-400 bg-transparent border-none cursor-pointer hover:text-red-400 transition-colors"
+              class="p-1 rounded text-zinc-500 bg-transparent border-none cursor-pointer hover:text-red-400 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 deleteDesign(d.id);

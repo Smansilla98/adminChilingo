@@ -7,16 +7,17 @@
 @section('content')
 <x-ito.shell-page
     :title="$editando ? $persona->nombre_completo : 'Nueva persona'"
-    eyebrow="Personas"
-    subtitle="Datos personales. Se comparten con todas sus fichas (alumno, docente, cuenta)."
+    subtitle="Datos personales. Se comparten con todas sus fichas: alumno, docente y cuenta."
+    :plain="true"
 >
     <form method="POST" action="{{ $editando ? route('personas.update', $persona) : route('personas.store') }}">
         @csrf
         @if($editando) @method('PUT') @endif
 
-        <div class="row g-3">
+        <x-ito.form-section title="Identidad" icon="bi-person-vcard">
+            <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label" for="nombre">Nombre *</label>
+                <label class="form-label" for="nombre">Nombre</label>
                 <input id="nombre" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre', $persona->nombre) }}" required autocomplete="given-name">
                 @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
@@ -43,6 +44,11 @@
                     @endforeach
                 </select>
             </div>
+            </div>
+        </x-ito.form-section>
+
+        <x-ito.form-section title="Contacto" icon="bi-telephone">
+            <div class="row g-3">
             <div class="col-md-6">
                 <label class="form-label" for="telefono">Teléfono</label>
                 <input id="telefono" type="tel" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono', $persona->telefono) }}" autocomplete="tel">
@@ -57,6 +63,11 @@
                 <label class="form-label" for="direccion">Dirección</label>
                 <input id="direccion" name="direccion" class="form-control" value="{{ old('direccion', $persona->direccion) }}" autocomplete="street-address">
             </div>
+            </div>
+        </x-ito.form-section>
+
+        <x-ito.form-section title="Emergencia y observaciones" icon="bi-heart-pulse">
+            <div class="row g-3">
             <div class="col-md-6">
                 <label class="form-label" for="contacto_emergencia_nombre">Contacto de emergencia</label>
                 <input id="contacto_emergencia_nombre" name="contacto_emergencia_nombre" class="form-control" value="{{ old('contacto_emergencia_nombre', $persona->contacto_emergencia_nombre) }}">
@@ -69,12 +80,10 @@
                 <label class="form-label" for="observaciones">Observaciones</label>
                 <textarea id="observaciones" name="observaciones" rows="3" class="form-control">{{ old('observaciones', $persona->observaciones) }}</textarea>
             </div>
-        </div>
+            </div>
+        </x-ito.form-section>
 
-        <div class="d-flex gap-2 mt-4">
-            <button class="btn btn-primary">{{ $editando ? 'Guardar cambios' : 'Crear persona' }}</button>
-            <a href="{{ $editando ? route('personas.show', $persona) : route('personas.index') }}" class="btn btn-outline-secondary">Cancelar</a>
-        </div>
+        <x-ito.form-actions :cancel="$editando ? route('personas.show', $persona) : route('personas.index')" :submit="$editando ? 'Guardar cambios' : 'Crear persona'" />
     </form>
 </x-ito.shell-page>
 @endsection

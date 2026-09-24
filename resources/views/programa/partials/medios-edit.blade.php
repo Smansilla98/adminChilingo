@@ -21,7 +21,7 @@
                     <i class="bi bi-music-note-list"></i> Editor de partitura
                 </a>
                 @if($esAdmin ?? auth()->user()?->isAdmin())
-                <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-warning">
+                <a href="{{ route('programa.toque.partitura.edit', $programaRitmo) }}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-cloud-upload"></i> Subir PDF/imagen
                 </a>
                 @endif

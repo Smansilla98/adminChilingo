@@ -7,10 +7,8 @@
         'coordinador_clase' => 'Coordinador de clase',
     ];
 @endphp
-<div class="card mb-3">
-    <div class="card-header">Bloques y rol</div>
-    <div class="card-body">
-        <p class="text-muted small mb-3">Tildá en qué bloques da clase y qué rol tiene en cada uno. <strong>Titular</strong> es quien figura como profe principal de ese bloque.</p>
+<x-ito.form-section title="Bloques y rol" icon="bi-collection" help="Tildá en qué bloques da clase y qué rol tiene en cada uno. Titular es quien figura como profe principal del bloque.">
+    <div>
         <div class="table-responsive">
             <table class="table table-sm align-middle">
                 <thead>
@@ -51,4 +49,4 @@
             <p class="text-muted mb-0">No hay bloques activos. Creá bloques primero.</p>
         @endif
     </div>
-</div>
+</x-ito.form-section>

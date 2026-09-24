@@ -4,40 +4,36 @@
 @section('page-title', $evento->titulo)
 
 @section('content')
-<x-ito.shell-page
-    title="{{ $evento->titulo }}"
-    subtitle="Detalle del evento"
-    eyebrow="Eventos"
->
+@php
+    $horario = collect([$evento->hora_inicio?->format('H:i'), $evento->hora_fin?->format('H:i')])->filter()->join(' a ');
+    $esFuturo = $evento->fecha && $evento->fecha->endOfDay()->isFuture();
+@endphp
+<x-ito.shell-page :title="$evento->titulo" :subtitle="ucfirst($evento->fecha->locale('es')->translatedFormat('l j \d\e F Y')).($horario ? ' · '.$horario.' hs' : '')" :plain="true">
     <x-slot:actions>
-        <a href="{{ route('eventos.edit', $evento) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
-        <a href="{{ route('eventos.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
+        <x-ito.status :tone="$esFuturo ? 'info' : 'neutral'" :label="$esFuturo ? 'Próximo' : 'Realizado'" />
+        <a href="{{ route('eventos.index') }}" class="btn btn-outline-secondary">Volver</a>
+        @can('update', $evento)
+            <a href="{{ route('eventos.edit', $evento) }}" class="btn btn-primary"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</a>
+        @endcan
     </x-slot:actions>
 
-    <dl class="ito-dl">
-        <div><dt>Tipo</dt><dd><span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $evento->tipo_evento)) }}</span></dd></div>
-        <div><dt>Fecha</dt><dd>{{ $evento->fecha->format('d/m/Y') }}</dd></div>
-        @if($evento->hora_inicio || $evento->hora_fin)
-        <div>
-            <dt>Horario</dt>
-            <dd>
-                @if($evento->hora_inicio) {{ $evento->hora_inicio->format('H:i') }} @endif
-                @if($evento->hora_fin) — {{ $evento->hora_fin->format('H:i') }} @endif
-            </dd>
-        </div>
-        @endif
-        <div><dt>Sede</dt><dd>{{ $evento->sede?->nombre ?? '—' }}</dd></div>
-        <div><dt>Profesor</dt><dd>{{ $evento->profesor?->nombre ?? '—' }}</dd></div>
-        <div><dt>Bloque</dt><dd>{{ $evento->bloque?->nombre ?? '—' }}</dd></div>
-        @if($evento->cantidad_personas !== null)
-        <div><dt>Cant. personas</dt><dd>{{ $evento->cantidad_personas }}</dd></div>
-        @endif
+    <x-ito.facts>
+        <x-ito.fact label="Tipo" :value="ucfirst(str_replace('_', ' ', $evento->tipo_evento))" />
+        <x-ito.fact label="Sede" :value="$evento->sede?->nombre ?? 'Todas'" />
+        <x-ito.fact label="Profesor a cargo" :value="$evento->profesor?->nombre" />
+        <x-ito.fact label="Bloque" :value="$evento->bloque?->nombre" />
+        <x-ito.fact label="Personas" :value="$evento->cantidad_personas" />
+    </x-ito.facts>
+
+    <x-ito.detail-section title="Descripción" icon="bi-text-paragraph">
         @if($evento->descripcion)
-        <div><dt>Descripción</dt><dd>{{ $evento->descripcion }}</dd></div>
+            <p class="mb-0" style="white-space: pre-line">{{ $evento->descripcion }}</p>
+        @else
+            <p class="text-muted mb-0">Sin descripción.</p>
         @endif
         @if($evento->creador)
-        <div><dt>Creado por</dt><dd>{{ $evento->creador->name ?? $evento->creador->username }}</dd></div>
+            <p class="small text-muted mt-3 mb-0">Cargado por {{ $evento->creador->name ?? $evento->creador->username }}.</p>
         @endif
-    </dl>
+    </x-ito.detail-section>
 </x-ito.shell-page>
 @endsection

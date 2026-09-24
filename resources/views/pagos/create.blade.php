@@ -22,106 +22,114 @@
 
 @section('content')
 <x-ito.shell-page
-    title="{{ $editando ? 'Editar pago #'.$pago->id : 'Nuevo pago' }}"
-    eyebrow="Pagos"
-    subtitle="{{ $editando ? 'Corregí líneas y comprobante.' : 'Cada fila es alumno + cuota + monto. El total es la suma.' }}"
+    :title="$editando ? 'Editar pago #'.$pago->id : 'Registrar pago'"
+    :subtitle="$editando ? 'Corregí las líneas, el reparto o el comprobante.' : 'Cada línea es alumno + cuota + monto. El total es la suma de las líneas.'"
+    :plain="true"
 >
-    <x-slot:actions>
-        <a href="{{ $editando ? route('pagos.show', $pago) : route('pagos.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
-    </x-slot:actions>
-        @include('partials.form-ayuda-intro', ['text' => 'Cada fila es alumno + cuota + monto. El total debe ser la suma de todas las filas. El comprobante es opcional.'])
         <form action="{{ $editando ? route('pagos.update', $pago) : route('pagos.store') }}" method="POST" enctype="multipart/form-data" id="form-pago-lineas">
             @csrf
             @if($editando) @method('PUT') @endif
-            <div class="row mb-3">
-                <div class="col-md-3">
-                    <label class="form-label">Fecha de pago *</label>
-                    <input type="date" name="fecha_pago" class="form-control @error('fecha_pago') is-invalid @enderror" value="{{ old('fecha_pago', $editando ? $pago->fecha_pago->format('Y-m-d') : date('Y-m-d')) }}" required>
-                    @error('fecha_pago')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label" for="filtro_bloque_pagos">Bloque <span class="text-muted fw-normal">(opcional)</span></label>
-                    <select id="filtro_bloque_pagos" class="form-select" aria-describedby="help-filtro-bloque">
-                        <option value="">Todos los bloques</option>
-                        @foreach($bloquesFiltro as $b)
-                            <option value="{{ $b->id }}" data-sede-id="{{ $b->sede_id ?? '' }}">{{ $b->nombre }}@if($b->sede) — {{ $b->sede->nombre }}@endif</option>
-                        @endforeach
-                    </select>
-                    <div id="help-filtro-bloque" class="form-text">Si elegís un bloque, en cada fila solo verás las cuotas que le corresponden a ese grupo.</div>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Monto total *</label>
-                    <input type="number" name="monto_total" id="monto_total_pago" class="form-control @error('monto_total') is-invalid @enderror" step="0.01" min="0.01" value="{{ old('monto_total', $editando ? $pago->monto_total : '') }}" required>
-                    @error('monto_total')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    <div class="form-text">Tiene que coincidir con la suma de todas las filas de abajo.</div>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <div class="w-100 small" id="resumen-suma-lineas" aria-live="polite">
-                        <span class="text-muted">Suma líneas:</span> <strong id="suma-lineas-val">0,00</strong>
-                        <span id="suma-lineas-ok" class="text-success d-none ms-1">✓</span>
-                        <span id="suma-lineas-warn" class="text-warning d-none ms-1">≠ total</span>
+
+            <x-ito.form-section title="Cuotas que se pagan" icon="bi-receipt">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="pago-fecha">Fecha del pago</label>
+                        <input type="date" id="pago-fecha" name="fecha_pago" class="form-control @error('fecha_pago') is-invalid @enderror" value="{{ old('fecha_pago', $editando ? $pago->fecha_pago->format('Y-m-d') : date('Y-m-d')) }}" required>
+                        @error('fecha_pago')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label" for="filtro_bloque_pagos">Mostrar cuotas del bloque</label>
+                        <select id="filtro_bloque_pagos" class="form-select" aria-describedby="help-filtro-bloque">
+                            <option value="">Todos los bloques</option>
+                            @foreach($bloquesFiltro as $b)
+                                <option value="{{ $b->id }}" data-sede-id="{{ $b->sede_id ?? '' }}">{{ $b->nombre }}@if($b->sede) — {{ $b->sede->nombre }}@endif</option>
+                            @endforeach
+                        </select>
+                        <div id="help-filtro-bloque" class="form-text">Opcional: acota la lista de cuotas de cada línea a ese grupo.</div>
                     </div>
                 </div>
-            </div>
 
-            @error('lineas')<div class="alert alert-danger py-2 small">{{ $message }}</div>@enderror
+                @error('lineas')<div class="alert alert-danger py-2">{{ $message }}</div>@enderror
 
-            <div class="table-responsive mb-2">
-                <table class="table table-sm align-middle" id="tabla-lineas-pago">
-                    <thead>
-                        <tr>
-                            <th style="min-width:220px">Cuota *</th>
-                            <th style="min-width:200px">Alumno *</th>
-                            <th style="width:120px">Monto $ *</th>
-                            <th style="width:48px"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="lineas-pago-body"></tbody>
-                </table>
-            </div>
-            <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="btn-add-linea-pago"><i class="bi bi-plus-lg"></i> Añadir línea</button>
+                <div class="table-responsive mb-2">
+                    <table class="table table-sm align-middle pago-lineas mb-0" id="tabla-lineas-pago" data-ito-no-cards>
+                        <thead>
+                            <tr>
+                                <th style="min-width:220px">Cuota</th>
+                                <th style="min-width:200px">Alumno</th>
+                                <th style="width:140px">Monto</th>
+                                <th style="width:48px"><span class="visually-hidden">Quitar</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="lineas-pago-body"></tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-add-linea-pago"><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar línea</button>
 
-            <div class="border rounded p-3 mb-3">
-                <div class="fw-semibold mb-2">Parte del pago para el profesor</div>
-                <p class="text-muted small mb-3">Si dejás el monto en blanco, el sistema calcula cuánto le corresponde al profe según lo que configuraste en <strong>Sedes</strong>. Si escribís un número, se reparte entre las filas del pago.</p>
-                <div class="form-check mb-3">
+                <div class="pago-total mt-3">
+                    <div>
+                        <label class="form-label" for="monto_total_pago">Monto total cobrado</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="monto_total" id="monto_total_pago" class="form-control form-control-lg @error('monto_total') is-invalid @enderror" step="0.01" min="0.01" value="{{ old('monto_total', $editando ? $pago->monto_total : '') }}" required>
+                        </div>
+                        @error('monto_total')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="pago-total-check" id="resumen-suma-lineas" aria-live="polite">
+                        <span class="text-muted">Suma de las líneas</span>
+                        <strong id="suma-lineas-val">0,00</strong>
+                        <span id="suma-lineas-ok" class="ito-status ito-status--success d-none"><span class="ito-status-dot" aria-hidden="true"></span>Coincide</span>
+                        <span id="suma-lineas-warn" class="ito-status ito-status--warning d-none"><span class="ito-status-dot" aria-hidden="true"></span>No coincide con el total</span>
+                    </div>
+                </div>
+            </x-ito.form-section>
+
+            <x-ito.form-section title="Parte para el profesor" icon="bi-person-badge" help="En blanco se calcula solo con el reparto configurado en la sede. Si escribís un monto, se reparte entre las líneas.">
+                <div class="form-check form-switch mb-3">
                     <input type="hidden" name="liquidar_profesor" value="0">
-                    <input class="form-check-input" type="checkbox" name="liquidar_profesor" value="1" id="liquidar_profesor" {{ (string) old('liquidar_profesor', $editando ? ($hayAbonoEdit ? '1' : '0') : '1') === '1' ? 'checked' : '' }}>
+                    <input class="form-check-input" type="checkbox" role="switch" name="liquidar_profesor" value="1" id="liquidar_profesor" {{ (string) old('liquidar_profesor', $editando ? ($hayAbonoEdit ? '1' : '0') : '1') === '1' ? 'checked' : '' }}>
                     <label class="form-check-label" for="liquidar_profesor">Registrar lo que va al profesor</label>
                 </div>
                 <div class="row g-2 align-items-end" id="wrap_liquidacion_prof">
                     <div class="col-md-6">
-                        <label class="form-label" for="monto_abono_profesor">Total para el profesor ($)</label>
-                        <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor', $editando && $hayAbonoEdit ? $sumAbonoEdit : '') }}" placeholder="En blanco = se calcula solo">
-                        @error('monto_abono_profesor')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <label class="form-label" for="monto_abono_profesor">Total para el profesor</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="monto_abono_profesor" id="monto_abono_profesor" class="form-control @error('monto_abono_profesor') is-invalid @enderror" step="0.01" min="0" value="{{ old('monto_abono_profesor', $editando && $hayAbonoEdit ? $sumAbonoEdit : '') }}" placeholder="En blanco = automático">
+                        </div>
+                        @error('monto_abono_profesor')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-12">
                         <div id="prof_abono_preview" class="small mt-2 text-muted" aria-live="polite"></div>
                     </div>
                 </div>
-            </div>
+            </x-ito.form-section>
 
-            <div class="mb-3">
-                <label class="form-label">Comprobante (PDF, JPG, PNG)</label>
-                @if($editando && $pago->comprobante_path)
-                <div class="mb-2 d-flex flex-wrap align-items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalComprobantePago" data-comprobante-src="{{ route('pagos.comprobante', $pago) }}" data-comprobante-label="Comprobante actual — pago #{{ $pago->id }}"><i class="bi bi-file-earmark"></i> Ver comprobante actual</button>
-                    <div class="form-check mb-0">
-                        <input class="form-check-input" type="checkbox" name="quitar_comprobante" value="1" id="quitar_comprobante" {{ old('quitar_comprobante') ? 'checked' : '' }}>
-                        <label class="form-check-label" for="quitar_comprobante">Quitar comprobante al guardar</label>
+            <x-ito.form-section title="Comprobante y notas" icon="bi-paperclip">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="pago-comprobante">Comprobante</label>
+                        @if($editando && $pago->comprobante_path)
+                        <div class="mb-2 d-flex flex-wrap align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalComprobantePago" data-comprobante-src="{{ route('pagos.comprobante', $pago) }}" data-comprobante-label="Comprobante actual — pago #{{ $pago->id }}"><i class="bi bi-file-earmark" aria-hidden="true"></i> Ver el actual</button>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox" name="quitar_comprobante" value="1" id="quitar_comprobante" {{ old('quitar_comprobante') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="quitar_comprobante">Quitarlo al guardar</label>
+                            </div>
+                        </div>
+                        @endif
+                        <input type="file" id="pago-comprobante" name="comprobante" class="form-control @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                        <div class="form-text">{{ $editando ? 'Subí otro archivo solo si querés reemplazarlo.' : 'Opcional. Foto o PDF (JPG, PNG o PDF).' }}</div>
+                        @error('comprobante')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="pago-notas">Notas</label>
+                        <textarea id="pago-notas" name="notas" class="form-control" rows="2">{{ old('notas', $editando ? $pago->notas : '') }}</textarea>
                     </div>
                 </div>
-                @endif
-                <input type="file" name="comprobante" class="form-control @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-                <div class="form-text">{{ $editando ? 'Podés subir otro archivo para cambiar el comprobante (no es obligatorio).' : 'Foto o PDF del comprobante, si lo tenés.' }}</div>
-                @error('comprobante')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Notas</label>
-                <textarea name="notas" class="form-control" rows="2">{{ old('notas', $editando ? $pago->notas : '') }}</textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">{{ $editando ? 'Guardar cambios' : 'Guardar pago' }}</button>
-            <a href="{{ $editando ? route('pagos.show', $pago) : route('pagos.index') }}" class="btn btn-secondary">Cancelar</a>
+            </x-ito.form-section>
+
+            <x-ito.form-actions :cancel="$editando ? route('pagos.show', $pago) : route('pagos.index')" :submit="$editando ? 'Guardar cambios' : 'Registrar pago'" />
         </form>
 </x-ito.shell-page>
 @if($editando)
@@ -417,10 +425,10 @@
     function crearFila() {
         const tr = document.createElement('tr');
         tr.innerHTML =
-            '<td><select class="form-select form-select-sm linea-cuota" required><option value="">— Elegir cuota —</option></select></td>' +
-            '<td><select class="form-select form-select-sm linea-alumno" required disabled><option value="">Primero la cuota</option></select></td>' +
-            '<td><input type="number" class="form-control form-control-sm linea-monto" step="0.01" min="0.01" value="" required></td>' +
-            '<td class="text-nowrap"><button type="button" class="btn btn-sm btn-outline-danger btn-quitar-linea" title="Quitar línea">×</button></td>';
+            '<td><select class="form-select form-select-sm linea-cuota" required aria-label="Cuota"><option value="">— Elegir cuota —</option></select></td>' +
+            '<td><select class="form-select form-select-sm linea-alumno" required disabled aria-label="Alumno"><option value="">Primero la cuota</option></select></td>' +
+            '<td><input type="number" class="form-control form-control-sm linea-monto" step="0.01" min="0.01" value="" required aria-label="Monto"></td>' +
+            '<td class="text-end"><button type="button" class="btn btn-sm btn-ghost text-danger btn-quitar-linea" aria-label="Quitar línea"><i class="bi bi-x-lg" aria-hidden="true"></i></button></td>';
         const sel = tr.querySelector('.linea-cuota');
         llenarCuotaSelect(sel, null);
         return tr;

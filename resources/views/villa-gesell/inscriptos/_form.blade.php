@@ -4,6 +4,7 @@
     $calcularAporte = old('calcular_aporte', $inscripto->exists ? $aporteAuto : true);
     $sedes = $sedes ?? collect();
 @endphp
+<x-ito.form-section title="Inscripción" icon="bi-person-plus">
 <div class="row g-3">
     <div class="col-12">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
@@ -27,7 +28,7 @@
             <div class="form-text">Si no está en la lista, pasá a <strong>Alumno nuevo</strong>.</div>
         </div>
 
-        <div id="vg_box_nuevo" class="border rounded p-3 mt-2" style="border-color: var(--border) !important; background: var(--s2);" hidden>
+        <div id="vg_box_nuevo" class="ito-inline-create mt-2" hidden>
             <p class="mb-2 small text-muted">Se crea en el padrón y queda listo para inscribir a la gira. Después podés completar sede o bloques en Alumnos.</p>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#vgModalAlumnoNuevo">
                 <i class="bi bi-person-plus"></i> Abrir formulario de alta
@@ -116,3 +117,4 @@
         <textarea name="notas" class="form-control" rows="2">{{ old('notas', $inscripto->notas) }}</textarea>
     </div>
 </div>
+</x-ito.form-section>

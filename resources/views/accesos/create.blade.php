@@ -6,15 +6,12 @@
 @section('content')
 <x-ito.shell-page
     title="Nuevo usuario"
-    eyebrow="Accesos"
-    subtitle="Alta de cuenta para entrar al sistema"
+    subtitle="Cuenta para entrar al sistema. Si es docente, podés crear su ficha o vincularla a alguien del plantel."
+    :plain="true"
 >
-    <x-slot:actions>
-        <a href="{{ route('accesos.index') }}" class="btn btn-secondary btn-sm">Volver a accesos</a>
-    </x-slot:actions>
-            @include('partials.form-ayuda-intro', ['text' => 'Creá la cuenta de login. Si es docente, podés generar la ficha de profesor o engancharla a alguien que ya está en el plantel.'])
             <form action="{{ route('accesos.store') }}" method="POST">
                 @csrf
+                <x-ito.form-section title="Cuenta" icon="bi-key">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label" for="name">Nombre *</label>
@@ -35,7 +32,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="telefono">Teléfono</label>
-                        <input type="text" name="telefono" id="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}">
+                        <input type="tel" name="telefono" id="telefono" autocomplete="tel" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}">
                         @error('telefono')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
@@ -48,6 +45,10 @@
                         <label class="form-label" for="password_confirmation">Confirmar contraseña *</label>
                         <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" required autocomplete="new-password">
                     </div>
+                </div>
+                </x-ito.form-section>
+                <x-ito.form-section title="Rol y ficha docente" icon="bi-shield-lock">
+                <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label" for="role">Rol *</label>
                         <select name="role" id="role" class="form-select @error('role') is-invalid @enderror" required>
@@ -82,10 +83,8 @@
                         @error('profesor_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
                 </div>
-                <div class="mt-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Crear usuario</button>
-                    <a href="{{ route('accesos.index') }}" class="btn btn-secondary">Cancelar</a>
-                </div>
+                </x-ito.form-section>
+                <x-ito.form-actions :cancel="route('accesos.index')" submit="Crear usuario" />
             </form>
 </x-ito.shell-page>
 @endsection

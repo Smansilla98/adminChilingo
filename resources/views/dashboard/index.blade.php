@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
-@section('page-title', 'Tablero')
+@section('title', 'Inicio · La Chilinga')
+@section('page-title', 'Inicio')
 
 @section('content')
 @php
@@ -31,7 +31,7 @@
         $user->tieneAccesoModulo('admin.asistencias') ? ['href' => route('asistencias.index'), 'icon' => 'bi-check2-square', 'title' => 'Asistencias', 'desc' => 'Pasar lista'] : null,
         $user->tieneAccesoModulo('admin.alumnos') ? ['href' => route('alumnos.index'), 'icon' => 'bi-people', 'title' => 'Alumnos', 'desc' => 'Buscar ficha'] : null,
         $user->tieneAccesoModulo('comprobantes') ? ['href' => route('comprobantes-cuota-alumnos.index', ['estado' => 'pendiente']), 'icon' => 'bi-inbox', 'title' => 'Comprobantes', 'desc' => (($comprobantesPendientesCount ?? 0) > 0 ? $comprobantesPendientesCount.' sin revisar' : 'Revisar envíos')] : null,
-        $user->tieneAccesoModulo('admin.pagos') ? ['href' => route('pagos.index'), 'icon' => 'bi-receipt', 'title' => 'Registrar pago', 'desc' => 'Cobro al día'] : null,
+        $user->tieneAccesoModulo('admin.pagos') ? ['href' => route('pagos.index'), 'icon' => 'bi-receipt', 'title' => 'Pagos', 'desc' => 'Cobros registrados'] : null,
         $user->tieneAccesoModulo('admin.eventos') ? ['href' => route('eventos.index'), 'icon' => 'bi-calendar-event', 'title' => 'Eventos', 'desc' => 'Agenda cercana'] : null,
         $user->tieneAccesoModulo('admin.villa_gesell') ? ['href' => route('villa-gesell.index'), 'icon' => 'bi-sun', 'title' => 'Villa Gesell', 'desc' => 'Gira 2027'] : null,
     ]));
@@ -39,85 +39,30 @@
 
 <div class="hub hub--command">
     @include('partials.hub-hint', [
-        'title' => 'Centro de control',
-        'body' => 'Primero lo urgente (Hoy). Después acciones rápidas. Ctrl+K busca alumno, bloque o módulo.',
+        'title' => 'Tu tablero',
+        'body' => 'Arriba ves los números del mes y lo que necesita atención hoy. Con Ctrl+K buscás cualquier alumno, bloque o sección.',
         'helpLabel' => 'Cómo pagar y cobrar',
     ])
 
     <div class="hub-hero">
         <div class="hub-hero-main">
-            <p class="hub-eyebrow">La Chilinga · centro de control</p>
-            <h1 class="hub-greeting">
-                {{ $saludo }}, <em>{{ $primerNombre }}</em>.
-            </h1>
+            <h1 class="hub-greeting">{{ $saludo }}, {{ $primerNombre }}</h1>
             <p class="hub-lead">
+                {{ ucfirst(now()->locale('es')->translatedFormat('l j \d\e F')) }} ·
                 {{ $sedesActivasEnBloques ?? 0 }} sedes activas ·
-                {{ number_format($asistenciasMes ?? 0, 0, ',', '.') }} asistencias este mes ·
-                {{ $dashboardAmbito ?? 'Vista general de la escuela' }}.
+                {{ number_format($asistenciasMes ?? 0, 0, ',', '.') }} asistencias este mes
+                @if(!empty($dashboardAmbito)) · {{ $dashboardAmbito }}@endif
             </p>
         </div>
-        <dl class="hub-meta">
-            <div>
-                <dt>Fecha</dt>
-                <dd>{{ now()->locale('es')->translatedFormat('d/m/Y') }}</dd>
-            </div>
-            <div>
-                <dt>Rol</dt>
-                <dd>{{ $user->etiquetaRol() }}</dd>
-            </div>
-            <div>
-                <dt>Semana</dt>
-                <dd>
-                    @if($clasesPendientesSemana > 0)
-                        <span class="hub-status-dot hub-status-dot--alert" aria-hidden="true"></span>
-                        {{ $clasesPendientesSemana }} pendientes
-                    @else
-                        <span class="hub-status-dot hub-status-dot--ok" aria-hidden="true"></span>
-                        Lista al día
-                    @endif
-                </dd>
-            </div>
-        </dl>
+        <div class="ito-page-actions">
+            @if($user->tieneAccesoModulo('admin.alumnos'))
+                <a href="{{ route('alumnos.create') }}" class="btn btn-outline-secondary"><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo alumno</a>
+            @endif
+            @if($user->tieneAccesoModulo('admin.pagos'))
+                <a href="{{ route('pagos.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Registrar pago</a>
+            @endif
+        </div>
     </div>
-
-    @if($atencionExtra->isNotEmpty())
-    <section class="hub-section hub-section--priority" aria-labelledby="hub-hoy">
-        <header class="hub-section-head">
-            <h2 id="hub-hoy" class="hub-section-title"><span class="hub-section-code">Hoy</span> Necesita atención</h2>
-        </header>
-        <div class="hub-modules">
-            @foreach($atencionExtra as $item)
-            <a class="hub-module hub-module--alert" href="{{ $item['href'] }}">
-                <span class="hub-module-icon" aria-hidden="true"><i class="bi bi-lightning"></i></span>
-                <span class="hub-module-body">
-                    <span class="hub-module-title">{{ $item['title'] }}</span>
-                    <span class="hub-module-desc">{{ $item['hint'] }}</span>
-                </span>
-            </a>
-            @endforeach
-        </div>
-    </section>
-    @endif
-
-    @if(count($accionesRapidas) > 0)
-    <section class="hub-section" aria-labelledby="hub-acciones">
-        <header class="hub-section-head">
-            <h2 id="hub-acciones" class="hub-section-title"><span class="hub-section-code">Hacer</span> Acciones rápidas</h2>
-            <span class="hub-section-count">Uso diario</span>
-        </header>
-        <div class="hub-modules hub-modules--compact">
-            @foreach($accionesRapidas as $item)
-            <a class="hub-module" href="{{ $item['href'] }}">
-                <span class="hub-module-icon" aria-hidden="true"><i class="bi {{ $item['icon'] }}"></i></span>
-                <span class="hub-module-body">
-                    <span class="hub-module-title">{{ $item['title'] }}</span>
-                    <span class="hub-module-desc">{{ $item['desc'] }}</span>
-                </span>
-            </a>
-            @endforeach
-        </div>
-    </section>
-    @endif
 
     <div class="hub-kpis" role="list">
         <a class="hub-kpi" href="{{ route('alumnos.index') }}" role="listitem">
@@ -146,12 +91,12 @@
                 <span class="hub-kpi-icon"><i class="bi bi-currency-dollar" aria-hidden="true"></i></span>
             </div>
             <div class="hub-kpi-value hub-kpi-value--sm">${{ number_format($cobradoMes ?? 0, 0, ',', '.') }}</div>
-            <span class="hub-kpi-badge is-ok">{{ $pctAbonadas ?? 0 }}% cuotas</span>
+            <span class="hub-kpi-badge is-ok">{{ $pctAbonadas ?? 0 }}% de las cuotas</span>
         </a>
         <a class="hub-kpi" href="{{ route('cuotas.index') }}" role="listitem">
             <div class="hub-kpi-top">
                 <span class="hub-kpi-label">Cuotas pendientes</span>
-                <span class="hub-kpi-icon"><i class="bi bi-exclamation-circle" aria-hidden="true"></i></span>
+                <span class="hub-kpi-icon"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span>
             </div>
             <div class="hub-kpi-value">{{ $cuotasPendientes ?? 0 }}</div>
             @if(($cuotasPendientes ?? 0) > 0)
@@ -182,67 +127,121 @@
         </a>
     </div>
 
-    <section class="hub-section" aria-labelledby="hub-semana">
+    @if($atencionExtra->isNotEmpty())
+    <section class="hub-section hub-section--priority" aria-labelledby="hub-hoy">
         <header class="hub-section-head">
-            <h2 id="hub-semana" class="hub-section-title">
-                <span class="hub-section-code">Semana</span>
-                Clases de esta semana
-            </h2>
-            <span class="hub-section-count">{{ $clasesTomadasSemana }} tomadas · {{ $clasesPendientesSemana }} por completar</span>
+            <h2 id="hub-hoy" class="hub-section-title">Necesita atención</h2>
+            <span class="hub-section-count">{{ $atencionExtra->count() }} {{ $atencionExtra->count() === 1 ? 'tema' : 'temas' }}</span>
         </header>
-        <div class="hub-panel mb-0">
-            <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Día / hora</th>
-                            <th>Bloque</th>
-                            <th>Sede</th>
-                            <th>Profesor</th>
-                            <th>Estado</th>
-                            <th class="text-end">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse(($bloquesSemanales ?? collect()) as $row)
-                            @php
-                                $h = $row['horario'];
-                                $fecha = $row['fecha_clase'] ?? null;
-                                $diaLabel = $fecha ? $fecha->locale('es')->translatedFormat('D d/m') : '—';
-                                $horaLabel = $h->hora_inicio ? substr((string) $h->hora_inicio, 0, 5) : '';
-                                $bloqueId = $row['bloque']->id ?? null;
-                                $fechaStr = $fecha ? $fecha->toDateString() : now()->toDateString();
-                            @endphp
-                            <tr>
-                                <td class="text-nowrap">
-                                    <span class="fw-semibold">{{ $diaLabel }}</span>
-                                    @if($horaLabel)<span class="text-muted"> · {{ $horaLabel }}</span>@endif
-                                </td>
-                                <td class="fw-semibold">{{ $row['bloque']->nombre ?? '—' }}</td>
-                                <td class="text-muted">{{ $row['sede']->nombre ?? '—' }}</td>
-                                <td class="text-muted">{{ $row['profesor']->nombre ?? '—' }}</td>
-                                <td>
-                                    <span class="{{ $row['badge_class'] ?? 'badge-pend' }}">{{ $row['estado'] }}</span>
-                                    @if(($row['total_alumnos'] ?? 0) > 0 && ($row['estado'] ?? '') === 'Tomada')
-                                        <span class="small text-muted ms-1">{{ $row['presentes'] }}/{{ $row['total_alumnos'] }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-end">
-                                    @if($bloqueId && in_array($row['estado'] ?? '', ['Pendiente', 'Incompleta'], true))
-                                        <a class="btn btn-sm btn-primary" href="{{ route('asistencias.create', ['bloque_id' => $bloqueId, 'fecha' => $fechaStr]) }}">Pasar lista</a>
-                                    @elseif($bloqueId)
-                                        <a class="hub-panel-link" href="{{ route('asistencias.index', ['bloque_id' => $bloqueId]) }}">Ver →</a>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="6" class="text-muted py-3">No hay clases programadas esta semana.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <div class="hub-modules">
+            @foreach($atencionExtra as $item)
+            <a class="hub-module hub-module--alert" href="{{ $item['href'] }}">
+                <span class="hub-module-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></span>
+                <span class="hub-module-body">
+                    <span class="hub-module-title">{{ $item['title'] }}</span>
+                    <span class="hub-module-desc">{{ $item['hint'] }}</span>
+                </span>
+                <i class="bi bi-chevron-right ms-auto text-muted" aria-hidden="true"></i>
+            </a>
+            @endforeach
         </div>
     </section>
+    @endif
+
+    <div class="hub-grid-main">
+        <section class="hub-section" aria-labelledby="hub-semana">
+            <header class="hub-section-head">
+                <h2 id="hub-semana" class="hub-section-title">Clases de esta semana</h2>
+                <span class="hub-section-count">{{ $clasesTomadasSemana }} tomadas · {{ $clasesPendientesSemana }} por completar</span>
+            </header>
+            <div class="hub-panel hub-panel--flush">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" data-ito-no-cards>
+                        <thead>
+                            <tr>
+                                <th>Día y hora</th>
+                                <th>Bloque</th>
+                                <th class="d-none d-md-table-cell">Profesor</th>
+                                <th>Estado</th>
+                                <th class="text-end"><span class="visually-hidden">Acción</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse(($bloquesSemanales ?? collect()) as $row)
+                                @php
+                                    $h = $row['horario'];
+                                    $fecha = $row['fecha_clase'] ?? null;
+                                    $diaLabel = $fecha ? ucfirst($fecha->locale('es')->translatedFormat('D d/m')) : '—';
+                                    $horaLabel = $h->hora_inicio ? \Illuminate\Support\Carbon::parse($h->hora_inicio)->format('H:i') : '';
+                                    $bloqueId = $row['bloque']->id ?? null;
+                                    $fechaStr = $fecha ? $fecha->toDateString() : now()->toDateString();
+                                    $tono = match ($row['estado'] ?? '') {
+                                        'Tomada' => 'success',
+                                        'Incompleta' => 'warning',
+                                        'Pendiente' => 'info',
+                                        default => 'neutral',
+                                    };
+                                @endphp
+                                <tr>
+                                    <td class="text-nowrap">
+                                        <span class="fw-semibold">{{ $diaLabel }}</span>
+                                        @if($horaLabel)<span class="text-muted"> · {{ $horaLabel }}</span>@endif
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold">{{ $row['bloque']->nombre ?? '—' }}</span>
+                                        <span class="d-block small text-muted">{{ $row['sede']->nombre ?? '—' }}</span>
+                                    </td>
+                                    <td class="text-muted d-none d-md-table-cell">{{ $row['profesor']->nombre ?? '—' }}</td>
+                                    <td>
+                                        <x-ito.status :tone="$tono" :label="$row['estado'] ?? '—'" />
+                                        @if(($row['total_alumnos'] ?? 0) > 0 && ($row['estado'] ?? '') === 'Tomada')
+                                            <span class="small text-muted ms-1">{{ $row['presentes'] }}/{{ $row['total_alumnos'] }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        @if($bloqueId && in_array($row['estado'] ?? '', ['Pendiente', 'Incompleta'], true))
+                                            <a class="btn btn-sm btn-outline-primary" href="{{ route('asistencias.create', ['bloque_id' => $bloqueId, 'fecha' => $fechaStr]) }}">Pasar lista</a>
+                                        @elseif($bloqueId)
+                                            <a class="btn btn-sm btn-ghost" href="{{ route('asistencias.index', ['bloque_id' => $bloqueId]) }}">Ver planilla</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="ito-empty">No hay clases programadas esta semana.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="hub-section" aria-labelledby="hub-agenda">
+            <header class="hub-section-head">
+                <h2 id="hub-agenda" class="hub-section-title">Próximos eventos</h2>
+                <a href="{{ route('eventos.index') }}" class="hub-panel-link">Ver agenda</a>
+            </header>
+            <div class="hub-panel">
+                @forelse(($proximosEventos ?? collect()) as $ev)
+                    <div class="hub-list-item">
+                        <span class="agenda-date" aria-hidden="true">
+                            <span class="agenda-date-d">{{ $ev->fecha?->format('d') ?? '—' }}</span>
+                            <span class="agenda-date-m">{{ $ev->fecha?->locale('es')->translatedFormat('M') ?? '' }}</span>
+                        </span>
+                        <span class="flex-grow-1 min-w-0">
+                            <span class="d-block fw-semibold text-truncate">{{ $ev->titulo ?? $ev->nombre ?? 'Evento' }}</span>
+                            <span class="d-block small text-muted text-truncate">
+                                {{ $ev->fecha ? ucfirst($ev->fecha->locale('es')->translatedFormat('l j \d\e F')) : '—' }}
+                                @if(!empty($ev->lugar)) · {{ $ev->lugar }}@endif
+                            </span>
+                        </span>
+                    </div>
+                @empty
+                    <x-ito.empty icon="bi-calendar-event" title="Sin eventos próximos" description="Cuando cargues un evento o un show va a aparecer acá."
+                        :action-href="$user->tieneAccesoModulo('admin.eventos') ? route('eventos.create') : null" action-label="Nuevo evento" />
+                @endforelse
+            </div>
+        </section>
+    </div>
 
     <div class="hub-panels">
         <div class="hub-panel">
@@ -251,7 +250,7 @@
                     <div class="hub-panel-title">Cobros pendientes</div>
                     <div class="hub-panel-sub">Cuotas del mes aún abiertas</div>
                 </div>
-                <a href="{{ route('cuotas.index') }}" class="hub-panel-link">Ver todas →</a>
+                <a href="{{ route('cuotas.index') }}" class="hub-panel-link">Ver cuotas</a>
             </div>
             @forelse(($cuotasPendientesList ?? collect()) as $fila)
                 <div class="hub-list-item">
@@ -265,46 +264,46 @@
                     <div class="text-end">
                         <div class="fw-semibold font-monospace">${{ number_format($fila['monto'] ?? 0, 0, ',', '.') }}</div>
                         @if(!empty($fila['dot_class']))
-                            <span class="hub-kpi-badge is-alert">Vencida</span>
+                            <x-ito.status tone="danger" label="Vencida" />
                         @else
-                            <span class="hub-kpi-badge">Pendiente</span>
+                            <x-ito.status tone="warning" label="Pendiente" />
                         @endif
                     </div>
                 </div>
             @empty
-                <p class="text-muted small mb-0 py-2">No hay cobros pendientes listados.</p>
+                <x-ito.empty icon="bi-check2-circle" title="Sin cobros pendientes" description="Todas las cuotas del mes están al día." />
             @endforelse
-            @if(($cuotasPendientes ?? 0) > 0)
-                <div class="mt-2">
+            @if(($cuotasPendientes ?? 0) > 0 && $user->tieneAccesoModulo('admin.pagos'))
+                <div class="mt-3">
                     <a class="btn btn-sm btn-outline-primary" href="{{ route('pagos.create') }}">Registrar pago</a>
                 </div>
             @endif
         </div>
         <div class="hub-panel">
             <div class="hub-panel-head">
-                <div class="hub-panel-title">Comprobantes sin revisar</div>
-                <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="hub-panel-link">Ir al listado →</a>
+                <div>
+                    <div class="hub-panel-title">Comprobantes sin revisar</div>
+                    <div class="hub-panel-sub">Enviados por alumnos y familias</div>
+                </div>
+                <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="hub-panel-link">Ir al listado</a>
             </div>
             @forelse(($comprobantesPendientesList ?? collect()) as $comp)
                 <div class="hub-list-item">
                     <div class="flex-grow-1 min-w-0">
                         <div class="fw-semibold text-truncate">{{ $comp->alumno?->nombre_apellido ?? 'Alumno' }}</div>
-                        <div class="small text-muted">{{ $comp->created_at?->diffForHumans() ?? '' }}</div>
+                        <div class="small text-muted">{{ $comp->created_at?->locale('es')->diffForHumans() ?? '' }}</div>
                     </div>
-                    <span class="hub-kpi-badge is-alert">Pendiente</span>
+                    <x-ito.status tone="warning" label="Pendiente" />
                 </div>
             @empty
-                <p class="text-muted small mb-0 py-2">No hay comprobantes pendientes.</p>
+                <x-ito.empty icon="bi-inbox" title="Nada para revisar" description="No hay comprobantes esperando revisión." />
             @endforelse
         </div>
     </div>
 
     <section class="hub-section" aria-labelledby="hub-sec-ops">
         <header class="hub-section-head">
-            <h2 id="hub-sec-ops" class="hub-section-title">
-                <span class="hub-section-code">Contexto</span>
-                Operación del mes
-            </h2>
+            <h2 id="hub-sec-ops" class="hub-section-title">Operación del mes</h2>
         </header>
 
         <div class="hub-panels">
@@ -315,55 +314,34 @@
                         <div class="hub-panel-sub">Últimos 6 meses</div>
                     </div>
                 </div>
-                <div class="hub-chart"><canvas id="dashChartFinanzas" aria-label="Gráfico de ingresos y gastos"></canvas></div>
+                <div class="hub-chart"><canvas id="dashChartFinanzas" role="img" aria-label="Gráfico de barras: ingresos y gastos de los últimos 6 meses"></canvas></div>
             </div>
             <div class="hub-panel">
                 <div class="hub-panel-head">
                     <div>
-                        <div class="hub-panel-title">Alumnos por sede</div>
-                        <div class="hub-panel-sub">Activos hoy</div>
+                        <div class="hub-panel-title">Alumnos activos por sede</div>
+                        <div class="hub-panel-sub">Hoy</div>
                     </div>
                 </div>
-                <div class="hub-chart"><canvas id="dashChartSedes" aria-label="Gráfico de alumnos por sede"></canvas></div>
+                <div class="hub-chart"><canvas id="dashChartSedes" role="img" aria-label="Gráfico de barras: alumnos activos por sede"></canvas></div>
             </div>
         </div>
 
         <div class="hub-panels">
-            <div class="hub-panel">
-                <div class="hub-panel-head">
-                    <div class="hub-panel-title">Próximos eventos</div>
-                    <a href="{{ route('eventos.index') }}" class="hub-panel-link">Ver todos →</a>
-                </div>
-                @forelse(($proximosEventos ?? collect()) as $ev)
-                    <div class="hub-list-item">
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="fw-semibold text-truncate">{{ $ev->titulo ?? $ev->nombre ?? 'Evento' }}</div>
-                            <div class="small text-muted">
-                                {{ $ev->fecha?->locale('es')->translatedFormat('d M Y') ?? '—' }}
-                                @if(!empty($ev->lugar)) · {{ $ev->lugar }} @endif
-                            </div>
-                        </div>
-                        <span class="hub-kpi-badge">Próximo</span>
-                    </div>
-                @empty
-                    <p class="text-muted small mb-0 py-2">No hay eventos próximos.</p>
-                @endforelse
-            </div>
-            <div class="hub-panel">
+            <div class="hub-panel hub-panel--flush">
                 <div class="hub-panel-head">
                     <div>
-                        <div class="hub-panel-title">Bloques — cupo</div>
-                        <div class="hub-panel-sub">Ocupación</div>
+                        <div class="hub-panel-title">Ocupación de bloques</div>
+                        <div class="hub-panel-sub">Alumnos activos sobre cupo</div>
                     </div>
-                    <a href="{{ route('bloques.index') }}" class="hub-panel-link">Ver →</a>
+                    <a href="{{ route('bloques.index') }}" class="hub-panel-link">Ver bloques</a>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0">
+                    <table class="table align-middle mb-0" data-ito-no-cards>
                         <thead>
                             <tr>
                                 <th>Bloque</th>
-                                <th>Sede</th>
-                                <th>Cupo</th>
+                                <th>Ocupación</th>
                                 <th class="text-end">Alumnos</th>
                             </tr>
                         </thead>
@@ -376,21 +354,42 @@
                                     $barClass = $pct >= 100 ? 'full' : ($pct >= 75 ? 'warn' : '');
                                 @endphp
                                 <tr>
-                                    <td class="fw-semibold">{{ $bloque->nombre }}</td>
-                                    <td class="text-muted">{{ $bloque->sede?->nombre ?? '—' }}</td>
                                     <td>
+                                        <span class="fw-semibold">{{ $bloque->nombre }}</span>
+                                        <span class="d-block small text-muted">{{ $bloque->sede?->nombre ?? '—' }}</span>
+                                    </td>
+                                    <td class="text-nowrap">
                                         <span class="cupo-bar {{ $barClass }}" aria-hidden="true"><i style="width:{{ $pct }}%"></i></span>
                                         <span class="small font-monospace">{{ $pct }}%</span>
                                     </td>
                                     <td class="text-end font-monospace">{{ $activos }}/{{ $cupo }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-muted">Sin bloques activos.</td></tr>
+                                <tr><td colspan="3" class="ito-empty">Sin bloques activos.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            @if(count($accionesRapidas) > 0)
+            <div class="hub-panel">
+                <div class="hub-panel-head">
+                    <div class="hub-panel-title">Accesos rápidos</div>
+                </div>
+                <div class="hub-shortcuts">
+                    @foreach($accionesRapidas as $item)
+                    <a class="hub-shortcut" href="{{ $item['href'] }}">
+                        <i class="bi {{ $item['icon'] }}" aria-hidden="true"></i>
+                        <span class="min-w-0">
+                            <span class="d-block fw-semibold">{{ $item['title'] }}</span>
+                            <span class="d-block small text-muted">{{ $item['desc'] }}</span>
+                        </span>
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </section>
 </div>
@@ -400,55 +399,61 @@
 <script>
 (function () {
     const css = getComputedStyle(document.documentElement);
-    const muted = css.getPropertyValue('--muted-2').trim() || 'rgba(255,255,255,.45)';
-    const line = 'rgba(233,237,245,0.08)';
-    const brick = css.getPropertyValue('--brick').trim() || '#f26422';
-    const verdigris = css.getPropertyValue('--verdigris').trim() || '#3daf3a';
-    const brass = css.getPropertyValue('--brass').trim() || '#3ec8ea';
-    const s3 = css.getPropertyValue('--surface-3').trim() || '#242424';
-
-    const chartDefaults = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: muted } } },
-        scales: {
-            x: { ticks: { color: muted }, grid: { color: line } },
-            y: { ticks: { color: muted }, grid: { color: line } },
-        },
-    };
+    const v = (n, f) => css.getPropertyValue(n).trim() || f;
+    const muted = v('--muted', '#5b6472');
+    const grid = v('--border', '#e2e5ea');
+    const success = v('--success', '#1e7b34');
+    const accent = v('--accent', '#f26422');
+    const info = v('--info', '#0b7593');
+    if (!window.Chart) return;
+    Chart.defaults.color = muted;
+    Chart.defaults.font.family = "'Manrope', system-ui, sans-serif";
+    const peso = (n) => '$' + Number(n || 0).toLocaleString('es-AR');
 
     const fin = document.getElementById('dashChartFinanzas');
-    if (fin && window.Chart) {
+    if (fin) {
         new Chart(fin.getContext('2d'), {
             type: 'bar',
             data: {
                 labels: {!! json_encode($chartLabels ?? []) !!},
                 datasets: [
-                    { label: 'Ingresos', data: {!! json_encode($chartIngresos ?? []) !!}, backgroundColor: verdigris, borderRadius: 6 },
-                    { label: 'Gastos', data: {!! json_encode($chartGastos ?? []) !!}, backgroundColor: brick, borderRadius: 6 },
+                    { label: 'Ingresos', data: {!! json_encode($chartIngresos ?? []) !!}, backgroundColor: success, borderRadius: 4, maxBarThickness: 28 },
+                    { label: 'Gastos', data: {!! json_encode($chartGastos ?? []) !!}, backgroundColor: accent, borderRadius: 4, maxBarThickness: 28 },
                 ],
-            },
-            options: chartDefaults,
-        });
-    }
-
-    const sedes = document.getElementById('dashChartSedes');
-    if (sedes && window.Chart) {
-        const sedeData = {!! json_encode(($alumnosPorSedeChart ?? collect())->values()) !!};
-        new Chart(sedes.getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: sedeData.map((r) => r.nombre),
-                datasets: [{
-                    data: sedeData.map((r) => r.total),
-                    backgroundColor: [brass, verdigris, brick, '#8b5cf6', '#5b9ef0', s3],
-                    borderWidth: 0,
-                }],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { color: muted, boxWidth: 10 } } },
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true } },
+                    tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + peso(c.raw) } },
+                },
+                scales: {
+                    x: { grid: { display: false }, border: { color: grid } },
+                    y: { beginAtZero: true, grid: { color: grid }, border: { display: false }, ticks: { callback: (val) => peso(val) } },
+                },
+            },
+        });
+    }
+
+    const sedes = document.getElementById('dashChartSedes');
+    if (sedes) {
+        const sedeData = {!! json_encode(($alumnosPorSedeChart ?? collect())->values()) !!};
+        new Chart(sedes.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: sedeData.map((r) => r.nombre),
+                datasets: [{ label: 'Alumnos', data: sedeData.map((r) => r.total), backgroundColor: info, borderRadius: 4, maxBarThickness: 22 }],
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, grid: { color: grid }, border: { display: false }, ticks: { precision: 0 } },
+                    y: { grid: { display: false }, border: { color: grid } },
+                },
             },
         });
     }

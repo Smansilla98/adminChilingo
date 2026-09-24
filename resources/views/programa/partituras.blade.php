@@ -21,7 +21,7 @@
         <form action="{{ route('programa.partituras.importar-cuadernillo') }}" method="POST" class="d-inline"
               data-confirm="¿Asignar a cada toque su PDF del Cuadernillo de Toques? Reemplaza el archivo de partitura actual.">
             @csrf
-            <button type="submit" class="btn btn-outline-warning btn-sm">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-file-earmark-pdf"></i> Cargar PDFs
             </button>
         </form>
@@ -52,7 +52,7 @@
             <input id="nuevo-toque-autor" class="form-control" type="text" name="autor" maxlength="500" placeholder="Opcional">
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-warning w-100">Crear y editar</button>
+            <button type="submit" class="btn btn-outline-primary w-100">Crear y editar</button>
         </div>
     </div>
 </form>
@@ -132,7 +132,7 @@
                                 <a href="{{ route('programa.toque.show', $toque) }}#partitura" class="btn btn-sm btn-primary">
                                     <i class="bi bi-play-fill"></i> {{ ($rm['digital'] ?? false) ? 'Escuchar' : 'Abrir' }}
                                 </a>
-                                <a href="{{ route('programa.toque.editor', $toque) }}" class="btn btn-sm btn-warning">
+                                <a href="{{ route('programa.toque.editor', $toque) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-pencil-square"></i> {{ ($rm['digital'] ?? false) ? 'Editar' : 'Crear' }}
                                 </a>
                                 @if($esAdmin)

@@ -4,27 +4,12 @@
 @section('page-title', 'Inventario — Editar ítem')
 
 @section('content')
-<x-ito.shell-page
-    title="Editar ítem"
-    subtitle="{{ $inventario->nombre }}"
-    eyebrow="Inventario"
->
-    <x-slot:actions>
-        <a href="{{ route('inventarios.show', $inventario) }}" class="btn btn-outline-secondary btn-sm">Ver ficha</a>
-    </x-slot:actions>
-
-    <form action="{{ route('inventarios.update', $inventario) }}" method="POST" class="ito-form">
+<x-ito.shell-page :title="'Editar '.$inventario->nombre" :subtitle="$inventario->codigo ?: $inventario->sede?->nombre" :plain="true">
+    <form action="{{ route('inventarios.update', $inventario) }}" method="POST">
         @csrf
         @method('PUT')
-        <x-ito.form-steps
-            :steps="['Identidad', 'Especificaciones', 'Adquisición']"
-            submit-label="Guardar cambios"
-        >
-            <x-slot:cancel>
-                <a href="{{ route('inventarios.show', $inventario) }}" class="btn btn-outline-secondary">Cancelar</a>
-            </x-slot:cancel>
-            @include('inventarios._form', ['item' => $inventario])
-        </x-ito.form-steps>
+        @include('inventarios._form', ['item' => $inventario])
+        <x-ito.form-actions :cancel="route('inventarios.show', $inventario)" submit="Guardar cambios" />
     </form>
 </x-ito.shell-page>
 @endsection

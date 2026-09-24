@@ -8,22 +8,13 @@
     title="Editar alumno"
     subtitle="{{ $alumno->nombre_apellido }}"
     eyebrow="Alumnos"
+    :plain="true"
 >
-    <x-slot:actions>
-        <a href="{{ route('alumnos.show', $alumno) }}" class="btn btn-outline-secondary btn-sm">Ver ficha</a>
-    </x-slot:actions>
 
-    <form action="{{ route('alumnos.update', $alumno) }}" method="POST" class="ito-form">
+    <form action="{{ route('alumnos.update', $alumno) }}" method="POST" >
         @csrf
         @method('PUT')
-        <x-ito.form-steps
-            :steps="['Datos', 'Instrumentos', 'Clases']"
-            submit-label="Actualizar"
-        >
-            <x-slot:cancel>
-                <a href="{{ route('alumnos.show', $alumno) }}" class="btn btn-outline-secondary">Cancelar</a>
-            </x-slot:cancel>
-            @include('alumnos._form', [
+        @include('alumnos._form', [
                 'alumno' => $alumno,
                 'instrumentos' => $instrumentos,
                 'tiposTambor' => $tiposTambor,
@@ -32,7 +23,7 @@
                 'bloques' => $bloques,
                 'profesoresSinVinculo' => $profesoresSinVinculo ?? collect(),
             ])
-        </x-ito.form-steps>
+        <x-ito.form-actions :cancel="route('alumnos.show', $alumno)" submit="Guardar cambios" />
     </form>
 </x-ito.shell-page>
 @endsection

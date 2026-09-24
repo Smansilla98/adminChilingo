@@ -1,118 +1,119 @@
 @extends('layouts.app')
 
-@section('title', 'Pago #' . $pago->id)
-@section('page-title', 'Detalle del pago')
+@section('title', 'Pago #'.$pago->id)
+@section('page-title', 'Pago #'.$pago->id)
 
 @section('content')
-<x-ito.shell-page
-    title="Pago del {{ $pago->fecha_pago->format('d/m/Y') }}"
-    eyebrow="Pagos"
-    subtitle="Detalle y trazabilidad por alumno"
->
+@php
+    $peso = fn ($n) => '$ '.number_format((float) $n, 2, ',', '.');
+    $sumAbonoProf = $pago->detalles->sum(fn ($d) => (float) ($d->abono_profesor ?? 0));
+    $tieneAbonoProf = $pago->detalles->contains(fn ($d) => $d->abono_profesor !== null);
+    $sumRestoEscuela = $pago->detalles->sum(fn ($d) => ($d->abono_profesor === null || ! $d->cuota) ? 0 : max(0, (float) $d->cuota->monto - (float) $d->abono_profesor));
+    $primeraNotaAbono = $pago->detalles->first(fn ($d) => filled($d->abono_nota))?->abono_nota;
+    $alumnos = $pago->detalles->pluck('alumno.nombre_apellido')->filter()->unique();
+@endphp
+<x-ito.shell-page :title="'Pago del '.$pago->fecha_pago->format('d/m/Y')" :subtitle="'Pago #'.$pago->id.' · '.$alumnos->take(3)->join(', ').($alumnos->count() > 3 ? ' y '.($alumnos->count() - 3).' más' : '')" :plain="true">
     <x-slot:actions>
-        @can('update', $pago)
-            <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Editar</a>
-        @endcan
-        @can('reverse', $pago)
-            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="collapse" data-bs-target="#anular-pago"><i class="bi bi-x-octagon"></i> Anular</button>
-        @endcan
-        <a href="{{ route('pagos.index') }}" class="btn btn-outline-secondary btn-sm">Volver</a>
-    </x-slot:actions>
         @if($pago->estaAnulado())
-            <div class="alert alert-danger" role="status">
-                <strong>Pago anulado</strong> el {{ $pago->anulado_at->format('d/m/Y H:i') }}
-                @if($pago->anuladoPor) por {{ $pago->anuladoPor->name }} @endif.
-                Motivo: {{ $pago->motivo_anulacion }}. No cuenta para saldos ni reportes.
-            </div>
+            <x-ito.status tone="danger" label="Anulado" />
+        @else
+            <x-ito.status tone="success" label="Registrado" />
         @endif
+        <a href="{{ route('pagos.index') }}" class="btn btn-outline-secondary">Volver</a>
         @can('reverse', $pago)
-            <form id="anular-pago" class="collapse card card-body mb-3" method="POST" action="{{ route('pagos.anular', $pago) }}">
-                @csrf
-                <label for="motivo-anulacion" class="form-label">Motivo de la anulación</label>
-                <textarea id="motivo-anulacion" name="motivo" class="form-control mb-2" rows="2" required minlength="5" maxlength="500"></textarea>
-                <p class="small text-muted mb-2">El pago queda en el historial pero deja de contar. Si vino de un comprobante del alumno, el comprobante vuelve a pendiente.</p>
-                <button class="btn btn-danger btn-sm align-self-start">Confirmar anulación</button>
-            </form>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#anular-pago" aria-expanded="false" aria-controls="anular-pago"><i class="bi bi-x-octagon" aria-hidden="true"></i> Anular</button>
         @endcan
-        <dl class="ito-dl">
-            <dt class="col-sm-3">Monto total</dt>
-            <dd class="col-sm-9">$ {{ number_format($pago->monto_total, 2, ',', '.') }}</dd>
-            @php
-                $sumAbonoProf = $pago->detalles->sum(fn ($d) => (float) ($d->abono_profesor ?? 0));
-                $tieneAbonoProf = $pago->detalles->contains(fn ($d) => $d->abono_profesor !== null);
-            @endphp
-            @if($tieneAbonoProf)
-            <dt class="col-sm-3">Total abono profesor</dt>
-            <dd class="col-sm-9">$ {{ number_format($sumAbonoProf, 2, ',', '.') }} <span class="text-muted small">(total que va al profesor en este pago)</span></dd>
-            @php
-                $sumRestoEscuela = $pago->detalles->sum(function ($d) {
-                    if ($d->abono_profesor === null || ! $d->cuota) {
-                        return 0;
-                    }
+        @can('update', $pago)
+            <a href="{{ route('pagos.edit', $pago) }}" class="btn btn-primary"><i class="bi bi-pencil" aria-hidden="true"></i> Editar</a>
+        @endcan
+    </x-slot:actions>
 
-                    return max(0, (float) $d->cuota->monto - (float) $d->abono_profesor);
-                });
-            @endphp
-            @if($sumRestoEscuela > 0)
-            <dt class="col-sm-3">Ref. resto escuela</dt>
-            <dd class="col-sm-9">$ {{ number_format($sumRestoEscuela, 2, ',', '.') }} <span class="text-muted small">(parte que queda para la escuela)</span></dd>
-            @endif
-            @endif
-            <dt class="col-sm-3">Comprobante</dt>
-            <dd class="col-sm-9">
-                @if($pago->comprobante_path)
-                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalComprobantePago" data-comprobante-src="{{ route('pagos.comprobante', $pago) }}" data-comprobante-label="Comprobante — pago #{{ $pago->id }}"><i class="bi bi-file-earmark"></i> Ver comprobante</button>
-                @else
-                —
-                @endif
-            </dd>
-            <dt class="col-sm-3">Registrado por</dt>
-            <dd class="col-sm-9">{{ $pago->registradoPor?->name ?? '-' }}</dd>
-            @if($pago->notas)
-            <dt class="col-sm-3">Notas</dt>
-            <dd class="col-sm-9">{{ $pago->notas }}</dd>
-            @endif
-        </dl>
-        <h6 class="mt-3">Detalle por alumno (trazabilidad)</h6>
-        <div class="table-responsive">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Alumno</th>
-                        <th>Cuota</th>
-                        <th>Monto alumno</th>
-                        <th>Cuota (ref.)</th>
-                        <th>Ref. cuota (liq.)</th>
-                        <th>Resto escuela (ref.)</th>
-                        <th>%</th>
-                        <th>Abono prof.</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($pago->detalles as $d)
-                    @php
-                        $refEscuelaFila = ($d->abono_profesor !== null && $d->cuota)
-                            ? max(0, (float) $d->cuota->monto - (float) $d->abono_profesor)
-                            : null;
-                    @endphp
-                    <tr>
-                        <td>{{ $d->alumno->nombre_apellido }}</td>
-                        <td>{{ $d->cuota->nombre }}</td>
-                        <td>$ {{ number_format($d->monto, 2, ',', '.') }}</td>
-                        <td>$ {{ number_format((float) $d->cuota->monto, 2, ',', '.') }}</td>
-                        <td>@if($d->abono_base !== null) $ {{ number_format((float) $d->abono_base, 2, ',', '.') }} @else — @endif</td>
-                        <td>@if($refEscuelaFila !== null) $ {{ number_format($refEscuelaFila, 2, ',', '.') }} @else — @endif</td>
-                        <td>@if($d->abono_porcentaje !== null) {{ number_format((float) $d->abono_porcentaje, 2, ',', '.') }}% @else — @endif</td>
-                        <td>@if($d->abono_profesor !== null) $ {{ number_format((float) $d->abono_profesor, 2, ',', '.') }} @else — @endif</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+    @if($pago->estaAnulado())
+        <div class="alert alert-danger mb-0" role="status">
+            <strong>Pago anulado</strong> el {{ $pago->anulado_at->format('d/m/Y H:i') }}@if($pago->anuladoPor) por {{ $pago->anuladoPor->name }}@endif.
+            Motivo: {{ $pago->motivo_anulacion }}. No cuenta para saldos ni reportes.
         </div>
-        @php $primeraNotaAbono = $pago->detalles->first(fn ($d) => filled($d->abono_nota))?->abono_nota; @endphp
-        @if($primeraNotaAbono)
-        <p class="small text-muted mb-0"><strong>Nota sobre el pago al profesor:</strong> {{ $primeraNotaAbono }}</p>
+    @endif
+
+    @can('reverse', $pago)
+        <div class="collapse" id="anular-pago">
+            <x-ito.detail-section title="Anular este pago" icon="bi-x-octagon" help="Queda en el historial pero deja de contar. Si vino de un comprobante del alumno, el comprobante vuelve a pendiente.">
+                <form method="POST" action="{{ route('pagos.anular', $pago) }}">
+                    @csrf
+                    <label for="motivo-anulacion" class="form-label">Motivo de la anulación</label>
+                    <textarea id="motivo-anulacion" name="motivo" class="form-control mb-3" rows="2" required minlength="5" maxlength="500"></textarea>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#anular-pago">Cancelar</button>
+                        <button class="btn btn-danger" type="submit">Anular pago</button>
+                    </div>
+                </form>
+            </x-ito.detail-section>
+        </div>
+    @endcan
+
+    <x-ito.facts>
+        <x-ito.fact label="Total cobrado" :value="$peso($pago->monto_total)" />
+        @if($tieneAbonoProf)
+            <x-ito.fact label="Para el profesor" :value="$peso($sumAbonoProf)" />
+            @if($sumRestoEscuela > 0)<x-ito.fact label="Queda en la escuela (ref.)" :value="$peso($sumRestoEscuela)" />@endif
         @endif
+        <x-ito.fact label="Líneas" :value="$pago->detalles->count()" />
+        <x-ito.fact label="Registrado por" :value="$pago->registradoPor?->name" />
+    </x-ito.facts>
+
+    <div class="ito-detail-grid">
+        <x-ito.detail-section title="Detalle por alumno" icon="bi-people" :flush="true">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Cuota</th>
+                            <th class="text-end">Pagó</th>
+                            <th class="text-end">Profesor</th>
+                            <th class="text-end">Escuela (ref.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pago->detalles as $d)
+                            @php $refEscuela = ($d->abono_profesor !== null && $d->cuota) ? max(0, (float) $d->cuota->monto - (float) $d->abono_profesor) : null; @endphp
+                            <tr>
+                                <td><a href="{{ route('alumnos.show', $d->alumno) }}">{{ $d->alumno->nombre_apellido }}</a></td>
+                                <td>
+                                    {{ $d->cuota->nombre }}
+                                    <span class="d-block small text-muted">Cuota {{ $peso($d->cuota->monto) }}</span>
+                                </td>
+                                <td class="text-end fw-semibold">{{ $peso($d->monto) }}</td>
+                                <td class="text-end">
+                                    @if($d->abono_profesor !== null)
+                                        {{ $peso($d->abono_profesor) }}
+                                        @if($d->abono_porcentaje !== null)<span class="d-block small text-muted">{{ number_format((float) $d->abono_porcentaje, 1, ',', '.') }}% de {{ $d->abono_base !== null ? $peso($d->abono_base) : '—' }}</span>@endif
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+                                <td class="text-end text-muted">{{ $refEscuela !== null ? $peso($refEscuela) : '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @if($primeraNotaAbono)
+                <p class="small text-muted m-3 mb-3"><strong>Nota sobre el pago al profesor:</strong> {{ $primeraNotaAbono }}</p>
+            @endif
+        </x-ito.detail-section>
+
+        <x-ito.detail-section title="Comprobante y notas" icon="bi-paperclip">
+            @if($pago->comprobante_path)
+                <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#modalComprobantePago" data-comprobante-src="{{ route('pagos.comprobante', $pago) }}" data-comprobante-label="Comprobante — pago #{{ $pago->id }}"><i class="bi bi-file-earmark" aria-hidden="true"></i> Ver comprobante</button>
+            @else
+                <p class="text-muted mb-0">Sin comprobante adjunto.</p>
+            @endif
+            @if($pago->notas)
+                <p class="mt-3 mb-0" style="white-space: pre-line">{{ $pago->notas }}</p>
+            @endif
+        </x-ito.detail-section>
+    </div>
 </x-ito.shell-page>
 @include('pagos._modal_comprobante')
 @endsection

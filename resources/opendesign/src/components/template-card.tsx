@@ -57,15 +57,15 @@ export function TemplateCard({ template, onClick }: Props) {
             class="w-full h-full object-contain"
           />
         ) : (
-          <span class="text-zinc-300 text-[10px] font-medium">Cargando…</span>
+          <span class="text-zinc-300 text-[11px] font-medium">Cargando…</span>
         )}
       </div>
       {/* Label */}
       <div class="px-2 py-1.5 border-t border-zinc-200">
-        <span class="text-[10px] text-zinc-600 font-medium truncate block">
+        <span class="text-[11px] text-zinc-600 font-medium truncate block">
           {template.name}
         </span>
-        <span class="text-[9px] text-zinc-400">
+        <span class="text-[9px] text-zinc-500">
           {template.width}&times;{template.height}
         </span>
       </div>

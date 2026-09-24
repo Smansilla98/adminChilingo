@@ -6,6 +6,7 @@ export interface OpenDesignConfig {
   basePath: string; // ruta del editor en el panel, ej. "/disenos"
   apiBase: string; // ej. "/disenos/api"
   panelUrl: string; // volver al panel
+  logoUrl?: string; // logo de La Chilinga para el encabezado
   csrfToken: string;
   puedeGestionarKit: boolean;
 }

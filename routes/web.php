@@ -26,6 +26,7 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\HubSearchController;
 use App\Http\Controllers\InventarioItemController;
 use App\Http\Controllers\InventarioPublicoController;
+use App\Http\Controllers\NotificacionWebController;
 use App\Http\Controllers\OperativoController;
 use App\Http\Controllers\OrdenCompraController;
 use App\Http\Controllers\PagoController;
@@ -152,6 +153,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/apariencia', [AparienciaController::class, 'edit'])->name('apariencia.edit');
     Route::post('/apariencia', [AparienciaController::class, 'update'])->name('apariencia.update');
     Route::post('/apariencia/restablecer', [AparienciaController::class, 'reset'])->name('apariencia.reset');
+    Route::post('/apariencia/tema', [AparienciaController::class, 'tema'])->name('apariencia.tema');
+
+    // Avisos internos (campana de la barra superior)
+    Route::post('/notificaciones/leer-todas', [NotificacionWebController::class, 'leerTodas'])->name('notificaciones.leer-todas');
+    Route::post('/notificaciones/{id}/leer', [NotificacionWebController::class, 'leer'])->name('notificaciones.leer');
 
     // Operativo diario
     Route::get('/pendientes', [OperativoController::class, 'pendientes'])->name('operativo.pendientes');

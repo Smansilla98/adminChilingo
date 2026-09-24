@@ -1,6 +1,7 @@
 @php
     /** @var \App\Models\VillaGesellInsumo $insumo */
 @endphp
+<x-ito.form-section title="Insumo" icon="bi-basket">
 <div class="row g-3">
     <div class="col-md-6">
         <label class="form-label">Nombre *</label>
@@ -32,3 +33,4 @@
         <textarea name="notas" class="form-control" rows="2">{{ old('notas', $insumo->notas) }}</textarea>
     </div>
 </div>
+</x-ito.form-section>

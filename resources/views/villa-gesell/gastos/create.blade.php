@@ -6,18 +6,15 @@
 @section('content')
 @include('villa-gesell.partials.nav')
 <x-ito.shell-page
+    :plain="true"
     title="Gasto de la gira"
-    eyebrow="Villa Gesell"
     subtitle="Egreso de la campaña."
 >
 
         <form action="{{ route('villa-gesell.gastos.store') }}" method="POST">
             @csrf
             @include('villa-gesell.gastos._form', ['diasGira' => app(\App\Services\VillaGesellGiraService::class)->config()->cantidadDias()])
-            <div class="mt-3">
-                <button class="btn btn-primary" type="submit">Guardar</button>
-                <a class="btn btn-link" href="{{ route('villa-gesell.gastos.index') }}">Cancelar</a>
-            </div>
+            <x-ito.form-actions :cancel="route('villa-gesell.gastos.index')" submit="Guardar" />
         </form>
 </x-ito.shell-page>
 

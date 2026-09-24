@@ -95,13 +95,13 @@ export function PagesBar() {
         class="w-full flex items-center justify-between px-4 py-1.5 bg-transparent border-none cursor-pointer hover:bg-zinc-50 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
-        <span class="text-[11px] text-zinc-400 font-medium">
+        <span class="text-xs text-zinc-500 font-medium">
           Páginas ({pages.length})
         </span>
         {expanded ? (
-          <ChevronDown size={14} class="text-zinc-400" />
+          <ChevronDown size={14} class="text-zinc-500" />
         ) : (
-          <ChevronUp size={14} class="text-zinc-400" />
+          <ChevronUp size={14} class="text-zinc-500" />
         )}
       </button>
 
@@ -115,7 +115,7 @@ export function PagesBar() {
                 <div
                   class={`relative flex flex-col items-center gap-1 cursor-pointer border-2 rounded-lg p-1 transition-all bg-white ${
                     isActive
-                      ? "border-[#f26422] shadow-sm"
+                      ? "border-accent shadow-sm"
                       : "border-zinc-200 hover:border-zinc-300"
                   }`}
                   onClick={() => handlePageClick(page.id)}
@@ -131,14 +131,14 @@ export function PagesBar() {
                       setMenuPageId(menuPageId === page.id ? null : page.id);
                     }}
                   >
-                    <MoreHorizontal size={12} class="text-zinc-400" />
+                    <MoreHorizontal size={12} class="text-zinc-500" />
                   </button>
                 </div>
                 <div class="mt-0.5 text-center" style={{ width: 88 }}>
                   {renamingId === page.id ? (
                     <input
                       ref={renameRef}
-                      class="w-full text-center text-[10px] text-zinc-700 bg-zinc-100 border border-[#f26422] rounded px-1 py-0 outline-none"
+                      class="w-full text-center text-[11px] text-zinc-700 bg-zinc-100 border border-accent rounded px-1 py-0 outline-none"
                       value={renameValue}
                       onInput={(e) => setRenameValue((e.target as HTMLInputElement).value)}
                       onBlur={finishRename}
@@ -149,7 +149,7 @@ export function PagesBar() {
                     />
                   ) : (
                     <span
-                      class={`text-[10px] truncate block ${
+                      class={`text-[11px] truncate block ${
                         isActive ? "text-zinc-800 font-medium" : "text-zinc-500"
                       }`}
                     >
@@ -199,11 +199,11 @@ export function PagesBar() {
           })}
 
           <button
-            class="flex-shrink-0 flex items-center justify-center w-10 h-[62px] rounded-lg border-2 border-dashed border-zinc-300 bg-transparent cursor-pointer transition-all hover:border-[#f26422] hover:bg-[#f26422]/5"
+            class="flex-shrink-0 flex items-center justify-center w-10 h-[62px] rounded-lg border-2 border-dashed border-zinc-300 bg-transparent cursor-pointer transition-all hover:border-accent hover:bg-accent/5"
             onClick={() => addPage()}
             title="Agregar página"
           >
-            <Plus size={16} class="text-zinc-400" />
+            <Plus size={16} class="text-zinc-500" />
           </button>
         </div>
       )}

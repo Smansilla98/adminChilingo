@@ -5,139 +5,51 @@
     @stack('vite')
     @stack('styles')
     @auth
-    <link rel="stylesheet" href="{{ asset('css/recordatorio-chatbot.css') }}?v=3">
+    <link rel="stylesheet" href="{{ asset('css/recordatorio-chatbot.css') }}?v=4">
     @endauth
 </head>
 <body>
 <a class="ito-skip" href="#contenido-principal">Ir al contenido</a>
 <div id="itoA11yLive" class="ito-sr-only" aria-live="polite" aria-atomic="true"></div>
 @auth
-@php
-    $sideUserName = auth()->user()->name ?: auth()->user()->username ?: 'Usuario';
-    $sideUserInitials = collect(preg_split('/\s+/', trim($sideUserName)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('') ?: 'U';
-    $sideUserRole = auth()->user()->etiquetaRol();
-    $sideContextos = app(\App\Domain\Acceso\PresentadorAcceso::class)->contextos(auth()->user()->acceso());
-    $sideContextoActual = collect($sideContextos)->firstWhere('clave', session('contexto'));
-    if ($sideContextoActual) {
-        $sideUserRole = $sideContextoActual['etiqueta'];
-    }
-@endphp
-<div class="shell shell--maxton" id="appShell">
-    <button type="button" class="nav-backdrop" id="navBackdrop" aria-label="Cerrar menú"></button>
+<div class="shell" id="appShell">
+    <button type="button" class="nav-backdrop" id="navBackdrop" aria-label="Cerrar menú" tabindex="-1"></button>
 
-    <aside class="sidebar sidebar--maxton" id="sidebarNav">
+    <aside class="sidebar" id="sidebarNav" aria-label="Menú principal">
         <div class="sidebar-head">
-            <a class="sidebar-brand" href="{{ route('dashboard') }}" aria-label="Inicio">
-                <x-brand-logo variant="sidebar" />
+            <a class="sidebar-brand" href="{{ route('dashboard') }}" aria-label="La Chilinga — Inicio">
+                <x-brand-logo variant="sidebar" alt="" />
                 <span class="sidebar-brand-text">
-                    <span class="sidebar-brand-title">Chilinga</span>
+                    <span class="sidebar-brand-title">La Chilinga</span>
                     <span class="sidebar-brand-sub">Escuela de percusión</span>
                 </span>
             </a>
+            <button type="button" class="sidebar-collapse-btn" id="sidebarCollapse" aria-label="Contraer menú" aria-pressed="false" title="Contraer menú">
+                <i class="bi bi-chevron-bar-left" aria-hidden="true"></i>
+            </button>
         </div>
 
         <nav class="side-nav" aria-label="Navegación principal">
             @include('layouts.partials.sidebar-nav')
         </nav>
 
-        <div class="sidebar-foot">
-            <div class="dropdown dropup w-100">
-                <button type="button" class="side-user-btn" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-haspopup="true" id="sideUserMenuBtn">
-                    <span class="side-avatar" aria-hidden="true">{{ $sideUserInitials }}</span>
-                    <span class="side-user-meta">
-                        <span class="side-user-name text-truncate">{{ $sideUserName }}</span>
-                        <span class="side-user-role">{{ $sideUserRole }}</span>
-                    </span>
-                    <i class="bi bi-chevron-expand side-user-chevron" aria-hidden="true"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-dark side-user-menu shadow-lg" aria-labelledby="sideUserMenuBtn">
-                    @if(count($sideContextos) > 1)
-                        <li><h6 class="dropdown-header">Estoy trabajando como</h6></li>
-                        @foreach($sideContextos as $ctx)
-                            <li>
-                                <form method="POST" action="{{ route('contexto.cambiar') }}" class="m-0">
-                                    @csrf
-                                    <input type="hidden" name="contexto" value="{{ $ctx['clave'] }}">
-                                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2" @if(session('contexto') === $ctx['clave']) aria-current="true" @endif>
-                                        <i class="bi {{ session('contexto') === $ctx['clave'] ? 'bi-check-circle-fill' : 'bi-circle' }}" aria-hidden="true"></i>
-                                        {{ $ctx['etiqueta'] }}
-                                    </button>
-                                </form>
-                            </li>
-                        @endforeach
-                        @if(session('contexto'))
-                            <li>
-                                <form method="POST" action="{{ route('contexto.cambiar') }}" class="m-0">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item small py-1">Ver todo</button>
-                                </form>
-                            </li>
-                        @endif
-                        <li><hr class="dropdown-divider"></li>
-                    @endif
-                    @if(auth()->user()->persona_id)
-                        <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('personas.show', auth()->user()->persona_id) }}"><i class="bi bi-person-vcard" aria-hidden="true"></i> Mi ficha</a></li>
-                    @endif
-                    <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 ito-pref-btn"
-                                data-ito-pref="ito-a11y-lg"
-                                data-on-msg="Texto grande activado"
-                                data-off-msg="Texto grande desactivado"
-                                aria-pressed="false">
-                            <i class="bi bi-fonts" aria-hidden="true"></i>
-                            Texto grande
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 ito-pref-btn"
-                                data-ito-pref="ito-a11y-hc"
-                                data-on-msg="Alto contraste activado"
-                                data-off-msg="Alto contraste desactivado"
-                                aria-pressed="false">
-                            <i class="bi bi-circle-half" aria-hidden="true"></i>
-                            Alto contraste
-                        </button>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}" class="m-0">
-                            @csrf
-                            <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2">
-                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-                                Cerrar sesión
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+        @if(auth()->user()->tieneAccesoModulo('ayuda'))
+            <div class="sidebar-foot">
+                <a class="sidebar-foot-link" href="{{ route('ayuda') }}" title="Ayuda">
+                    <i class="bi bi-life-preserver" aria-hidden="true"></i>
+                    <span>Ayuda y guía de uso</span>
+                </a>
             </div>
-        </div>
+        @endif
     </aside>
 
-    <main class="main main--maxton">
+    <div class="main">
         @include('layouts.partials.topbar-hub')
 
-        <section class="content content--maxton" id="contenido-principal" tabindex="-1">
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="status">{{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">{{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                </div>
-            @endif
-            {{-- Errores de operaciones sin formulario propio (borrado protegido, anulaciones, fusiones) --}}
-            @foreach(['eliminar', 'pago', 'persona', 'asignacion'] as $claveError)
-                @if($errors->has($claveError))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">{{ $errors->first($claveError) }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                    </div>
-                @endif
-            @endforeach
+        <main class="content" id="contenido-principal" tabindex="-1">
             @if(auth()->user()?->isAdmin() && ! env('PERSISTENT_STORAGE_PATH') && app()->environment('production'))
                 <div class="alert alert-warning small">
-                    <strong>Storage:</strong> no hay <code>PERSISTENT_STORAGE_PATH</code> configurado. Los comprobantes/PDFs pueden perderse al redesplegar. Configurá un volumen persistente o S3.
+                    <strong>Almacenamiento:</strong> no hay <code>PERSISTENT_STORAGE_PATH</code> configurado. Los comprobantes y PDFs pueden perderse al redesplegar. Configurá un volumen persistente o S3.
                 </div>
             @endif
             @if(session('import_errors') && is_array(session('import_errors')) && count(session('import_errors')) > 0)
@@ -151,7 +63,9 @@
                 </div>
             @endif
             @if($errors->any())
-                <div class="alert alert-danger">
+                <script type="application/json" id="itoErrores">@json($errors->getMessages())</script>
+                <div class="alert alert-danger" role="alert">
+                    <div class="fw-semibold mb-1">Revisá los datos marcados</div>
                     <ul class="mb-0">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -161,77 +75,66 @@
             @endif
 
             @yield('content')
-        </section>
-    </main>
+        </main>
+    </div>
 
     @include('layouts.partials.recordatorio-chatbot')
 </div>
 @endauth
 
-<div id="itoConfirmModal" class="ito-confirm" hidden role="dialog" aria-modal="true" aria-labelledby="itoConfirmTitle" aria-describedby="itoConfirmMessage">
+{{-- Avisos flotantes: éxito se cierra solo; errores quedan hasta cerrarlos. --}}
+<div class="ito-toasts" id="itoToasts" aria-live="polite">
+    @if(session('success'))
+        <div class="ito-toast ito-toast--success" role="status" data-autohide="6000">
+            <i class="bi bi-check-circle-fill ito-toast-icon" aria-hidden="true"></i>
+            <div class="ito-toast-body">{{ session('success') }}</div>
+            <button type="button" class="ito-toast-close" aria-label="Cerrar aviso">&times;</button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="ito-toast ito-toast--danger" role="alert">
+            <i class="bi bi-exclamation-octagon-fill ito-toast-icon" aria-hidden="true"></i>
+            <div class="ito-toast-body">{{ session('error') }}</div>
+            <button type="button" class="ito-toast-close" aria-label="Cerrar aviso">&times;</button>
+        </div>
+    @endif
+    {{-- Errores de operaciones sin formulario propio (borrado protegido, anulaciones, fusiones) --}}
+    @foreach(['eliminar', 'pago', 'persona', 'asignacion'] as $claveError)
+        @if($errors->has($claveError))
+            <div class="ito-toast ito-toast--danger" role="alert">
+                <i class="bi bi-exclamation-octagon-fill ito-toast-icon" aria-hidden="true"></i>
+                <div class="ito-toast-body">{{ $errors->first($claveError) }}</div>
+                <button type="button" class="ito-toast-close" aria-label="Cerrar aviso">&times;</button>
+            </div>
+        @endif
+    @endforeach
+</div>
+
+<div id="itoConfirmModal" class="ito-confirm" hidden role="alertdialog" aria-modal="true" aria-labelledby="itoConfirmTitle" aria-describedby="itoConfirmMessage">
     <div class="ito-confirm-backdrop" tabindex="-1"></div>
     <div class="ito-confirm-dialog">
         <button type="button" class="ito-confirm-close" id="itoConfirmClose" aria-label="Cerrar">&times;</button>
-        <h2 id="itoConfirmTitle">Confirmar acción</h2>
-        <p id="itoConfirmMessage">¿Estás seguro?</p>
+        <div class="ito-confirm-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></div>
+        <h2 id="itoConfirmTitle">¿Confirmar acción?</h2>
+        <p id="itoConfirmMessage">Revisá antes de continuar.</p>
         <div class="ito-confirm-actions">
-            <button type="button" class="btn btn-secondary" id="itoConfirmCancel">Cancelar</button>
-            <button type="button" class="btn btn-danger" id="itoConfirmOk">Sí, continuar</button>
+            <button type="button" class="btn btn-outline-secondary" id="itoConfirmCancel">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="itoConfirmOk">Confirmar</button>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-(function () {
-    const shell = document.getElementById('appShell');
-    const backdrop = document.getElementById('navBackdrop');
-    const sidebar = document.getElementById('sidebarNav');
-    if (!shell || !backdrop) return;
-    const closeNav = function () {
-        shell.classList.remove('shell--nav-open');
-        document.body.classList.remove('shell-nav-open');
-    };
-    const openNav = function () {
-        shell.classList.add('shell--nav-open');
-        document.body.classList.add('shell-nav-open');
-    };
-    document.querySelectorAll('[data-open-nav]').forEach(function (el) {
-        el.addEventListener('click', openNav);
-    });
-    backdrop.addEventListener('click', closeNav);
-    sidebar?.querySelectorAll('a.side-link').forEach(function (a) {
-        a.addEventListener('click', closeNav);
-    });
-    document.querySelectorAll('.nav-group-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const group = btn.closest('.nav-group');
-            if (!group) return;
-            const wasOpen = group.classList.contains('open');
-            document.querySelectorAll('.nav-group.open').forEach(function (g) {
-                g.classList.remove('open');
-                g.querySelector('.nav-group-btn')?.setAttribute('aria-expanded', 'false');
-            });
-            if (!wasOpen) {
-                group.classList.add('open');
-                btn.setAttribute('aria-expanded', 'true');
-            }
-        });
-    });
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeNav();
-    });
-})();
-</script>
-<script src="{{ asset('js/hub-search.js') }}?v=1"></script>
+<script src="{{ asset('js/ito-shell.js') }}?v=2"></script>
+<script src="{{ asset('js/hub-search.js') }}?v=2"></script>
 @auth
 <script src="{{ asset('js/recordatorio-chatbot.js') }}?v=3"></script>
 @endauth
-<script src="{{ asset('js/ito-a11y.js') }}?v=1"></script>
+<script src="{{ asset('js/ito-a11y.js') }}?v=3"></script>
 <script src="{{ asset('js/ito-nav-progress.js') }}?v=1"></script>
 <script src="{{ asset('js/ito-form-steps.js') }}?v=1"></script>
-<script src="{{ asset('js/ito-tables.js') }}?v=1"></script>
+<script src="{{ asset('js/ito-tables.js') }}?v=2"></script>
 @stack('scripts')
 </body>
 </html>

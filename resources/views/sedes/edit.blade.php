@@ -4,73 +4,12 @@
 @section('page-title', 'Editar sede')
 
 @section('content')
-<x-ito.shell-page
-    title="Editar sede"
-    eyebrow="Sedes"
-    subtitle="Corregí datos y porcentajes de liquidación."
->
-
-        @include('partials.form-ayuda-intro', ['text' => 'Corregí los datos de la sede. Los porcentajes de abajo se usan al registrar pagos.'])
-        <form action="{{ route('sedes.update', $sede) }}" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Nombre *</label>
-                    <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre', $sede->nombre) }}" required>
-                    @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Dirección</label>
-                    <input type="text" name="direccion" class="form-control @error('direccion') is-invalid @enderror" value="{{ old('direccion', $sede->direccion) }}">
-                    @error('direccion')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label">Tipo de propiedad</label>
-                    <select name="tipo_propiedad" class="form-select @error('tipo_propiedad') is-invalid @enderror">
-                        <option value="alquilada" {{ old('tipo_propiedad', $sede->tipo_propiedad) === 'alquilada' ? 'selected' : '' }}>Alquilada</option>
-                        <option value="propia" {{ old('tipo_propiedad', $sede->tipo_propiedad) === 'propia' ? 'selected' : '' }}>Propia</option>
-                        <option value="compartida" {{ old('tipo_propiedad', $sede->tipo_propiedad) === 'compartida' ? 'selected' : '' }}>Compartida</option>
-                        <option value="otro" {{ old('tipo_propiedad', $sede->tipo_propiedad) === 'otro' ? 'selected' : '' }}>Otro</option>
-                    </select>
-                    @error('tipo_propiedad')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Costo alquiler mensual</label>
-                    <input type="number" name="costo_alquiler_mensual" class="form-control @error('costo_alquiler_mensual') is-invalid @enderror" step="0.01" min="0" value="{{ old('costo_alquiler_mensual', $sede->costo_alquiler_mensual) }}">
-                    @error('costo_alquiler_mensual')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        <input type="checkbox" name="activo" class="form-check-input" id="activo" value="1" {{ old('activo', $sede->activo) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="activo">Activa</label>
-                    </div>
-                </div>
-            </div>
-            @if(\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'liquidacion_porc_docente'))
-            <div class="border rounded p-3 mb-3">
-                <div class="fw-semibold mb-2">Cómo repartir la cuota (escuela y profesor)</div>
-                <p class="text-muted small mb-3">Cuánto se queda la escuela y qué parte va al profe cuando cargás un pago de esta sede. Si dejás el monto del profe en blanco al registrar un pago, se usa esto.</p>
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Lo que se queda la escuela ($)</label>
-                        <input type="number" name="liquidacion_retencion_escuela" class="form-control @error('liquidacion_retencion_escuela') is-invalid @enderror" step="0.01" min="0" value="{{ old('liquidacion_retencion_escuela', $sede->liquidacion_retencion_escuela ?? 0) }}" placeholder="Ej.: 14400">
-                        @error('liquidacion_retencion_escuela')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Porcentaje para el profesor (%)</label>
-                        <input type="number" name="liquidacion_porc_docente" class="form-control @error('liquidacion_porc_docente') is-invalid @enderror" step="0.1" min="0" max="100" value="{{ old('liquidacion_porc_docente', $sede->liquidacion_porc_docente ?? 40) }}">
-                        @error('liquidacion_porc_docente')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                </div>
-            </div>
-            @endif
-            <button type="submit" class="btn btn-primary">Actualizar</button>
-            <a href="{{ route('sedes.index') }}" class="btn btn-secondary">Cancelar</a>
-            <a href="{{ route('sedes.show', $sede) }}" class="btn btn-outline-secondary">Ver</a>
-        </form>
+<x-ito.shell-page :title="'Editar '.$sede->nombre" subtitle="Los porcentajes de reparto se usan al registrar pagos." :plain="true">
+    <form action="{{ route('sedes.update', $sede) }}" method="POST">
+        @csrf
+        @method('PUT')
+        @include('sedes._form', ['sede' => $sede])
+        <x-ito.form-actions :cancel="route('sedes.show', $sede)" submit="Guardar cambios" />
+    </form>
 </x-ito.shell-page>
-
 @endsection

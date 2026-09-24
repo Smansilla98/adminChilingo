@@ -1,269 +1,33 @@
 @php
-    $navGroups = [
-        'academico' => [
-            'label' => 'Académico',
-            'accent' => 'academico',
-            'patterns' => ['personas.*', 'alumnos.*', 'profesores.*', 'bloques.*', 'sedes.*', 'asistencias.*', 'calendario.*'],
-            'links' => array_filter([
-                auth()->user()->tieneAccesoModulo('admin.personas') ? ['route' => 'personas.index', 'label' => 'Personas', 'pattern' => 'personas.*', 'badge' => 'nuevo'] : null,
-                auth()->user()->tieneAccesoModulo('admin.alumnos') ? ['route' => 'alumnos.index', 'label' => 'Alumnos', 'pattern' => 'alumnos.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.profesores') ? ['route' => 'profesores.index', 'label' => 'Profesores', 'pattern' => 'profesores.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.bloques') ? ['route' => 'bloques.index', 'label' => 'Bloques', 'pattern' => 'bloques.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.sedes') ? ['route' => 'sedes.index', 'label' => 'Sedes', 'pattern' => 'sedes.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.asistencias') ? ['route' => 'asistencias.index', 'label' => 'Asistencias', 'pattern' => 'asistencias.*'] : null,
-                auth()->user()->tieneAccesoModulo('calendario') ? ['route' => 'calendario.index', 'label' => 'Calendario', 'pattern' => 'calendario.*'] : null,
-            ]),
-        ],
-        'eventos' => [
-            'label' => 'Eventos y shows',
-            'accent' => 'eventos',
-            'patterns' => ['eventos.*', 'shows.*'],
-            'links' => array_filter([
-                auth()->user()->tieneAccesoModulo('admin.eventos') ? ['route' => 'eventos.index', 'label' => 'Eventos', 'pattern' => 'eventos.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.shows') ? ['route' => 'shows.index', 'label' => 'Shows', 'pattern' => 'shows.*'] : null,
-            ]),
-        ],
-        'villa_gesell' => [
-            'label' => 'Villa Gesell',
-            'accent' => 'gesell',
-            'patterns' => ['villa-gesell.*'],
-            'links' => array_filter([
-                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.index', 'label' => 'Resumen', 'pattern' => 'villa-gesell.index', 'badge' => 'nuevo'] : null,
-                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.inscriptos.index', 'label' => 'Inscriptos', 'pattern' => 'villa-gesell.inscriptos.*', 'inactive_query' => ['estado' => 'sena']] : null,
-                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.inscriptos.index', 'label' => 'Seña', 'pattern' => 'villa-gesell.inscriptos.index', 'query' => ['estado' => 'sena'], 'active_query' => ['estado' => 'sena'], 'badge' => 'nuevo'] : null,
-                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.calendario', 'label' => 'Calendario', 'pattern' => 'villa-gesell.calendario'] : null,
-                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.insumos.index', 'label' => 'Insumos', 'pattern' => 'villa-gesell.insumos.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.gastos.index', 'label' => 'Gastos', 'pattern' => 'villa-gesell.gastos.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.villa_gesell') ? ['route' => 'villa-gesell.plan', 'label' => 'Plan de gastos', 'pattern' => 'villa-gesell.plan'] : null,
-            ]),
-        ],
-        'economico' => [
-            'label' => 'Económico',
-            'accent' => 'economico',
-            'patterns' => ['cuotas.*', 'pagos.*', 'facturacion-mensual.*', 'comprobantes-cuota-alumnos.*', 'gastos.*', 'reportes.*'],
-            'links' => array_filter([
-                auth()->user()->tieneAccesoModulo('admin.cuotas') ? ['route' => 'cuotas.index', 'label' => 'Cuotas', 'pattern' => 'cuotas.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.pagos') ? ['route' => 'pagos.index', 'label' => 'Pagos', 'pattern' => 'pagos.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.facturacion_mensual') ? ['route' => 'facturacion-mensual.index', 'label' => 'Facturación mensual', 'pattern' => 'facturacion-mensual.*'] : null,
-                auth()->user()->tieneAccesoModulo('comprobantes') ? ['route' => 'comprobantes-cuota-alumnos.index', 'label' => 'Comprobantes de alumnos', 'pattern' => 'comprobantes-cuota-alumnos.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.gastos') ? ['route' => 'gastos.index', 'label' => 'Gastos', 'pattern' => 'gastos.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.reportes') ? ['route' => 'reportes.index', 'label' => 'Reportes', 'pattern' => 'reportes.*'] : null,
-            ]),
-        ],
-        'inventario' => [
-            'label' => 'Inventario y compras',
-            'accent' => 'inventario',
-            'patterns' => ['inventarios.*', 'plan-compras.*', 'ordenes-compra.*'],
-            'links' => array_filter([
-                auth()->user()->tieneAccesoModulo('admin.inventarios') ? ['route' => 'inventarios.index', 'label' => 'Inventarios', 'pattern' => 'inventarios.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.plan_compras') ? ['route' => 'plan-compras.index', 'label' => 'Plan de compras', 'pattern' => 'plan-compras.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.ordenes_compra') ? ['route' => 'ordenes-compra.index', 'label' => 'Órdenes de compra', 'pattern' => 'ordenes-compra.*'] : null,
-            ]),
-        ],
-        'contenido' => [
-            'label' => 'Contenido',
-            'accent' => 'contenido',
-            'patterns' => [
-                'programa.index', 'programa.seccion.*', 'programa.partituras.*',
-                'programa.toque.partitura.*', 'programa.toque.editor', 'programa.toque.editor.*',
-                'programa.toque.edit', 'programa.toque.update', 'disenos.*',
-                'biblioteca.admin.*',
-            ],
-            'links' => array_filter([
-                auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
-                auth()->user()->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
-                auth()->user()->tieneAccesoModulo('admin.disenos') ? ['route' => 'disenos.index', 'label' => 'Diseño', 'pattern' => 'disenos.*', 'badge' => 'nuevo'] : null,
-                auth()->user()->can('biblioteca.admin') ? ['route' => 'biblioteca.admin.index', 'label' => 'Biblioteca', 'pattern' => 'biblioteca.admin.*'] : null,
-            ]),
-        ],
-        'config' => [
-            'label' => 'Configuración',
-            'accent' => 'config',
-            'patterns' => ['accesos.*', 'usuarios.*', 'auditoria.*', 'ayuda', 'apariencia.*', 'operativo.cierre-mes'],
-            'links' => array_filter([
-                auth()->user()->can('usuarios.view') ? ['route' => 'usuarios.index', 'label' => 'Usuarios y permisos', 'pattern' => 'usuarios.*', 'badge' => 'nuevo'] : null,
-                auth()->user()->can('auditoria.view') ? ['route' => 'auditoria.index', 'label' => 'Auditoría', 'pattern' => 'auditoria.*'] : null,
-                auth()->user()->can('usuarios.permissions') ? ['route' => 'accesos.index', 'label' => 'Visibilidad del menú', 'pattern' => 'accesos.*'] : null,
-                auth()->user()->can('facturacion.view') ? ['route' => 'operativo.cierre-mes', 'label' => 'Cierre de mes', 'pattern' => 'operativo.cierre-mes'] : null,
-                ['route' => 'apariencia.edit', 'label' => 'Apariencia', 'pattern' => 'apariencia.*'],
-                auth()->user()->tieneAccesoModulo('ayuda') ? ['route' => 'ayuda', 'label' => 'Ayuda', 'pattern' => 'ayuda'] : null,
-            ]),
-        ],
-    ];
-
-    $activeGroup = null;
-    foreach ($navGroups as $key => $group) {
-        foreach ($group['patterns'] as $pattern) {
-            if (request()->routeIs($pattern)) {
-                $activeGroup = $key;
-                break 2;
-            }
-        }
-    }
-
-    $navUser = auth()->user();
-
-    $profesorLinks = array_filter([
-        ['route' => 'dashboard', 'label' => 'Hoy en clase', 'pattern' => 'dashboard'],
-        $navUser->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.create', 'label' => 'Asistencia de hoy', 'pattern' => 'profesor.asistencias.create'] : null,
-        $navUser->tieneAccesoModulo('profesor.mis_bloques') ? ['route' => 'profesor.bloques', 'label' => 'Mis bloques', 'pattern' => 'profesor.bloques*'] : null,
-        $navUser->tieneAccesoModulo('profesor.asistencia') ? ['route' => 'profesor.asistencias.matrix', 'label' => 'Planilla del mes', 'pattern' => 'profesor.asistencias.matrix*'] : null,
-        $navUser->tieneAccesoModulo('profesor.mis_alumnos') ? ['route' => 'profesor.alumnos', 'label' => 'Mis alumnos', 'pattern' => 'profesor.alumnos*'] : null,
-        $navUser->tieneAccesoModulo('profesor.pagos_cuotas') ? ['route' => 'profesor.pagos-cuotas.index', 'label' => 'Pagos de cuotas', 'pattern' => 'profesor.pagos-cuotas.*'] : null,
-        $navUser->tieneAccesoModulo('comprobantes') ? ['route' => 'comprobantes-cuota-alumnos.create', 'label' => 'Cargar comprobante', 'pattern' => 'comprobantes-cuota-alumnos.create'] : null,
-        $navUser->tieneAccesoModulo('comprobantes') ? ['route' => 'comprobantes-cuota-alumnos.index', 'label' => 'Comprobantes', 'pattern' => 'comprobantes-cuota-alumnos.*'] : null,
-        $navUser->tieneAccesoModulo('profesor.mis_eventos') ? ['route' => 'profesor.eventos', 'label' => 'Mis eventos', 'pattern' => 'profesor.eventos*'] : null,
-        $navUser->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
-        $navUser->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
-        $navUser->tieneAccesoModulo('calendario') ? ['route' => 'calendario.index', 'label' => 'Calendario', 'pattern' => 'calendario.*'] : null,
-    ]);
-
-    $alumnoLinks = array_filter([
-        ['route' => 'dashboard', 'label' => 'Portal familia', 'pattern' => 'dashboard'],
-        $navUser->tieneAccesoModulo('programa') ? ['route' => 'programa.index', 'label' => 'Programa', 'pattern' => 'programa.index'] : null,
-        $navUser->tieneAccesoModulo('programa') ? ['route' => 'programa.partituras.index', 'label' => 'Partituras', 'pattern' => 'programa.partituras.*'] : null,
-        ['route' => 'biblioteca.index', 'label' => 'Biblioteca', 'pattern' => 'biblioteca.*'] ,
-        ['route' => 'comprobante-cuota-public.create', 'label' => 'Pagar cuota', 'pattern' => 'comprobante-cuota-public.*'],
-        $navUser->tieneAccesoModulo('calendario') ? ['route' => 'calendario.index', 'label' => 'Calendario', 'pattern' => 'calendario.*'] : null,
-    ]);
-
-    $configLinksEspacio = array_filter([
-        ['route' => 'apariencia.edit', 'label' => 'Apariencia', 'pattern' => 'apariencia.*'],
-        $navUser->tieneAccesoModulo('ayuda') ? ['route' => 'ayuda', 'label' => 'Ayuda', 'pattern' => 'ayuda'] : null,
-    ]);
-
-    // Una persona puede tener varias funciones: si gestiona y además da clase o cursa,
-    // su espacio docente / familiar aparece como un grupo más del menú.
-    if ($navUser->puedeGestionarOperativo()) {
-        $extra = [];
-        if ($navUser->isProfesor()) {
-            $extra['docente'] = ['label' => 'Docente', 'accent' => 'profesor', 'patterns' => ['profesor.*'],
-                'links' => array_values(array_filter($profesorLinks, fn ($l) => $l['route'] !== 'dashboard'))];
-        }
-        if ($navUser->isAlumno()) {
-            $extra['familia'] = ['label' => 'Mi espacio (alumno)', 'accent' => 'alumno', 'patterns' => ['comprobante-cuota-public.*'],
-                'links' => array_values(array_filter($alumnoLinks, fn ($l) => $l['route'] !== 'dashboard'))];
-        }
-        $navGroups = $extra + $navGroups;
-        foreach ($navGroups as $key => $group) {
-            foreach ($group['patterns'] as $pattern) {
-                if (request()->routeIs($pattern)) {
-                    $activeGroup = $key;
-                    break 2;
-                }
-            }
-        }
-    }
-
-    $mostrarPendientes = $navUser->puedeGestionarOperativo() || $navUser->isProfesor();
-    $espacioLinks = $navUser->isAlumno() ? $alumnoLinks : $profesorLinks;
-    $espacioLabel = $navUser->isAlumno() ? 'Familia' : 'Docente';
+    $nav = \App\Support\Navegacion::para(auth()->user(), request());
 @endphp
 
-<a class="side-link side-link--top {{ request()->routeIs('dashboard') ? 'active' : '' }}"
-   href="{{ route('dashboard') }}"
-   title="Inicio"
-   @if(request()->routeIs('dashboard')) aria-current="page" @endif>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l9-8 9 8M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-    <span class="side-link-text">Inicio</span>
-</a>
+@foreach($nav['top'] as $link)
+    <a class="side-link side-link--top {{ $link['active'] ? 'active' : '' }}"
+       href="{{ $link['href'] }}"
+       title="{{ $link['label'] }}"
+       @if($link['active']) aria-current="page" @endif>
+        <i class="bi {{ $link['icon'] }}" aria-hidden="true"></i>
+        <span class="side-link-text">{{ $link['label'] }}</span>
+    </a>
+@endforeach
 
-@if($mostrarPendientes)
-<a class="side-link side-link--top {{ request()->routeIs('operativo.pendientes') ? 'active' : '' }}"
-   href="{{ route('operativo.pendientes') }}"
-   title="Pendientes">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-    <span class="side-link-text">Pendientes</span>
-</a>
-@endif
-
-@if($navUser->puedeGestionarOperativo())
-    @foreach($navGroups as $key => $group)
-        @php
-            $groupLinks = array_values(array_filter($group['links'], function ($link) {
-                return $link !== null;
-            }));
-        @endphp
-        @if(count($groupLinks) > 0)
-            <div class="nav-group {{ $activeGroup === $key ? 'open' : '' }}" data-accent="{{ $group['accent'] }}">
-                <button type="button" class="nav-group-btn" aria-expanded="{{ $activeGroup === $key ? 'true' : 'false' }}">
-                    <span class="nav-group-dot" aria-hidden="true"></span>
-                    <span class="nav-group-label">{{ $group['label'] }}</span>
-                    <svg class="nav-group-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
-                </button>
-                <div class="nav-group-links">
-                    @foreach($groupLinks as $link)
-                        @php
-                            $href = ! empty($link['query'])
-                                ? route($link['route'], $link['query'])
-                                : route($link['route']).($link['fragment'] ?? '');
-                            $isActive = request()->routeIs($link['pattern']);
-                            if ($isActive && ! empty($link['active_query'])) {
-                                foreach ($link['active_query'] as $qk => $qv) {
-                                    if ((string) request()->query($qk) !== (string) $qv) {
-                                        $isActive = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            if ($isActive && ! empty($link['inactive_query'])) {
-                                foreach ($link['inactive_query'] as $qk => $qv) {
-                                    if ((string) request()->query($qk) === (string) $qv) {
-                                        $isActive = false;
-                                        break;
-                                    }
-                                }
-                            }
-                        @endphp
-                        <a class="side-link side-link--nested {{ $isActive ? 'active' : '' }}"
-                           href="{{ $href }}"
-                           title="{{ $link['label'] }}"
-                           @if($isActive) aria-current="page" @endif>
-                            <span class="side-link-text">{{ $link['label'] }}</span>
-                            @if(!empty($link['badge']))
-                                <span class="side-link-badge">{{ $link['badge'] }}</span>
-                            @endif
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-    @endforeach
-@else
-    <div class="nav-group open" data-accent="{{ $navUser->isAlumno() ? 'alumno' : 'profesor' }}">
-        <button type="button" class="nav-group-btn" aria-expanded="true">
-            <span class="nav-group-dot" aria-hidden="true"></span>
-            <span class="nav-group-label">{{ $espacioLabel }}</span>
+@foreach($nav['grupos'] as $grupo)
+    <div class="nav-group {{ $grupo['abierto'] ? 'open is-current' : '' }}" data-nav-group="{{ $grupo['clave'] }}">
+        <button type="button" class="nav-group-btn" aria-expanded="{{ $grupo['abierto'] ? 'true' : 'false' }}" aria-controls="nav-grupo-{{ $grupo['clave'] }}">
+            <span class="nav-group-label">{{ $grupo['label'] }}</span>
             <svg class="nav-group-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
         </button>
-        <div class="nav-group-links">
-            @foreach($espacioLinks as $link)
-                <a class="side-link side-link--nested {{ request()->routeIs($link['pattern']) ? 'active' : '' }}"
-                   href="{{ route($link['route']) }}"
+        <div class="nav-group-links" id="nav-grupo-{{ $grupo['clave'] }}">
+            @foreach($grupo['links'] as $link)
+                <a class="side-link side-link--nested {{ $link['active'] ? 'active' : '' }}"
+                   href="{{ $link['href'] }}"
                    title="{{ $link['label'] }}"
-                   @if(request()->routeIs($link['pattern'])) aria-current="page" @endif>
+                   @if($link['active']) aria-current="page" @endif>
+                    <i class="bi {{ $link['icon'] }}" aria-hidden="true"></i>
                     <span class="side-link-text">{{ $link['label'] }}</span>
                 </a>
             @endforeach
         </div>
     </div>
-    @if(count($configLinksEspacio) > 0)
-        <div class="nav-group {{ request()->routeIs('apariencia.*', 'ayuda') ? 'open' : '' }}" data-accent="config">
-            <button type="button" class="nav-group-btn" aria-expanded="{{ request()->routeIs('apariencia.*', 'ayuda') ? 'true' : 'false' }}">
-                <span class="nav-group-dot" aria-hidden="true"></span>
-                <span class="nav-group-label">Configuración</span>
-                <svg class="nav-group-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
-            </button>
-            <div class="nav-group-links">
-                @foreach($configLinksEspacio as $link)
-                    <a class="side-link side-link--nested {{ request()->routeIs($link['pattern']) ? 'active' : '' }}"
-                       href="{{ route($link['route']) }}"
-                       title="{{ $link['label'] }}"
-                       @if(request()->routeIs($link['pattern'])) aria-current="page" @endif>
-                        <span class="side-link-text">{{ $link['label'] }}</span>
-                    </a>
-                @endforeach
-            </div>
-        </div>
-    @endif
-@endif
+@endforeach

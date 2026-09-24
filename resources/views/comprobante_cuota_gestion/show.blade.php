@@ -1,95 +1,89 @@
 @extends('layouts.app')
 
-@section('title', 'Comprobante #' . $comprobanteCuotaAlumno->id)
-@section('page-title', 'Comprobante enviado por alumno')
+@section('title', 'Comprobante #'.$comprobanteCuotaAlumno->id)
+@section('page-title', 'Comprobante #'.$comprobanteCuotaAlumno->id)
 
 @section('content')
 @php
-    $estado = $comprobanteCuotaAlumno->estado;
-    $badgeClass = match($estado) {
-        'pendiente' => 'bg-warning text-dark',
-        'pagado' => 'bg-success',
-        default => 'bg-secondary',
-    };
+    $c = $comprobanteCuotaAlumno;
+    $tono = match ($c->estado) { 'pendiente' => 'warning', 'pagado' => 'success', default => 'neutral' };
+    $puedeAprobar = auth()->user()->isAdmin() && ! $c->estaPagado();
 @endphp
-<x-ito.shell-page
-    title="Envío #{{ $comprobanteCuotaAlumno->id }}"
-    eyebrow="Comprobantes"
-    subtitle="{{ $comprobanteCuotaAlumno->etiquetaEstado() }}"
->
+<x-ito.shell-page :title="$c->alumno?->nombre_apellido ?? 'Comprobante #'.$c->id" :subtitle="'Envío #'.$c->id.($c->alumno?->dni ? ' · DNI '.$c->alumno->dni : '').($c->created_at ? ' · recibido '.$c->created_at->locale('es')->diffForHumans() : '')" :plain="true">
     <x-slot:actions>
-            @if($comprobanteCuotaAlumno->comprobante_path)
-            <a href="{{ route('comprobantes-cuota-alumnos.comprobante', $comprobanteCuotaAlumno->id) }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener"><i class="bi bi-file-earmark"></i> Archivo</a>
-            @endif
-            @if(auth()->user()->isAdmin() && ! $comprobanteCuotaAlumno->estaPagado())
-            <form action="{{ route('comprobantes-cuota-alumnos.aprobar-pago', $comprobanteCuotaAlumno->id) }}" method="post" class="d-inline"
-                  onsubmit="return confirm('¿Registrar el pago con las cuotas de este comprobante y marcarlo como pagado?');">
+        <x-ito.status :tone="$tono" :label="$c->etiquetaEstado()" />
+        <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="btn btn-outline-secondary">Volver</a>
+        @if($c->pago_id)
+            <a href="{{ route('pagos.show', $c->pago_id) }}" class="btn btn-outline-secondary"><i class="bi bi-receipt" aria-hidden="true"></i> Ver pago #{{ $c->pago_id }}</a>
+        @endif
+        @if($c->estaPendiente())
+            <form action="{{ route('comprobantes-cuota-alumnos.visto', $c->id) }}" method="post" class="d-inline">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-primary">
-                    <i class="bi bi-cash-coin"></i> Aprobar y registrar pago
-                </button>
+                <button type="submit" class="btn btn-outline-secondary">Marcar como visto</button>
             </form>
-            @endif
-            @if($comprobanteCuotaAlumno->estaPendiente())
-            <form action="{{ route('comprobantes-cuota-alumnos.visto', $comprobanteCuotaAlumno->id) }}" method="post" class="d-inline">
+        @endif
+        @if($puedeAprobar)
+            <form action="{{ route('comprobantes-cuota-alumnos.aprobar-pago', $c->id) }}" method="post" class="d-inline"
+                  data-confirm="¿Registrar el pago? Se crea el cobro con estas cuotas, se copia el archivo y el comprobante queda como pagado." data-confirm-ok="Registrar pago">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-outline-secondary">Solo marcar visto</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-cash-coin" aria-hidden="true"></i> Aprobar y registrar pago</button>
             </form>
-            @endif
-            @if($comprobanteCuotaAlumno->pago_id)
-            <a href="{{ route('pagos.show', $comprobanteCuotaAlumno->pago_id) }}" class="btn btn-sm btn-success">Ver pago #{{ $comprobanteCuotaAlumno->pago_id }}</a>
-            @endif
-            <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="btn btn-sm btn-outline-secondary">Volver al listado</a>
+        @endif
     </x-slot:actions>
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Estado</dt>
-            <dd class="col-sm-9">{{ $comprobanteCuotaAlumno->etiquetaEstado() }}</dd>
-            <dt class="col-sm-3">Alumno</dt>
-            <dd class="col-sm-9">
-                {{ $comprobanteCuotaAlumno->alumno?->nombre_apellido ?? '—' }}
-                @if($comprobanteCuotaAlumno->alumno?->dni)
-                    <span class="text-muted">DNI {{ $comprobanteCuotaAlumno->alumno->dni }}</span>
-                @endif
-            </dd>
-            <dt class="col-sm-3">Sede (formulario)</dt>
-            <dd class="col-sm-9">{{ $comprobanteCuotaAlumno->sede?->nombre ?? '—' }}</dd>
-            <dt class="col-sm-3">Fecha de pago declarada</dt>
-            <dd class="col-sm-9">{{ $comprobanteCuotaAlumno->fecha_pago?->format('d/m/Y') }}</dd>
-            <dt class="col-sm-3">Monto total</dt>
-            <dd class="col-sm-9">$ {{ number_format($comprobanteCuotaAlumno->monto_total, 2, ',', '.') }}</dd>
-            @if($comprobanteCuotaAlumno->notas)
-            <dt class="col-sm-3">Notas del alumno/familia</dt>
-            <dd class="col-sm-9">{{ $comprobanteCuotaAlumno->notas }}</dd>
+
+    <x-ito.facts>
+        <x-ito.fact label="Monto declarado">$ {{ number_format($c->monto_total, 2, ',', '.') }}</x-ito.fact>
+        <x-ito.fact label="Fecha de pago" :value="$c->fecha_pago?->format('d/m/Y')" />
+        <x-ito.fact label="Sede" :value="$c->sede?->nombre" />
+        <x-ito.fact label="Cuotas" :value="$c->items->count()" />
+    </x-ito.facts>
+
+    <div class="ito-detail-grid">
+        <div class="ito-detail-col">
+            <x-ito.detail-section title="Cuotas incluidas" icon="bi-cash-stack" :flush="true">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" data-ito-no-cards>
+                        <thead><tr><th>Cuota</th><th>Bloque</th><th class="text-end">Monto</th></tr></thead>
+                        <tbody>
+                            @forelse($c->items as $it)
+                                <tr>
+                                    <td class="fw-semibold">{{ $it->cuota?->nombre ?? '—' }}</td>
+                                    <td>{{ $it->bloque?->nombre ?? '—' }} <span class="d-block small text-muted">{{ $it->bloque?->sede?->nombre }}</span></td>
+                                    <td class="text-end">$ {{ number_format($it->monto, 2, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="3" class="ito-empty">Sin cuotas asociadas.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </x-ito.detail-section>
+
+            @if($c->notas)
+                <x-ito.detail-section title="Nota de la familia" icon="bi-chat-left-text">
+                    <p class="mb-0" style="white-space: pre-line">{{ $c->notas }}</p>
+                </x-ito.detail-section>
             @endif
-        </dl>
-        <h6 class="mt-4">Cuotas / bloques incluidos</h6>
-        <div class="table-responsive">
-            <table class="table table-sm">
-                <thead>
-                    <tr><th>Bloque</th><th>Sede</th><th>Cuota</th><th>Monto</th></tr>
-                </thead>
-                <tbody>
-                    @foreach($comprobanteCuotaAlumno->items as $it)
-                    <tr>
-                        <td>{{ $it->bloque?->nombre ?? '—' }}</td>
-                        <td class="text-muted small">{{ $it->bloque?->sede?->nombre ?? '—' }}</td>
-                        <td>{{ $it->cuota?->nombre ?? '—' }}</td>
-                        <td>$ {{ number_format($it->monto, 2, ',', '.') }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        @if(auth()->user()->isAdmin() && ! $comprobanteCuotaAlumno->estaPagado())
-            <p class="text-muted small mb-0">
-                <strong>Aprobar y registrar pago</strong> crea el cobro con estas líneas, copia el archivo al pago y cierra el comprobante.
-                “Solo marcar visto” no registra dinero.
+
+            <p class="small text-muted mb-0">
+                @if($puedeAprobar)
+                    <strong>Aprobar y registrar pago</strong> crea el cobro con estas cuotas y cierra el comprobante. <strong>Marcar como visto</strong> no registra dinero.
+                @elseif(! auth()->user()->isAdmin())
+                    Podés marcarlo como visto. El pago lo registra administración.
+                @endif
             </p>
-        @elseif(! auth()->user()->isAdmin())
-            <p class="text-muted small mb-0">Podés marcar como visto. El registro del pago lo hace administración.</p>
-        @endif
+        </div>
+
+        <x-ito.detail-section title="Archivo" icon="bi-file-earmark">
+            @if($c->comprobante_path)
+                <x-slot:actions>
+                    <a href="{{ route('comprobantes-cuota-alumnos.comprobante', $c->id) }}" class="btn btn-sm btn-ghost" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Abrir</a>
+                </x-slot:actions>
+                <iframe src="{{ route('comprobantes-cuota-alumnos.comprobante', $c->id) }}" title="Comprobante enviado" class="ito-file-preview" loading="lazy"></iframe>
+            @else
+                <p class="text-muted mb-0">No se adjuntó archivo.</p>
+            @endif
+        </x-ito.detail-section>
+    </div>
 </x-ito.shell-page>
 @endsection

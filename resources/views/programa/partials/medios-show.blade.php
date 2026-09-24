@@ -26,7 +26,7 @@
     <div class="card mb-3">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h3 class="h6 mb-0"><i class="bi bi-music-note-beamed"></i> Partitura</h3>
-            <a href="{{ $partituraUrl }}" class="btn btn-outline-warning btn-sm" target="_blank" rel="noopener">
+            <a href="{{ $partituraUrl }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">
                 <i class="bi bi-{{ $partituraEsPdf ? 'file-pdf' : 'download' }}"></i>
                 {{ $partituraEsPdf ? 'Abrir PDF' : 'Descargar' }}
             </a>
@@ -185,11 +185,11 @@
                         @break
                     @case('pdf')
                         @if(!empty($rec['path']))
-                        <a href="{{ route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'recurso', 'i' => $i]) }}" class="btn btn-sm btn-outline-warning" target="_blank" rel="noopener">
+                        <a href="{{ route('programa.toque.archivo', [$programaRitmo, 'tipo' => 'recurso', 'i' => $i]) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
                             <i class="bi bi-file-pdf"></i> {{ $rec['nombre'] ?? 'Ver PDF' }}
                         </a>
                         @elseif(!empty($rec['url']))
-                        <a href="{{ $rec['url'] }}" class="btn btn-sm btn-outline-warning" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Abrir documento</a>
+                        <a href="{{ $rec['url'] }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Abrir documento</a>
                         @endif
                         @break
                     @default
@@ -211,7 +211,7 @@
         <p class="biblio-eyebrow mb-1">Material de clase</p>
         <h2 class="h5 mb-2">Todavía no hay videos, fotos ni apuntes</h2>
         <p class="text-muted small mb-3">Podés sumar ensayos, fotos de pizarra, cortes y detalles para trabajar este toque.</p>
-        <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-warning">
+        <a href="{{ route('programa.toque.edit', $programaRitmo) }}" class="btn btn-sm btn-outline-primary">
             <i class="bi bi-plus-lg"></i> Agregar material
         </a>
     </div>

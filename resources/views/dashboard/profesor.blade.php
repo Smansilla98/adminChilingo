@@ -16,7 +16,7 @@
 <div class="hub hub--docente">
     <div class="hub-hero">
         <div class="hub-hero-main">
-            <p class="hub-eyebrow">Modo docente · La Chilinga</p>
+            <p class="hub-eyebrow">Modo docente</p>
             <h1 class="hub-greeting">{{ $saludo }}, <em>{{ $primer }}</em>.</h1>
             <p class="hub-lead">
                 @if($faltaLista)

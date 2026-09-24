@@ -23,7 +23,7 @@
 
 .prog-chip:hover,
 .prog-chip.is-on {
-  color: var(--accent);
+  color: var(--accent-strong);
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
   background: var(--accent-soft);
 }
@@ -41,9 +41,8 @@
   padding: 14px 16px 14px;
   border-radius: 16px;
   border: 1px solid var(--border);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 42%),
-    var(--s1);
+  background: var(--s1);
+  border-top: 3px solid var(--accent);
   text-decoration: none;
   color: inherit;
   min-height: 148px;
@@ -68,7 +67,7 @@
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 13px;
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .prog-toque-tile h3 {
@@ -198,7 +197,7 @@
 }
 
 .pt-public-bar a {
-  color: var(--accent);
+  color: var(--accent-strong);
   text-decoration: none;
   font-weight: 650;
 }
@@ -265,7 +264,7 @@
 .partitura-parte-back {
   text-decoration: none;
   font-weight: 650;
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .pt-nombre-modal {

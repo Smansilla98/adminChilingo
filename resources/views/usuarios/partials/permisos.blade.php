@@ -2,7 +2,7 @@
 <div class="row g-3">
     @foreach($permisos as $grupo => $lista)
         <div class="col-md-6 col-xl-4">
-            <div class="border rounded p-2 h-100">
+            <div class="ito-perm-card h-100">
                 <h3 class="h6 mb-2">{{ $grupo }}</h3>
                 <ul class="list-unstyled small mb-0">
                     @foreach($lista as $p)

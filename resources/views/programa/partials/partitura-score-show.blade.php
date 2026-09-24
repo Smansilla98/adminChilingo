@@ -34,7 +34,7 @@
             </p>
         </div>
         <div class="prog-cta-row">
-            <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-warning">
+            <a href="{{ route('programa.toque.editor', $programaRitmo) }}" class="btn btn-sm btn-outline-primary">
                 <i class="bi bi-pencil-square"></i> Editar
             </a>
         </div>

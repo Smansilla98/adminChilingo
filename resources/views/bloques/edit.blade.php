@@ -4,129 +4,55 @@
 @section('page-title', 'Editar bloque')
 
 @section('content')
-<x-ito.shell-page
-    title="Editar bloque"
-    eyebrow="Bloques"
-    subtitle="{{ $bloque->nombre }}"
->
+<x-ito.shell-page :title="'Editar '.$bloque->nombre" :subtitle="$bloque->sede?->nombre" :plain="true">
+    <form action="{{ route('bloques.update', $bloque) }}" method="POST">
+        @csrf
+        @method('PUT')
+        @include('bloques._form', ['bloque' => $bloque])
+        <x-ito.form-actions :cancel="route('bloques.show', $bloque)" submit="Guardar cambios" />
+    </form>
 
-        @include('partials.form-ayuda-intro', ['text' => 'Cambiá los datos del bloque abajo. Más abajo podés sumar los días y horarios de clase (así salen en el calendario).'])
-        <form action="{{ route('bloques.update', $bloque) }}" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="nombre" class="form-label">Nombre *</label>
-                    <input type="text" class="form-control @error('nombre') is-invalid @enderror" id="nombre" name="nombre" value="{{ old('nombre', $bloque->nombre) }}" required>
-                    @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-3">
-                    <label for="año" class="form-label">Año (1-6) *</label>
-                    <input type="number" class="form-control" id="año" name="año" value="{{ old('año', $bloque->año) }}" min="1" max="6" required>
-                    @error('año')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-3">
-                    <label for="cantidad_max_alumnos" class="form-label">Cant. máx. personas *</label>
-                    <input type="number" class="form-control" id="cantidad_max_alumnos" name="cantidad_max_alumnos" value="{{ old('cantidad_max_alumnos', $bloque->cantidad_max_alumnos) }}" min="1" required>
-                    @error('cantidad_max_alumnos')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="profesor_id" class="form-label">Profesor titular</label>
-                    <select class="form-select" id="profesor_id" name="profesor_id">
-                        <option value="">Sin asignar</option>
-                        @foreach($profesores as $p)
-                        <option value="{{ $p->id }}" {{ old('profesor_id', $bloque->profesor_id) == $p->id ? 'selected' : '' }}>{{ $p->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label for="corresponde_a" class="form-label">A quien corresponde el bloque</label>
-                    <input type="text" class="form-control" id="corresponde_a" name="corresponde_a" value="{{ old('corresponde_a', $bloque->corresponde_a) }}" placeholder="Ej.: grupo de adultos, niños…">
-                    @error('corresponde_a')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Sede *</label>
-                    <select class="form-select @error('sede_id') is-invalid @enderror" name="sede_id" required>
-                        @foreach($sedes as $sede)
-                        <option value="{{ $sede->id }}" {{ old('sede_id', $bloque->sede_id) == $sede->id ? 'selected' : '' }}>{{ $sede->nombre }}</option>
-                        @endforeach
-                    </select>
-                    @error('sede_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Tambores del bloque</label>
-                <div class="d-flex flex-wrap gap-2">
-                    @foreach($tamboresDisponibles as $t)
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="tambores[]" value="{{ $t }}" id="tambor_{{ $loop->index }}" {{ in_array($t, old('tambores', $bloque->tambores ?? [])) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="tambor_{{ $loop->index }}">{{ $t }}</label>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            <div class="mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="activo" name="activo" value="1" {{ old('activo', $bloque->activo) ? 'checked' : '' }}>
-                    <label class="form-check-label" for="activo">Activo</label>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Guardar bloque</button>
-            <a href="{{ route('bloques.index') }}" class="btn btn-secondary">Cancelar</a>
-        </form>
-
-        <hr class="my-4">
-        <h6 class="mb-2">Días y horarios del bloque</h6>
+    <x-ito.detail-section title="Días y horarios" icon="bi-clock" help="Así aparece el bloque en el calendario y en la toma de asistencia." style="max-width: 1040px">
         @if($bloque->horarios->isNotEmpty())
-        <table class="table table-sm table-bordered mb-3">
-            <thead><tr><th>Día</th><th>Hora inicio</th><th>Hora fin</th><th></th></tr></thead>
-            <tbody>
+            <ul class="ito-horarios">
                 @foreach($bloque->horarios as $h)
-                <tr>
-                    <td>{{ \App\Models\BloqueHorario::DIAS_SEMANA[$h->dia_semana] ?? $h->dia_semana }}</td>
-                    <td>{{ \Carbon\Carbon::parse($h->hora_inicio)->format('H:i') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($h->hora_fin)->format('H:i') }}</td>
-                    <td>
-                        <form action="{{ route('bloque-horarios.destroy', $h) }}" method="POST" class="d-inline" data-confirm="¿Quitar este horario?">
+                    <li>
+                        <span class="fw-semibold">{{ \App\Models\BloqueHorario::DIAS_SEMANA[$h->dia_semana] ?? $h->dia_semana }}</span>
+                        <span class="text-muted">{{ \Carbon\Carbon::parse($h->hora_inicio)->format('H:i') }} a {{ \Carbon\Carbon::parse($h->hora_fin)->format('H:i') }}</span>
+                        <form action="{{ route('bloque-horarios.destroy', $h) }}" method="POST" class="ms-auto" data-confirm="¿Quitar este horario?">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
+                            <button type="submit" class="btn btn-sm btn-ghost text-danger" aria-label="Quitar horario"><i class="bi bi-trash" aria-hidden="true"></i></button>
                         </form>
-                    </td>
-                </tr>
+                    </li>
                 @endforeach
-            </tbody>
-        </table>
+            </ul>
         @else
-        <p class="text-muted small mb-2">Todavía no hay horarios. Sumá día y hora abajo para que aparezcan en el calendario.</p>
+            <p class="text-muted small">Todavía no hay horarios. Sumalos para que aparezcan en el calendario.</p>
         @endif
 
-        <form action="{{ route('bloques.horarios.store', $bloque) }}" method="POST" class="row g-2 align-items-end mb-0">
+        <form action="{{ route('bloques.horarios.store', $bloque) }}" method="POST" class="row g-2 align-items-end mt-2">
             @csrf
-            <div class="col-md-3">
-                <label class="form-label small">Día</label>
-                <select name="dia_semana" class="form-select form-select-sm" required>
+            <div class="col-sm-4">
+                <label class="form-label" for="horario-dia">Día</label>
+                <select id="horario-dia" name="dia_semana" class="form-select" required>
                     @foreach(\App\Models\BloqueHorario::DIAS_SEMANA as $n => $nombre)
-                    <option value="{{ $n }}">{{ $nombre }}</option>
+                        <option value="{{ $n }}">{{ $nombre }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
-                <label class="form-label small">Desde</label>
-                <input type="time" name="hora_inicio" class="form-control form-control-sm" value="18:00" required>
+            <div class="col-6 col-sm-3">
+                <label class="form-label" for="horario-desde">Desde</label>
+                <input id="horario-desde" type="time" name="hora_inicio" class="form-control" value="18:00" required>
             </div>
-            <div class="col-md-2">
-                <label class="form-label small">Hasta</label>
-                <input type="time" name="hora_fin" class="form-control form-control-sm" value="19:30" required>
+            <div class="col-6 col-sm-3">
+                <label class="form-label" for="horario-hasta">Hasta</label>
+                <input id="horario-hasta" type="time" name="hora_fin" class="form-control" value="19:30" required>
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-sm btn-outline-primary">Agregar horario</button>
+            <div class="col-sm-2 d-grid">
+                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Agregar</button>
             </div>
         </form>
+    </x-ito.detail-section>
 </x-ito.shell-page>
-
 @endsection

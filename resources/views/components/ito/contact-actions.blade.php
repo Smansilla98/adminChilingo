@@ -53,8 +53,7 @@
         @endif
     </div>
     <p class="ito-contact-note">
-        No hay historial de mensajes en el sistema: el botón abre WhatsApp o el correo con una plantilla.
-        Lo que sí queda registrado acá abajo son pagos, asistencias y el cuaderno pedagógico.
+        Abre WhatsApp o el correo con un mensaje armado. El envío no queda registrado en el sistema.
     </p>
 </div>
 @once

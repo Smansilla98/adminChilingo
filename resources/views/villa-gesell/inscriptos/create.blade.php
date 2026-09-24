@@ -6,17 +6,14 @@
 @section('content')
 @include('villa-gesell.partials.nav')
 <x-ito.shell-page
+    :plain="true"
     title="Inscribir alumno"
-    eyebrow="Villa Gesell"
     subtitle="Inscripción a la gira 2027."
 >
         <form action="{{ route('villa-gesell.inscriptos.store') }}" method="POST">
             @csrf
             @include('villa-gesell.inscriptos._form')
-            <div class="mt-3">
-                <button class="btn btn-primary" type="submit">Inscribir</button>
-                <a href="{{ route('villa-gesell.inscriptos.index') }}" class="btn btn-link">Cancelar</a>
-            </div>
+            <x-ito.form-actions :cancel="route('villa-gesell.inscriptos.index')" submit="Inscribir" />
         </form>
 </x-ito.shell-page>
 @include('villa-gesell.inscriptos._modal_alumno')

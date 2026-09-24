@@ -57,7 +57,7 @@
 .biblio-nav a.is-active {
   color: var(--text);
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .biblio-main {
@@ -87,7 +87,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 .biblio-hero h1 {
   margin: 0;
@@ -158,7 +158,7 @@
   color: var(--text);
 }
 .biblio-filter-chip a {
-  color: var(--accent);
+  color: var(--accent-strong);
   font-weight: 650;
   text-decoration: none;
   font-size: 12.5px;
@@ -172,7 +172,7 @@
   margin-top: 6px;
   font-size: 12px;
   font-weight: 650;
-  color: var(--accent);
+  color: var(--accent-strong);
   text-decoration: none;
   line-height: 1.3;
 }
@@ -183,7 +183,7 @@
   margin: 6px 0 0;
   font-size: 13px;
   font-weight: 650;
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 .biblio-modal-actions {
   display: flex;
@@ -231,7 +231,7 @@
 .biblio-tag:hover,
 .biblio-tag.is-active {
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-  color: var(--accent);
+  color: var(--accent-strong);
   background: var(--accent-soft);
 }
 
@@ -275,7 +275,7 @@
   text-decoration: none;
 }
 .biblio-card-audio i,
-.biblio-card-file i { font-size: 1.8rem; color: var(--accent); }
+.biblio-card-file i { font-size: 1.8rem; color: var(--accent-strong); }
 .biblio-card-audio audio { width: 100%; }
 .biblio-share-btn {
   appearance: none;
@@ -390,7 +390,7 @@
 }
 .biblio-card-tags a {
   font-size: 11.5px;
-  color: var(--accent);
+  color: var(--accent-strong);
   text-decoration: none;
   font-weight: 650;
 }
@@ -408,7 +408,7 @@
   padding: 48px 16px;
   color: var(--muted);
 }
-.biblio-empty i { font-size: 2rem; display: block; margin-bottom: 10px; color: var(--accent); }
+.biblio-empty i { font-size: 2rem; display: block; margin-bottom: 10px; color: var(--accent-strong); }
 .biblio-pager { margin-top: 18px; }
 
 .biblio-form {
@@ -560,7 +560,7 @@ body.biblio-modal-open { overflow: hidden; }
 .biblio-modal-audio i,
 .biblio-modal-link i {
   font-size: 2rem;
-  color: var(--accent);
+  color: var(--accent-strong);
   display: block;
   margin-bottom: 12px;
 }

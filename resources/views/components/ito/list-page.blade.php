@@ -2,14 +2,19 @@
     'title' => null,
     'subtitle' => null,
     'eyebrow' => null,
-    'showTableHint' => true,
+    'showTableHint' => false,
 ])
+@php
+    // Con filtros aplicados, en celular la barra arranca abierta.
+    $filtrosActivos = collect(request()->except(['page', 'per_page', 'orden', 'sort', 'dir']))->filter(fn ($v) => $v !== null && $v !== '')->count();
+    $filtrosId = 'itoFiltros'.uniqid();
+@endphp
 <div {{ $attributes->merge(['class' => 'ito-page']) }}>
     @if($title || isset($actions))
         <div class="ito-page-head">
             <div>
-                @if($eyebrow || $subtitle)
-                    <p class="ito-eyebrow">{{ $eyebrow ?: 'ITO · Gestión' }}</p>
+                @if($eyebrow)
+                    <p class="ito-eyebrow">{{ $eyebrow }}</p>
                 @endif
                 @if($title)
                     <h1 class="ito-page-title">{{ $title }}</h1>
@@ -28,7 +33,15 @@
 
     <div class="ito-card">
         @isset($toolbar)
-            <div class="ito-toolbar">
+            <button type="button" class="btn btn-outline-secondary ito-filters-toggle m-3 mb-0" data-ito-filters-toggle
+                    aria-controls="{{ $filtrosId }}" aria-expanded="{{ $filtrosActivos ? 'true' : 'false' }}">
+                <i class="bi bi-funnel" aria-hidden="true"></i>
+                <span>Filtros</span>
+                @if($filtrosActivos)
+                    <span class="badge bg-primary">{{ $filtrosActivos }}</span>
+                @endif
+            </button>
+            <div class="ito-toolbar {{ $filtrosActivos ? 'is-open' : '' }}" id="{{ $filtrosId }}" data-ito-filters>
                 {{ $toolbar }}
             </div>
         @endisset

@@ -3,10 +3,8 @@
     $sedesLista = $sedes ?? collect();
 @endphp
 @if($sedesLista->isNotEmpty())
-<div class="card mb-3">
-    <div class="card-header">Roles por sede</div>
-    <div class="card-body">
-        <p class="text-muted small mb-3">Marcá en qué sedes participa y con qué función. Si es <strong>coordinador de sede</strong>, queda registrado así en la ficha de esa sede.</p>
+<x-ito.form-section title="Roles por sede" icon="bi-geo-alt" help="Marcá en qué sedes participa y con qué función. La coordinación de sede le da acceso a gestionar esa sede.">
+    <div>
         <div class="table-responsive">
             <table class="table table-sm align-middle">
                 <thead>
@@ -36,5 +34,5 @@
             </table>
         </div>
     </div>
-</div>
+</x-ito.form-section>
 @endif

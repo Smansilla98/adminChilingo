@@ -72,7 +72,7 @@
 
 .programa-toque-orden {
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-strong);
   margin-right: 4px;
 }
 
@@ -95,7 +95,7 @@
 }
 
 .breadcrumb-item a {
-  color: var(--accent);
+  color: var(--accent-strong);
   text-decoration: none;
 }
 
@@ -143,7 +143,7 @@
 
 .programa-partitura-lectura-toggle:hover,
 .programa-partitura-lectura-toggle:focus {
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .programa-partitura-lectura-chevron {

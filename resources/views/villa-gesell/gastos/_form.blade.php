@@ -1,6 +1,7 @@
 @php
     /** @var \App\Models\VillaGesellGasto $gasto */
 @endphp
+<x-ito.form-section title="Gasto de la gira" icon="bi-wallet2" help="El valor se carga por día cuando el modo es “por día”.">
 <div class="row g-3">
     <div class="col-md-4">
         <label class="form-label">Tipo *</label>
@@ -17,7 +18,7 @@
                 <option value="{{ $k }}" @selected(old('modo', $gasto->modo) === $k)>{{ $v }}</option>
             @endforeach
         </select>
-        <small class="text-muted">El valor que cargás es <strong>por día</strong>. Si el modo es “por día” (o el tipo es gasto diario), el plan hace valor × {{ $diasGira ?? 'N' }} días.</small>
+        <div class="form-text">El valor que cargás es <strong>por día</strong>. Si el modo es “por día” (o el tipo es gasto diario), el plan hace valor × {{ $diasGira ?? 'N' }} días.</div>
     </div>
     <div class="col-md-4">
         <label class="form-label">Fecha (opcional)</label>
@@ -37,3 +38,4 @@
         <textarea name="notas" class="form-control" rows="2">{{ old('notas', $gasto->notas) }}</textarea>
     </div>
 </div>
+</x-ito.form-section>

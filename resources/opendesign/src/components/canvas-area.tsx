@@ -152,7 +152,7 @@ export function CanvasArea() {
                 {renamingId === page.id ? (
                   <input
                     ref={renameRef}
-                    class="text-[11px] text-zinc-700 bg-white border border-[#f26422] rounded px-1.5 py-0.5 outline-none font-medium"
+                    class="text-xs text-zinc-700 bg-white border border-accent rounded px-1.5 py-0.5 outline-none font-medium"
                     style={{ width: 140 }}
                     value={renameValue}
                     onInput={(e) => setRenameValue((e.target as HTMLInputElement).value)}
@@ -164,7 +164,7 @@ export function CanvasArea() {
                   />
                 ) : (
                   <span
-                    class="text-[11px] text-zinc-400 font-medium cursor-pointer hover:text-zinc-600 transition-colors"
+                    class="text-xs text-zinc-500 font-medium cursor-pointer hover:text-zinc-600 transition-colors"
                     onClick={() => startRename(page.id, page.title)}
                   >
                     {page.title}
@@ -175,14 +175,14 @@ export function CanvasArea() {
               {/* Action icons — visible on hover */}
               <div class="flex items-center gap-0.5">
                 <button
-                  class="p-1 rounded bg-transparent border-none cursor-pointer text-zinc-400 hover:text-[#f26422] hover:bg-[#f26422]/10 transition-all"
+                  class="p-1 rounded bg-transparent border-none cursor-pointer text-zinc-500 hover:text-accent-strong hover:bg-accent/10 transition-all"
                   onClick={() => addPage(page.id)}
                   title="Agregar página debajo"
                 >
                   <Plus size={14} />
                 </button>
                 <button
-                  class="p-1 rounded bg-transparent border-none cursor-pointer text-zinc-400 hover:text-[#f26422] hover:bg-[#f26422]/10 transition-all"
+                  class="p-1 rounded bg-transparent border-none cursor-pointer text-zinc-500 hover:text-accent-strong hover:bg-accent/10 transition-all"
                   onClick={() => duplicatePage(page.id)}
                   title="Duplicar página"
                 >
@@ -190,7 +190,7 @@ export function CanvasArea() {
                 </button>
                 {pages.length > 1 && (
                   <button
-                    class="p-1 rounded bg-transparent border-none cursor-pointer text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                    class="p-1 rounded bg-transparent border-none cursor-pointer text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-all"
                     onClick={() => deletePage(page.id)}
                     title="Eliminar página"
                   >
@@ -222,7 +222,7 @@ export function CanvasArea() {
             }}
           >
             <button
-              class="flex items-center gap-1.5 px-4 py-2 rounded-lg border-2 border-dashed border-zinc-300 bg-transparent cursor-pointer text-xs text-zinc-400 font-medium transition-all hover:border-[#f26422] hover:text-[#f26422] hover:bg-[#f26422]/5"
+              class="flex items-center gap-1.5 px-4 py-2 rounded-lg border-2 border-dashed border-zinc-300 bg-transparent cursor-pointer text-xs text-zinc-500 font-medium transition-all hover:border-accent hover:text-accent-strong hover:bg-accent/5"
               onClick={() => addPage()}
             >
               <Plus size={14} />

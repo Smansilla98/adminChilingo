@@ -1,5 +1,6 @@
 @props([
     'id' => null,
+    'label' => 'Acciones',
 ])
 @php
     $menuId = $id ?: 'itoActions'.uniqid();
@@ -11,8 +12,10 @@
         data-bs-toggle="dropdown"
         aria-expanded="false"
         id="{{ $menuId }}"
+        title="{{ $label }}"
     >
-        Acciones
+        <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+        <span class="visually-hidden">{{ $label }}</span>
     </button>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="{{ $menuId }}">
         {{ $slot }}

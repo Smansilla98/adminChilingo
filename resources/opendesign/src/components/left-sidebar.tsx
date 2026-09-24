@@ -117,13 +117,13 @@ export function LeftSidebar() {
             key={s.key}
             class={`flex flex-col items-center justify-center gap-0.5 w-[56px] h-[56px] rounded-lg bg-transparent border-none cursor-pointer transition-all ${
               activeSection === s.key
-                ? "text-accent bg-accent/10"
+                ? "text-accent-strong bg-accent/10"
                 : "text-zinc-500 hover:text-zinc-700 hover:bg-zinc-50"
             }`}
             onClick={() => handleSectionClick(s.key)}
           >
             <s.icon size={20} />
-            <span class="text-[10px] leading-tight">{s.label}</span>
+            <span class="text-[11px] leading-tight">{s.label}</span>
           </button>
         ))}
       </div>
@@ -147,10 +147,10 @@ export function LeftSidebar() {
                 {activeSection === "templates" && (
                   <div>
                     {templates.length === 0 ? (
-                      <p class="text-zinc-400 text-[11px]">Todavía no hay plantillas.</p>
+                      <p class="text-zinc-500 text-xs">Todavía no hay plantillas.</p>
                     ) : (
                       <>
-                        <p class="text-zinc-400 text-[11px] mb-3">Tocá una plantilla para aplicarla</p>
+                        <p class="text-zinc-500 text-xs mb-3">Tocá una plantilla para aplicarla</p>
                         <div class="grid grid-cols-2 gap-2">
                           {templates.map((t) => (
                             <TemplateCard key={t.id} template={t} onClick={() => loadTemplate(t)} />
@@ -163,15 +163,15 @@ export function LeftSidebar() {
 
                 {activeSection === "text" && (
                   <div class="flex flex-col gap-2">
-                    <p class="text-zinc-400 text-[11px] mb-1">Tocá para agregar texto</p>
+                    <p class="text-zinc-500 text-xs mb-1">Tocá para agregar texto</p>
                     <button
                       class="w-full text-left p-3 rounded-lg bg-white border border-zinc-200 cursor-pointer transition-all hover:border-accent hover:bg-accent/5 group"
                       onClick={() => addText("heading")}
                     >
-                      <span class="text-lg font-bold text-zinc-900 group-hover:text-accent transition-colors">
+                      <span class="text-lg font-bold text-zinc-900 group-hover:text-accent-strong transition-colors">
                         Agregá un título
                       </span>
-                      <span class="block text-[10px] text-zinc-400 mt-0.5">
+                      <span class="block text-[11px] text-zinc-500 mt-0.5">
                         Montserrat Bold, 48px
                       </span>
                     </button>
@@ -179,10 +179,10 @@ export function LeftSidebar() {
                       class="w-full text-left p-3 rounded-lg bg-white border border-zinc-200 cursor-pointer transition-all hover:border-accent hover:bg-accent/5 group"
                       onClick={() => addText("subheading")}
                     >
-                      <span class="text-sm font-medium text-zinc-900 group-hover:text-accent transition-colors">
+                      <span class="text-sm font-medium text-zinc-900 group-hover:text-accent-strong transition-colors">
                         Agregá un subtítulo
                       </span>
-                      <span class="block text-[10px] text-zinc-400 mt-0.5">
+                      <span class="block text-[11px] text-zinc-500 mt-0.5">
                         Inter Medium, 32px
                       </span>
                     </button>
@@ -190,10 +190,10 @@ export function LeftSidebar() {
                       class="w-full text-left p-3 rounded-lg bg-white border border-zinc-200 cursor-pointer transition-all hover:border-accent hover:bg-accent/5 group"
                       onClick={() => addText("body")}
                     >
-                      <span class="text-xs text-zinc-900 group-hover:text-accent transition-colors">
+                      <span class="text-xs text-zinc-900 group-hover:text-accent-strong transition-colors">
                         Agregá texto
                       </span>
-                      <span class="block text-[10px] text-zinc-400 mt-0.5">
+                      <span class="block text-[11px] text-zinc-500 mt-0.5">
                         Inter Regular, 18px
                       </span>
                     </button>
@@ -202,7 +202,7 @@ export function LeftSidebar() {
 
                 {activeSection === "shapes" && (
                   <div>
-                    <p class="text-zinc-400 text-[11px] mb-2">Tocá para agregar una forma</p>
+                    <p class="text-zinc-500 text-xs mb-2">Tocá para agregar una forma</p>
                     <div class="grid grid-cols-2 gap-2">
                       {[
                         { type: "rect" as const, icon: Square, label: "Rectángulo" },
@@ -215,8 +215,8 @@ export function LeftSidebar() {
                           class="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-white border border-zinc-200 cursor-pointer transition-all hover:border-accent hover:bg-accent/5"
                           onClick={() => addShape(s.type)}
                         >
-                          <s.icon size={24} class="text-zinc-400" />
-                          <span class="text-[11px] text-zinc-400">{s.label}</span>
+                          <s.icon size={24} class="text-zinc-500" />
+                          <span class="text-xs text-zinc-500">{s.label}</span>
                         </button>
                       ))}
                     </div>
@@ -225,18 +225,18 @@ export function LeftSidebar() {
 
                 {activeSection === "images" && (
                   <div>
-                    <p class="text-zinc-400 text-[11px] mb-2">Subí imágenes para usarlas en el diseño</p>
+                    <p class="text-zinc-500 text-xs mb-2">Subí imágenes para usarlas en el diseño</p>
                     <div
                       class="border-2 border-dashed border-zinc-300 rounded-lg p-6 text-center cursor-pointer transition-all hover:border-accent/50 hover:bg-accent/5"
                       onClick={() => fileInputRef.current?.click()}
                       onDrop={handleDrop}
                       onDragOver={(e) => e.preventDefault()}
                     >
-                      <Upload size={24} class="text-zinc-400 mx-auto mb-2" />
-                      <p class="text-xs text-zinc-400">
+                      <Upload size={24} class="text-zinc-500 mx-auto mb-2" />
+                      <p class="text-xs text-zinc-500">
                         {uploading ? "Subiendo…" : "Tocá o arrastrá imágenes acá"}
                       </p>
-                      <p class="text-[10px] text-zinc-600 mt-1">PNG, JPG, WebP (hasta 10 MB)</p>
+                      <p class="text-[11px] text-zinc-600 mt-1">PNG, JPG, WebP (hasta 10 MB)</p>
                     </div>
                     <input
                       ref={fileInputRef}
@@ -251,7 +251,7 @@ export function LeftSidebar() {
 
                 {activeSection === "background" && (
                   <div>
-                    <p class="text-zinc-400 text-[11px] mb-2">Colores</p>
+                    <p class="text-zinc-500 text-xs mb-2">Colores</p>
                     <div class="grid grid-cols-4 gap-1.5 mb-4">
                       {BG_COLORS.map((c) => (
                         <button
@@ -263,7 +263,7 @@ export function LeftSidebar() {
                       ))}
                     </div>
 
-                    <p class="text-zinc-400 text-[11px] mb-2">Otro color</p>
+                    <p class="text-zinc-500 text-xs mb-2">Otro color</p>
                     <input
                       type="color"
                       class="w-full h-8 rounded-md border border-zinc-300 cursor-pointer bg-transparent"
@@ -272,7 +272,7 @@ export function LeftSidebar() {
                       }
                     />
 
-                    <p class="text-zinc-400 text-[11px] mb-2 mt-4">Degradés</p>
+                    <p class="text-zinc-500 text-xs mb-2 mt-4">Degradés</p>
                     <div class="grid grid-cols-3 gap-1.5 mb-4">
                       {GRADIENT_PRESETS.map((g, i) => (
                         <button
@@ -287,9 +287,9 @@ export function LeftSidebar() {
                       ))}
                     </div>
 
-                    <p class="text-zinc-400 text-[11px] mb-2">Imagen de fondo</p>
+                    <p class="text-zinc-500 text-xs mb-2">Imagen de fondo</p>
                     <button
-                      class="w-full p-3 rounded-lg bg-white border border-zinc-200 cursor-pointer text-xs text-zinc-400 hover:border-accent hover:text-zinc-800 transition-all"
+                      class="w-full p-3 rounded-lg bg-white border border-zinc-200 cursor-pointer text-xs text-zinc-500 hover:border-accent hover:text-zinc-800 transition-all"
                       onClick={() => bgFileRef.current?.click()}
                     >
                       <Upload size={14} class="inline mr-1.5" />
