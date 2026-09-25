@@ -34,8 +34,8 @@ export default function Login() {
   return (
     <SafeAreaView style={s.pantalla}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={s.centro}>
-        <Image source={require('@/assets/images/icon.png')} style={s.logo} contentFit="contain" accessibilityLabel="ITO · La Chilinga" />
-        <Text style={s.titulo}>La Chilinga</Text>
+        <Image source={require('@/assets/images/icon.png')} style={s.logo} contentFit="contain" accessibilityLabel="ITO" />
+        <Text style={s.titulo}>ITO</Text>
         <Tenue>Ingresá con tu usuario del sistema</Tenue>
 
         <View style={s.form}>

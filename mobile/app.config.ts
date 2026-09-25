@@ -10,15 +10,16 @@ const VARIANT = (process.env.APP_VARIANT ?? 'production') as 'development' | 'st
 
 const BASE_ID = 'org.lachilinga.ito';
 const sufijo = VARIANT === 'production' ? '' : `.${VARIANT === 'development' ? 'dev' : 'staging'}`;
-const nombre = VARIANT === 'production' ? 'Chilinga' : `Chilinga (${VARIANT === 'development' ? 'dev' : 'staging'})`;
+const nombre = VARIANT === 'production' ? 'ITO' : `ITO (${VARIANT === 'development' ? 'dev' : 'staging'})`;
 
 const config: ExpoConfig = {
   name: nombre,
+  // Slug técnico del proyecto EAS existente; no es el nombre visible de la app.
   slug: 'chilinga',
   version: '1.0.0',
   orientation: 'default', // el visor de partituras necesita horizontal; las pantallas se diseñan en vertical
   icon: './assets/images/icon.png',
-  scheme: 'chilinga',
+  scheme: 'ito',
   userInterfaceStyle: 'dark',
   backgroundColor: '#000000',
   ios: {

@@ -30,7 +30,7 @@ const queryClient = new QueryClient({
 });
 
 // Caché persistente: la última información consultada se ve aunque no haya señal.
-const persister = createAsyncStoragePersister({ storage: AsyncStorage, key: 'chilinga.cache.v1' });
+const persister = createAsyncStoragePersister({ storage: AsyncStorage, key: 'ito.cache.v1' });
 
 const tema = { ...DarkTheme, colors: { ...DarkTheme.colors, background: C.fondo, card: C.fondo, primary: C.acento, text: C.texto, border: C.borde } };
 

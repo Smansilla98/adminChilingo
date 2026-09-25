@@ -88,6 +88,10 @@ Route::get('/salud', function () {
     ], $db ? 200 : 503);
 })->name('salud');
 
+Route::view('/privacidad', 'legal.privacy')
+    ->middleware('throttle:60,1')
+    ->name('privacy');
+
 // Biblioteca pública (sin login)
 Route::prefix('biblioteca')->middleware('throttle:60,1')->group(function () {
     Route::get('/', [BibliotecaPublicController::class, 'index'])->name('biblioteca.index');

@@ -5,9 +5,9 @@ import { Platform } from 'react-native';
 
 import { api, configurarSesion } from './api';
 
-const CLAVE_TOKEN = 'chilinga.token';
-const CLAVE_EXPIRA = 'chilinga.token_expira';
-const CLAVE_CONTEXTO = 'chilinga.contexto';
+const CLAVE_TOKEN = 'ito.token';
+const CLAVE_EXPIRA = 'ito.token_expira';
+const CLAVE_CONTEXTO = 'ito.contexto';
 const RENOVAR_SI_QUEDAN_DIAS = 7;
 
 // SecureStore no existe en web (solo para desarrollo): se usa memoria.

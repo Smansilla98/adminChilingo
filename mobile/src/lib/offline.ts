@@ -11,7 +11,7 @@ import { api, ApiError } from './api';
  * `capturado_en` permite al servidor no pisar correcciones hechas después por otra persona.
  */
 
-const CLAVE = 'chilinga.cola_asistencia.v1';
+const CLAVE = 'ito.cola_asistencia.v1';
 
 export interface EnvioAsistencia {
   uuid: string;
