@@ -134,6 +134,65 @@ export function Icon(props: ComponentProps<typeof MaterialIcons>) {
   return <MaterialIcons {...props} />;
 }
 
+/** Par etiqueta / valor dentro de una ficha. No se muestra si no hay valor. */
+export function Dato({ etiqueta, valor, onPress, icono }: { etiqueta: string; valor: ReactNode; onPress?: () => void; icono?: Icono }) {
+  if (valor === null || valor === undefined || valor === '') return null;
+  const cuerpo = (
+    <View style={s.dato}>
+      <Text style={s.datoEtiqueta}>{etiqueta}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: E.xs }}>
+        {typeof valor === 'string' || typeof valor === 'number' ? <Text style={[s.texto, { flex: 1 }, onPress && { color: C.acento }]} selectable>{valor}</Text> : <View style={{ flex: 1 }}>{valor}</View>}
+        {icono && <MaterialIcons name={icono} size={20} color={onPress ? C.acento : C.tenue} />}
+      </View>
+    </View>
+  );
+  if (!onPress) return cuerpo;
+  return <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${etiqueta}: ${String(valor)}`}>{cuerpo}</Pressable>;
+}
+
+/** Pestañas segmentadas para organizar una ficha (Información, Cuotas, Pagos…). */
+export function Segmentos<V extends string>({ opciones, valor, onChange }: { opciones: { valor: V; etiqueta: string; cantidad?: number }[]; valor: V; onChange: (v: V) => void }) {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: E.s }} accessibilityRole="tablist">
+      {opciones.map((o) => {
+        const activo = o.valor === valor;
+        return (
+          <Pressable
+            key={o.valor}
+            onPress={() => onChange(o.valor)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activo }}
+            style={[s.segmento, activo && { backgroundColor: C.acento, borderColor: C.acento }]}>
+            <Text style={[s.segmentoTexto, activo && { color: C.texto }]}>{o.etiqueta}{o.cantidad !== undefined ? ` · ${o.cantidad}` : ''}</Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+/** Cabecera de una ficha: iniciales, nombre, estado y datos rápidos. */
+export function Encabezado({ titulo, subtitulo, chips, icono }: { titulo: string; subtitulo?: string | null; chips?: ReactNode; icono?: Icono }) {
+  const iniciales = titulo.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
+  return (
+    <View style={{ flexDirection: 'row', gap: E.l, alignItems: 'center' }}>
+      <View style={s.avatar} accessibilityElementsHidden importantForAccessibility="no">
+        {icono ? <MaterialIcons name={icono} size={30} color={C.acento} /> : <Text style={s.avatarTexto}>{iniciales || '?'}</Text>}
+      </View>
+      <View style={{ flex: 1, gap: E.xs }}>
+        <Text style={s.titulo} accessibilityRole="header" numberOfLines={3}>{titulo}</Text>
+        {!!subtitulo && <Text style={s.tenue}>{subtitulo}</Text>}
+        {chips && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: E.xs }}>{chips}</View>}
+      </View>
+    </View>
+  );
+}
+
+/** Fila de acciones de una ficha (se reparten el ancho y bajan de línea si no entran). */
+export function Acciones({ children }: { children: ReactNode }) {
+  return <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: E.s }}>{Array.isArray(children) ? children.filter(Boolean).map((c, i) => <View key={i} style={{ flexGrow: 1, minWidth: '45%' }}>{c}</View>) : <View style={{ flexGrow: 1 }}>{children}</View>}</View>;
+}
+
 const s = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: C.fondo },
   contenido: { padding: E.l, gap: E.m, paddingBottom: E.xxl * 2 },
@@ -148,4 +207,10 @@ const s = StyleSheet.create({
   chipTexto: { fontSize: 12, fontWeight: '700' },
   centro: { alignItems: 'center', justifyContent: 'center', padding: E.xxl, gap: E.m, flexGrow: 1 },
   aviso: { borderWidth: 1, borderRadius: 12, padding: E.m },
+  dato: { gap: 2, paddingVertical: E.xs, minHeight: 40, justifyContent: 'center' },
+  datoEtiqueta: { color: C.tenue, fontSize: 13, fontWeight: '600' },
+  segmento: { borderRadius: 999, borderWidth: 1, borderColor: C.borde, backgroundColor: C.superficie, paddingHorizontal: E.l, minHeight: 40, justifyContent: 'center' },
+  segmentoTexto: { color: C.tenue, fontWeight: '700' },
+  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.acentoSuave, alignItems: 'center', justifyContent: 'center' },
+  avatarTexto: { color: C.acento, fontSize: 24, fontWeight: '800' },
 });

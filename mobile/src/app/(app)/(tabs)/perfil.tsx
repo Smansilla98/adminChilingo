@@ -1,9 +1,8 @@
-import * as WebBrowser from 'expo-web-browser';
 import { Alert, View } from 'react-native';
 
 import { Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Titulo } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { VARIANTE, WEB_URL } from '@/lib/config';
+import { VARIANTE } from '@/lib/config';
 import { descartar, sincronizar, useColaAsistencia } from '@/lib/offline';
 import { useMe } from '@/lib/queries';
 import { C, E } from '@/lib/theme';
@@ -70,7 +69,6 @@ export default function Perfil() {
       )}
 
       <Subtitulo>Más</Subtitulo>
-      <Boton titulo="Abrir el panel web" icono="open-in-new" variante="secundario" onPress={() => WebBrowser.openBrowserAsync(WEB_URL)} />
       <Boton titulo="Cerrar sesión" icono="logout" variante="peligro" onPress={confirmarSalida} />
       {VARIANTE !== 'production' && <Tenue>Entorno: {VARIANTE}</Tenue>}
     </Pantalla>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -30,6 +30,7 @@ export default function NuevoItem() {
 
   return (
     <Pantalla>
+      <Stack.Screen options={{ title: 'Cargar ítem' }} />
       <Campo etiqueta="Nombre *" valor={f.nombre} onChange={(v) => set('nombre', v)} placeholder='Ej.: Surdo 22"' />
       <Tenue>Sede *</Tenue>
       <Opciones opciones={(sedes.data ?? []).map((s) => [String(s.id), s.nombre])} valor={String(f.sede_id)} onChange={(v) => set('sede_id', Number(v))} />

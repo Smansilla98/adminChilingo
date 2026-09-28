@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Cargando, Chip, ErrorVista, Icon, Pantalla, Tenue, Texto, Vacio } from '@/components/ui';
@@ -16,6 +16,7 @@ export default function Bloques() {
 
   return (
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
+      <Stack.Screen options={{ title: 'Asistencia' }} />
       {bloques.length === 0 && <Vacio icono="groups" texto="No tenés bloques donde tomar asistencia." />}
       {bloques.map((b) => (
         <Pressable

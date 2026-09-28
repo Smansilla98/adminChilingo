@@ -7,6 +7,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { BannerSinConexion, ToastProvider } from '@/components/feedback';
 import { ApiError } from '@/lib/api';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { useSincronizacionAutomatica } from '@/lib/offline';
@@ -39,8 +40,11 @@ export default function RootLayout() {
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: DIA, buster: 'v1' }}>
       <AuthProvider>
         <ThemeProvider value={tema}>
-          <StatusBar style="light" />
-          <Navegacion />
+          <ToastProvider>
+            <StatusBar style="light" />
+            <BannerSinConexion />
+            <Navegacion />
+          </ToastProvider>
         </ThemeProvider>
       </AuthProvider>
     </PersistQueryClientProvider>
@@ -62,31 +66,13 @@ function Navegacion() {
   if (!listo) return null;
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: C.fondo },
-        headerTintColor: C.texto,
-        headerTitleStyle: { fontWeight: '700' },
-        contentStyle: { backgroundColor: C.fondo },
-        headerBackTitle: 'Volver',
-      }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.fondo } }}>
       <Stack.Protected guard={!autenticado}>
-        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="login" />
       </Stack.Protected>
+      {/* Todo lo que está en (app) requiere sesión: las pantallas nuevas quedan protegidas solas. */}
       <Stack.Protected guard={autenticado}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="asistencia/index" options={{ title: 'Asistencia' }} />
-        <Stack.Screen name="asistencia/[bloque]" options={{ title: 'Tomar asistencia' }} />
-        <Stack.Screen name="alumnos/index" options={{ title: 'Alumnos' }} />
-        <Stack.Screen name="alumnos/[id]" options={{ title: 'Alumno' }} />
-        <Stack.Screen name="cuotas" options={{ title: 'Mis cuotas' }} />
-        <Stack.Screen name="finanzas" options={{ title: 'Finanzas' }} />
-        <Stack.Screen name="inventario/index" options={{ title: 'Inventario' }} />
-        <Stack.Screen name="inventario/[id]" options={{ title: 'Instrumento' }} />
-        <Stack.Screen name="inventario/escanear" options={{ title: 'Escanear QR', presentation: 'modal' }} />
-        <Stack.Screen name="inventario/nuevo" options={{ title: 'Cargar ítem' }} />
-        <Stack.Screen name="partituras/index" options={{ title: 'Partituras' }} />
-        <Stack.Screen name="partituras/[slug]" options={{ title: 'Partitura' }} />
+        <Stack.Screen name="(app)" />
       </Stack.Protected>
     </Stack>
   );

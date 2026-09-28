@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useDeferredValue, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
@@ -13,6 +13,7 @@ export default function Alumnos() {
 
   return (
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
+      <Stack.Screen options={{ title: 'Alumnos' }} />
       <TextInput
         style={s.buscar}
         placeholder="Buscar por nombre o DNI"

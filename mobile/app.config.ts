@@ -60,6 +60,16 @@ const config: ExpoConfig = {
       },
     ],
     [
+      'expo-image-picker',
+      {
+        photosPermission: 'Las fotos se usan para adjuntar comprobantes, imágenes de diseños y archivos de la biblioteca.',
+        cameraPermission: 'La cámara se usa para fotografiar comprobantes y escanear el código QR de los instrumentos.',
+        microphonePermission: false,
+      },
+    ],
+    'expo-sharing',
+    '@react-native-community/datetimepicker',
+    [
       'expo-splash-screen',
       {
         backgroundColor: '#000000',

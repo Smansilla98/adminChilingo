@@ -1,13 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Icon, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Titulo } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { formatearFecha } from '@/lib/formato';
-import { RUTAS, urlWeb } from '@/lib/modulos';
+import { RUTAS } from '@/lib/modulos';
 import { useColaAsistencia, useConexion } from '@/lib/offline';
 import { api } from '@/lib/api';
 import { useInicio, useMe } from '@/lib/queries';
@@ -74,10 +73,9 @@ export default function Inicio() {
                   style={({ pressed }) => [s.modulo, pressed && { opacity: 0.7 }]}
                   accessibilityRole="button"
                   accessibilityLabel={m.etiqueta}
-                  onPress={() => (destino.ruta ? router.push(destino.ruta as never) : WebBrowser.openBrowserAsync(urlWeb(destino.web!)))}>
+                  onPress={() => router.push(destino.ruta as never)}>
                   <Icon name={destino.icono} size={30} color={C.acento} />
                   <Text style={s.moduloTexto} numberOfLines={2}>{m.etiqueta}</Text>
-                  {!destino.ruta && <Tenue style={{ fontSize: 11 }}>panel web</Tenue>}
                 </Pressable>
               );
             })}
@@ -127,7 +125,7 @@ function TarjetaInicio({ tarjeta }: { tarjeta: TarjetaApi }) {
     case 'mi_espacio': {
       const cuota = d.cuota;
       return (
-        <Tarjeta acento={C.info} onPress={() => router.push('/cuotas' as never)}>
+        <Tarjeta acento={C.info} onPress={() => router.push('/mi-cuenta' as never)}>
           <Fila><Icon name="school" size={22} color={C.info} /><Texto style={s.cabecera}>Mi cursada</Texto></Fila>
           <Texto>{(d.bloques ?? []).map((b: any) => b.nombre).join(' · ') || 'Sin bloque asignado'}</Texto>
           {d.sede && <Tenue>{d.sede}</Tenue>}
@@ -142,7 +140,7 @@ function TarjetaInicio({ tarjeta }: { tarjeta: TarjetaApi }) {
     }
     case 'finanzas':
       return (
-        <Tarjeta acento={C.exito} onPress={() => router.push('/finanzas' as never)}>
+        <Tarjeta acento={C.exito} onPress={() => router.push('/pagos' as never)}>
           <Fila><Icon name="payments" size={22} color={C.exito} /><Texto style={s.cabecera}>Finanzas del mes</Texto></Fila>
           <Texto style={s.numero}>{moneda(d.cobrado_mes)}</Texto>
           <Tenue>{d.pagos_mes} pagos registrados{d.comprobantes_pendientes != null ? ` · ${d.comprobantes_pendientes} comprobantes por revisar` : ''}</Tenue>

@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useDeferredValue, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
@@ -16,6 +16,7 @@ export default function Inventario() {
 
   return (
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
+      <Stack.Screen options={{ title: 'Inventario' }} />
       <Fila>
         <View style={{ flex: 1 }}><Boton titulo="Escanear QR" icono="qr-code-scanner" onPress={() => router.push('/inventario/escanear' as never)} grande /></View>
         {puedeCargar && <View style={{ flex: 1 }}><Boton titulo="Cargar" icono="add" variante="secundario" onPress={() => router.push('/inventario/nuevo' as never)} grande /></View>}

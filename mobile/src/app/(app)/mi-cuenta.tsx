@@ -1,8 +1,7 @@
-import * as WebBrowser from 'expo-web-browser';
+import { router, Stack } from 'expo-router';
 import { View } from 'react-native';
 
 import { Boton, Cargando, Chip, ErrorVista, Fila, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Vacio } from '@/components/ui';
-import { urlWeb } from '@/lib/modulos';
 import { useMiEstadoCuenta } from '@/lib/queries';
 import { C, moneda } from '@/lib/theme';
 import { ESTADO_CUOTA } from '@/lib/formato';
@@ -16,6 +15,7 @@ export default function MisCuotas() {
 
   return (
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
+      <Stack.Screen options={{ title: 'Mi cuenta' }} />
       {q.data.map((cuenta) => (
         <View key={cuenta.alumno_id} style={{ gap: 12 }}>
           <Tarjeta acento={cuenta.totales.saldo > 0 ? C.alerta : C.exito}>
@@ -23,7 +23,7 @@ export default function MisCuotas() {
             <Texto style={{ fontSize: 30, fontWeight: '800' }}>{moneda(cuenta.totales.saldo)}</Texto>
             <Tenue>Pagado {moneda(cuenta.totales.pagado)} de {moneda(cuenta.totales.neto)}{cuenta.totales.descuento > 0 ? ` · beca ${moneda(cuenta.totales.descuento)}` : ''}</Tenue>
             {cuenta.totales.saldo > 0 && (
-              <Boton titulo="Enviar comprobante de pago" icono="upload-file" onPress={() => WebBrowser.openBrowserAsync(urlWeb('/pagar-cuota/comprobante'))} />
+              <Boton titulo="Enviar comprobante de pago" icono="upload-file" onPress={() => router.push({ pathname: '/comprobantes/enviar', params: { alumno_id: String(cuenta.alumno_id) } } as never)} />
             )}
           </Tarjeta>
 

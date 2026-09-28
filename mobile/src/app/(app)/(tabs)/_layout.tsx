@@ -20,6 +20,7 @@ export default function TabsLayout() {
       }}>
       <Tabs.Screen name="index" options={{ title: 'Inicio', tabBarIcon: ({ color }) => <Icon name="home" size={26} color={color} /> }} />
       <Tabs.Screen name="agenda" options={{ title: 'Agenda', tabBarIcon: ({ color }) => <Icon name="calendar-month" size={26} color={color} /> }} />
+      <Tabs.Screen name="gestion" options={{ title: 'Gestión', tabBarIcon: ({ color }) => <Icon name="apps" size={26} color={color} /> }} />
       <Tabs.Screen
         name="avisos"
         options={{

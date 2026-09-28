@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -20,6 +20,7 @@ export default function Partituras() {
 
   return (
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
+      <Stack.Screen options={{ title: 'Partituras' }} />
       {porAnio.length === 0 && <Vacio icono="music-off" texto="No hay toques publicados." />}
       {porAnio.map(([anio, toques]) => (
         <View key={anio} style={{ gap: E.s }}>
