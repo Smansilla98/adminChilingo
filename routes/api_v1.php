@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\PagoController;
 use App\Http\Controllers\Api\V1\PartituraController;
 use App\Http\Controllers\Api\V1\PersonaController;
 use App\Http\Controllers\Api\V1\ProfesorController;
+use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\SedeController;
 use App\Http\Controllers\Api\V1\ShowController;
 use Illuminate\Support\Facades\Route;
@@ -116,6 +117,14 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
             Route::post('compras/{orden}/estado', [CompraController::class, 'estado'])->whereNumber('orden')->name('compras.estado');
             Route::delete('compras/{orden}', [CompraController::class, 'destroy'])->whereNumber('orden')->name('compras.destroy');
         });
+    });
+
+    // Reportes
+    Route::middleware('permiso:reportes.view')->group(function () {
+        Route::get('reportes', [ReporteController::class, 'index'])->name('reportes.index');
+        Route::get('reportes/excel', [ReporteController::class, 'excel'])->middleware('throttle:10,1')->name('reportes.excel');
+        Route::get('reportes/imprimible', [ReporteController::class, 'imprimible'])->middleware('throttle:10,1')->name('reportes.imprimible');
+        Route::get('reportes/profesores', [ReporteController::class, 'profesores'])->name('reportes.profesores');
     });
 
     // Gastos

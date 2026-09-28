@@ -1,10 +1,11 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { Directory, File, Paths, UploadType } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
+import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
-import { ApiError, headersSesion, procesarRespuesta, urlApi } from './api';
+import { api, ApiError, headersSesion, procesarRespuesta, urlApi } from './api';
 
 /** Archivo elegido en el teléfono, listo para subir. */
 export interface ArchivoLocal {
@@ -125,5 +126,24 @@ export async function descargarYAbrir(ruta: string, { nombre, onProgreso, signal
 
   if (await Sharing.isAvailableAsync()) {
     await Sharing.shareAsync(archivo.uri, { dialogTitle: nombre ?? archivo.name });
+  }
+}
+
+/**
+ * PDF a partir del HTML imprimible que arma el servidor (mismo que imprime el panel
+ * web). Se genera en el teléfono y se abre el menú para ver, guardar o compartir.
+ */
+export async function pdfDesdeServidor(ruta: string): Promise<void> {
+  const { html, nombre } = await api<{ html: string; nombre: string }>(ruta);
+  if (Platform.OS === 'web') {
+    await Print.printAsync({ html });
+    return;
+  }
+  const { uri } = await Print.printToFileAsync({ html });
+  const destino = new File(Paths.cache, nombre);
+  if (destino.exists) destino.delete();
+  new File(uri).move(destino);
+  if (await Sharing.isAvailableAsync()) {
+    await Sharing.shareAsync(destino.uri, { mimeType: 'application/pdf', dialogTitle: nombre, UTI: 'com.adobe.pdf' });
   }
 }
