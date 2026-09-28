@@ -8,12 +8,13 @@ use App\Http\Controllers\Api\V1\AuditoriaController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BecaController;
 use App\Http\Controllers\Api\V1\BloqueController;
+use App\Http\Controllers\Api\V1\CuotaController;
 use App\Http\Controllers\Api\V1\EventoController;
-use App\Http\Controllers\Api\V1\FinanzasController;
 use App\Http\Controllers\Api\V1\InicioController;
 use App\Http\Controllers\Api\V1\InventarioController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\NotificacionController;
+use App\Http\Controllers\Api\V1\PagoController;
 use App\Http\Controllers\Api\V1\PartituraController;
 use App\Http\Controllers\Api\V1\PersonaController;
 use App\Http\Controllers\Api\V1\ProfesorController;
@@ -79,10 +80,23 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('alumnos/{alumno}/estado-cuenta', [AlumnoController::class, 'estadoCuenta'])->name('alumnos.estado-cuenta');
     Route::get('mi/estado-cuenta', [AlumnoController::class, 'miEstadoCuenta'])->name('mi.estado-cuenta');
 
-    Route::get('cuotas', [FinanzasController::class, 'cuotas'])->name('cuotas.index');
-    Route::get('pagos', [FinanzasController::class, 'pagos'])->name('pagos.index');
-    Route::get('pagos/{pago}', [FinanzasController::class, 'pago'])->name('pagos.show');
-    Route::post('pagos/{pago}/anular', [FinanzasController::class, 'anular'])->name('pagos.anular');
+    // Cuotas
+    Route::get('cuotas/catalogo', [CuotaController::class, 'catalogo'])->name('cuotas.catalogo');
+    Route::get('cuotas', [CuotaController::class, 'index'])->name('cuotas.index');
+    Route::post('cuotas', [CuotaController::class, 'store'])->middleware('permiso:cuotas.create')->name('cuotas.store');
+    Route::get('cuotas/{cuota}', [CuotaController::class, 'show'])->whereNumber('cuota')->name('cuotas.show');
+    Route::put('cuotas/{cuota}', [CuotaController::class, 'update'])->whereNumber('cuota')->middleware('permiso:cuotas.update')->name('cuotas.update');
+    Route::delete('cuotas/{cuota}', [CuotaController::class, 'destroy'])->whereNumber('cuota')->middleware('permiso:cuotas.delete')->name('cuotas.destroy');
+    // Pagos
+    Route::get('pagos/cuotas-para-cobrar', [PagoController::class, 'cuotasParaCobrar'])->name('pagos.cuotas');
+    Route::get('pagos/cuotas/{cuota}/alumnos', [PagoController::class, 'alumnosParaCuota'])->whereNumber('cuota')->name('pagos.alumnos-cuota');
+    Route::get('mi/pagos-docente', [PagoController::class, 'misPagosDocente'])->name('mi.pagos-docente');
+    Route::get('pagos', [PagoController::class, 'index'])->name('pagos.index');
+    Route::post('pagos', [PagoController::class, 'store'])->middleware('permiso:pagos.create')->name('pagos.store');
+    Route::get('pagos/{pago}', [PagoController::class, 'show'])->whereNumber('pago')->name('pagos.show');
+    Route::put('pagos/{pago}', [PagoController::class, 'update'])->whereNumber('pago')->middleware('permiso:pagos.update')->name('pagos.update');
+    Route::post('pagos/{pago}/anular', [PagoController::class, 'anular'])->whereNumber('pago')->name('pagos.anular');
+    Route::get('pagos/{pago}/comprobante', [PagoController::class, 'comprobante'])->whereNumber('pago')->name('pagos.comprobante');
 
     // Eventos y shows
     Route::get('eventos/catalogo', [EventoController::class, 'catalogo'])->middleware('permiso:eventos.view')->name('eventos.catalogo');

@@ -3,17 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Datos\EliminacionSegura;
+use App\Domain\Finanzas\CuotaService;
 use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\Sede;
 use App\Models\WhatsappMensaje;
-use App\Policies\CuotaPolicy;
 use App\Services\AmbitoSedeService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\Rule;
 
 class CuotaController extends Controller
 {
@@ -108,66 +107,11 @@ class CuotaController extends Controller
         return view('cuotas.create', compact('bloques', 'sedes', 'alumnosActivos'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, CuotaService $cuotas)
     {
-        $hasAlcance = \Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance');
-        $rules = [
-            'nombre' => 'required|string|max:255',
-            'año' => 'required|integer|min:2020|max:2030',
-            'fecha_vencimiento' => 'nullable|date',
-            'monto' => 'required|numeric|min:0',
-            'descripcion' => 'nullable|string|max:500',
-            'activo' => 'boolean',
-            'alumno_ids' => 'nullable|array',
-            'alumno_ids.*' => 'exists:alumnos,id',
-        ];
-        if ($hasAlcance) {
-            $rules['mes'] = 'required|integer|min:1|max:12';
-            $rules['alcance'] = 'required|in:bloque,sede,general';
-            $rules['bloque_id'] = [
-                Rule::requiredIf(fn () => $request->input('alcance') === Cuota::ALCANCE_BLOQUE),
-                'nullable',
-                'exists:bloques,id',
-            ];
-            $rules['sede_id'] = [
-                Rule::requiredIf(fn () => $request->input('alcance') === Cuota::ALCANCE_SEDE),
-                'nullable',
-                'exists:sedes,id',
-            ];
-        } else {
-            $rules['bloque_id'] = 'required|exists:bloques,id';
-            $rules['mes'] = 'nullable|integer|min:1|max:12';
-        }
-
-        $validated = $request->validate($rules);
+        $validated = $request->validate($cuotas->reglas($request->input('alcance')));
         $validated['activo'] = $request->has('activo');
-        $alumnoIds = $validated['alumno_ids'] ?? [];
-        unset($validated['alumno_ids']);
-
-        if ($hasAlcance) {
-            $alcance = $validated['alcance'];
-            if ($alcance === Cuota::ALCANCE_GENERAL) {
-                $validated['bloque_id'] = null;
-                $validated['sede_id'] = null;
-            } elseif ($alcance === Cuota::ALCANCE_SEDE) {
-                $validated['bloque_id'] = null;
-            } else {
-                $validated['sede_id'] = null;
-            }
-
-            $this->asegurarAlcanceCuota('cuotas.create', $alcance, $validated);
-            $this->assertCuotaUnicaEnPeriodo(
-                $validated['año'],
-                (int) ($validated['mes'] ?? 0),
-                $alcance,
-                $validated['bloque_id'] ?? null,
-                $validated['sede_id'] ?? null,
-                null
-            );
-        }
-
-        $cuota = Cuota::create($validated);
-        $cuota->alumnos()->sync(is_array($alumnoIds) ? array_filter($alumnoIds) : []);
+        $cuotas->guardar(null, $validated, $request->user());
 
         return redirect()->route('cuotas.index')->with('success', 'Cuota creada.');
     }
@@ -217,67 +161,12 @@ class CuotaController extends Controller
         return view('cuotas.edit', compact('cuota', 'bloques', 'sedes', 'alumnosActivos'));
     }
 
-    public function update(Request $request, Cuota $cuota)
+    public function update(Request $request, Cuota $cuota, CuotaService $cuotas)
     {
         $this->authorize('update', $cuota);
-        $hasAlcance = \Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance');
-        $rules = [
-            'nombre' => 'required|string|max:255',
-            'año' => 'required|integer|min:2020|max:2030',
-            'fecha_vencimiento' => 'nullable|date',
-            'monto' => 'required|numeric|min:0',
-            'descripcion' => 'nullable|string|max:500',
-            'activo' => 'boolean',
-            'alumno_ids' => 'nullable|array',
-            'alumno_ids.*' => 'exists:alumnos,id',
-        ];
-        if ($hasAlcance) {
-            $rules['mes'] = 'required|integer|min:1|max:12';
-            $rules['alcance'] = 'required|in:bloque,sede,general';
-            $rules['bloque_id'] = [
-                Rule::requiredIf(fn () => $request->input('alcance') === Cuota::ALCANCE_BLOQUE),
-                'nullable',
-                'exists:bloques,id',
-            ];
-            $rules['sede_id'] = [
-                Rule::requiredIf(fn () => $request->input('alcance') === Cuota::ALCANCE_SEDE),
-                'nullable',
-                'exists:sedes,id',
-            ];
-        } else {
-            $rules['bloque_id'] = 'required|exists:bloques,id';
-            $rules['mes'] = 'nullable|integer|min:1|max:12';
-        }
-
-        $validated = $request->validate($rules);
+        $validated = $request->validate($cuotas->reglas($request->input('alcance')));
         $validated['activo'] = $request->has('activo');
-        $alumnoIds = $validated['alumno_ids'] ?? [];
-        unset($validated['alumno_ids']);
-
-        if ($hasAlcance) {
-            $alcance = $validated['alcance'];
-            if ($alcance === Cuota::ALCANCE_GENERAL) {
-                $validated['bloque_id'] = null;
-                $validated['sede_id'] = null;
-            } elseif ($alcance === Cuota::ALCANCE_SEDE) {
-                $validated['bloque_id'] = null;
-            } else {
-                $validated['sede_id'] = null;
-            }
-
-            $this->asegurarAlcanceCuota('cuotas.update', $alcance, $validated);
-            $this->assertCuotaUnicaEnPeriodo(
-                $validated['año'],
-                (int) ($validated['mes'] ?? 0),
-                $alcance,
-                $validated['bloque_id'] ?? null,
-                $validated['sede_id'] ?? null,
-                $cuota->id
-            );
-        }
-
-        $cuota->update($validated);
-        $cuota->alumnos()->sync(is_array($alumnoIds) ? array_filter($alumnoIds) : []);
+        $cuotas->guardar($cuota, $validated, $request->user());
 
         return redirect()->route('cuotas.index')->with('success', 'Cuota actualizada.');
     }
@@ -289,48 +178,5 @@ class CuotaController extends Controller
         $cuota->delete();
 
         return redirect()->route('cuotas.index')->with('success', 'Cuota eliminada.');
-    }
-
-    /**
-     * @param  array<string, mixed>  $datos
-     */
-    private function asegurarAlcanceCuota(string $permiso, string $alcance, array $datos): void
-    {
-        $ok = CuotaPolicy::puedeDefinir(
-            auth()->user(),
-            $permiso,
-            $alcance,
-            isset($datos['sede_id']) ? (int) $datos['sede_id'] : null,
-            isset($datos['bloque_id']) ? (int) $datos['bloque_id'] : null,
-        );
-        if (! $ok) {
-            abort(403, 'No podés definir cuotas con ese alcance.');
-        }
-    }
-
-    /**
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    private function assertCuotaUnicaEnPeriodo(int $año, int $mes, string $alcance, ?int $bloqueId, ?int $sedeId, ?int $exceptId): void
-    {
-        if ($mes < 1) {
-            return;
-        }
-        $q = Cuota::query()->where('año', $año)->where('mes', $mes)->where('alcance', $alcance);
-        if ($exceptId) {
-            $q->where('id', '!=', $exceptId);
-        }
-        if ($alcance === Cuota::ALCANCE_BLOQUE) {
-            $q->where('bloque_id', $bloqueId);
-        } elseif ($alcance === Cuota::ALCANCE_SEDE) {
-            $q->where('sede_id', $sedeId);
-        } else {
-            $q->whereNull('bloque_id')->whereNull('sede_id');
-        }
-        if ($q->exists()) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'mes' => 'Ya existe una cuota de este tipo para ese mes y año.',
-            ]);
-        }
     }
 }
