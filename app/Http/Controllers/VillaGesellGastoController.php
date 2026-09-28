@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\VillaGesell\VillaGesellAdmin;
 use App\Models\VillaGesellGasto;
 use App\Services\VillaGesellGiraService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class VillaGesellGastoController extends Controller
@@ -66,18 +66,8 @@ class VillaGesellGastoController extends Controller
      */
     private function validated(Request $request): array
     {
-        $data = $request->validate([
-            'tipo' => ['required', Rule::in(array_keys(VillaGesellGasto::TIPOS))],
-            'concepto' => ['required', 'string', 'max:160'],
-            'monto' => ['required', 'numeric', 'min:0'],
-            'modo' => ['required', Rule::in(array_keys(VillaGesellGasto::MODOS))],
-            'fecha' => ['nullable', 'date'],
-            'notas' => ['nullable', 'string', 'max:2000'],
-        ]);
-        if ($data['tipo'] === 'diario') {
-            $data['modo'] = 'por_dia';
-        }
+        $admin = app(VillaGesellAdmin::class);
 
-        return $data;
+        return $admin->normalizarGasto($request->validate($admin->reglasGasto()));
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\VillaGesell\VillaGesellAdmin;
 use App\Models\VillaGesellInsumo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class VillaGesellInsumoController extends Controller
@@ -54,13 +54,6 @@ class VillaGesellInsumoController extends Controller
      */
     private function validated(Request $request): array
     {
-        return $request->validate([
-            'nombre' => ['required', 'string', 'max:160'],
-            'categoria' => ['required', Rule::in(array_keys(VillaGesellInsumo::CATEGORIAS))],
-            'cantidad' => ['required', 'numeric', 'min:0'],
-            'unidad' => ['nullable', 'string', 'max:20'],
-            'costo_unitario' => ['required', 'numeric', 'min:0'],
-            'notas' => ['nullable', 'string', 'max:2000'],
-        ]);
+        return $request->validate(app(VillaGesellAdmin::class)->reglasInsumo());
     }
 }

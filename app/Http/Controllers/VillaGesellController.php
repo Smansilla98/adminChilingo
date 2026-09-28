@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\VillaGesell\VillaGesellAdmin;
 use App\Models\VillaGesellInscripto;
 use App\Services\VillaGesellGiraService;
 use Illuminate\Http\RedirectResponse;
@@ -27,27 +28,9 @@ class VillaGesellController extends Controller
         return view('villa-gesell.index', compact('config', 'plan', 'inscriptos'));
     }
 
-    public function updateConfig(Request $request): RedirectResponse
+    public function updateConfig(Request $request, VillaGesellAdmin $admin): RedirectResponse
     {
-        $data = $request->validate([
-            'fecha_inicio' => ['required', 'date'],
-            'fecha_fin' => ['required', 'date', 'after_or_equal:fecha_inicio'],
-            'cupo_maximo' => ['required', 'integer', 'min:1', 'max:500'],
-            'aporte_esperado' => ['required', 'numeric', 'min:0'],
-            'notas' => ['nullable', 'string', 'max:4000'],
-        ]);
-
-        $config = $this->gira->config();
-        $plazas = $this->gira->plazasOcupadas();
-        $maxPlaza = $plazas === [] ? 0 : max($plazas);
-        if ($data['cupo_maximo'] < $maxPlaza) {
-            return back()->withErrors([
-                'cupo_maximo' => "Hay una plaza ocupada n.º {$maxPlaza}. Bajá esa plaza antes de reducir el cupo.",
-            ])->withInput();
-        }
-
-        $config->fill($data)->save();
-        $this->gira->asegurarDias();
+        $admin->actualizarConfig($request->validate($admin->reglasConfig()));
 
         return redirect()->route('villa-gesell.index')->with('success', 'Datos de la gira actualizados.');
     }

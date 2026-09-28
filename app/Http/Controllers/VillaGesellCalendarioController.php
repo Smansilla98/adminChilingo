@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\VillaGesell\VillaGesellAdmin;
 use App\Models\VillaGesellDia;
 use App\Models\VillaGesellTocada;
 use App\Services\VillaGesellGiraService;
@@ -36,38 +37,26 @@ class VillaGesellCalendarioController extends Controller
         return back()->with('success', 'Notas del día guardadas.');
     }
 
-    public function generarSlots(Request $request, VillaGesellDia $dia): RedirectResponse
+    public function generarSlots(Request $request, VillaGesellDia $dia, VillaGesellAdmin $admin): RedirectResponse
     {
-        $data = $request->validate([
-            'cantidad' => ['required', 'integer', 'min:1', 'max:12'],
-        ]);
-        $orden = (int) $dia->tocadas()->max('orden') + 1;
-        for ($i = 0; $i < $data['cantidad']; $i++) {
-            VillaGesellTocada::query()->create([
-                'dia_id' => $dia->id,
-                'orden' => $orden + $i,
-                'hora' => null,
-                'que' => 'Por definir',
-                'donde' => null,
-            ]);
-        }
+        $data = $request->validate(['cantidad' => ['required', 'integer', 'min:1', 'max:12']]);
+        $admin->generarTocadas($dia, (int) $data['cantidad']);
 
         return back()->with('success', 'Se generaron '.$data['cantidad'].' fechas en el día.');
     }
 
-    public function storeTocada(Request $request, VillaGesellDia $dia): RedirectResponse
+    public function storeTocada(Request $request, VillaGesellDia $dia, VillaGesellAdmin $admin): RedirectResponse
     {
-        $data = $this->validatedTocada($request);
-        $data['dia_id'] = $dia->id;
-        $data['orden'] = $data['orden'] ?: ((int) $dia->tocadas()->max('orden') + 1);
-        VillaGesellTocada::query()->create($data);
+        $admin->agregarTocada($dia, $request->validate($admin->reglasTocada()));
 
         return back()->with('success', 'Fecha agregada.');
     }
 
-    public function updateTocada(Request $request, VillaGesellTocada $tocada): RedirectResponse
+    public function updateTocada(Request $request, VillaGesellTocada $tocada, VillaGesellAdmin $admin): RedirectResponse
     {
-        $tocada->update($this->validatedTocada($request));
+        $data = $request->validate($admin->reglasTocada());
+        $data['orden'] = isset($data['orden']) ? (int) $data['orden'] : null;
+        $tocada->update($data);
 
         return back()->with('success', 'Fecha actualizada.');
     }
@@ -77,22 +66,5 @@ class VillaGesellCalendarioController extends Controller
         $tocada->delete();
 
         return back()->with('success', 'Fecha eliminada.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function validatedTocada(Request $request): array
-    {
-        $data = $request->validate([
-            'orden' => ['nullable', 'integer', 'min:1', 'max:99'],
-            'hora' => ['nullable', 'regex:/^\d{2}:\d{2}(:\d{2})?$/'],
-            'que' => ['required', 'string', 'max:160'],
-            'donde' => ['nullable', 'string', 'max:160'],
-            'notas' => ['nullable', 'string', 'max:400'],
-        ]);
-        $data['orden'] = isset($data['orden']) ? (int) $data['orden'] : null;
-
-        return $data;
     }
 }

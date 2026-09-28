@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\SedeController;
 use App\Http\Controllers\Api\V1\ShowController;
 use App\Http\Controllers\Api\V1\UsuarioController;
+use App\Http\Controllers\Api\V1\VillaGesellController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -132,6 +133,38 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
             Route::post('compras/{orden}/estado', [CompraController::class, 'estado'])->whereNumber('orden')->name('compras.estado');
             Route::delete('compras/{orden}', [CompraController::class, 'destroy'])->whereNumber('orden')->name('compras.destroy');
         });
+    });
+
+    // Gira a Villa Gesell
+    Route::middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->prefix('villa-gesell')->name('villa-gesell.')->group(function () {
+        Route::get('/', [VillaGesellController::class, 'resumen'])->name('resumen');
+        Route::put('config', [VillaGesellController::class, 'actualizarConfig'])->name('config');
+        Route::get('catalogo', [VillaGesellController::class, 'catalogo'])->name('catalogo');
+        Route::get('inscriptos', [VillaGesellController::class, 'inscriptos'])->name('inscriptos.index');
+        Route::get('inscriptos/nueva', [VillaGesellController::class, 'nuevaInscripcion'])->name('inscriptos.nueva');
+        Route::post('inscriptos', [VillaGesellController::class, 'inscribir'])->name('inscriptos.store');
+        Route::get('inscriptos/{inscripto}', [VillaGesellController::class, 'verInscripto'])->whereNumber('inscripto')->name('inscriptos.show');
+        Route::put('inscriptos/{inscripto}', [VillaGesellController::class, 'actualizarInscripcion'])->whereNumber('inscripto')->name('inscriptos.update');
+        Route::delete('inscriptos/{inscripto}', [VillaGesellController::class, 'eliminarInscripcion'])->whereNumber('inscripto')->name('inscriptos.destroy');
+        Route::get('alumnos-disponibles', [VillaGesellController::class, 'alumnosDisponibles'])->name('alumnos-disponibles');
+        Route::post('alumnos-rapidos', [VillaGesellController::class, 'alumnoRapido'])->name('alumnos-rapidos');
+        Route::post('profesores-rapidos', [VillaGesellController::class, 'profesorRapido'])->name('profesores-rapidos');
+        Route::post('bloques-rapidos', [VillaGesellController::class, 'bloqueRapido'])->name('bloques-rapidos');
+        Route::get('calendario', [VillaGesellController::class, 'calendario'])->name('calendario');
+        Route::post('dias/generar', [VillaGesellController::class, 'generarDias'])->name('dias.generar');
+        Route::put('dias/{dia}', [VillaGesellController::class, 'actualizarDia'])->whereNumber('dia')->name('dias.update');
+        Route::post('dias/{dia}/slots', [VillaGesellController::class, 'generarTocadas'])->whereNumber('dia')->name('dias.slots');
+        Route::post('dias/{dia}/tocadas', [VillaGesellController::class, 'agregarTocada'])->whereNumber('dia')->name('tocadas.store');
+        Route::put('tocadas/{tocada}', [VillaGesellController::class, 'actualizarTocada'])->whereNumber('tocada')->name('tocadas.update');
+        Route::delete('tocadas/{tocada}', [VillaGesellController::class, 'eliminarTocada'])->whereNumber('tocada')->name('tocadas.destroy');
+        Route::get('gastos', [VillaGesellController::class, 'gastos'])->name('gastos.index');
+        Route::post('gastos', [VillaGesellController::class, 'guardarGasto'])->name('gastos.store');
+        Route::put('gastos/{gasto}', [VillaGesellController::class, 'guardarGasto'])->whereNumber('gasto')->name('gastos.update');
+        Route::delete('gastos/{gasto}', [VillaGesellController::class, 'eliminarGasto'])->whereNumber('gasto')->name('gastos.destroy');
+        Route::get('insumos', [VillaGesellController::class, 'insumos'])->name('insumos.index');
+        Route::post('insumos', [VillaGesellController::class, 'guardarInsumo'])->name('insumos.store');
+        Route::put('insumos/{insumo}', [VillaGesellController::class, 'guardarInsumo'])->whereNumber('insumo')->name('insumos.update');
+        Route::delete('insumos/{insumo}', [VillaGesellController::class, 'eliminarInsumo'])->whereNumber('insumo')->name('insumos.destroy');
     });
 
     // Reportes
