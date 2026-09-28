@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\AuditoriaController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BecaController;
 use App\Http\Controllers\Api\V1\BloqueController;
+use App\Http\Controllers\Api\V1\CompraController;
 use App\Http\Controllers\Api\V1\CuotaController;
 use App\Http\Controllers\Api\V1\EventoController;
 use App\Http\Controllers\Api\V1\FacturacionController;
@@ -101,6 +102,20 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
         Route::get('facturacion/{facturacion}', [FacturacionController::class, 'show'])->whereNumber('facturacion')->name('facturacion.show');
         Route::post('facturacion', [FacturacionController::class, 'store'])->middleware('permiso:facturacion.manage')->name('facturacion.store');
         Route::put('facturacion/{facturacion}', [FacturacionController::class, 'update'])->whereNumber('facturacion')->middleware('permiso:facturacion.manage')->name('facturacion.update');
+    });
+
+    // Compras
+    Route::middleware('permiso:compras.view')->group(function () {
+        Route::get('compras/catalogo', [CompraController::class, 'catalogo'])->name('compras.catalogo');
+        Route::get('compras/plan', [CompraController::class, 'plan'])->name('compras.plan');
+        Route::get('compras', [CompraController::class, 'index'])->name('compras.index');
+        Route::get('compras/{orden}', [CompraController::class, 'show'])->whereNumber('orden')->name('compras.show');
+        Route::middleware('permiso:compras.create')->group(function () {
+            Route::post('compras', [CompraController::class, 'store'])->name('compras.store');
+            Route::put('compras/{orden}', [CompraController::class, 'update'])->whereNumber('orden')->name('compras.update');
+            Route::post('compras/{orden}/estado', [CompraController::class, 'estado'])->whereNumber('orden')->name('compras.estado');
+            Route::delete('compras/{orden}', [CompraController::class, 'destroy'])->whereNumber('orden')->name('compras.destroy');
+        });
     });
 
     // Gastos
