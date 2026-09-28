@@ -3,16 +3,13 @@ import { useMemo, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CampoFecha, hoyIso } from '@/components/form';
 import { Aviso, Boton, Cargando, ErrorVista, Fila, Tenue } from '@/components/ui';
 import { useConexion } from '@/lib/offline';
 import { useGuardarAsistencia, usePlanilla } from '@/lib/queries';
 import { C, E } from '@/lib/theme';
 import type { TipoAsistencia } from '@/lib/types';
 
-const hoyIso = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
 
 // Opciones rápidas: un toque alterna presente/ausente; el resto con toque largo.
 const CICLO: TipoAsistencia[] = ['presente', 'ausencia_injustificada'];
@@ -26,9 +23,10 @@ const ESTILO: Record<TipoAsistencia, { letra: string; color: string; fondo: stri
 };
 
 export default function TomarAsistencia() {
-  const { bloque, nombre } = useLocalSearchParams<{ bloque: string; nombre?: string }>();
+  const { bloque, nombre, fecha: fechaInicial } = useLocalSearchParams<{ bloque: string; nombre?: string; fecha?: string }>();
   const bloqueId = Number(bloque);
-  const [fecha] = useState(hoyIso);
+  // Por defecto hoy; se puede elegir otro día para cargar o corregir una clase pasada.
+  const [fecha, setFecha] = useState(fechaInicial ?? hoyIso());
   const planilla = usePlanilla(bloqueId, fecha);
   const guardar = useGuardarAsistencia(bloqueId, fecha);
   const online = useConexion();
@@ -102,7 +100,7 @@ export default function TomarAsistencia() {
     <SafeAreaView style={s.pantalla} edges={['bottom', 'left', 'right']}>
       <Stack.Screen options={{ title: nombre ?? planilla.data?.bloque.nombre ?? 'Asistencia' }} />
       <View style={s.cabecera}>
-        <Tenue>{new Date(fecha + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</Tenue>
+        <CampoFecha etiqueta="Día de la clase" valor={fecha} maximo={hoyIso()} onChange={(f) => { if (f && f !== fecha) { setFecha(f); setCambios({}); setResultado(null); } }} />
         <Text style={s.contador} accessibilityLiveRegion="polite">
           {cuenta.presentes} presentes · {cuenta.marcados}/{alumnos.length} marcados
         </Text>
