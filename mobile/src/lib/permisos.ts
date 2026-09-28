@@ -11,8 +11,13 @@ export function usePermisos() {
   const me = useMe();
   const lista = me.data?.permisos ?? [];
   const superadmin = !!me.data?.superadmin;
+  const alcances = me.data?.alcances ?? {};
   const puede = (...permisos: string[]) => superadmin || permisos.some((p) => lista.includes(p));
-  return { puede, cargado: !!me.data };
+  /** El permiso vale para toda la escuela (p. ej. crear sedes, gastos sin sede). */
+  const puedeGlobal = (permiso: string) => superadmin || !!alcances[permiso]?.global;
+  const puedeEnSede = (permiso: string, sedeId: number | null | undefined) =>
+    puedeGlobal(permiso) || (!!sedeId && !!alcances[permiso]?.sedes.includes(sedeId));
+  return { puede, puedeGlobal, puedeEnSede, cargado: !!me.data };
 }
 
 export function usePuede(...permisos: string[]): boolean {

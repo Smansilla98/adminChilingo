@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Agenda\EventoService;
 use App\Models\Bloque;
 use App\Models\Evento;
 use App\Models\Profesor;
@@ -13,7 +14,7 @@ class EventoController extends Controller
 {
     public function index(Request $request)
     {
-        $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
+        $tiposEvento = array_keys(EventoService::TIPOS);
 
         try {
             /** @var \App\Models\User|null $user */
@@ -48,7 +49,7 @@ class EventoController extends Controller
     public function create()
     {
         $this->authorize('create', Evento::class);
-        $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
+        $tiposEvento = array_keys(EventoService::TIPOS);
 
         try {
             $sedes = Sede::where('activo', true)->get();
@@ -63,26 +64,10 @@ class EventoController extends Controller
         return view('eventos.create', compact('sedes', 'profesores', 'bloques', 'tiposEvento'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, EventoService $eventos)
     {
         $this->authorize('create', Evento::class);
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'fecha' => 'required|date',
-            'hora_inicio' => 'nullable|date_format:H:i',
-            'hora_fin' => 'nullable|date_format:H:i|after:hora_inicio',
-            'sede_id' => 'nullable|exists:sedes,id',
-            'tipo_evento' => 'required|in:show,taller,muestra,muestra_alumnos,caminata_1er,show_beneficio,gira,villa_gesell,aniversario,fiesta,rifa,otro',
-            'profesor_id' => 'nullable|exists:profesores,id',
-            'bloque_id' => 'nullable|exists:bloques,id',
-            'cantidad_personas' => 'nullable|integer|min:0',
-        ]);
-
-        $validated['created_by'] = auth()->id();
-        $this->asegurarAmbitoEvento('eventos.create', $validated);
-
-        Evento::create($validated);
+        $eventos->crear($request->validate($eventos->reglas()), $request->user());
 
         return redirect()->route('eventos.index')
             ->with('success', 'Evento creado exitosamente.');
@@ -99,7 +84,7 @@ class EventoController extends Controller
     public function edit(Evento $evento)
     {
         $this->authorize('update', $evento);
-        $tiposEvento = ['show', 'taller', 'muestra', 'muestra_alumnos', 'caminata_1er', 'show_beneficio', 'gira', 'villa_gesell', 'aniversario', 'fiesta', 'rifa', 'otro'];
+        $tiposEvento = array_keys(EventoService::TIPOS);
 
         try {
             $sedes = Sede::where('activo', true)->get();
@@ -114,24 +99,10 @@ class EventoController extends Controller
         return view('eventos.edit', compact('evento', 'sedes', 'profesores', 'bloques', 'tiposEvento'));
     }
 
-    public function update(Request $request, Evento $evento)
+    public function update(Request $request, Evento $evento, EventoService $eventos)
     {
         $this->authorize('update', $evento);
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'fecha' => 'required|date',
-            'hora_inicio' => 'nullable|date_format:H:i',
-            'hora_fin' => 'nullable|date_format:H:i|after:hora_inicio',
-            'sede_id' => 'nullable|exists:sedes,id',
-            'tipo_evento' => 'required|in:show,taller,muestra,muestra_alumnos,caminata_1er,show_beneficio,gira,villa_gesell,aniversario,fiesta,rifa,otro',
-            'profesor_id' => 'nullable|exists:profesores,id',
-            'bloque_id' => 'nullable|exists:bloques,id',
-            'cantidad_personas' => 'nullable|integer|min:0',
-        ]);
-
-        $this->asegurarAmbitoEvento('eventos.update', $validated);
-        $evento->update($validated);
+        $eventos->actualizar($evento, $request->validate($eventos->reglas()), $request->user());
 
         return redirect()->route('eventos.index')
             ->with('success', 'Evento actualizado exitosamente.');
@@ -144,23 +115,5 @@ class EventoController extends Controller
 
         return redirect()->route('eventos.index')
             ->with('success', 'Evento eliminado exitosamente.');
-    }
-
-    /**
-     * El evento resultante (bloque / sede / toda la escuela) tiene que quedar dentro del alcance.
-     *
-     * @param  array<string, mixed>  $datos
-     */
-    private function asegurarAmbitoEvento(string $permiso, array $datos): void
-    {
-        $acceso = auth()->user()->acceso();
-        $ok = match (true) {
-            ! empty($datos['bloque_id']) => $acceso->puedeEnBloque($permiso, (int) $datos['bloque_id']),
-            ! empty($datos['sede_id']) => $acceso->puedeEnSede($permiso, (int) $datos['sede_id']),
-            default => $acceso->puedeGlobal($permiso),
-        };
-        if (! $ok) {
-            abort(403, 'No podés crear o mover eventos a ese ámbito.');
-        }
     }
 }

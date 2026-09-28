@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\V1\EventoResource;
 use App\Models\Bloque;
 use App\Models\Evento;
 use App\Models\Show;
@@ -11,24 +10,12 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * Eventos y calendario unificado (clases, eventos, shows) filtrado por el alcance de la persona.
+ * Calendario unificado (clases, eventos, shows) filtrado por el alcance de la persona.
  */
 class AgendaController extends Controller
 {
-    public function eventos(Request $request): AnonymousResourceCollection
-    {
-        $this->authorize('viewAny', Evento::class);
-        $query = Evento::query()->with(['sede:id,nombre', 'bloque:id,nombre'])
-            ->where('fecha', '>=', $request->date('desde')?->toDateString() ?? now()->toDateString())
-            ->orderBy('fecha')->orderBy('hora_inicio');
-        $request->user()->acceso()->alcance('eventos.view')->aplicarEventos($query);
-
-        return EventoResource::collection($query->limit(100)->get());
-    }
-
     /**
      * GET /calendario?desde=YYYY-MM-DD&hasta=YYYY-MM-DD[&sede_id=&bloque_id=]
      * Máximo 62 días por consulta.

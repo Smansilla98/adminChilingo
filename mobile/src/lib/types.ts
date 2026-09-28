@@ -36,6 +36,8 @@ export interface Me {
   contextos: Contexto[];
   contexto_actual: string | null;
   permisos: string[];
+  /** Dónde vale cada permiso (global, sedes, bloques). */
+  alcances?: Record<string, { global: boolean; sedes: number[]; bloques: number[] }>;
   modulos: Modulo[];
   superadmin: boolean;
 }

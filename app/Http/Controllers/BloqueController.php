@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Agenda\BloqueService;
 use App\Domain\Datos\EliminacionSegura;
 use App\Models\Bloque;
 use App\Models\Profesor;
@@ -33,26 +34,11 @@ class BloqueController extends Controller
         return view('bloques.create', compact('profesores', 'sedes', 'tamboresDisponibles'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, BloqueService $bloques)
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'año' => 'required|integer|min:1|max:6',
-            'profesor_id' => 'nullable|exists:profesores,id',
-            'corresponde_a' => 'nullable|string|max:255',
-            'sede_id' => 'required|exists:sedes,id',
-            'cantidad_max_alumnos' => 'required|integer|min:1',
-            'tambores' => 'nullable|array',
-            'tambores.*' => 'string|max:100',
-            'activo' => 'boolean',
-        ]);
-
+        $validated = $request->validate($bloques->reglas());
         $validated['activo'] = $request->boolean('activo');
-        $validated['tambores'] = $request->input('tambores') ? array_values($request->input('tambores')) : null;
-        $this->asegurarSedeGestionable((int) $validated['sede_id']);
-
-        $bloque = Bloque::create($validated);
-        $bloque->syncProfesorTitularEnPivot();
+        $bloques->crear($validated, $request->user());
 
         return redirect()->route('bloques.index')
             ->with('success', 'Bloque creado exitosamente.');
@@ -77,29 +63,12 @@ class BloqueController extends Controller
         return view('bloques.edit', compact('bloque', 'profesores', 'sedes', 'tamboresDisponibles'));
     }
 
-    public function update(Request $request, Bloque $bloque)
+    public function update(Request $request, Bloque $bloque, BloqueService $bloques)
     {
         $this->authorize('update', $bloque);
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'año' => 'required|integer|min:1|max:6',
-            'profesor_id' => 'nullable|exists:profesores,id',
-            'corresponde_a' => 'nullable|string|max:255',
-            'sede_id' => 'required|exists:sedes,id',
-            'cantidad_max_alumnos' => 'required|integer|min:1',
-            'tambores' => 'nullable|array',
-            'tambores.*' => 'string|max:100',
-            'activo' => 'boolean',
-        ]);
-
+        $validated = $request->validate($bloques->reglas());
         $validated['activo'] = $request->boolean('activo');
-        $validated['tambores'] = $request->input('tambores') ? array_values($request->input('tambores')) : null;
-        if ((int) $validated['sede_id'] !== (int) $bloque->sede_id) {
-            $this->asegurarSedeGestionable((int) $validated['sede_id']);
-        }
-
-        $bloque->update($validated);
-        $bloque->syncProfesorTitularEnPivot();
+        $bloques->actualizar($bloque, $validated, $request->user());
 
         return redirect()->route('bloques.index')
             ->with('success', 'Bloque actualizado exitosamente.');
@@ -122,12 +91,5 @@ class BloqueController extends Controller
         $alcance = auth()->user()->acceso()->alcance('bloques.manage');
 
         return $alcance->aplicarPorSede($query, 'id')->get();
-    }
-
-    private function asegurarSedeGestionable(int $sedeId): void
-    {
-        if (! auth()->user()->acceso()->puedeEnSede('bloques.manage', $sedeId)) {
-            abort(403, 'No podés gestionar bloques en esa sede.');
-        }
     }
 }

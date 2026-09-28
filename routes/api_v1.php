@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\AuditoriaController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BecaController;
 use App\Http\Controllers\Api\V1\BloqueController;
+use App\Http\Controllers\Api\V1\EventoController;
 use App\Http\Controllers\Api\V1\FinanzasController;
 use App\Http\Controllers\Api\V1\InicioController;
 use App\Http\Controllers\Api\V1\InventarioController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Api\V1\PartituraController;
 use App\Http\Controllers\Api\V1\PersonaController;
 use App\Http\Controllers\Api\V1\ProfesorController;
 use App\Http\Controllers\Api\V1\SedeController;
+use App\Http\Controllers\Api\V1\ShowController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,9 +35,21 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('me', MeController::class)->name('me');
     Route::get('inicio', InicioController::class)->name('inicio');
 
+    // Sedes
     Route::get('sedes', [SedeController::class, 'index'])->name('sedes.index');
+    Route::get('sedes/catalogo', [SedeController::class, 'catalogo'])->name('sedes.catalogo');
+    Route::post('sedes', [SedeController::class, 'store'])->middleware('permiso:sedes.manage')->name('sedes.store');
+    Route::get('sedes/{sede}', [SedeController::class, 'show'])->whereNumber('sede')->middleware('permiso:sedes.view')->name('sedes.show');
+    Route::put('sedes/{sede}', [SedeController::class, 'update'])->whereNumber('sede')->middleware('permiso:sedes.manage')->name('sedes.update');
+    Route::delete('sedes/{sede}', [SedeController::class, 'destroy'])->whereNumber('sede')->middleware('permiso:sedes.delete')->name('sedes.destroy');
     Route::get('bloques', [BloqueController::class, 'index'])->name('bloques.index');
-    Route::get('bloques/{bloque}', [BloqueController::class, 'show'])->name('bloques.show');
+    Route::get('bloques/catalogo', [BloqueController::class, 'catalogo'])->name('bloques.catalogo');
+    Route::post('bloques', [BloqueController::class, 'store'])->middleware('permiso:bloques.manage')->name('bloques.store');
+    Route::get('bloques/{bloque}', [BloqueController::class, 'show'])->whereNumber('bloque')->name('bloques.show');
+    Route::put('bloques/{bloque}', [BloqueController::class, 'update'])->whereNumber('bloque')->middleware('permiso:bloques.manage')->name('bloques.update');
+    Route::delete('bloques/{bloque}', [BloqueController::class, 'destroy'])->whereNumber('bloque')->middleware('permiso:bloques.delete')->name('bloques.destroy');
+    Route::post('bloques/{bloque}/horarios', [BloqueController::class, 'agregarHorario'])->whereNumber('bloque')->middleware('permiso:bloques.manage')->name('bloques.horarios.store');
+    Route::delete('bloque-horarios/{horario}', [BloqueController::class, 'quitarHorario'])->whereNumber('horario')->middleware('permiso:bloques.manage')->name('bloques.horarios.destroy');
     Route::get('bloques/{bloque}/alumnos', [BloqueController::class, 'alumnos'])->name('bloques.alumnos');
 
     Route::get('bloques/{bloque}/asistencia', [AsistenciaController::class, 'planilla'])->name('asistencia.planilla');
@@ -70,7 +84,18 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('pagos/{pago}', [FinanzasController::class, 'pago'])->name('pagos.show');
     Route::post('pagos/{pago}/anular', [FinanzasController::class, 'anular'])->name('pagos.anular');
 
-    Route::get('eventos', [AgendaController::class, 'eventos'])->name('eventos.index');
+    // Eventos y shows
+    Route::get('eventos/catalogo', [EventoController::class, 'catalogo'])->middleware('permiso:eventos.view')->name('eventos.catalogo');
+    Route::get('eventos', [EventoController::class, 'index'])->name('eventos.index');
+    Route::post('eventos', [EventoController::class, 'store'])->middleware('permiso:eventos.create')->name('eventos.store');
+    Route::get('eventos/{evento}', [EventoController::class, 'show'])->whereNumber('evento')->name('eventos.show');
+    Route::put('eventos/{evento}', [EventoController::class, 'update'])->whereNumber('evento')->middleware('permiso:eventos.update')->name('eventos.update');
+    Route::delete('eventos/{evento}', [EventoController::class, 'destroy'])->whereNumber('evento')->middleware('permiso:eventos.delete')->name('eventos.destroy');
+    Route::get('shows', [ShowController::class, 'index'])->middleware('permiso:shows.view')->name('shows.index');
+    Route::post('shows', [ShowController::class, 'store'])->middleware('permiso:shows.manage')->name('shows.store');
+    Route::get('shows/{show}', [ShowController::class, 'show'])->whereNumber('show')->middleware('permiso:shows.view')->name('shows.show');
+    Route::put('shows/{show}', [ShowController::class, 'update'])->whereNumber('show')->middleware('permiso:shows.manage')->name('shows.update');
+    Route::delete('shows/{show}', [ShowController::class, 'destroy'])->whereNumber('show')->middleware('permiso:shows.manage')->name('shows.destroy');
     Route::get('calendario', [AgendaController::class, 'calendario'])->name('calendario');
 
     Route::get('inventario', [InventarioController::class, 'index'])->name('inventario.index');

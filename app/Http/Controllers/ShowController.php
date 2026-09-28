@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Agenda\ShowService;
 use App\Models\Bloque;
 use App\Models\Show;
 use Illuminate\Database\QueryException;
@@ -37,33 +38,11 @@ class ShowController extends Controller
         return view('shows.create', compact('bloques'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ShowService $shows)
     {
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'fecha' => 'required|date',
-            'hora_inicio' => 'nullable|date_format:H:i',
-            'hora_fin' => 'nullable|date_format:H:i|after_or_equal:hora_inicio',
-            'lugar' => 'nullable|string|max:255',
-            'descripcion' => 'nullable|string',
-            'convocatoria_abierta' => 'boolean',
-            'bloque_ids' => 'nullable|array',
-            'bloque_ids.*' => 'exists:bloques,id',
-        ]);
+        $validated = $request->validate($shows->reglas());
         $validated['convocatoria_abierta'] = $request->boolean('convocatoria_abierta');
-        $this->asegurarBloquesGestionables($validated['bloque_ids'] ?? []);
-        $show = Show::create([
-            'titulo' => $validated['titulo'],
-            'fecha' => $validated['fecha'],
-            'hora_inicio' => $validated['hora_inicio'] ? $validated['hora_inicio'].':00' : null,
-            'hora_fin' => $validated['hora_fin'] ? $validated['hora_fin'].':00' : null,
-            'lugar' => $validated['lugar'] ?? null,
-            'descripcion' => $validated['descripcion'] ?? null,
-            'convocatoria_abierta' => $validated['convocatoria_abierta'],
-        ]);
-        if (! empty($validated['bloque_ids'])) {
-            $show->bloques()->sync($validated['bloque_ids']);
-        }
+        $shows->guardar(null, $validated, $request->user());
 
         return redirect()->route('shows.index')->with('success', 'Show creado.');
     }
@@ -88,63 +67,21 @@ class ShowController extends Controller
         return view('shows.edit', compact('show', 'bloques'));
     }
 
-    public function update(Request $request, Show $show)
+    public function update(Request $request, Show $show, ShowService $shows)
     {
         $this->authorize('update', $show);
-        $validated = $request->validate([
-            'titulo' => 'required|string|max:255',
-            'fecha' => 'required|date',
-            'hora_inicio' => 'nullable|date_format:H:i',
-            'hora_fin' => 'nullable|date_format:H:i|after_or_equal:hora_inicio',
-            'lugar' => 'nullable|string|max:255',
-            'descripcion' => 'nullable|string',
-            'convocatoria_abierta' => 'boolean',
-            'bloque_ids' => 'nullable|array',
-            'bloque_ids.*' => 'exists:bloques,id',
-        ]);
+        $validated = $request->validate($shows->reglas());
         $validated['convocatoria_abierta'] = $request->boolean('convocatoria_abierta');
-        $this->asegurarBloquesGestionables($validated['bloque_ids'] ?? []);
-        $show->update([
-            'titulo' => $validated['titulo'],
-            'fecha' => $validated['fecha'],
-            'hora_inicio' => $validated['hora_inicio'] ? $validated['hora_inicio'].':00' : null,
-            'hora_fin' => $validated['hora_fin'] ? $validated['hora_fin'].':00' : null,
-            'lugar' => $validated['lugar'] ?? null,
-            'descripcion' => $validated['descripcion'] ?? null,
-            'convocatoria_abierta' => $validated['convocatoria_abierta'],
-        ]);
-        $show->bloques()->sync($validated['bloque_ids'] ?? []);
+        $shows->guardar($show, $validated, $request->user());
 
         return redirect()->route('shows.index')->with('success', 'Show actualizado.');
     }
 
-    public function destroy(Show $show)
+    public function destroy(Show $show, ShowService $shows)
     {
         $this->authorize('delete', $show);
-        $show->bloques()->detach();
-        $show->delete();
+        $shows->eliminar($show);
 
         return redirect()->route('shows.index')->with('success', 'Show eliminado.');
-    }
-
-    /**
-     * Sin alcance global, solo se convoca a bloques propios.
-     *
-     * @param  list<int|string>  $bloqueIds
-     */
-    private function asegurarBloquesGestionables(array $bloqueIds): void
-    {
-        $acceso = auth()->user()->acceso();
-        if ($acceso->puedeGlobal('shows.manage')) {
-            return;
-        }
-        if ($bloqueIds === []) {
-            abort(403, 'Elegí al menos un bloque de tu alcance.');
-        }
-        foreach ($bloqueIds as $id) {
-            if (! $acceso->puedeEnBloque('shows.manage', (int) $id)) {
-                abort(403, 'No podés convocar bloques fuera de tu alcance.');
-            }
-        }
     }
 }

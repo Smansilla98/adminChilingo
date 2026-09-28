@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -11,6 +12,14 @@ const sumarDias = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth()
 
 const COLOR: Record<string, string> = { clase: C.info, show: C.acento, convocatoria: C.acento, taller: C.exito, muestra: C.alerta, reunion: C.tenue };
 const NOMBRE: Record<string, string> = { clase: 'Clase', show: 'Show', convocatoria: 'Convocatoria', taller: 'Taller', muestra: 'Muestra', gira: 'Gira', otro: 'Evento' };
+
+/** Abre el detalle según el origen del ítem: evento-12, show-3, clase-{bloque}-{fecha}. */
+function abrir(i: ItemAgenda) {
+  const [origen, id] = i.id.split('-');
+  if (origen === 'evento') router.push({ pathname: '/eventos/[id]', params: { id } } as never);
+  else if (origen === 'show') router.push({ pathname: '/shows/[id]', params: { id } } as never);
+  else if (origen === 'clase' && i.bloque_id) router.push({ pathname: '/bloques/[id]', params: { id: String(i.bloque_id) } } as never);
+}
 
 export default function Agenda() {
   const [inicio, setInicio] = useState(() => new Date());
@@ -38,7 +47,7 @@ export default function Agenda() {
         <View key={fecha} style={{ gap: E.s }}>
           <Subtitulo>{new Date(fecha + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</Subtitulo>
           {items.map((i) => (
-            <Tarjeta key={i.id} acento={COLOR[i.tipo] ?? C.tenue} style={s.item}>
+            <Tarjeta key={i.id} acento={COLOR[i.tipo] ?? C.tenue} style={s.item} onPress={() => abrir(i)}>
               <Fila>
                 <Texto style={{ fontWeight: '800', flex: 1 }}>{i.inicio ? `${i.inicio}${i.fin ? '–' + i.fin : ''} · ` : ''}{i.titulo}</Texto>
                 <Chip texto={NOMBRE[i.tipo] ?? i.tipo} />
