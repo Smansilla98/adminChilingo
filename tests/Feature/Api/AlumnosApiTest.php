@@ -69,4 +69,13 @@ class AlumnosApiTest extends TestCase
         $this->deleteJson("/api/v1/alumnos/{$id}")->assertStatus(422);
         $this->assertNotNull(Alumno::query()->find($id));
     }
+
+    public function test_exportar_excel_requiere_permiso(): void
+    {
+        $this->inscribirAlumno($this->persona('Ana'), $this->bloque($this->sede('Palomar')));
+        Sanctum::actingAs($this->usuario('Sin permiso'));
+        $this->get('/api/v1/alumnos/exportar')->assertForbidden();
+        Sanctum::actingAs($this->admin());
+        $this->get('/api/v1/alumnos/exportar')->assertOk()->assertHeader('content-disposition');
+    }
 }

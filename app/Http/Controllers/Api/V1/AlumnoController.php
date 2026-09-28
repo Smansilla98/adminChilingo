@@ -127,6 +127,12 @@ class AlumnoController extends Controller
         ];
     }
 
+    /** Excel de alumnos del alcance (mismo archivo y filtros que el panel web). */
+    public function exportar(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AlumnosExport($request, $request->user()), 'alumnos_'.now()->format('Y-m-d').'.xlsx');
+    }
+
     public function estadoCuenta(Request $request, Alumno $alumno, EstadoCuentaService $cuentas): JsonResponse
     {
         $this->authorize('verFinanzas', $alumno);

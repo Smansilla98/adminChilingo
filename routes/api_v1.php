@@ -99,6 +99,7 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::post('mi/comprobantes', [ComprobanteController::class, 'enviarPropio'])->middleware('throttle:10,1')->name('mi.comprobantes.store');
 
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumnos.index');
+    Route::get('alumnos/exportar', [AlumnoController::class, 'exportar'])->middleware(['permiso:alumnos.export', 'throttle:10,1'])->name('alumnos.exportar');
     Route::get('alumnos/catalogo', [AlumnoController::class, 'catalogo'])->name('alumnos.catalogo');
     Route::post('alumnos', [AlumnoController::class, 'store'])->middleware('permiso:alumnos.create')->name('alumnos.store');
     Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->whereNumber('alumno')->name('alumnos.show');
