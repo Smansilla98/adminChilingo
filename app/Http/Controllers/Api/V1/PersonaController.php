@@ -133,7 +133,7 @@ class PersonaController extends Controller
                 'id' => $e->id,
                 'titulo' => $e->titulo,
                 'fecha' => $e->fecha?->toDateString(),
-                'hora_inicio' => $e->hora_inicio ? substr((string) $e->hora_inicio, 0, 5) : null,
+                'hora_inicio' => $e->hora_inicio?->format('H:i'),
                 'sede' => $e->sede?->nombre,
             ])->values(),
             'inventario' => $datos['inventario']->map(fn (InventarioItem $i) => [

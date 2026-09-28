@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\NotificacionController;
 use App\Http\Controllers\Api\V1\PartituraController;
 use App\Http\Controllers\Api\V1\PersonaController;
+use App\Http\Controllers\Api\V1\ProfesorController;
 use App\Http\Controllers\Api\V1\SedeController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,15 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('becas', [BecaController::class, 'index'])->name('becas.index');
     Route::get('becas/{beca}', [BecaController::class, 'show'])->name('becas.show');
     Route::put('becas/{beca}', [BecaController::class, 'update'])->middleware('permiso:becas.manage')->name('becas.update');
+    // Profesores (plantel docente)
+    Route::get('profesores/catalogo', [ProfesorController::class, 'catalogo'])->name('profesores.catalogo');
+    Route::get('profesores/usuarios-disponibles', [ProfesorController::class, 'usuariosDisponibles'])->name('profesores.usuarios');
+    Route::get('profesores', [ProfesorController::class, 'index'])->middleware('permiso:profesores.view')->name('profesores.index');
+    Route::post('profesores', [ProfesorController::class, 'store'])->middleware('permiso:profesores.create')->name('profesores.store');
+    Route::get('profesores/{profesor}', [ProfesorController::class, 'show'])->whereNumber('profesor')->name('profesores.show');
+    Route::put('profesores/{profesor}', [ProfesorController::class, 'update'])->whereNumber('profesor')->middleware('permiso:profesores.update')->name('profesores.update');
+    Route::delete('profesores/{profesor}', [ProfesorController::class, 'destroy'])->whereNumber('profesor')->middleware('permiso:profesores.delete')->name('profesores.destroy');
+
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumnos.index');
     Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->name('alumnos.show');
     Route::get('alumnos/{alumno}/estado-cuenta', [AlumnoController::class, 'estadoCuenta'])->name('alumnos.estado-cuenta');
