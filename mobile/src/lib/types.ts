@@ -10,6 +10,8 @@ export interface Funcion {
   bloque_id: number | null;
   origen: string;
   origen_etiqueta: string;
+  asignacion_id?: number | null;
+  editable?: boolean;
 }
 
 export interface Contexto {

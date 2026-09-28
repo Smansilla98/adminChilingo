@@ -34,6 +34,19 @@ class PersonaService
         return Persona::query()->create($datos + ['estado' => 'activo']);
     }
 
+    /**
+     * Edición de datos personales: se reflejan en todas sus fichas (alumno, docente).
+     *
+     * @param  array<string, mixed>  $datos
+     */
+    public function actualizar(Persona $persona, array $datos): Persona
+    {
+        $datos['dni'] = Persona::normalizarDni($datos['dni'] ?? null);
+        $persona->update($datos);
+
+        return $persona;
+    }
+
     public function buscarPorDni(?string $dni): ?Persona
     {
         $dni = Persona::normalizarDni($dni);

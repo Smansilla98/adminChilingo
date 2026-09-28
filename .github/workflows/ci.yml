@@ -139,7 +139,7 @@ jobs:
           echo "::error title=Tests MySQL::${resumen}"
 
   mobile:
-    name: App móvil (typecheck · lint · bundle)
+    name: App móvil (typecheck · lint · tests · bundle)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -162,6 +162,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Tests (pantallas y cliente API con la API simulada)
+        run: npm test -- --ci
 
       - name: Bundle Android + iOS (sin compilar nativo)
         env:

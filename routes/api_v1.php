@@ -4,7 +4,9 @@ use App\Http\Controllers\Api\V1\AccesosController;
 use App\Http\Controllers\Api\V1\AgendaController;
 use App\Http\Controllers\Api\V1\AlumnoController;
 use App\Http\Controllers\Api\V1\AsistenciaController;
+use App\Http\Controllers\Api\V1\AuditoriaController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BecaController;
 use App\Http\Controllers\Api\V1\BloqueController;
 use App\Http\Controllers\Api\V1\FinanzasController;
 use App\Http\Controllers\Api\V1\InicioController;
@@ -38,8 +40,16 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('bloques/{bloque}/asistencia', [AsistenciaController::class, 'planilla'])->name('asistencia.planilla');
     Route::post('bloques/{bloque}/asistencia', [AsistenciaController::class, 'guardar'])->name('asistencia.guardar');
 
+    // Personas (ficha central) y becas
     Route::get('personas', [PersonaController::class, 'index'])->name('personas.index');
+    Route::post('personas', [PersonaController::class, 'store'])->middleware('permiso:personas.create')->name('personas.store');
     Route::get('personas/{persona}', [PersonaController::class, 'show'])->name('personas.show');
+    Route::put('personas/{persona}', [PersonaController::class, 'update'])->middleware('permiso:personas.update')->name('personas.update');
+    Route::post('personas/{persona}/fusionar', [PersonaController::class, 'fusionar'])->middleware('permiso:personas.merge')->name('personas.fusionar');
+    Route::post('personas/{persona}/becas', [BecaController::class, 'store'])->middleware('permiso:becas.manage')->name('becas.store');
+    Route::get('becas', [BecaController::class, 'index'])->name('becas.index');
+    Route::get('becas/{beca}', [BecaController::class, 'show'])->name('becas.show');
+    Route::put('becas/{beca}', [BecaController::class, 'update'])->middleware('permiso:becas.manage')->name('becas.update');
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumnos.index');
     Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->name('alumnos.show');
     Route::get('alumnos/{alumno}/estado-cuenta', [AlumnoController::class, 'estadoCuenta'])->name('alumnos.estado-cuenta');
@@ -69,6 +79,13 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::post('notificaciones/{id}/leer', [NotificacionController::class, 'leer'])->name('notificaciones.leer');
     Route::post('dispositivos', [NotificacionController::class, 'registrarDispositivo'])->name('dispositivos.store');
     Route::delete('dispositivos', [NotificacionController::class, 'quitarDispositivo'])->name('dispositivos.destroy');
+
+    // Auditoría (solo lectura)
+    Route::middleware('permiso:auditoria.view')->group(function () {
+        Route::get('auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
+        Route::get('auditoria/catalogo', [AuditoriaController::class, 'catalogo'])->name('auditoria.catalogo');
+        Route::get('auditoria/{auditoria}', [AuditoriaController::class, 'show'])->whereNumber('auditoria')->name('auditoria.show');
+    });
 
     Route::get('accesos/catalogo', [AccesosController::class, 'catalogo'])->name('accesos.catalogo');
     Route::get('usuarios', [AccesosController::class, 'usuarios'])->name('usuarios.index');
