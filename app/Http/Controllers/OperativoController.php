@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Operativo\CierreMesService;
 use App\Models\Asistencia;
 use App\Models\Bloque;
 use App\Models\ComprobanteCuotaAlumno;
@@ -108,7 +109,7 @@ class OperativoController extends Controller
         ]);
     }
 
-    public function cierreMes()
+    public function cierreMes(CierreMesService $cierre)
     {
         /** @var User $user */
         $user = auth()->user();
@@ -117,80 +118,16 @@ class OperativoController extends Controller
             abort(403);
         }
 
-        $mes = (int) request('mes', now()->month);
+        $mes = max(1, min(12, (int) request('mes', now()->month)));
         $anio = (int) request('anio', now()->year);
-        $mes = max(1, min(12, $mes));
 
-        $checklist = [];
-
-        // 1) Asistencias
-        $bloques = Schema::hasTable('bloques')
-            ? Bloque::query()->where('activo', true)->with('sede')->orderBy('nombre')->get()
-            : collect();
-        $bloquesSinAsist = 0;
-        foreach ($bloques as $b) {
-            $count = Schema::hasTable('asistencias')
-                ? Asistencia::query()
-                    ->where('bloque_id', $b->id)
-                    ->whereMonth('fecha', $mes)
-                    ->whereYear('fecha', $anio)
-                    ->count()
-                : 0;
-            if ($count === 0) {
-                $bloquesSinAsist++;
-            }
-        }
-        $checklist[] = [
-            'clave' => 'asistencias',
-            'titulo' => 'Asistencias del mes',
-            'ok' => $bloquesSinAsist === 0,
-            'detalle' => $bloquesSinAsist === 0
-                ? 'Todos los bloques activos tienen al menos un registro.'
-                : "{$bloquesSinAsist} bloque(s) sin ninguna asistencia cargada.",
-            'href' => route('asistencias.index', ['mes' => $mes, 'año' => $anio]),
-            'accion' => 'Ir a asistencias',
+        $enlaces = [
+            'asistencias' => [route('asistencias.index', ['mes' => $mes, 'año' => $anio]), 'Ir a asistencias'],
+            'comprobantes' => [route('comprobantes-cuota-alumnos.index', ['estado' => 'pendiente']), 'Revisar comprobantes'],
+            'cuotas' => [route('cuotas.index'), 'Ver cuotas'],
+            'facturacion' => [route('facturacion-mensual.index'), 'Abrir facturación'],
         ];
-
-        // 2) Comprobantes pendientes
-        $compPend = Schema::hasTable('comprobantes_cuota_alumnos')
-            ? ComprobanteCuotaAlumno::query()->where('estado', 'pendiente')->count()
-            : 0;
-        $checklist[] = [
-            'clave' => 'comprobantes',
-            'titulo' => 'Comprobantes por revisar',
-            'ok' => $compPend === 0,
-            'detalle' => $compPend === 0 ? 'No hay comprobantes pendientes.' : "{$compPend} pendiente(s).",
-            'href' => route('comprobantes-cuota-alumnos.index', ['estado' => 'pendiente']),
-            'accion' => 'Revisar comprobantes',
-        ];
-
-        // 3) Cuotas del mes
-        $cuotasMes = Schema::hasTable('cuotas')
-            ? Cuota::query()->where('activo', true)->where('mes', $mes)->where('año', $anio)->count()
-            : 0;
-        $checklist[] = [
-            'clave' => 'cuotas',
-            'titulo' => 'Cuotas emitidas del mes',
-            'ok' => $cuotasMes > 0,
-            'detalle' => $cuotasMes > 0 ? "{$cuotasMes} cuota(s) activas." : 'No hay cuotas cargadas para este mes.',
-            'href' => route('cuotas.index'),
-            'accion' => 'Ver cuotas',
-        ];
-
-        // 4) Facturación (si existe ruta)
-        $factHref = null;
-        try {
-            $factHref = route('facturacion-mensual.index');
-        } catch (\Throwable $e) {
-        }
-        $checklist[] = [
-            'clave' => 'facturacion',
-            'titulo' => 'Facturación mensual',
-            'ok' => null,
-            'detalle' => 'Revisá que el mes esté generado y coherente con los cobros.',
-            'href' => $factHref,
-            'accion' => $factHref ? 'Abrir facturación' : null,
-        ];
+        $checklist = array_map(fn ($item) => $item + ['href' => $enlaces[$item['clave']][0] ?? null, 'accion' => $enlaces[$item['clave']][1] ?? null], $cierre->checklist($mes, $anio));
 
         $mesLabel = Carbon::createFromDate($anio, $mes, 1)->locale('es')->translatedFormat('F Y');
 

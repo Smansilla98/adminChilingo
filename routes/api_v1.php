@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\BecaController;
 use App\Http\Controllers\Api\V1\BloqueController;
 use App\Http\Controllers\Api\V1\CuotaController;
 use App\Http\Controllers\Api\V1\EventoController;
+use App\Http\Controllers\Api\V1\FacturacionController;
 use App\Http\Controllers\Api\V1\GastoController;
 use App\Http\Controllers\Api\V1\InicioController;
 use App\Http\Controllers\Api\V1\InventarioController;
@@ -92,6 +93,16 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('cuotas/{cuota}', [CuotaController::class, 'show'])->whereNumber('cuota')->name('cuotas.show');
     Route::put('cuotas/{cuota}', [CuotaController::class, 'update'])->whereNumber('cuota')->middleware('permiso:cuotas.update')->name('cuotas.update');
     Route::delete('cuotas/{cuota}', [CuotaController::class, 'destroy'])->whereNumber('cuota')->middleware('permiso:cuotas.delete')->name('cuotas.destroy');
+    // Facturación mensual y cierre de mes
+    Route::middleware('permiso:facturacion.view')->group(function () {
+        Route::get('facturacion', [FacturacionController::class, 'index'])->name('facturacion.index');
+        Route::get('facturacion/catalogo', [FacturacionController::class, 'catalogo'])->name('facturacion.catalogo');
+        Route::get('facturacion/cierre-mes', [FacturacionController::class, 'cierreMes'])->name('facturacion.cierre');
+        Route::get('facturacion/{facturacion}', [FacturacionController::class, 'show'])->whereNumber('facturacion')->name('facturacion.show');
+        Route::post('facturacion', [FacturacionController::class, 'store'])->middleware('permiso:facturacion.manage')->name('facturacion.store');
+        Route::put('facturacion/{facturacion}', [FacturacionController::class, 'update'])->whereNumber('facturacion')->middleware('permiso:facturacion.manage')->name('facturacion.update');
+    });
+
     // Gastos
     Route::get('gastos/catalogo', [GastoController::class, 'catalogo'])->name('gastos.catalogo');
     Route::get('gastos', [GastoController::class, 'index'])->name('gastos.index');

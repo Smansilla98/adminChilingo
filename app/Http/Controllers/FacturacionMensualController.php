@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Finanzas\FacturacionService;
 use App\Models\FacturacionMensual;
 use App\Models\Sede;
 use Illuminate\Database\QueryException;
@@ -56,38 +57,16 @@ class FacturacionMensualController extends Controller
         return view('facturacion-mensual.create', compact('sedes', 'meses'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, FacturacionService $facturacion)
     {
-        $validated = $request->validate([
-            'sede_id' => 'nullable|exists:sedes,id',
-            'año' => 'required|integer|min:2020|max:2030',
-            'mes' => 'required|integer|min:1|max:12',
-            'cantidad_alumnos' => 'required|integer|min:0',
-            'monto_facturado' => 'required|numeric|min:0',
-            'monto_previsto' => 'nullable|numeric|min:0',
-            'notas' => 'nullable|string|max:500',
-        ]);
-
-        $existsQuery = FacturacionMensual::query()
-            ->where('año', $validated['año'])
-            ->where('mes', $validated['mes']);
-        if (! empty($validated['sede_id'])) {
-            $existsQuery->where('sede_id', $validated['sede_id']);
-        } else {
-            $existsQuery->whereNull('sede_id');
-        }
-        $exists = $existsQuery->first();
-        if ($exists) {
-            return back()->withErrors(['mes' => 'Ya existe facturación para esa sede, año y mes.'])->withInput();
-        }
-
-        FacturacionMensual::create($validated);
+        $facturacion->registrar($request->validate($facturacion->reglas()), $request->user());
 
         return redirect()->route('facturacion-mensual.index')->with('success', 'Facturación mensual registrada.');
     }
 
-    public function edit(FacturacionMensual $facturacionMensual)
+    public function edit(FacturacionMensual $facturacionMensual, FacturacionService $facturacion)
     {
+        abort_unless($facturacion->puedeGestionar(auth()->user(), $facturacionMensual->sede_id), 403, 'No podés editar la facturación de esa sede.');
         $sedes = collect();
         if (Schema::hasTable('facturacion_mensual') && Schema::hasTable('sedes')) {
             try {
@@ -102,15 +81,9 @@ class FacturacionMensualController extends Controller
         return view('facturacion-mensual.edit', compact('facturacionMensual', 'sedes', 'meses'));
     }
 
-    public function update(Request $request, FacturacionMensual $facturacionMensual)
+    public function update(Request $request, FacturacionMensual $facturacionMensual, FacturacionService $facturacion)
     {
-        $validated = $request->validate([
-            'cantidad_alumnos' => 'required|integer|min:0',
-            'monto_facturado' => 'required|numeric|min:0',
-            'monto_previsto' => 'nullable|numeric|min:0',
-            'notas' => 'nullable|string|max:500',
-        ]);
-        $facturacionMensual->update($validated);
+        $facturacion->actualizar($facturacionMensual, $request->validate($facturacion->reglas(true)), $request->user());
 
         return redirect()->route('facturacion-mensual.index')->with('success', 'Facturación actualizada.');
     }
