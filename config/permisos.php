@@ -300,6 +300,7 @@ return [
         'shows' => ['etiqueta' => 'Shows', 'icono' => 'theater_comedy', 'permisos' => ['shows.view']],
         'partituras' => ['etiqueta' => 'Partituras', 'icono' => 'music_note', 'permisos' => ['partituras.view']],
         'cuotas' => ['etiqueta' => 'Cuotas', 'icono' => 'receipt_long', 'permisos' => ['cuotas.view']],
+        'comprobantes' => ['etiqueta' => 'Comprobantes de cuota', 'icono' => 'fact_check', 'permisos' => ['comprobantes.view']],
         'becas' => ['etiqueta' => 'Becas', 'icono' => 'volunteer_activism', 'permisos' => ['becas.view', 'becas.manage']],
         'pagos' => ['etiqueta' => 'Pagos', 'icono' => 'payments', 'permisos' => ['pagos.view']],
         'facturacion' => ['etiqueta' => 'Facturación', 'icono' => 'request_quote', 'permisos' => ['facturacion.view']],

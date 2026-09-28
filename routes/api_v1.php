@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BecaController;
 use App\Http\Controllers\Api\V1\BloqueController;
 use App\Http\Controllers\Api\V1\CompraController;
+use App\Http\Controllers\Api\V1\ComprobanteController;
 use App\Http\Controllers\Api\V1\CuotaController;
 use App\Http\Controllers\Api\V1\EventoController;
 use App\Http\Controllers\Api\V1\FacturacionController;
@@ -79,6 +80,19 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('profesores/{profesor}', [ProfesorController::class, 'show'])->whereNumber('profesor')->name('profesores.show');
     Route::put('profesores/{profesor}', [ProfesorController::class, 'update'])->whereNumber('profesor')->middleware('permiso:profesores.update')->name('profesores.update');
     Route::delete('profesores/{profesor}', [ProfesorController::class, 'destroy'])->whereNumber('profesor')->middleware('permiso:profesores.delete')->name('profesores.destroy');
+
+    // Comprobantes de cuota: gestión y envío propio del alumno
+    Route::get('comprobantes/opciones', [ComprobanteController::class, 'opciones'])->name('comprobantes.opciones');
+    Route::get('comprobantes/{comprobante}', [ComprobanteController::class, 'show'])->whereNumber('comprobante')->name('comprobantes.show');
+    Route::get('comprobantes/{comprobante}/archivo', [ComprobanteController::class, 'archivo'])->whereNumber('comprobante')->name('comprobantes.archivo');
+    Route::middleware(['permiso:comprobantes.view', 'modulo:comprobantes'])->group(function () {
+        Route::get('comprobantes', [ComprobanteController::class, 'index'])->name('comprobantes.index');
+        Route::post('comprobantes', [ComprobanteController::class, 'store'])->middleware('permiso:comprobantes.create')->name('comprobantes.store');
+        Route::post('comprobantes/{comprobante}/visto', [ComprobanteController::class, 'visto'])->whereNumber('comprobante')->name('comprobantes.visto');
+        Route::post('comprobantes/{comprobante}/aprobar', [ComprobanteController::class, 'aprobar'])->whereNumber('comprobante')->middleware('permiso:comprobantes.approve')->name('comprobantes.aprobar');
+    });
+    Route::get('mi/comprobantes', [ComprobanteController::class, 'mios'])->name('mi.comprobantes');
+    Route::post('mi/comprobantes', [ComprobanteController::class, 'enviarPropio'])->middleware('throttle:10,1')->name('mi.comprobantes.store');
 
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumnos.index');
     Route::get('alumnos/catalogo', [AlumnoController::class, 'catalogo'])->name('alumnos.catalogo');
