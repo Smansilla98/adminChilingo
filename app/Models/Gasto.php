@@ -26,6 +26,7 @@ class Gasto extends Model
     protected $casts = [
         'fecha' => 'date',
         'monto' => 'decimal:2',
+        'aprobado_at' => 'datetime',
     ];
 
     public const TIPOS = [

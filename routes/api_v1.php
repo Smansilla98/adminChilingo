@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\BecaController;
 use App\Http\Controllers\Api\V1\BloqueController;
 use App\Http\Controllers\Api\V1\CuotaController;
 use App\Http\Controllers\Api\V1\EventoController;
+use App\Http\Controllers\Api\V1\GastoController;
 use App\Http\Controllers\Api\V1\InicioController;
 use App\Http\Controllers\Api\V1\InventarioController;
 use App\Http\Controllers\Api\V1\MeController;
@@ -91,6 +92,15 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('cuotas/{cuota}', [CuotaController::class, 'show'])->whereNumber('cuota')->name('cuotas.show');
     Route::put('cuotas/{cuota}', [CuotaController::class, 'update'])->whereNumber('cuota')->middleware('permiso:cuotas.update')->name('cuotas.update');
     Route::delete('cuotas/{cuota}', [CuotaController::class, 'destroy'])->whereNumber('cuota')->middleware('permiso:cuotas.delete')->name('cuotas.destroy');
+    // Gastos
+    Route::get('gastos/catalogo', [GastoController::class, 'catalogo'])->name('gastos.catalogo');
+    Route::get('gastos', [GastoController::class, 'index'])->name('gastos.index');
+    Route::post('gastos', [GastoController::class, 'store'])->middleware('permiso:gastos.create')->name('gastos.store');
+    Route::get('gastos/{gasto}', [GastoController::class, 'show'])->whereNumber('gasto')->name('gastos.show');
+    Route::put('gastos/{gasto}', [GastoController::class, 'update'])->whereNumber('gasto')->middleware('permiso:gastos.update')->name('gastos.update');
+    Route::delete('gastos/{gasto}', [GastoController::class, 'destroy'])->whereNumber('gasto')->middleware('permiso:gastos.delete')->name('gastos.destroy');
+    Route::post('gastos/{gasto}/decision', [GastoController::class, 'decidir'])->whereNumber('gasto')->middleware('permiso:gastos.approve')->name('gastos.decidir');
+
     // Pagos
     Route::get('pagos/cuotas-para-cobrar', [PagoController::class, 'cuotasParaCobrar'])->name('pagos.cuotas');
     Route::get('pagos/cuotas/{cuota}/alumnos', [PagoController::class, 'alumnosParaCuota'])->whereNumber('cuota')->name('pagos.alumnos-cuota');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Finanzas\GastoService;
 use App\Models\Bloque;
 use App\Models\Gasto;
 use App\Models\Sede;
@@ -89,31 +90,11 @@ class GastoController extends Controller
         return view('gastos.create', compact('sedes', 'bloques'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, GastoService $gastos)
     {
-        $validated = $request->validate([
-            'sede_id' => 'nullable|exists:sedes,id',
-            'bloque_id' => 'nullable|exists:bloques,id',
-            'fecha' => 'required|date',
-            'tipo' => 'required|string|in:'.implode(',', array_keys(Gasto::TIPOS)),
-            'subtipo' => 'nullable|string|max:40',
-            'descripcion' => 'nullable|string|max:255',
-            'monto' => 'required|numeric|min:0',
-            'proveedor' => 'nullable|string|max:255',
-            'notas' => 'nullable|string',
-        ]);
-        $validated['created_by'] = auth()->id();
-        $this->asegurarAlcanceGasto('gastos.create', $validated['sede_id'] ?? null);
-        // Quien no puede aprobar gastos los deja pendientes de aprobación.
-        $puedeAprobar = $this->puedeEnAlcance('gastos.approve', $validated['sede_id'] ?? null);
-        $gasto = new Gasto($validated);
-        $gasto->forceFill([
-            'estado' => $puedeAprobar ? 'aprobado' : 'pendiente',
-            'aprobado_por' => $puedeAprobar ? auth()->id() : null,
-            'aprobado_at' => $puedeAprobar ? now() : null,
-        ])->save();
+        $gasto = $gastos->registrar($request->validate($gastos->reglas()), $request->user());
 
-        return redirect()->route('gastos.index')->with('success', $puedeAprobar ? 'Gasto registrado.' : 'Gasto registrado. Queda pendiente de aprobación.');
+        return redirect()->route('gastos.index')->with('success', $gasto->estado === 'aprobado' ? 'Gasto registrado.' : 'Gasto registrado. Queda pendiente de aprobación.');
     }
 
     public function show(Gasto $gasto)
@@ -147,22 +128,10 @@ class GastoController extends Controller
         return view('gastos.edit', compact('gasto', 'sedes', 'bloques'));
     }
 
-    public function update(Request $request, Gasto $gasto)
+    public function update(Request $request, Gasto $gasto, GastoService $gastos)
     {
         $this->authorize('update', $gasto);
-        $validated = $request->validate([
-            'sede_id' => 'nullable|exists:sedes,id',
-            'bloque_id' => 'nullable|exists:bloques,id',
-            'fecha' => 'required|date',
-            'tipo' => 'required|string|in:'.implode(',', array_keys(Gasto::TIPOS)),
-            'subtipo' => 'nullable|string|max:40',
-            'descripcion' => 'nullable|string|max:255',
-            'monto' => 'required|numeric|min:0',
-            'proveedor' => 'nullable|string|max:255',
-            'notas' => 'nullable|string',
-        ]);
-        $this->asegurarAlcanceGasto('gastos.update', $validated['sede_id'] ?? null);
-        $gasto->update($validated);
+        $gastos->actualizar($gasto, $request->validate($gastos->reglas()), $request->user());
 
         return redirect()->route('gastos.index')->with('success', 'Gasto actualizado.');
     }
@@ -175,31 +144,12 @@ class GastoController extends Controller
         return redirect()->route('gastos.index')->with('success', 'Gasto eliminado.');
     }
 
-    public function aprobar(Request $request, Gasto $gasto)
+    public function aprobar(Request $request, Gasto $gasto, GastoService $gastos)
     {
         $this->authorize('approve', $gasto);
         $data = $request->validate(['decision' => 'required|in:aprobado,rechazado']);
-        $gasto->forceFill([
-            'estado' => $data['decision'],
-            'aprobado_por' => $request->user()->id,
-            'aprobado_at' => now(),
-        ])->save();
+        $gastos->decidir($gasto, $data['decision'], $request->user());
 
         return back()->with('success', $data['decision'] === 'aprobado' ? 'Gasto aprobado.' : 'Gasto rechazado.');
-    }
-
-    private function puedeEnAlcance(string $permiso, $sedeId): bool
-    {
-        $acceso = auth()->user()->acceso();
-
-        return $sedeId ? $acceso->puedeEnSede($permiso, (int) $sedeId) : $acceso->puedeGlobal($permiso);
-    }
-
-    /** Gastos sin sede son de toda la escuela: requieren alcance global. */
-    private function asegurarAlcanceGasto(string $permiso, $sedeId): void
-    {
-        if (! $this->puedeEnAlcance($permiso, $sedeId)) {
-            abort(403, 'No podés registrar gastos en esa sede.');
-        }
     }
 }
