@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\ProfesorController;
 use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\SedeController;
 use App\Http\Controllers\Api\V1\ShowController;
+use App\Http\Controllers\Api\V1\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -186,8 +187,13 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     });
 
     Route::get('accesos/catalogo', [AccesosController::class, 'catalogo'])->name('accesos.catalogo');
-    Route::get('usuarios', [AccesosController::class, 'usuarios'])->name('usuarios.index');
-    Route::get('usuarios/{usuario}', [AccesosController::class, 'usuario'])->name('usuarios.show');
+    Route::get('usuarios/catalogo', [UsuarioController::class, 'catalogo'])->name('usuarios.catalogo');
+    Route::get('usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
+    Route::post('usuarios', [UsuarioController::class, 'store'])->middleware('permiso:usuarios.create')->name('usuarios.store');
+    Route::get('usuarios/{usuario}', [UsuarioController::class, 'show'])->whereNumber('usuario')->name('usuarios.show');
+    Route::put('usuarios/{usuario}', [UsuarioController::class, 'update'])->whereNumber('usuario')->middleware('permiso:usuarios.update')->name('usuarios.update');
+    Route::post('usuarios/{usuario}/estado', [UsuarioController::class, 'estado'])->whereNumber('usuario')->middleware('permiso:usuarios.update')->name('usuarios.estado');
+    Route::post('usuarios/{usuario}/resetear-acceso', [UsuarioController::class, 'resetear'])->whereNumber('usuario')->middleware('permiso:usuarios.update')->name('usuarios.resetear');
     Route::post('usuarios/{usuario}/asignaciones', [AccesosController::class, 'asignar'])->name('usuarios.asignar');
     Route::delete('usuarios/{usuario}/asignaciones/{asignacion}', [AccesosController::class, 'quitar'])->name('usuarios.quitar');
 });

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Acceso\CatalogoPermisos;
 use App\Domain\Acceso\GestionAsignaciones;
-use App\Domain\Acceso\PresentadorAcceso;
 use App\Domain\Personas\PersonaService;
 use App\Http\Controllers\Controller;
 use App\Models\Asignacion;
@@ -32,43 +31,6 @@ class AccesosController extends Controller
                 'derivado' => (bool) ($r['derivado'] ?? false),
                 'permisos' => CatalogoPermisos::permisosDeRol($k),
             ])->values(),
-        ]);
-    }
-
-    public function usuarios(Request $request): JsonResponse
-    {
-        $this->authorize('viewAny', User::class);
-        $q = User::query()->with('persona:id,nombre,apellido')->orderBy('name');
-        if ($request->filled('q')) {
-            $t = '%'.trim((string) $request->input('q')).'%';
-            $q->where(fn ($w) => $w->where('name', 'like', $t)->orWhere('username', 'like', $t)->orWhere('email', 'like', $t));
-        }
-        $pagina = $q->paginate(30);
-
-        return response()->json([
-            'data' => collect($pagina->items())->map(fn (User $u) => [
-                'id' => $u->id,
-                'username' => $u->username,
-                'nombre' => $u->persona?->nombre_completo ?? $u->name,
-                'activo' => (bool) $u->activo,
-                'ultimo_acceso' => $u->ultimo_acceso_at?->toIso8601String(),
-            ]),
-            'meta' => ['current_page' => $pagina->currentPage(), 'last_page' => $pagina->lastPage(), 'total' => $pagina->total()],
-        ]);
-    }
-
-    public function usuario(Request $request, User $usuario, PresentadorAcceso $presentador): JsonResponse
-    {
-        $this->authorize('view', $usuario);
-        $acceso = $usuario->acceso();
-
-        return response()->json([
-            'id' => $usuario->id,
-            'username' => $usuario->username,
-            'activo' => (bool) $usuario->activo,
-            'persona_id' => $usuario->persona_id,
-            'funciones' => $presentador->funciones($acceso),
-            'permisos' => $presentador->permisosAgrupados($acceso),
         ]);
     }
 

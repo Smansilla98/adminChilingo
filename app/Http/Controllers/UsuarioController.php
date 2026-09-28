@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\Acceso\CatalogoPermisos;
 use App\Domain\Acceso\GestionAsignaciones;
 use App\Domain\Acceso\PresentadorAcceso;
+use App\Domain\Acceso\UsuarioService;
 use App\Domain\Personas\PersonaService;
 use App\Models\Asignacion;
 use App\Models\Bloque;
@@ -13,11 +14,8 @@ use App\Models\Sede;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -58,64 +56,10 @@ class UsuarioController extends Controller
         ]);
     }
 
-    public function store(Request $request, PersonaService $personas, GestionAsignaciones $asignaciones): RedirectResponse
+    public function store(Request $request, UsuarioService $usuarios): RedirectResponse
     {
         $this->authorize('create', User::class);
-        $data = $request->validate([
-            'persona_id' => ['nullable', 'exists:personas,id'],
-            'nombre' => ['required_without:persona_id', 'nullable', 'string', 'max:255'],
-            'apellido' => ['nullable', 'string', 'max:255'],
-            'dni' => ['nullable', 'string', 'max:20'],
-            'telefono' => ['nullable', 'string', 'max:40'],
-            'username' => ['required', 'string', 'max:80', 'alpha_dash', 'unique:users,username'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::min(8)],
-            'rol' => ['nullable', 'string', Rule::in(array_keys(CatalogoPermisos::roles()))],
-            'ambito' => ['nullable', Rule::in(['global', 'sede'])],
-            'sede_id' => ['nullable', 'exists:sedes,id'],
-        ], [
-            'username.unique' => 'Ese nombre de usuario ya está en uso.',
-            'email.unique' => 'Ese correo ya está registrado.',
-            'nombre.required_without' => 'Elegí una persona existente o cargá el nombre de la nueva.',
-        ]);
-
-        $user = DB::transaction(function () use ($data, $request, $personas, $asignaciones) {
-            if (! empty($data['persona_id'])) {
-                $persona = Persona::query()->with('user')->findOrFail($data['persona_id']);
-                if ($persona->user) {
-                    throw ValidationException::withMessages(['persona_id' => 'Esta persona ya tiene cuenta ('.$persona->user->username.'). Editala en lugar de crear otra.']);
-                }
-            } else {
-                $persona = $personas->crear([
-                    'nombre' => $data['nombre'],
-                    'apellido' => $data['apellido'] ?? null,
-                    'dni' => $data['dni'] ?? null,
-                    'telefono' => $data['telefono'] ?? null,
-                    'email' => $data['email'],
-                ]);
-            }
-
-            $user = User::query()->create([
-                'persona_id' => $persona->id,
-                'name' => $persona->nombre_completo,
-                'username' => $data['username'],
-                'email' => $data['email'],
-                'telefono' => $persona->telefono,
-                'password' => Hash::make($data['password']),
-                'role' => 'usuario',
-            ]);
-
-            if (! empty($data['rol'])) {
-                $asignaciones->asignar($persona, [
-                    'tipo' => 'rol',
-                    'nombre' => $data['rol'],
-                    'ambito' => $data['ambito'] ?? 'global',
-                    'sede_id' => isset($data['sede_id']) ? (int) $data['sede_id'] : null,
-                ], $request->user());
-            }
-
-            return $user;
-        });
+        $user = $usuarios->crear($request->validate($usuarios->reglasAlta(), $usuarios->mensajesAlta()), $request->user());
 
         return redirect()->route('usuarios.show', $user)->with('success', 'Cuenta creada. Revisá abajo qué puede hacer.');
     }
@@ -140,40 +84,31 @@ class UsuarioController extends Controller
         ]);
     }
 
-    public function update(Request $request, User $usuario): RedirectResponse
+    public function update(Request $request, User $usuario, UsuarioService $usuarios): RedirectResponse
     {
         $this->authorize('update', $usuario);
-        $data = $request->validate([
-            'username' => ['required', 'string', 'max:80', 'alpha_dash', Rule::unique('users', 'username')->ignore($usuario->id)],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($usuario->id)],
-            'telefono' => ['nullable', 'string', 'max:40'],
-        ]);
-        $usuario->forceFill($data)->save();
+        $usuarios->actualizar($usuario, $request->validate($usuarios->reglasEdicion($usuario)));
 
         return back()->with('success', 'Datos de la cuenta actualizados.');
     }
 
-    public function cambiarEstado(Request $request, User $usuario): RedirectResponse
+    public function cambiarEstado(Request $request, User $usuario, UsuarioService $usuarios): RedirectResponse
     {
         $this->authorize('update', $usuario);
         if ($request->user()->is($usuario)) {
             return back()->with('error', 'No podés desactivar tu propia cuenta.');
         }
         $activo = ! $usuario->activo;
-        $usuario->forceFill(['activo' => $activo])->save();
-        if (! $activo) {
-            $this->cerrarSesiones($usuario);
-        }
+        $usuarios->establecerActivo($usuario, $activo, $request->user());
 
         return back()->with('success', $activo ? 'Cuenta activada.' : 'Cuenta desactivada. Se cerraron sus sesiones y la app.');
     }
 
-    public function resetearAcceso(Request $request, User $usuario): RedirectResponse
+    public function resetearAcceso(Request $request, User $usuario, UsuarioService $usuarios): RedirectResponse
     {
         $this->authorize('update', $usuario);
         $data = $request->validate(['password' => ['required', 'confirmed', Password::min(8)]]);
-        $usuario->forceFill(['password' => Hash::make($data['password'])])->save();
-        $this->cerrarSesiones($usuario);
+        $usuarios->resetearContrasena($usuario, $data['password']);
 
         return back()->with('success', 'Contraseña reemplazada. Se cerraron las sesiones abiertas y la app deberá volver a ingresar.');
     }
@@ -209,23 +144,6 @@ class UsuarioController extends Controller
     /** @return array<string, string> */
     private function rolesAsignables(User $por): array
     {
-        $out = [];
-        foreach (CatalogoPermisos::roles() as $clave => $def) {
-            if (($def['derivado'] ?? false)) {
-                continue;
-            }
-            if (CatalogoPermisos::esRolDeAdministracion($clave) && ! $por->acceso()->puedeGlobal('usuarios.assign_admin')) {
-                continue;
-            }
-            $out[$clave] = $def['nombre'].' · '.implode(' / ', $def['ambitos']);
-        }
-
-        return $out;
-    }
-
-    private function cerrarSesiones(User $usuario): void
-    {
-        $usuario->tokens()->delete();
-        DB::table('sessions')->where('user_id', $usuario->id)->delete();
+        return app(UsuarioService::class)->rolesAsignables($por);
     }
 }
