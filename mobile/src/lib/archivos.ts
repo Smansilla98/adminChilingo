@@ -13,6 +13,9 @@ export interface ArchivoLocal {
   nombre: string;
   mime: string;
   tamano?: number;
+  /** Solo imágenes: dimensiones en píxeles. */
+  ancho?: number;
+  alto?: number;
 }
 
 export const MB = 1024 * 1024;
@@ -36,7 +39,7 @@ export async function elegirImagen(origen: 'galeria' | 'camara' = 'galeria'): Pr
   if (r.canceled || !r.assets?.[0]) return null;
   const a = r.assets[0];
   const mime = a.mimeType ?? 'image/jpeg';
-  return { uri: a.uri, nombre: a.fileName ?? `foto.${mime.split('/')[1] ?? 'jpg'}`, mime, tamano: a.fileSize };
+  return { uri: a.uri, nombre: a.fileName ?? `foto.${mime.split('/')[1] ?? 'jpg'}`, mime, tamano: a.fileSize, ancho: a.width, alto: a.height };
 }
 
 interface OpcionesSubida {
@@ -99,6 +102,7 @@ export async function subirArchivo<T>(ruta: string, archivo: ArchivoLocal | null
 /**
  * Descarga un archivo autenticado (PDF, Excel, comprobante…) al caché del teléfono y
  * lo abre con el menú del sistema (ver, guardar, compartir). Se escribe directo a disco.
+ * `ruta` es relativa a la API o una URL absoluta (p. ej. una miniatura pública).
  */
 export async function descargarYAbrir(ruta: string, { nombre, onProgreso, signal }: { nombre?: string; onProgreso?: (f: number) => void; signal?: AbortSignal } = {}): Promise<void> {
   if (Platform.OS === 'web') {
@@ -110,7 +114,7 @@ export async function descargarYAbrir(ruta: string, { nombre, onProgreso, signal
 
   let archivo: File;
   try {
-    archivo = await File.downloadFileAsync(urlApi(ruta), destino, {
+    archivo = await File.downloadFileAsync(/^https?:\/\//.test(ruta) ? ruta : urlApi(ruta), destino, {
       headers: headersSesion(),
       idempotent: true,
       onProgress: onProgreso ? (p) => onProgreso(p.totalBytes > 0 ? p.bytesWritten / p.totalBytes : 0) : undefined,
@@ -135,11 +139,16 @@ export async function descargarYAbrir(ruta: string, { nombre, onProgreso, signal
  */
 export async function pdfDesdeServidor(ruta: string): Promise<void> {
   const { html, nombre } = await api<{ html: string; nombre: string }>(ruta);
+  await compartirPdf(html, nombre);
+}
+
+/** Genera un PDF en el teléfono desde HTML (tamaño opcional en píxeles) y lo comparte. */
+export async function compartirPdf(html: string, nombre: string, tamano?: { ancho: number; alto: number }): Promise<void> {
   if (Platform.OS === 'web') {
     await Print.printAsync({ html });
     return;
   }
-  const { uri } = await Print.printToFileAsync({ html });
+  const { uri } = await Print.printToFileAsync({ html, ...(tamano ? { width: tamano.ancho, height: tamano.alto } : {}) });
   const destino = new File(Paths.cache, nombre);
   if (destino.exists) destino.delete();
   new File(uri).move(destino);

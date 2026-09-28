@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\SedeController;
 use App\Http\Controllers\Api\V1\ShowController;
 use App\Http\Controllers\Api\V1\UsuarioController;
 use App\Http\Controllers\Api\V1\VillaGesellController;
+use App\Http\Controllers\DisenoEditorController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -165,6 +166,25 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
         Route::post('insumos', [VillaGesellController::class, 'guardarInsumo'])->name('insumos.store');
         Route::put('insumos/{insumo}', [VillaGesellController::class, 'guardarInsumo'])->whereNumber('insumo')->name('insumos.update');
         Route::delete('insumos/{insumo}', [VillaGesellController::class, 'eliminarInsumo'])->whereNumber('insumo')->name('insumos.destroy');
+    });
+
+    // Diseño: la misma API JSON que usa el editor web (DisenoEditorController + DisenoPolicy)
+    Route::middleware(['permiso:disenos.manage', 'modulo:admin.disenos', 'throttle:300,1'])->prefix('disenos')->name('disenos.')->group(function () {
+        Route::get('/', [DisenoEditorController::class, 'index'])->name('index');
+        Route::post('/', [DisenoEditorController::class, 'store'])->name('store');
+        Route::get('plantillas', [DisenoEditorController::class, 'templates'])->name('plantillas');
+        Route::get('plantillas/{id}', [DisenoEditorController::class, 'template'])->name('plantilla');
+        Route::get('marca', [DisenoEditorController::class, 'marca'])->name('marca');
+        Route::post('marca/kit', [DisenoEditorController::class, 'kitStore'])->middleware('throttle:30,1')->name('kit.store');
+        Route::delete('marca/kit/{kit}', [DisenoEditorController::class, 'kitDestroy'])->whereNumber('kit')->name('kit.destroy');
+        Route::post('imagenes', [DisenoEditorController::class, 'upload'])->middleware('throttle:60,1')->name('imagenes');
+        Route::get('{diseno}', [DisenoEditorController::class, 'show'])->whereNumber('diseno')->name('show');
+        Route::put('{diseno}', [DisenoEditorController::class, 'update'])->whereNumber('diseno')->name('update');
+        Route::delete('{diseno}', [DisenoEditorController::class, 'destroy'])->whereNumber('diseno')->name('destroy');
+        Route::post('{diseno}/paginas', [DisenoEditorController::class, 'storePage'])->whereNumber('diseno')->name('paginas.store');
+        Route::post('paginas/{pagina}/duplicar', [DisenoEditorController::class, 'duplicatePage'])->whereNumber('pagina')->name('paginas.duplicar');
+        Route::put('paginas/{pagina}', [DisenoEditorController::class, 'updatePage'])->whereNumber('pagina')->name('paginas.update');
+        Route::delete('paginas/{pagina}', [DisenoEditorController::class, 'destroyPage'])->whereNumber('pagina')->name('paginas.destroy');
     });
 
     // Reportes

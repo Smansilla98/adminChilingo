@@ -299,6 +299,7 @@ return [
         'eventos' => ['etiqueta' => 'Eventos', 'icono' => 'celebration', 'permisos' => ['eventos.view']],
         'villa_gesell' => ['etiqueta' => 'Villa Gesell', 'icono' => 'beach_access', 'permisos' => ['villa_gesell.manage']],
         'shows' => ['etiqueta' => 'Shows', 'icono' => 'theater_comedy', 'permisos' => ['shows.view']],
+        'disenos' => ['etiqueta' => 'Diseño', 'icono' => 'palette', 'permisos' => ['disenos.manage']],
         'partituras' => ['etiqueta' => 'Partituras', 'icono' => 'music_note', 'permisos' => ['partituras.view']],
         'cuotas' => ['etiqueta' => 'Cuotas', 'icono' => 'receipt_long', 'permisos' => ['cuotas.view']],
         'comprobantes' => ['etiqueta' => 'Comprobantes de cuota', 'icono' => 'fact_check', 'permisos' => ['comprobantes.view']],
