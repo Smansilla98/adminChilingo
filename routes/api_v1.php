@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\V1\PersonaController;
 use App\Http\Controllers\Api\V1\ProfesorController;
 use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\SedeController;
+use App\Http\Controllers\Api\V1\SeguimientoController;
 use App\Http\Controllers\Api\V1\ShowController;
 use App\Http\Controllers\Api\V1\UsuarioController;
 use App\Http\Controllers\Api\V1\VillaGesellController;
@@ -103,6 +104,9 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->whereNumber('alumno')->name('alumnos.show');
     Route::put('alumnos/{alumno}', [AlumnoController::class, 'update'])->whereNumber('alumno')->middleware('permiso:alumnos.update')->name('alumnos.update');
     Route::delete('alumnos/{alumno}', [AlumnoController::class, 'destroy'])->whereNumber('alumno')->middleware('permiso:alumnos.delete')->name('alumnos.destroy');
+    Route::get('alumnos/{alumno}/seguimiento', [SeguimientoController::class, 'index'])->whereNumber('alumno')->name('seguimiento.index');
+    Route::post('seguimiento', [SeguimientoController::class, 'store'])->middleware('permiso:seguimiento.create')->name('seguimiento.store');
+    Route::delete('seguimiento/{observacion}', [SeguimientoController::class, 'destroy'])->whereNumber('observacion')->middleware('permiso:seguimiento.create')->name('seguimiento.destroy');
     Route::get('alumnos/{alumno}/estado-cuenta', [AlumnoController::class, 'estadoCuenta'])->name('alumnos.estado-cuenta');
     Route::get('mi/estado-cuenta', [AlumnoController::class, 'miEstadoCuenta'])->name('mi.estado-cuenta');
 

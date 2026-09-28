@@ -6,6 +6,7 @@ import { confirmar } from '@/components/feedback';
 import { ItemLista } from '@/components/lista';
 import { Acciones, Boton, Cargando, Chip, Dato, Encabezado, ErrorVista, Pantalla, Subtitulo, Tarjeta, Tenue } from '@/components/ui';
 import type { AlumnoFicha } from '@/features/alumnos/FormAlumno';
+import { Seguimiento } from '@/features/alumnos/Seguimiento';
 import { EstadoCuentaVista } from '@/features/finanzas/EstadoCuentaVista';
 import { api } from '@/lib/api';
 import { formatearFecha } from '@/lib/formato';
@@ -67,6 +68,7 @@ export default function FichaAlumno() {
         </>
       )}
       {!a.acciones.ver_finanzas && <Tenue>No tenés acceso a la información financiera de este alumno.</Tenue>}
+      <Seguimiento alumnoId={a.id} />
     </Pantalla>
   );
 }
