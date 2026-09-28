@@ -85,4 +85,8 @@ pero no se ejecutan sin autorización explícita.
 | Deploy a producción | Requiere backup previo de la base real | Checklist en `DEPLOY.md` |
 | Cambiar FKs `CASCADE` → `RESTRICT` | Cambio en caliente sobre datos reales | Protección ya activa en la app; ver `MIGRACIONES.md` |
 | fabric 7 / jsPDF 4 (avisos de seguridad) | Cambio de versión mayor en Diseño y PDFs; requiere prueba manual | Actualizar y probar el editor de Diseño y los PDFs |
-| Registro de pagos desde la app | La liquidación docente está en el controlador web; extraerla requiere validar con tesorería | Mover `PagoController::validarFormularioPago/sincronizarDetallesPago` a un servicio y exponer `POST /pagos` |
+
+## Fase 12 — Paridad total de la app ✅
+
+Todos los módulos administrativos en la app nativa. Detalle, correcciones y pendientes en
+[PARIDAD_MOBILE.md](PARIDAD_MOBILE.md).

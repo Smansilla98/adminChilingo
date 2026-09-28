@@ -9,13 +9,14 @@ TypeScript, TanStack Query. Consume `/api/v1` ([API.md](API.md)); el backend Lar
 | Tema | Decisión | Por qué |
 |------|----------|---------|
 | Framework | Expo (React Native) | JS/TS como el resto del proyecto; builds Android/iOS en la nube (EAS) sin Mac ni Android Studio locales |
-| Navegación | Expo Router: pestañas (Inicio, Agenda, Avisos, Yo) + pila | Pocas pantallas, rutas por archivo |
+| Navegación | Expo Router: pestañas (Inicio, Agenda, Gestión, Avisos, Yo) + pila; rutas autenticadas agrupadas en `(app)` | Rutas por archivo; toda pantalla nueva queda detrás del login |
 | Datos | TanStack Query con caché persistida (AsyncStorage, 24 h) | Rápida con red lenta: muestra lo último y actualiza detrás |
 | Sesión | Token en SecureStore (Keychain / Keystore); renovación automática < 7 días | No se guardan contraseñas |
-| Offline | Solo **asistencia** tiene cola de escritura | Es lo que se hace en el aula; el resto es consulta (caché) |
+| Offline | Solo **asistencia** tiene cola de escritura; el registro de pagos es idempotente (`client_uuid`) | Es lo que se hace en el aula; el resto es consulta (caché) y reintento seguro |
 | Menú | Construido con `/me.modulos` | La app no decide permisos: muestra lo que el backend habilita |
-| Partituras | El visor web existente (VexFlow + audio) se abre a pantalla completa | Reescribir el renderer no aporta; el navegador del sistema permite zoom y horizontal |
-| Módulos sin pantalla nativa | Se abren en el panel web (personas, gastos, reportes, usuarios…) | La app prioriza el uso cotidiano |
+| Partituras | El visor web existente (VexFlow + audio) se abre a pantalla completa; el PDF se descarga nativo | Única excepción documentada: herramienta de estudio, no administrativa |
+| Módulos de gestión | **Todos nativos** (ver [PARIDAD_MOBILE.md](PARIDAD_MOBILE.md)) | La app es un cliente administrativo completo |
+| Archivos | Subida multipart nativa con progreso/cancelación; descarga a disco y menú de compartir; PDF con `expo-print` | No se cargan archivos enteros en memoria de JS |
 
 ## Pantallas
 
@@ -27,8 +28,8 @@ TypeScript, TanStack Query. Consume `/api/v1` ([API.md](API.md)); el backend Lar
 | Agenda | todos | clases, eventos y shows de 2 semanas del alcance |
 | Avisos | todos | bandeja de notificaciones, marcar leídas |
 | Yo | todos | funciones con su origen, contexto, planillas pendientes de envío, cerrar sesión |
-| Mis cuotas | alumnos | saldo, becas, cuotas con estado; *Enviar comprobante* (formulario público existente) |
-| Finanzas | contador / tesorería | pagos (con anulados) y cuotas del alcance |
+| Mi cuenta | alumnos | saldo, becas, cuotas con estado; *Enviar comprobante* nativo (foto/PDF) y estado de los enviados |
+| Gestión | según permisos | personas, profesores, alumnos, bloques, sedes, eventos, shows, cuotas, pagos, comprobantes, becas, gastos, facturación, compras, reportes, usuarios, auditoría, Villa Gesell, diseño, biblioteca |
 | Alumnos | docentes / coordinación | búsqueda, ficha, llamar, estado de cuenta si tiene permiso |
 | Inventario | encargados | buscar, **escanear QR**/código, ficha con historial, registrar movimiento/estado, alta |
 | Partituras | todos | programa por año → visor, PDF, partes por instrumento, videos |
@@ -80,7 +81,7 @@ cd mobile
 cp .env.example .env.local        # EXPO_PUBLIC_API_URL
 npm install
 npm start                          # Expo Go (sin push) o development build
-npm run typecheck && npm run lint
+npm run typecheck && npm run lint && npm test
 npm run doctor                     # expo-doctor
 npm run export                     # bundle Android + iOS (valida que compile)
 ```

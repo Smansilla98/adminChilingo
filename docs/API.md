@@ -107,7 +107,6 @@ Estado de cuenta:
 }
 ```
 
-El **registro** de pagos (con liquidación docente) sigue en el panel web.
 
 ### Inventario
 
@@ -154,3 +153,37 @@ El **registro** de pagos (con liquidación docente) sigue en el panel web.
 `tests/Feature/Api/ApiV1Test.php` cubre login/refresh/logout, cuentas desactivadas, `/me`,
 `/inicio`, IDOR por ID, asistencia idempotente y offline, estado de cuenta con beca,
 inventario por QR, finanzas y asignaciones.
+
+## Gestión completa (paridad con el panel web)
+
+Todos los endpoints usan las mismas reglas y Policies que la web (servicios de
+`app/Domain`). Las fichas incluyen `acciones` (qué puede hacer quien consulta, con
+alcance). Listados paginados: `{ data, meta: { current_page, last_page, total } }`.
+Detalle: `{ data: {...} }`. En los campos de año se usa `anio`.
+
+| Recurso | Endpoints |
+|---|---|
+| Personas | `GET/POST /personas`, `GET/PUT /personas/{id}`, `POST /personas/{id}/fusionar` (filtros `funcion`, `estado`) |
+| Becas | `GET /becas`, `GET/PUT /becas/{id}`, `POST /personas/{id}/becas` |
+| Profesores | `GET/POST /profesores`, `GET/PUT/DELETE /profesores/{id}`, `GET /profesores/catalogo`, `GET /profesores/usuarios-disponibles` |
+| Alumnos | `POST /alumnos`, `PUT/DELETE /alumnos/{id}`, `GET /alumnos/catalogo`, `GET /alumnos/exportar` (xlsx), `GET /alumnos/{id}/seguimiento` |
+| Seguimiento | `POST /seguimiento`, `DELETE /seguimiento/{id}` |
+| Bloques | `POST /bloques`, `PUT/DELETE /bloques/{id}`, `POST /bloques/{id}/horarios`, `DELETE /bloque-horarios/{id}`, `GET /bloques/catalogo` |
+| Sedes | `GET /sedes?gestion=1`, `POST /sedes`, `GET/PUT/DELETE /sedes/{id}`, `GET /sedes/catalogo` |
+| Eventos / Shows | `GET/POST /eventos`, `GET/PUT/DELETE /eventos/{id}`, `GET /eventos/catalogo`; `GET/POST /shows`, `GET/PUT/DELETE /shows/{id}` |
+| Cuotas | `GET/POST /cuotas`, `GET/PUT/DELETE /cuotas/{id}`, `GET /cuotas/catalogo` |
+| Pagos | `POST /pagos` (JSON o multipart con `comprobante`; `client_uuid` idempotente), `PUT /pagos/{id}`, `POST /pagos/{id}/anular`, `GET /pagos/{id}/comprobante`, `GET /pagos/cuotas-para-cobrar`, `GET /pagos/cuotas/{id}/alumnos`, `GET /mi/pagos-docente` |
+| Comprobantes | `GET/POST /comprobantes`, `GET /comprobantes/{id}`, `GET /comprobantes/{id}/archivo`, `POST /comprobantes/{id}/visto`, `POST /comprobantes/{id}/aprobar`, `GET /comprobantes/opciones`, `GET/POST /mi/comprobantes` |
+| Gastos | `GET/POST /gastos`, `GET/PUT/DELETE /gastos/{id}`, `POST /gastos/{id}/decision`, `GET /gastos/catalogo` |
+| Facturación | `GET/POST /facturacion`, `GET/PUT /facturacion/{id}`, `GET /facturacion/catalogo`, `GET /facturacion/cierre-mes` |
+| Compras | `GET/POST /compras`, `GET/PUT/DELETE /compras/{id}`, `POST /compras/{id}/estado`, `GET /compras/plan`, `GET /compras/catalogo` |
+| Reportes | `GET /reportes`, `GET /reportes/excel`, `GET /reportes/imprimible`, `GET /reportes/profesores` |
+| Usuarios | `POST /usuarios`, `PUT /usuarios/{id}`, `POST /usuarios/{id}/estado`, `POST /usuarios/{id}/resetear-acceso`, `GET /usuarios/catalogo` |
+| Auditoría | `GET /auditoria`, `GET /auditoria/{id}`, `GET /auditoria/catalogo` |
+| Villa Gesell | `GET /villa-gesell`, `PUT /villa-gesell/config`, inscriptos (`GET/POST`, `GET/PUT/DELETE {id}`, `GET nueva`, `GET alumnos-disponibles`), `POST alumnos-rapidos\|profesores-rapidos\|bloques-rapidos`, calendario (`GET calendario`, `POST dias/generar`, `PUT dias/{id}`, `POST dias/{id}/slots\|tocadas`, `PUT/DELETE tocadas/{id}`), gastos e insumos (`GET/POST`, `PUT/DELETE {id}`) |
+| Diseño | `GET/POST /disenos`, `GET/PUT/DELETE /disenos/{id}`, `POST /disenos/{id}/paginas`, `PUT/DELETE /disenos/paginas/{id}`, `POST /disenos/paginas/{id}/duplicar`, `GET /disenos/plantillas[/{id}]`, `POST /disenos/imagenes`, `GET /disenos/marca`, `POST/DELETE /disenos/marca/kit[/{id}]` |
+| Biblioteca | `GET/POST /biblioteca`, `GET /biblioteca/{id}`, `GET /biblioteca/{id}/archivo`, `POST /biblioteca/{id}/visibilidad`, `DELETE /biblioteca/{id}`, `GET /biblioteca/catalogo` |
+| Inventario | `DELETE /inventario/{id}` (además de lo ya documentado) |
+
+Errores de negocio: `409` al aprobar un comprobante ya pagado; `422` con errores por
+campo (p. ej. `lineas.0.alumno_id` en pagos).
