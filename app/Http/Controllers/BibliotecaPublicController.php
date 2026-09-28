@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Biblioteca\BibliotecaService;
 use App\Models\BibliotecaItem;
 use App\Models\BibliotecaTag;
 use App\Models\ProgramaRitmo;
@@ -9,8 +10,6 @@ use App\Services\BibliotecaShareMiniatura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BibliotecaPublicController extends Controller
@@ -150,124 +149,9 @@ class BibliotecaPublicController extends Controller
             return back()->withErrors(['archivo' => $errorSubida])->withInput();
         }
 
-        $instrumentos = array_keys(BibliotecaItem::instrumentosOpciones());
-        $tieneToqueCol = Schema::hasColumn('biblioteca_items', 'programa_ritmo_id');
-
-        $rules = [
-            'titulo' => 'required|string|max:180',
-            'descripcion' => 'nullable|string|max:2000',
-            'autor_nombre' => 'nullable|string|max:120',
-            'hashtags' => 'nullable|string|max:400',
-            'url' => 'nullable|url|max:500',
-            'archivo' => 'nullable|file|max:'.self::ARCHIVO_MAX_KB.'|extensions:'.self::ARCHIVO_EXTENSIONES,
-            'instrumento' => ['nullable', 'string', Rule::in($instrumentos)],
-        ];
-
-        if ($tieneToqueCol) {
-            $rules['toque'] = [
-                'nullable',
-                'string',
-                'max:120',
-                Rule::exists('programa_ritmos', 'slug'),
-            ];
-        }
-
-        $validated = $request->validate($rules, [
-            'archivo.uploaded' => 'No se pudo subir el archivo. Si es un video, suele ser demasiado grande o se cortó la conexión. Máximo 100 MB, o pegá un enlace.',
-            'archivo.max' => 'El archivo no puede superar 100 MB.',
-            'archivo.extensions' => 'Formatos permitidos: PNG/JPG/WebP, MP4/WebM/MOV, audio o PDF.',
-            'toque.exists' => 'Elegí un toque válido del programa.',
-            'instrumento.in' => 'Elegí un instrumento de la lista.',
-        ]);
-
-        if (empty($validated['url']) && ! $request->hasFile('archivo')) {
-            return back()->withErrors(['archivo' => 'Subí un archivo o pegá un enlace.'])->withInput();
-        }
-
-        // Instrumento sin toque no tiene sentido
-        if (! empty($validated['instrumento']) && empty($validated['toque'] ?? null)) {
-            return back()->withErrors(['toque' => 'Para indicar instrumento, elegí también el toque.'])->withInput();
-        }
-
-        $path = null;
-        $mime = null;
-        $nombreOriginal = null;
-        $bytes = null;
-        $ext = null;
-
-        if ($request->hasFile('archivo')) {
-            $file = $request->file('archivo');
-            $ext = strtolower((string) $file->getClientOriginalExtension());
-            if ($ext === '' && $file->guessExtension()) {
-                $ext = strtolower((string) $file->guessExtension());
-            }
-            $mime = $file->getMimeType() ?: $file->getClientMimeType();
-            if (($mime === 'application/octet-stream' || ! $mime) && $ext === 'png') {
-                $mime = 'image/png';
-            }
-            if (($mime === 'application/octet-stream' || ! $mime) && in_array($ext, ['mp4', 'm4v', 'mov'], true)) {
-                $mime = $ext === 'mov' ? 'video/quicktime' : 'video/mp4';
-            }
-            $nombreOriginal = $file->getClientOriginalName();
-            $bytes = $file->getSize();
-            $filename = (string) Str::uuid().($ext !== '' ? '.'.$ext : '');
-            $dir = 'biblioteca/'.now()->format('Y/m');
-            try {
-                $stored = $file->storeAs($dir, $filename, 'comprobantes');
-            } catch (\Throwable $e) {
-                report($e);
-
-                return back()->withErrors([
-                    'archivo' => 'No se pudo guardar el archivo en el servidor. Reintentá o pegá un enlace.',
-                ])->withInput();
-            }
-            if (! $stored) {
-                return back()->withErrors([
-                    'archivo' => 'No se pudo guardar el archivo en el volumen. Reintentá o pegá un enlace.',
-                ])->withInput();
-            }
-            $path = $dir.'/'.$filename;
-        }
-
-        $tipo = BibliotecaItem::detectarTipo($mime, $ext, ! empty($validated['url']));
-
-        $programaRitmoId = null;
-        if ($tieneToqueCol && ! empty($validated['toque'])) {
-            $programaRitmoId = ProgramaRitmo::query()
-                ->where('slug', $validated['toque'])
-                ->value('id');
-        }
-
-        $payload = [
-            'titulo' => trim($validated['titulo']),
-            'descripcion' => isset($validated['descripcion']) ? trim($validated['descripcion']) : null,
-            'tipo' => $tipo,
-            'path' => $path,
-            'url' => $validated['url'] ?? null,
-            'mime' => $mime,
-            'nombre_original' => $nombreOriginal,
-            'bytes' => $bytes,
-            'autor_nombre' => isset($validated['autor_nombre']) ? trim($validated['autor_nombre']) : null,
-            'estado' => 'publicado',
-            'ip' => $request->ip(),
-        ];
-
-        if ($tieneToqueCol) {
-            $payload['programa_ritmo_id'] = $programaRitmoId;
-            $payload['instrumento'] = $programaRitmoId
-                ? ($validated['instrumento'] ?? null)
-                : null;
-        }
-
-        $item = BibliotecaItem::create($payload);
-
-        $tags = BibliotecaTag::syncFromInput($validated['hashtags'] ?? '');
-        if ($tags !== []) {
-            $item->tags()->sync(collect($tags)->pluck('id')->all());
-            foreach ($tags as $tag) {
-                $tag->increment('usos');
-            }
-        }
+        $servicio = app(BibliotecaService::class);
+        $validated = $request->validate($servicio->reglas(), $servicio->mensajes());
+        $item = $servicio->publicar($validated, $request->file('archivo'), $request->ip());
 
         $item->load('toque');
         if ($item->urlPasarAlEditor()) {

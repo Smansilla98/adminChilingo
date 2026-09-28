@@ -312,6 +312,7 @@ return [
         'compras' => ['etiqueta' => 'Compras', 'icono' => 'shopping_cart', 'permisos' => ['compras.view']],
         'auditoria' => ['etiqueta' => 'Auditoría', 'icono' => 'history', 'permisos' => ['auditoria.view']],
         'usuarios' => ['etiqueta' => 'Usuarios y permisos', 'icono' => 'admin_panel_settings', 'permisos' => ['usuarios.view']],
+        'biblioteca' => ['etiqueta' => 'Biblioteca', 'icono' => 'local_library', 'permisos' => []],
         'notificaciones' => ['etiqueta' => 'Avisos', 'icono' => 'notifications', 'permisos' => []],
     ],
 ];

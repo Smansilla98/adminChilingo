@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AsistenciaController;
 use App\Http\Controllers\Api\V1\AuditoriaController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BecaController;
+use App\Http\Controllers\Api\V1\BibliotecaController;
 use App\Http\Controllers\Api\V1\BloqueController;
 use App\Http\Controllers\Api\V1\CompraController;
 use App\Http\Controllers\Api\V1\ComprobanteController;
@@ -186,6 +187,15 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
         Route::put('paginas/{pagina}', [DisenoEditorController::class, 'updatePage'])->whereNumber('pagina')->name('paginas.update');
         Route::delete('paginas/{pagina}', [DisenoEditorController::class, 'destroyPage'])->whereNumber('pagina')->name('paginas.destroy');
     });
+
+    // Biblioteca (consulta y publicación para todos; moderación con permiso)
+    Route::get('biblioteca', [BibliotecaController::class, 'index'])->name('biblioteca.index');
+    Route::get('biblioteca/catalogo', [BibliotecaController::class, 'catalogo'])->name('biblioteca.catalogo');
+    Route::post('biblioteca', [BibliotecaController::class, 'store'])->middleware('throttle:10,1')->name('biblioteca.store');
+    Route::get('biblioteca/{item}', [BibliotecaController::class, 'show'])->whereNumber('item')->name('biblioteca.show');
+    Route::get('biblioteca/{item}/archivo', [BibliotecaController::class, 'archivo'])->whereNumber('item')->name('biblioteca.archivo');
+    Route::post('biblioteca/{item}/visibilidad', [BibliotecaController::class, 'visibilidad'])->whereNumber('item')->middleware('permiso:biblioteca.admin')->name('biblioteca.visibilidad');
+    Route::delete('biblioteca/{item}', [BibliotecaController::class, 'destroy'])->whereNumber('item')->middleware('permiso:biblioteca.admin')->name('biblioteca.destroy');
 
     // Reportes
     Route::middleware('permiso:reportes.view')->group(function () {

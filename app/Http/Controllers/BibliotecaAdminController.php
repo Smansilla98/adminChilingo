@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Biblioteca\BibliotecaService;
 use App\Models\BibliotecaItem;
-use App\Models\BibliotecaTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 
 class BibliotecaAdminController extends Controller
 {
@@ -46,8 +45,7 @@ class BibliotecaAdminController extends Controller
     public function toggle(BibliotecaItem $bibliotecaItem)
     {
         $this->authorizeAdmin();
-        $bibliotecaItem->estado = $bibliotecaItem->estado === 'publicado' ? 'oculto' : 'publicado';
-        $bibliotecaItem->save();
+        app(BibliotecaService::class)->alternarVisibilidad($bibliotecaItem);
 
         return back()->with('success', 'Estado actualizado: '.$bibliotecaItem->estado);
     }
@@ -56,19 +54,7 @@ class BibliotecaAdminController extends Controller
     {
         $this->authorizeAdmin();
 
-        $tagIds = $bibliotecaItem->tags()->pluck('biblioteca_tags.id');
-        if ($bibliotecaItem->path && Storage::disk('comprobantes')->exists($bibliotecaItem->path)) {
-            Storage::disk('comprobantes')->delete($bibliotecaItem->path);
-        }
-        $bibliotecaItem->tags()->detach();
-        $bibliotecaItem->delete();
-
-        if (Schema::hasTable('biblioteca_tags') && $tagIds->isNotEmpty()) {
-            BibliotecaTag::query()->whereIn('id', $tagIds)->each(function (BibliotecaTag $tag) {
-                $tag->usos = max(0, (int) $tag->items()->count());
-                $tag->save();
-            });
-        }
+        app(BibliotecaService::class)->eliminar($bibliotecaItem);
 
         return back()->with('success', 'Material eliminado.');
     }
