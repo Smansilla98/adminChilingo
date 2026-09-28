@@ -72,6 +72,14 @@ class InventarioController extends Controller
     }
 
     /** Registrar movimiento / cambio de estado / mover de sede. */
+    public function destroy(InventarioItem $item): JsonResponse
+    {
+        $this->authorize('delete', $item);
+        $item->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
     public function movimiento(Request $request, InventarioItem $item, InventarioService $servicio): InventarioItemResource
     {
         $this->authorize('update', $item);

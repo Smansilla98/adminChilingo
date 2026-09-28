@@ -130,6 +130,7 @@ export interface InventarioItem {
   sede: { id: number; nombre: string } | null;
   notas: string | null;
   puede_editar: boolean;
+  puede_eliminar?: boolean;
   movimientos?: { id: number; tipo: string; tipo_nombre: string; nota: string | null; sede: string | null; autor: string | null; fecha: string }[];
 }
 

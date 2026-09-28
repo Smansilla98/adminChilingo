@@ -5,6 +5,7 @@ import { Linking } from 'react-native';
 
 import { Boton, Cargando, ErrorVista, Pantalla, Subtitulo, Tenue, Titulo } from '@/components/ui';
 import { api } from '@/lib/api';
+import { descargarYAbrir } from '@/lib/archivos';
 
 interface Toque {
   nombre: string;
@@ -18,8 +19,10 @@ interface Toque {
 }
 
 /**
- * El visor interactivo (VexFlow, audio, zoom) es la vista web existente: se abre a
- * pantalla completa en el navegador del sistema, que permite girar a horizontal y hacer zoom.
+ * Excepción documentada (docs/PARIDAD_MOBILE.md): el visor interactivo de partituras
+ * (render VexFlow + motor de audio sincronizado) es una herramienta de estudio, no una
+ * operación administrativa; reescribirlo nativo no aporta y se abre a pantalla completa
+ * en el navegador del sistema (zoom y horizontal). El PDF original se descarga nativo.
  */
 export default function Partitura() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -38,7 +41,7 @@ export default function Partitura() {
       {t.resumen && <Tenue>{t.resumen}</Tenue>}
       <Boton titulo="Abrir partitura y audio" icono="music-note" onPress={() => abrir(t.visor_url)} grande />
       <Tenue>Tip: girá el teléfono para ver más compases.</Tenue>
-      {t.pdf_url && <Boton titulo="Partitura original (PDF)" icono="picture-as-pdf" variante="secundario" onPress={() => abrir(t.pdf_url!)} />}
+      {t.pdf_url && <Boton titulo="Partitura original (PDF)" icono="picture-as-pdf" variante="secundario" onPress={() => void descargarYAbrir(t.pdf_url!, { nombre: `${t.nombre}.pdf` }).catch(() => abrir(t.pdf_url!))} />}
       {t.partes.length > 0 && (
         <>
           <Subtitulo>Por instrumento</Subtitulo>

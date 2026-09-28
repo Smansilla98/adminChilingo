@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Titulo } from '@/components/ui';
+import { confirmar } from '@/components/feedback';
+import { Acciones, Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Titulo } from '@/components/ui';
 import { api } from '@/lib/api';
+import { useOperacion } from '@/lib/recursos';
 import { COLOR_ESTADO_ITEM } from '@/lib/formato';
 import { useInventarioItem } from '@/lib/queries';
 import { C, E, TOQUE } from '@/lib/theme';
@@ -34,6 +36,8 @@ export default function ItemDetalle() {
     },
   });
 
+  const eliminar = useOperacion(() => api(`inventario/${id}`, { method: 'DELETE' }), { exito: 'Ítem eliminado', invalidar: ['inventario'], alTerminar: () => router.back() });
+
   if (item.isPending && !item.data) return <Cargando />;
   if (item.isError && !item.data) return <ErrorVista error={item.error} onReintentar={() => item.refetch()} />;
   const i = item.data!;
@@ -47,6 +51,14 @@ export default function ItemDetalle() {
         {i.codigo && <Chip texto={i.codigo} />}
         <Chip texto={i.tipo_nombre} />
       </Fila>
+      <Acciones>
+        {i.puede_editar && <Boton titulo="Editar" icono="edit" variante="secundario" onPress={() => router.push({ pathname: '/inventario/nuevo', params: { id: String(i.id) } } as never)} />}
+        {i.puede_eliminar && (
+          <Boton titulo="Eliminar" icono="delete" variante="peligro" cargando={eliminar.isPending} onPress={async () => {
+            if (await confirmar({ titulo: `¿Eliminar "${i.nombre}"?`, mensaje: 'Si solo dejó de usarse, registrá un movimiento de baja para conservar el historial.', accion: 'Eliminar' })) eliminar.mutate();
+          }} />
+        )}
+      </Acciones>
       <Tarjeta>
         <Texto>Sede: {i.sede?.nombre ?? '—'}</Texto>
         <Texto>Propietario: {i.propietario === 'alumno' ? 'Alumno' : 'Escuela'}</Texto>

@@ -40,6 +40,7 @@ class InventarioItemResource extends JsonResource
                 'fecha' => $m->created_at?->toIso8601String(),
             ])->values()),
             'puede_editar' => $request->user()?->can('update', $this->resource) ?? false,
+            'puede_eliminar' => $request->user()?->can('delete', $this->resource) ?? false,
         ];
     }
 }

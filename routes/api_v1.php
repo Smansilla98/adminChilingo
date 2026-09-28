@@ -245,6 +245,7 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::post('inventario', [InventarioController::class, 'store'])->name('inventario.store');
     Route::get('inventario/{item}', [InventarioController::class, 'show'])->whereNumber('item')->name('inventario.show');
     Route::put('inventario/{item}', [InventarioController::class, 'update'])->whereNumber('item')->name('inventario.update');
+    Route::delete('inventario/{item}', [InventarioController::class, 'destroy'])->whereNumber('item')->middleware('permiso:inventario.delete')->name('inventario.destroy');
     Route::post('inventario/{item}/movimientos', [InventarioController::class, 'movimiento'])->whereNumber('item')->name('inventario.movimiento');
 
     Route::get('partituras', [PartituraController::class, 'index'])->name('partituras.index');
