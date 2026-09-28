@@ -3,6 +3,8 @@ import { useDeferredValue, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Cargando, ErrorVista, Icon, Pantalla, Tenue, Texto, Vacio } from '@/components/ui';
+import { BotonFlotante } from '@/components/lista';
+import { usePuede } from '@/lib/permisos';
 import { useAlumnos } from '@/lib/queries';
 import { C, E, TOQUE } from '@/lib/theme';
 
@@ -10,8 +12,10 @@ export default function Alumnos() {
   const [texto, setTexto] = useState('');
   const busqueda = useDeferredValue(texto.trim());
   const q = useAlumnos(busqueda.length >= 2 ? busqueda : '');
+  const puedeCrear = usePuede('alumnos.create');
 
   return (
+    <>
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
       <Stack.Screen options={{ title: 'Alumnos' }} />
       <TextInput
@@ -38,6 +42,8 @@ export default function Alumnos() {
       ))}
       {!!q.data?.meta && q.data.meta.total > q.data.data.length && <Tenue>Mostrando {q.data.data.length} de {q.data.meta.total}. Afiná la búsqueda.</Tenue>}
     </Pantalla>
+    {puedeCrear && <BotonFlotante icono="person-add" texto="Inscribir" onPress={() => router.push('/alumnos/nuevo' as never)} />}
+    </>
   );
 }
 

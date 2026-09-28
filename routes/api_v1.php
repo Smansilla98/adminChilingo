@@ -76,7 +76,11 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::delete('profesores/{profesor}', [ProfesorController::class, 'destroy'])->whereNumber('profesor')->middleware('permiso:profesores.delete')->name('profesores.destroy');
 
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumnos.index');
-    Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->name('alumnos.show');
+    Route::get('alumnos/catalogo', [AlumnoController::class, 'catalogo'])->name('alumnos.catalogo');
+    Route::post('alumnos', [AlumnoController::class, 'store'])->middleware('permiso:alumnos.create')->name('alumnos.store');
+    Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->whereNumber('alumno')->name('alumnos.show');
+    Route::put('alumnos/{alumno}', [AlumnoController::class, 'update'])->whereNumber('alumno')->middleware('permiso:alumnos.update')->name('alumnos.update');
+    Route::delete('alumnos/{alumno}', [AlumnoController::class, 'destroy'])->whereNumber('alumno')->middleware('permiso:alumnos.delete')->name('alumnos.destroy');
     Route::get('alumnos/{alumno}/estado-cuenta', [AlumnoController::class, 'estadoCuenta'])->name('alumnos.estado-cuenta');
     Route::get('mi/estado-cuenta', [AlumnoController::class, 'miEstadoCuenta'])->name('mi.estado-cuenta');
 
