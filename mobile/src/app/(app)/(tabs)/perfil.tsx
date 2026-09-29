@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { Alert, View } from 'react-native';
 
 import { Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Titulo } from '@/components/ui';
@@ -69,6 +70,7 @@ export default function Perfil() {
       )}
 
       <Subtitulo>Más</Subtitulo>
+      <Boton titulo="Qué puede cada perfil" icono="badge" variante="secundario" onPress={() => router.push('/roles' as never)} />
       <Boton titulo="Cerrar sesión" icono="logout" variante="peligro" onPress={confirmarSalida} />
       {VARIANTE !== 'production' && <Tenue>Entorno: {VARIANTE}</Tenue>}
     </Pantalla>

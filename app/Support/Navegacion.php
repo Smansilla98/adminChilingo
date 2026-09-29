@@ -65,6 +65,7 @@ class Navegacion
 
         $configEspacio = [
             self::link('apariencia.edit', 'Apariencia', 'bi-palette2', 'apariencia.*'),
+            $mod('ayuda') ? self::link('roles', 'Perfiles y roles', 'bi-person-badge', 'roles') : null,
             $mod('ayuda') ? self::link('ayuda', 'Ayuda', 'bi-question-circle', 'ayuda') : null,
         ];
 
@@ -135,6 +136,7 @@ class Navegacion
                 $u->can('auditoria.view') ? self::link('auditoria.index', 'Auditoría', 'bi-clock-history', 'auditoria.*') : null,
                 $u->can('usuarios.permissions') ? self::link('accesos.index', 'Visibilidad del menú', 'bi-eye', 'accesos.*') : null,
                 self::link('apariencia.edit', 'Apariencia', 'bi-palette2', 'apariencia.*'),
+                $mod('ayuda') ? self::link('roles', 'Perfiles y roles', 'bi-person-badge', 'roles') : null,
                 $mod('ayuda') ? self::link('ayuda', 'Ayuda', 'bi-question-circle', 'ayuda') : null,
             ]);
         } else {

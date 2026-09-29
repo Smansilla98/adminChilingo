@@ -70,6 +70,94 @@ final class CatalogoPermisos
         return config('permisos.roles', []);
     }
 
+    /**
+     * Explicación de cada perfil, agrupada por caso, para la guía de la web y la app.
+     *
+     * @return array{intro: string, casos: list<array{titulo: string, roles: list<array<string, mixed>>}>}
+     */
+    public static function guia(): array
+    {
+        $porClave = [];
+        foreach (self::roles() as $clave => $def) {
+            $porClave[$clave] = self::guiaDeRol($clave, $def);
+        }
+
+        $casos = [
+            'Dirección' => ['superadministrador', 'administrador'],
+            'Coordinación' => ['coordinador', 'coordinador_area'],
+            'La clase' => ['profesor', 'alumno', 'becado'],
+            'La sede' => ['encargado', 'responsable_de_sede', 'responsable_de_inventario'],
+            'Secretaría y dinero' => ['administrativo', 'contador', 'tesorero'],
+        ];
+
+        $usados = [];
+        $salida = [];
+        foreach ($casos as $titulo => $claves) {
+            $roles = [];
+            foreach ($claves as $clave) {
+                if (! isset($porClave[$clave])) {
+                    continue;
+                }
+                $roles[] = $porClave[$clave];
+                $usados[$clave] = true;
+            }
+            if ($roles !== []) {
+                $salida[] = ['titulo' => $titulo, 'roles' => $roles];
+            }
+        }
+
+        $resto = [];
+        foreach ($porClave as $clave => $rol) {
+            if (! isset($usados[$clave])) {
+                $resto[] = $rol;
+            }
+        }
+        if ($resto !== []) {
+            $salida[] = ['titulo' => 'Otros', 'roles' => $resto];
+        }
+
+        return [
+            'intro' => 'Un perfil es un rol. El alcance dice hasta dónde llega: toda la escuela, una sede o un bloque. Alumno y becado no se eligen a mano: aparecen por la inscripción o por la beca. Una misma persona puede tener varios perfiles a la vez.',
+            'casos' => $salida,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $def
+     * @return array<string, mixed>
+     */
+    private static function guiaDeRol(string $clave, array $def): array
+    {
+        $nombresAmbito = ['global' => 'Toda la escuela', 'sede' => 'Una sede', 'bloque' => 'Un bloque'];
+        $lista = $def['permisos'] ?? [];
+        $todo = in_array('*', $lista, true);
+        $excluidos = [];
+        $grupos = [];
+
+        if (! $todo) {
+            foreach (self::permisosDeRol($clave) as $permiso) {
+                $grupos[self::grupoDe($permiso)][] = self::etiqueta($permiso);
+            }
+        } else {
+            foreach ($lista as $permiso) {
+                if (is_string($permiso) && str_starts_with($permiso, '!')) {
+                    $excluidos[] = self::etiqueta(substr($permiso, 1));
+                }
+            }
+        }
+
+        return [
+            'clave' => $clave,
+            'nombre' => $def['nombre'] ?? $clave,
+            'descripcion' => $def['descripcion'] ?? '',
+            'ambitos' => array_map(fn ($a) => $nombresAmbito[$a] ?? $a, $def['ambitos'] ?? ['global']),
+            'derivado' => (bool) ($def['derivado'] ?? false),
+            'todo' => $todo,
+            'no_puede' => $excluidos,
+            'grupos' => $grupos,
+        ];
+    }
+
     public static function existeRol(string $rol): bool
     {
         return array_key_exists($rol, self::roles());

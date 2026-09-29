@@ -137,6 +137,7 @@ Estado de cuenta:
 
 | Método | Ruta | Permiso |
 |--------|------|---------|
+| GET | `/roles` | cualquier sesión — qué gestiona cada perfil, agrupado por caso |
 | GET | `/accesos/catalogo` | `usuarios.view` — roles (con permisos expandidos y ámbitos) y permisos |
 | GET | `/usuarios?q=` · `/usuarios/{id}` | `usuarios.view` global |
 | POST | `/usuarios/{id}/asignaciones` | `usuarios.permissions` — `{ tipo: rol\|permiso, nombre, ambito, sede_id?, bloque_id?, desde?, hasta?, notas? }` |

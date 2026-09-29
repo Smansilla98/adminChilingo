@@ -152,6 +152,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Ayuda (guía de uso)
     Route::get('/ayuda', [AyudaController::class, 'index'])->middleware('modulo:ayuda')->name('ayuda');
+    Route::get('/roles', [AyudaController::class, 'roles'])->middleware('modulo:ayuda')->name('roles');
 
     // Apariencia (preferencia visual por usuario)
     Route::get('/apariencia', [AparienciaController::class, 'edit'])->name('apariencia.edit');

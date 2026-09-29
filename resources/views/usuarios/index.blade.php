@@ -12,6 +12,7 @@
         @can('auditoria.view')
             <a href="{{ route('auditoria.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-text"></i> Auditoría</a>
         @endcan
+        <a href="{{ route('roles') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-person-badge"></i> Qué hace cada perfil</a>
     </x-slot:actions>
 
     <x-slot:toolbar>

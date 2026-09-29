@@ -13,7 +13,7 @@
         <div class="mb-3">
             <label for="ayudaBuscar" class="form-label">Buscar en esta guía</label>
             <input type="text" id="ayudaBuscar" class="form-control" placeholder="Una palabra alcanza…">
-            <div class="form-text">Tip: probá con una sola palabra, como “guardar” o “comprobante”.</div>
+            <div class="form-text">Tip: probá con una sola palabra, como “guardar” o “comprobante”. Para ver qué gestiona cada perfil, abrí <a href="{{ route('roles') }}">Perfiles y roles</a>.</div>
         </div>
 
         <div class="accordion" id="ayudaAccordion">

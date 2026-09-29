@@ -17,6 +17,11 @@ use Illuminate\Validation\Rule;
  */
 class AccesosController extends Controller
 {
+    public function guia(): JsonResponse
+    {
+        return response()->json(CatalogoPermisos::guia());
+    }
+
     public function catalogo(Request $request): JsonResponse
     {
         abort_unless($request->user()->acceso()->puedeAlguno(['usuarios.view', 'usuarios.permissions']), 403);

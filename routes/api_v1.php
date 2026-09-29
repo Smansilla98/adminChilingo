@@ -286,6 +286,7 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
         Route::get('auditoria/{auditoria}', [AuditoriaController::class, 'show'])->whereNumber('auditoria')->name('auditoria.show');
     });
 
+    Route::get('roles', [AccesosController::class, 'guia'])->name('roles.guia');
     Route::get('accesos/catalogo', [AccesosController::class, 'catalogo'])->name('accesos.catalogo');
     Route::get('usuarios/catalogo', [UsuarioController::class, 'catalogo'])->name('usuarios.catalogo');
     Route::get('usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
