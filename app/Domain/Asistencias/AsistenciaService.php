@@ -82,4 +82,105 @@ class AsistenciaService
 
         return ['guardadas' => $guardadas, 'fecha' => $fecha, 'bloque_id' => (int) $bloque->id, 'conflictos' => $conflictos];
     }
+
+    /**
+     * Fechas de clase del mes según los horarios del bloque (viernes si no hay horarios).
+     *
+     * @return Collection<int, string> Y-m-d
+     */
+    public function fechasClaseDelMes(Bloque $bloque, int $anio, int $mes): Collection
+    {
+        $bloque->loadMissing('horarios');
+        $dias = $bloque->horarios->pluck('dia_semana')->unique()->sort()->values();
+        if ($dias->isEmpty()) {
+            $dias = collect([5]);
+        }
+        $inicio = \Illuminate\Support\Carbon::createFromDate($anio, $mes, 1)->startOfDay();
+        $fin = $inicio->copy()->endOfMonth();
+        $fechas = collect();
+        for ($d = $inicio->copy(); $d->lte($fin); $d->addDay()) {
+            if ($dias->contains($d->dayOfWeekIso)) {
+                $fechas->push($d->toDateString());
+            }
+        }
+
+        return $fechas;
+    }
+
+    /**
+     * Matriz del mes: una celda por alumno y fecha de clase.
+     *
+     * @return array{mes: int, anio: int, fechas: list<string>, tipos: array<string, string>, alumnos: list<array{alumno_id: int, nombre: string, celdas: array<string, array{id: int, tipo: string}|null>}>}
+     */
+    public function matriz(Bloque $bloque, int $anio, int $mes): array
+    {
+        $fechas = $this->fechasClaseDelMes($bloque, $anio, $mes);
+        $alumnos = $this->alumnosDelBloque($bloque);
+        $registros = Asistencia::query()
+            ->where('bloque_id', $bloque->id)
+            ->whereYear('fecha', $anio)
+            ->whereMonth('fecha', $mes)
+            ->get();
+
+        return [
+            'mes' => $mes,
+            'anio' => $anio,
+            'fechas' => $fechas->values()->all(),
+            'tipos' => Asistencia::tiposEditables(),
+            'alumnos' => $alumnos->map(function (Alumno $alumno) use ($fechas, $registros) {
+                $celdas = [];
+                foreach ($fechas as $fecha) {
+                    $fila = $registros->first(fn (Asistencia $a) => (int) $a->alumno_id === (int) $alumno->id && $a->fecha->toDateString() === $fecha);
+                    $celdas[$fecha] = $fila ? ['id' => (int) $fila->id, 'tipo' => (string) $fila->tipo_asistencia] : null;
+                }
+
+                return ['alumno_id' => (int) $alumno->id, 'nombre' => $alumno->nombre_apellido, 'celdas' => $celdas];
+            })->values()->all(),
+        ];
+    }
+
+    /**
+     * Guarda la matriz. Una celda vacía borra el registro de ese alumno y fecha.
+     *
+     * @param  array<int|string, array<string, string|null>>  $celdas
+     */
+    public function guardarMatriz(Bloque $bloque, int $anio, int $mes, array $celdas, ?User $por): int
+    {
+        $fechas = $this->fechasClaseDelMes($bloque, $anio, $mes)->flip();
+        $ids = $this->alumnosDelBloque($bloque)->pluck('id')->map(fn ($id) => (int) $id)->flip();
+        $validos = array_keys(Asistencia::tiposEditables());
+        $guardadas = 0;
+
+        DB::transaction(function () use ($bloque, $celdas, $fechas, $ids, $validos, $por, &$guardadas) {
+            foreach ($celdas as $alumnoId => $porFecha) {
+                if (! $ids->has((int) $alumnoId) || ! is_array($porFecha)) {
+                    continue;
+                }
+                foreach ($porFecha as $fecha => $tipo) {
+                    if (! $fechas->has($fecha)) {
+                        continue;
+                    }
+                    $q = Asistencia::query()->where('bloque_id', $bloque->id)->where('alumno_id', (int) $alumnoId)->whereDate('fecha', $fecha);
+                    if ($tipo === null || $tipo === '') {
+                        $guardadas += $q->delete();
+
+                        continue;
+                    }
+                    if (! in_array($tipo, $validos, true)) {
+                        throw ValidationException::withMessages(['celdas' => 'Tipo de asistencia inválido.']);
+                    }
+                    $asistencia = $q->first() ?? new Asistencia(['alumno_id' => (int) $alumnoId, 'bloque_id' => $bloque->id, 'fecha' => $fecha]);
+                    $asistencia->tipo_asistencia = $tipo;
+                    $asistencia->presente = Asistencia::esPresente($tipo);
+                    if ($por && ($asistencia->isDirty() || ! $asistencia->exists)) {
+                        $asistencia->registrado_por = $por->id;
+                    }
+                    $asistencia->save();
+                    $guardadas++;
+                }
+            }
+        });
+
+        return $guardadas;
+    }
 }

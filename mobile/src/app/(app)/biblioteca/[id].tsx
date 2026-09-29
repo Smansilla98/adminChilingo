@@ -8,6 +8,7 @@ import { Progreso } from '@/components/form';
 import { Acciones, Aviso, Boton, Cargando, Chip, Dato, Encabezado, ErrorVista, Pantalla, Tarjeta, Texto } from '@/components/ui';
 import { api, headersSesion, urlApi } from '@/lib/api';
 import { descargarYAbrir } from '@/lib/archivos';
+import { esEnlaceExterno } from '@/lib/enlaces';
 import { useDetalle, useOperacion } from '@/lib/recursos';
 import { C, E } from '@/lib/theme';
 
@@ -48,7 +49,7 @@ export default function MaterialDetalle() {
       )}
       <Acciones>
         {m.tiene_archivo && <Boton titulo="Ver / descargar" icono="download" cargando={descarga !== null} onPress={() => void abrir()} />}
-        {!!m.url && <Boton titulo="Abrir enlace" icono="open-in-new" variante="secundario" onPress={() => Linking.openURL(m.url!)} />}
+        {!!m.url && esEnlaceExterno(m.url) && <Boton titulo="Abrir enlace" icono="open-in-new" variante="secundario" onPress={() => Linking.openURL(m.url!)} />}
         {m.acciones.moderar && <Boton titulo={m.estado === 'oculto' ? 'Publicar' : 'Ocultar'} icono={m.estado === 'oculto' ? 'visibility' : 'visibility-off'} variante="secundario" cargando={visibilidad.isPending} onPress={() => visibilidad.mutate()} />}
         {m.acciones.moderar && <Boton titulo="Eliminar" icono="delete" variante="peligro" cargando={eliminar.isPending} onPress={async () => { if (await confirmar({ titulo: `¿Eliminar "${m.titulo}"?`, mensaje: 'Se borra el archivo de la biblioteca.', accion: 'Eliminar' })) eliminar.mutate(); }} />}
       </Acciones>

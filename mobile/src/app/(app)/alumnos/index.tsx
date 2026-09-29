@@ -16,6 +16,7 @@ export default function Alumnos() {
   const q = useAlumnos(busqueda.length >= 2 ? busqueda : '');
   const puedeCrear = usePuede('alumnos.create');
   const puedeExportar = usePermisos().puede('alumnos.export');
+  const puedeImportar = usePermisos().puede('alumnos.import');
   const [exportando, setExportando] = useState(false);
   const avisar = useToast();
 
@@ -33,6 +34,7 @@ export default function Alumnos() {
         accessibilityLabel="Buscar alumno"
         clearButtonMode="while-editing"
       />
+      {puedeImportar && <Boton titulo="Importar Excel o CSV" icono="upload-file" variante="secundario" onPress={() => router.push('/alumnos/importar' as never)} />}
       {puedeExportar && (
         <Boton titulo="Exportar a Excel" icono="table-view" variante="secundario" cargando={exportando} onPress={async () => {
           setExportando(true);

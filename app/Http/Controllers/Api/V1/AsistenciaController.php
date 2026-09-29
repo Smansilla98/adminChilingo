@@ -85,4 +85,42 @@ class AsistenciaController extends Controller
 
         return response()->json($respuesta + ['duplicado' => false]);
     }
+
+    /** Matriz mensual del bloque (mismas fechas de clase que el panel). */
+    public function matriz(Request $request, Bloque $bloque, AsistenciaService $asistencias): JsonResponse
+    {
+        $this->authorize('verAsistencias', $bloque);
+        $mes = max(1, min(12, $request->integer('mes', (int) now()->month)));
+        $anio = $request->integer('anio', (int) now()->year);
+        abort_unless($anio >= 2000 && $anio <= 2100, 422);
+
+        return response()->json($asistencias->matriz($bloque, $anio, $mes) + [
+            'puede_editar' => $request->user()->can('tomarAsistencia', $bloque),
+            'puede_borrar' => $request->user()->acceso()->puede('asistencias.delete'),
+        ]);
+    }
+
+    /** Guarda celdas de la matriz. `tipo` vacío borra ese registro. */
+    public function guardarMatriz(Request $request, Bloque $bloque, AsistenciaService $asistencias): JsonResponse
+    {
+        $this->authorize('tomarAsistencia', $bloque);
+        $data = $request->validate([
+            'mes' => 'required|integer|min:1|max:12',
+            'anio' => 'required|integer|min:2000|max:2100',
+            'celdas' => 'present|array',
+        ]);
+        $guardadas = $asistencias->guardarMatriz($bloque, (int) $data['anio'], (int) $data['mes'], $data['celdas'], $request->user());
+
+        return response()->json(['guardadas' => $guardadas]);
+    }
+
+    public function destroy(Request $request, Asistencia $asistencia): JsonResponse
+    {
+        $bloque = Bloque::query()->findOrFail($asistencia->bloque_id);
+        $this->authorize('verAsistencias', $bloque);
+        abort_unless($request->user()->acceso()->puede('asistencias.delete') || $request->user()->can('tomarAsistencia', $bloque), 403);
+        $asistencia->delete();
+
+        return response()->json(['ok' => true]);
+    }
 }

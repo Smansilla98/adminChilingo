@@ -227,6 +227,10 @@ class DisenoEditorController extends Controller
         }
         $pagina->save();
         $pagina->diseno->touch();
+        $primera = $pagina->diseno->paginas()->orderBy('orden')->value('id');
+        if (isset($data['canvas_json']) && (int) $primera === (int) $pagina->id) {
+            app(\App\Domain\Disenos\MiniaturaDiseno::class)->guardar($pagina->diseno, $data['canvas_json']);
+        }
 
         return response()->json($pagina->paraEditor());
     }

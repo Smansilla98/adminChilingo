@@ -50,7 +50,7 @@ requiera abrir el panel web. La web y la app son dos clientes del mismo backend.
 |---|---|---|---|
 | Personas | listar, buscar, filtrar, alta, edición, ficha (funciones, cuenta, cuotas, becas, asistencias, eventos, inventario, permisos), fusionar | ✅ todo | Ficha central con pestañas y acciones (inscribir, sumar al plantel, crear cuenta, registrar pago, otorgar beca, historial) |
 | Profesores | listar, alta (desde persona), edición (bloques con rol, roles de sede, cuenta), baja | ✅ todo | |
-| Alumnos | listar, alta, edición, baja, ficha, exportar Excel, importar Excel | ◐ | Falta importar Excel |
+| Alumnos | listar, alta, edición, baja, ficha, exportar Excel, importar Excel | ✅ todo | Importación por `POST /alumnos/importar` |
 | Bloques | CRUD, horarios, alumnos | ✅ todo | |
 | Sedes | CRUD, activar/desactivar | ✅ todo | Edición parcial no pisa la liquidación |
 | Eventos | CRUD con ámbito | ✅ todo | |
@@ -66,30 +66,21 @@ requiera abrir el panel web. La web y la app son dos clientes del mismo backend.
 | Usuarios y permisos | CRUD de cuentas, estado, contraseña, roles/permisos con alcance | ✅ todo | + consulta de sesiones de la app por dispositivo |
 | Auditoría | listado filtrable, detalle | ✅ todo | + historial dentro de cada ficha |
 | Villa Gesell | datos, inscriptos, calendario de tocadas, gastos, insumos, altas rápidas, plan | ✅ todo | |
-| Diseño | diseños, páginas, plantillas, imágenes, kit, edición en lienzo | ◐ | Edición de contenido en el teléfono (textos, colores, imágenes, formas, orden, tamaño/posición por pasos) y export PDF; la edición libre por arrastre/rotación/tipografías sigue siendo del editor web |
+| Diseño | diseños, páginas, plantillas, imágenes, kit, edición en lienzo | ✅ todo | Arrastre, giro, tipografía básica y miniatura generada al guardar. El editor de escritorio sigue existiendo para quien lo use en la web |
 | Biblioteca | buscar, filtrar, ver, subir, ocultar/publicar, eliminar | ✅ todo | — sin carpetas ni renombrar en la web |
 | Inventario | CRUD, movimientos, QR | ✅ todo | |
-| Asistencia | planilla por día (offline), corrección | ◐ | Falta la matriz mensual y el borrado de registros sueltos |
+| Asistencia | planilla por día (offline), corrección | ✅ todo | Matriz mensual y borrado de una celda por la API |
 | Seguimiento pedagógico | notas por alumno | ✅ todo | |
-| Partituras | visor, PDF, partes, videos; administración | ◐ | Visor interactivo en el navegador (excepción justificada); administración/edición de partituras no migrada |
-| Operativo | Pendientes, resumen por WhatsApp/mail, chatbot | ◐ | Inicio y "Cierre de mes" cubren el tablero; recordatorios masivos no migrados |
+| Partituras | visor, PDF, partes, videos; administración | ◐ | Lectura, PDF y publicar/ocultar por la API. El editor de notación tipo MuseScore sigue siendo de la web |
+| Operativo | Pendientes, resumen por WhatsApp/mail, chatbot | ✅ todo | Chat, WhatsApp y mail por `/recordatorios`, sin abrir el panel |
 
-### Excepción justificada (única apertura de navegador)
-
-El **visor de partituras** (render VexFlow + motor de audio sincronizado) es una
-herramienta de estudio, no una operación administrativa. Se abre a pantalla completa en
-el navegador del sistema. El PDF original se descarga de forma nativa.
+La app no abre páginas del panel. La partitura se lee con `lectura` (símbolos por
+compás e instrumento) y el PDF original se baja de `GET /partituras/{slug}/archivo`.
+Un enlace de biblioteca o un video solo se abre afuera si el host no es el de la API.
 
 ## Pendientes
 
-1. Importación de alumnos desde Excel (web `alumnos/import`).
-2. Matriz mensual de asistencia y borrado de registros individuales.
-3. Administración de partituras (editor de toques, cuadernillo, secciones del programa).
-4. Recordatorios masivos (resumen por WhatsApp/mail y chatbot de recordatorios).
-5. Diseño: edición libre por gestos (arrastrar, rotar, tipografías) y miniatura PNG
-   generada en el teléfono (hoy se genera al abrir el diseño en el editor web).
-6. Matriz legacy de visibilidad de módulos por usuario (`/accesos`), reemplazada por
+1. Editor de notación de partituras (cuadernillo, compases y audio) equivalente al de la web.
+2. Matriz legacy de visibilidad de módulos por usuario (`/accesos`), reemplazada por
    roles y permisos con alcance.
-7. Pruebas manuales en dispositivos (Android/iOS) y contra un entorno de staging: en
-   esta sesión se validó con tests automatizados, typecheck, lint y bundle de EAS; no se
-   ejecutaron operaciones contra producción.
+3. Pruebas manuales en dispositivos contra producción.

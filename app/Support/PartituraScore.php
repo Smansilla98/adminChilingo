@@ -51,6 +51,21 @@ class PartituraScore
         'timbal' => 'abierto',
     ];
 
+    /** Símbolo corto por golpe, para leer la partitura fuera del editor web. */
+    public const SIMBOLOS = [
+        'nota' => '●',
+        'acentuado' => '>',
+        'chapa' => '✕',
+        'tapado' => '—',
+        'presionado' => '=',
+        'abierto' => '●',
+        'slap' => '○',
+        'palma' => '●',
+        'dedo' => '·',
+        'agudo' => '▲',
+        'flam' => 'fl',
+    ];
+
     /**
      * @return array<string, mixed>
      */
@@ -499,5 +514,84 @@ class PartituraScore
             'golpes' => $golpes,
             'instrumentos' => count($score['instruments'] ?? []),
         ];
+    }
+
+    /**
+     * Lectura compacta para clientes que no abren el visor web (app).
+     * Cada compás es una línea de símbolos por instrumento; el silencio es «·».
+     *
+     * @param  array<string, mixed>|null  $score
+     * @return array<string, mixed>|null
+     */
+    public static function lectura(?array $score): ?array
+    {
+        if (! is_array($score) || empty($score['sections']) || ! is_array($score['sections'])) {
+            return null;
+        }
+
+        $ts = is_array($score['timeSignature'] ?? null) ? $score['timeSignature'] : ['num' => 4, 'den' => 4];
+        $instrumentos = [];
+        foreach (is_array($score['instruments'] ?? null) ? $score['instruments'] : [] as $cfg) {
+            $id = is_array($cfg) ? (string) ($cfg['id'] ?? '') : (string) $cfg;
+            if (! array_key_exists($id, self::INSTRUMENTOS) || collect($instrumentos)->contains('id', $id)) {
+                continue;
+            }
+            $instrumentos[] = ['id' => $id, 'nombre' => self::INSTRUMENTOS[$id]];
+        }
+
+        $secciones = [];
+        foreach ($score['sections'] as $sec) {
+            if (! is_array($sec)) {
+                continue;
+            }
+            $compases = [];
+            foreach (is_array($sec['measures'] ?? null) ? $sec['measures'] : [] as $compas) {
+                if (! is_array($compas)) {
+                    continue;
+                }
+                $voces = [];
+                foreach (is_array($compas['voces'] ?? null) ? $compas['voces'] : [] as $id => $notas) {
+                    if (! array_key_exists((string) $id, self::INSTRUMENTOS) || ! is_array($notas)) {
+                        continue;
+                    }
+                    $voces[(string) $id] = self::lineaDeCompas($notas);
+                }
+                $compases[] = ['voces' => $voces];
+            }
+            $secciones[] = [
+                'nombre' => (string) ($sec['name'] ?? 'Sección'),
+                'repetir' => max(1, (int) ($sec['repeatX'] ?? 1)),
+                'compases' => $compases,
+            ];
+        }
+
+        return [
+            'tempo' => (int) ($score['tempo'] ?? 0),
+            'compas' => ((int) ($ts['num'] ?? 4)).'/'.((int) ($ts['den'] ?? 4)),
+            'instrumentos' => $instrumentos,
+            'secciones' => $secciones,
+        ];
+    }
+
+    /**
+     * @param  array<int, mixed>  $notas
+     */
+    private static function lineaDeCompas(array $notas): string
+    {
+        $partes = [];
+        foreach ($notas as $nota) {
+            if (! is_array($nota)) {
+                continue;
+            }
+            if (! empty($nota['rest'])) {
+                $partes[] = '·';
+
+                continue;
+            }
+            $golpe = (string) ($nota['stroke'] ?? 'nota');
+            $partes[] = self::SIMBOLOS[$golpe] ?? '●';
+        }
+
+        return implode(' ', $partes);
     }
 }

@@ -3,7 +3,8 @@ import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 
 import { FiltrosChips } from '@/components/lista';
-import { Cargando, Chip, ErrorVista, Pantalla, Tarjeta, Tenue, Texto } from '@/components/ui';
+import { Boton, Cargando, Chip, ErrorVista, Pantalla, Tarjeta, Tenue, Texto } from '@/components/ui';
+import { usePuede } from '@/lib/permisos';
 import { MESES } from '@/features/finanzas/tipos';
 import { api, qs } from '@/lib/api';
 import { C } from '@/lib/theme';
@@ -20,12 +21,14 @@ const DESTINO: Record<string, { ruta: string; params?: Record<string, string>; t
 /** Checklist del cierre de mes de toda la escuela. */
 export default function CierreMes() {
   const hoy = new Date();
+  const puedeAvisar = usePuede('notificaciones.send');
   const [mes, setMes] = useState(hoy.getMonth() + 1);
   const q = useQuery({ queryKey: ['facturacion', 'cierre', mes, hoy.getFullYear()], queryFn: () => api<Cierre>(`facturacion/cierre-mes${qs({ mes, anio: hoy.getFullYear() })}`) });
 
   return (
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
       <Stack.Screen options={{ title: 'Cierre de mes' }} />
+      {puedeAvisar && <Boton titulo="Recordatorios" icono="campaign" variante="secundario" onPress={() => router.push('/recordatorios' as never)} />}
       <FiltrosChips opciones={MESES.map((m, i) => ({ valor: i + 1, etiqueta: m.slice(0, 3) }))} valor={mes} onChange={(v) => setMes(v ?? hoy.getMonth() + 1)} todos={false} />
       {q.isPending && <Cargando />}
       {q.isError && <ErrorVista error={q.error} onReintentar={() => q.refetch()} />}

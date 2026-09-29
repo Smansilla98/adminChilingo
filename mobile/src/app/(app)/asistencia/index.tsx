@@ -17,6 +17,7 @@ export default function Bloques() {
   return (
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
       <Stack.Screen options={{ title: 'Asistencia' }} />
+      <Tenue>Mantené apretado un bloque para ver la matriz del mes.</Tenue>
       {bloques.length === 0 && <Vacio icono="groups" texto="No tenés bloques donde tomar asistencia." />}
       {bloques.map((b) => (
         <Pressable
@@ -24,7 +25,8 @@ export default function Bloques() {
           accessibilityRole="button"
           accessibilityLabel={`Tomar asistencia de ${b.nombre}`}
           style={({ pressed }) => [s.fila, pressed && { opacity: 0.7 }]}
-          onPress={() => router.push({ pathname: '/asistencia/[bloque]', params: { bloque: String(b.id), nombre: b.nombre } } as never)}>
+          onPress={() => router.push({ pathname: '/asistencia/[bloque]', params: { bloque: String(b.id), nombre: b.nombre } } as never)}
+          onLongPress={() => router.push({ pathname: '/asistencia/matriz/[bloque]', params: { bloque: String(b.id), nombre: b.nombre } } as never)}>
           <View style={{ flex: 1, gap: 2 }}>
             <Texto style={{ fontWeight: '800' }}>{b.nombre}</Texto>
             <Tenue>{[b.sede?.nombre, `${b.anio}° año`, b.cantidad_alumnos != null ? `${b.cantidad_alumnos} alumnos` : null].filter(Boolean).join(' · ')}</Tenue>

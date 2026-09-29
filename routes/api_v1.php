@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\PagoController;
 use App\Http\Controllers\Api\V1\PartituraController;
 use App\Http\Controllers\Api\V1\PersonaController;
 use App\Http\Controllers\Api\V1\ProfesorController;
+use App\Http\Controllers\Api\V1\RecordatorioController;
 use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\SedeController;
 use App\Http\Controllers\Api\V1\SeguimientoController;
@@ -65,6 +66,9 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
 
     Route::get('bloques/{bloque}/asistencia', [AsistenciaController::class, 'planilla'])->name('asistencia.planilla');
     Route::post('bloques/{bloque}/asistencia', [AsistenciaController::class, 'guardar'])->name('asistencia.guardar');
+    Route::get('bloques/{bloque}/asistencia/matriz', [AsistenciaController::class, 'matriz'])->name('asistencia.matriz');
+    Route::put('bloques/{bloque}/asistencia/matriz', [AsistenciaController::class, 'guardarMatriz'])->name('asistencia.matriz.guardar');
+    Route::delete('asistencias/{asistencia}', [AsistenciaController::class, 'destroy'])->whereNumber('asistencia')->name('asistencias.destroy');
 
     // Personas (ficha central) y becas
     Route::get('personas', [PersonaController::class, 'index'])->name('personas.index');
@@ -100,6 +104,7 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
 
     Route::get('alumnos', [AlumnoController::class, 'index'])->name('alumnos.index');
     Route::get('alumnos/exportar', [AlumnoController::class, 'exportar'])->middleware(['permiso:alumnos.export', 'throttle:10,1'])->name('alumnos.exportar');
+    Route::post('alumnos/importar', [AlumnoController::class, 'importar'])->middleware('permiso:alumnos.import')->name('alumnos.importar');
     Route::get('alumnos/catalogo', [AlumnoController::class, 'catalogo'])->name('alumnos.catalogo');
     Route::post('alumnos', [AlumnoController::class, 'store'])->middleware('permiso:alumnos.create')->name('alumnos.store');
     Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->whereNumber('alumno')->name('alumnos.show');
@@ -254,7 +259,13 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::post('inventario/{item}/movimientos', [InventarioController::class, 'movimiento'])->whereNumber('item')->name('inventario.movimiento');
 
     Route::get('partituras', [PartituraController::class, 'index'])->name('partituras.index');
+    Route::get('partituras/{slug}/archivo', [PartituraController::class, 'archivo'])->name('partituras.archivo');
+    Route::put('partituras/{slug}', [PartituraController::class, 'update'])->middleware('permiso:partituras.admin')->name('partituras.update');
     Route::get('partituras/{slug}', [PartituraController::class, 'show'])->name('partituras.show');
+
+    Route::get('recordatorios/chat', [RecordatorioController::class, 'chat'])->name('recordatorios.chat');
+    Route::post('recordatorios/whatsapp', [RecordatorioController::class, 'whatsapp'])->middleware('permiso:notificaciones.send')->name('recordatorios.whatsapp');
+    Route::post('recordatorios/mail', [RecordatorioController::class, 'mail'])->middleware('permiso:notificaciones.send')->name('recordatorios.mail');
 
     Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
     Route::post('notificaciones/leer-todas', [NotificacionController::class, 'leerTodas'])->name('notificaciones.leer-todas');

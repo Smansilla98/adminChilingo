@@ -59,7 +59,7 @@ sede devuelve 403 aunque el ID exista. Los listados vienen filtrados por alcance
 | GET | `/alumnos?q=&bloque_id=&sede_id=&activo=1` · `/alumnos/{id}` | DNI y nacimiento solo si puede editar al alumno |
 | GET | `/calendario?desde=&hasta=&sede_id=&bloque_id=` | Clases (horarios), eventos y shows del alcance. Máx. 62 días |
 | GET | `/eventos?desde=` | Próximos eventos del alcance |
-| GET | `/partituras` · `/partituras/{slug}?con_score=1` | Toques publicados; `visor_url`, `pdf_url`, `partes`, `videos` |
+| GET | `/partituras` · `/partituras/{slug}` · `/partituras/{slug}/archivo` | Toques publicados. El detalle trae `lectura` (símbolos por compás) y `tiene_pdf`. El PDF se descarga por la API, sin abrir el panel. |
 
 #### Asistencia (idempotente y apta para offline)
 

@@ -14,7 +14,7 @@ TypeScript, TanStack Query. Consume `/api/v1` ([API.md](API.md)); el backend Lar
 | Sesión | Token en SecureStore (Keychain / Keystore); renovación automática < 7 días | No se guardan contraseñas |
 | Offline | Solo **asistencia** tiene cola de escritura; el registro de pagos es idempotente (`client_uuid`) | Es lo que se hace en el aula; el resto es consulta (caché) y reintento seguro |
 | Menú | Construido con `/me.modulos` | La app no decide permisos: muestra lo que el backend habilita |
-| Partituras | El visor web existente (VexFlow + audio) se abre a pantalla completa; el PDF se descarga nativo | Única excepción documentada: herramienta de estudio, no administrativa |
+| Partituras | Lectura nativa con el JSON de la API (`lectura`) y PDF por `/partituras/{slug}/archivo` | No abre el panel web |
 | Módulos de gestión | **Todos nativos** (ver [PARIDAD_MOBILE.md](PARIDAD_MOBILE.md)) | La app es un cliente administrativo completo |
 | Archivos | Subida multipart nativa con progreso/cancelación; descarga a disco y menú de compartir; PDF con `expo-print` | No se cargan archivos enteros en memoria de JS |
 

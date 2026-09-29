@@ -134,7 +134,7 @@ export default function EditorDiseno() {
     <Pantalla>
       <Stack.Screen options={{ title: d.name }} />
       <Segmentos opciones={paginas.map((p, n) => ({ valor: p.id, etiqueta: p.title || `Página ${n + 1}` }))} valor={pagina.id} onChange={(v) => { setPaginaId(v); setSel(null); }} />
-      <Lienzo canvas={canvas} ancho={d.width} alto={d.height} anchoVista={anchoVista} seleccionado={sel} onSeleccionar={(i) => { setSel(i); setHoja('objeto'); }} />
+      <Lienzo canvas={canvas} ancho={d.width} alto={d.height} anchoVista={anchoVista} seleccionado={sel} onSeleccionar={(i) => { setSel(i); setHoja('objeto'); }} onMover={(i, left, top) => cambiarObjeto(i, { left, top })} />
       <Tenue style={{ fontSize: 12 }}>Vista previa aproximada. Tocá un elemento para editarlo.</Tenue>
       {subiendo !== null && <Progreso fraccion={subiendo} texto="Subiendo imagen…" />}
       {sucio && <Aviso tono="alerta" texto="Tenés cambios sin guardar." />}
@@ -168,7 +168,7 @@ export default function EditorDiseno() {
         <Boton titulo="Duplicar diseño" icono="copy-all" variante="secundario" onPress={() => void duplicarDiseno()} />
         <Boton titulo="Eliminar diseño" icono="delete" variante="peligro" cargando={eliminar.isPending} onPress={async () => { if (await confirmar({ titulo: `¿Eliminar "${d.name}"?`, mensaje: 'Se borran todas sus páginas.', accion: 'Eliminar' })) eliminar.mutate(); }} />
       </Acciones>
-      {!d.thumbnail_url && <Tenue style={{ fontSize: 12 }}>La imagen para compartir se genera al abrir el diseño en el editor completo; mientras tanto podés exportarlo en PDF.</Tenue>}
+      {!d.thumbnail_url && <Tenue style={{ fontSize: 12 }}>Al guardar, la app arma la miniatura. También podés exportar el PDF.</Tenue>}
 
       <Hoja visible={hoja === 'objeto' && !!objeto} titulo={objeto && esTexto(objeto) ? 'Texto' : objeto?.type === 'image' ? 'Imagen' : 'Forma'} onCerrar={() => setHoja(null)}>
         {objeto && sel !== null && (
@@ -258,6 +258,15 @@ function EditorObjeto({ o, anchoLienzo, onCambiar, onReemplazarImagen, onOrden, 
         <View style={{ flex: 1 }}><Boton titulo="Achicar" icono="zoom-out" variante="secundario" onPress={() => (esTexto(o) ? onCambiar({ width: (o.width ?? 300) * 0.9 }) : escalar(0.9))} /></View>
         <View style={{ flex: 1 }}><Boton titulo="Agrandar" icono="zoom-in" variante="secundario" onPress={() => (esTexto(o) ? onCambiar({ width: (o.width ?? 300) * 1.1 }) : escalar(1.1))} /></View>
       </Fila>
+      <Fila>
+        <View style={{ flex: 1 }}><Boton titulo="Girar −" icono="rotate-left" variante="secundario" onPress={() => onCambiar({ angle: ((o.angle ?? 0) - 15 + 360) % 360 })} /></View>
+        <View style={{ flex: 1 }}><Boton titulo="Girar +" icono="rotate-right" variante="secundario" onPress={() => onCambiar({ angle: ((o.angle ?? 0) + 15) % 360 })} /></View>
+      </Fila>
+      {esTexto(o) && (
+        <Fila>
+          {['sans-serif', 'serif', 'monospace'].map((f) => <ChipSel key={f} etiqueta={f === 'sans-serif' ? 'Sans' : f === 'serif' ? 'Serif' : 'Mono'} activo={(o.fontFamily ?? 'sans-serif') === f} onPress={() => onCambiar({ fontFamily: f })} />)}
+        </Fila>
+      )}
       <Acciones>
         <Boton titulo="Al frente" icono="flip-to-front" variante="secundario" onPress={() => onOrden('frente')} />
         <Boton titulo="Al fondo" icono="flip-to-back" variante="secundario" onPress={() => onOrden('fondo')} />

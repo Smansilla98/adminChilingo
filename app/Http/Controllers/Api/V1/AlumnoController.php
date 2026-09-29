@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Datos\EliminacionSegura;
 use App\Domain\Finanzas\EstadoCuentaService;
+use App\Domain\Personas\AlumnoImportService;
 use App\Domain\Personas\AlumnoService;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\AlumnoResource;
@@ -83,8 +84,8 @@ class AlumnoController extends Controller
     public function catalogo(Request $request): JsonResponse
     {
         $acceso = $request->user()->acceso();
-        abort_unless($acceso->puedeAlguno(['alumnos.create', 'alumnos.update']), 403);
-        $alcance = $acceso->alcance('alumnos.create')->unir($acceso->alcance('alumnos.update'));
+        abort_unless($acceso->puedeAlguno(['alumnos.create', 'alumnos.update', 'alumnos.import']), 403);
+        $alcance = $acceso->alcance('alumnos.create')->unir($acceso->alcance('alumnos.update'))->unir($acceso->alcance('alumnos.import'));
         $sedes = Sede::query()->where('activo', true)->orderBy('nombre')->get(['id', 'nombre']);
         $bloques = Bloque::query()->where('activo', true)->with('sede:id,nombre')->orderBy('nombre')->get();
         if (! $alcance->esGlobal()) {
@@ -127,7 +128,35 @@ class AlumnoController extends Controller
         ];
     }
 
-    /** Excel de alumnos del alcance (mismo archivo y filtros que el panel web). */
+    /** CSV o Excel. Misma lectura que el formulario del panel. */
+    public function importar(Request $request, AlumnoImportService $importador): JsonResponse
+    {
+        abort_unless($request->user()->acceso()->puede('alumnos.import'), 403);
+        $data = $request->validate([
+            'archivo' => ['required', 'file', 'max:10240', 'mimes:csv,txt,xlsx,xls'],
+            'sede_id' => ['required', 'exists:sedes,id'],
+            'bloque_id' => ['nullable', 'exists:bloques,id'],
+        ], [
+            'archivo.required' => 'Tenés que subir un archivo.',
+            'archivo.mimes' => 'Formato inválido. Usá CSV o Excel.',
+            'sede_id.required' => 'Seleccioná una sede.',
+        ]);
+        $alcance = $request->user()->acceso()->alcance('alumnos.import');
+        abort_unless($alcance->esGlobal() || $alcance->incluyeSede((int) $data['sede_id']), 403);
+        if (! empty($data['bloque_id'])) {
+            $bloque = Bloque::query()->findOrFail($data['bloque_id']);
+            abort_unless((int) $bloque->sede_id === (int) $data['sede_id'], 422, 'El bloque no es de esa sede.');
+            abort_unless($alcance->esGlobal() || $alcance->incluyeBloque((int) $bloque->id, (int) $bloque->sede_id), 403);
+        }
+
+        return response()->json($importador->importar(
+            $request->file('archivo'),
+            (int) $data['sede_id'],
+            ! empty($data['bloque_id']) ? (int) $data['bloque_id'] : null
+        ));
+    }
+
+    /** Excel de alumnos del alcance (mismo archivo y filtros que el panel). */
     public function exportar(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AlumnosExport($request, $request->user()), 'alumnos_'.now()->format('Y-m-d').'.xlsx');

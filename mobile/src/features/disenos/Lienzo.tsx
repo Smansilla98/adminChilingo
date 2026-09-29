@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Pressable, Text, View } from 'react-native';
+import { PanResponder, Pressable, Text, View } from 'react-native';
 
 import { C } from '@/lib/theme';
 
@@ -51,13 +51,15 @@ export const esTexto = (o: ObjetoLienzo) => ['textbox', 'i-text', 'text'].includ
  * (tipografías y efectos pueden variar respecto del editor web) pensada para revisar
  * y editar el contenido desde el teléfono. Tocar un objeto lo selecciona.
  */
-export function Lienzo({ canvas, ancho, alto, anchoVista, seleccionado, onSeleccionar }: {
+export function Lienzo({ canvas, ancho, alto, anchoVista, seleccionado, onSeleccionar, onMover }: {
   canvas: CanvasJson;
   ancho: number;
   alto: number;
   anchoVista: number;
   seleccionado?: number | null;
   onSeleccionar?: (indice: number) => void;
+  /** Arrastre en coordenadas del lienzo (px del diseño, no de la pantalla). */
+  onMover?: (indice: number, left: number, top: number) => void;
 }) {
   const k = anchoVista / Math.max(1, ancho);
   return (
@@ -104,10 +106,17 @@ export function Lienzo({ canvas, ancho, alto, anchoVista, seleccionado, onSelecc
           );
         }
         if (!contenido) return null;
+        const gesto = onMover ? PanResponder.create({
+          onStartShouldSetPanResponder: () => true,
+          onPanResponderGrant: () => onSeleccionar?.(i),
+          onPanResponderRelease: (_, g) => onMover(i, (o.left ?? 0) + g.dx / k, (o.top ?? 0) + g.dy / k),
+        }) : null;
         return onSeleccionar ? (
-          <Pressable key={i} onPress={() => onSeleccionar(i)} accessibilityRole="button" accessibilityLabel={esTexto(o) ? `Texto: ${o.text}` : `Elemento ${o.type}`} style={caja}>
-            {contenido}
-          </Pressable>
+          <View key={i} {...(gesto ? gesto.panHandlers : {})} style={caja}>
+            <Pressable onPress={() => onSeleccionar(i)} accessibilityRole="button" accessibilityLabel={esTexto(o) ? `Texto: ${o.text}` : `Elemento ${o.type}`} style={{ flex: 1 }}>
+              {contenido}
+            </Pressable>
+          </View>
         ) : <View key={i} style={caja}>{contenido}</View>;
       })}
     </View>
