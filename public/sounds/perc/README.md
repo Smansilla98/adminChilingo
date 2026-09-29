@@ -20,9 +20,9 @@ Cada hit se afinó, filtró y recortó al vocabulario de la escuela: surdo grave
 (~0,20 s, no boom de batucada), caixa nítida, repique más agudo, golpe agudo = ping de
 triángulo muted (el glifo del cuadernillo), agogó real, palmas.
 
-**No es la batería grabada de La Chilinga.** No va a ser posible grabar esos audios con
-la escuela por ahora. Cuando haya one-shots propios, se tiran encima con el mismo nombre
-de archivo.
+**No es la batería grabada de La Chilinga.** Para grabarla y reemplazar estos
+archivos sin que el servidor los pise, seguí `COMO-GRABAR.md` (archivo `PROPIO`
+en esta carpeta y `PERC_KIT_REBUILD=0`).
 
 Regenerar (lo hace `start.sh` al arrancar si hay `ffmpeg`; las fuentes van en el repo):
 

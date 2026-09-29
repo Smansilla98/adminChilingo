@@ -176,6 +176,19 @@
             </div>
 
             <div class="accordion-item" data-ayuda-item>
+                <h3 class="accordion-header" id="h-sonidos">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c-sonidos" aria-expanded="false" aria-controls="c-sonidos">
+                        Grabar los sonidos de los tambores
+                    </button>
+                </h3>
+                <div id="c-sonidos" class="accordion-collapse collapse" aria-labelledby="h-sonidos" data-bs-parent="#ayudaAccordion">
+                    <div class="accordion-body ayuda-body">
+                        @include('programa.partials.grabar-sonidos', ['enAyuda' => true])
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item" data-ayuda-item>
                 <h3 class="accordion-header" id="h-profesores">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c-profesores" aria-expanded="false" aria-controls="c-profesores">
                         5) Para todos — Calendario

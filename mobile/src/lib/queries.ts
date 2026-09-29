@@ -69,9 +69,9 @@ export const useInventarioItem = (id: number) =>
 export const useAvisos = () =>
   useQuery({ queryKey: ['avisos'], queryFn: () => api<{ no_leidas: number; data: Aviso[] }>('notificaciones') });
 
-export const usePartituras = () =>
+export const usePartituras = (todas = false) =>
   useQuery({
-    queryKey: ['partituras'],
-    queryFn: () => api<{ data: { slug: string; nombre: string; anio: number; autor: string | null; tiene_partitura: boolean }[] }>('partituras').then((r) => r.data),
+    queryKey: ['partituras', todas],
+    queryFn: () => api<{ data: { slug: string; nombre: string; anio: number; autor: string | null; tiene_partitura: boolean; publicado?: boolean }[] }>(`partituras${todas ? '?todas=1' : ''}`).then((r) => r.data),
     staleTime: 60 * 60_000,
   });

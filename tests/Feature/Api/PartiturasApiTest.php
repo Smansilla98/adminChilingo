@@ -73,4 +73,67 @@ class PartiturasApiTest extends TestCase
 
         $this->get('/api/v1/partituras/samba/archivo')->assertOk();
     }
+
+    public function test_el_admin_crea_escribe_y_escucha_por_la_api_y_un_alumno_no_edita(): void
+    {
+        $ajeno = $this->persona('Ana');
+        $alumno = $this->usuario('Ana', $ajeno);
+        $this->asignarRol($ajeno, 'alumno');
+        Sanctum::actingAs($alumno->fresh());
+        $this->postJson('/api/v1/partituras', ['nombre' => 'No', 'anio' => 1])->assertForbidden();
+
+        $persona = $this->persona('Dire');
+        $admin = $this->usuario('Dire', $persona);
+        $this->asignarRol($persona, 'administrador');
+        Sanctum::actingAs($admin->fresh());
+
+        $alta = $this->postJson('/api/v1/partituras', [
+            'nombre' => 'Toque de prueba',
+            'anio' => 2,
+            'autor' => 'Bloque',
+        ])->assertCreated();
+        $slug = $alta->json('slug');
+        $this->assertIsString($slug);
+
+        $this->putJson('/api/v1/partituras/'.$slug.'/score', [
+            'score' => [
+                'tempo' => 84,
+                'timeSignature' => ['num' => 4, 'den' => 4],
+                'instruments' => [['id' => 'surdo_grave'], ['id' => 'repique']],
+                'sections' => [[
+                    'name' => 'Llamada',
+                    'repeatX' => 2,
+                    'measures' => [[
+                        'voces' => [
+                            'surdo_grave' => [
+                                ['dur' => 'q', 'rest' => false, 'stroke' => 'nota'],
+                                ['dur' => 'q', 'rest' => true],
+                                ['dur' => 'q', 'rest' => true],
+                                ['dur' => 'q', 'rest' => true],
+                            ],
+                        ],
+                    ]],
+                ]],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('lectura.secciones.0.repetir', 2)
+            ->assertJsonPath('lectura.secciones.0.compases.0.voces.surdo_grave', '● · · ·');
+
+        $this->getJson('/api/v1/partituras/'.$slug)
+            ->assertOk()
+            ->assertJsonPath('publicado', false)
+            ->assertJsonPath('score.sections.0.name', 'Llamada');
+
+        Sanctum::actingAs($alumno->fresh());
+        $this->getJson('/api/v1/partituras/'.$slug)->assertNotFound();
+
+        Sanctum::actingAs($admin->fresh());
+        $muestras = $this->getJson('/api/v1/partituras/muestras')->assertOk()->json('data');
+        $this->assertCount(27, $muestras);
+        $this->get('/api/v1/partituras/muestras/surdo_grave_normal.wav')->assertOk();
+        $this->getJson('/api/v1/partituras/muestras/no_existe.wav')->assertNotFound();
+
+        $this->deleteJson('/api/v1/partituras/'.$slug)->assertOk();
+        $this->getJson('/api/v1/partituras/'.$slug)->assertNotFound();
+    }
 }

@@ -259,8 +259,14 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::post('inventario/{item}/movimientos', [InventarioController::class, 'movimiento'])->whereNumber('item')->name('inventario.movimiento');
 
     Route::get('partituras', [PartituraController::class, 'index'])->name('partituras.index');
+    Route::post('partituras', [PartituraController::class, 'store'])->middleware('permiso:partituras.admin')->name('partituras.store');
+    Route::get('partituras/muestras', [PartituraController::class, 'muestras'])->name('partituras.muestras');
+    Route::get('partituras/muestras/{archivo}', [PartituraController::class, 'muestra'])->where('archivo', '[a-z0-9_]+\.wav')->name('partituras.muestra');
     Route::get('partituras/{slug}/archivo', [PartituraController::class, 'archivo'])->name('partituras.archivo');
+    Route::post('partituras/{slug}/archivo', [PartituraController::class, 'subirArchivo'])->middleware('permiso:partituras.admin')->name('partituras.archivo.subir');
+    Route::put('partituras/{slug}/score', [PartituraController::class, 'guardarScore'])->middleware('permiso:partituras.admin')->name('partituras.score');
     Route::put('partituras/{slug}', [PartituraController::class, 'update'])->middleware('permiso:partituras.admin')->name('partituras.update');
+    Route::delete('partituras/{slug}', [PartituraController::class, 'destroy'])->middleware('permiso:partituras.admin')->name('partituras.destroy');
     Route::get('partituras/{slug}', [PartituraController::class, 'show'])->name('partituras.show');
 
     Route::get('recordatorios/chat', [RecordatorioController::class, 'chat'])->name('recordatorios.chat');

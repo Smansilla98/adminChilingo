@@ -14,7 +14,7 @@ TypeScript, TanStack Query. Consume `/api/v1` ([API.md](API.md)); el backend Lar
 | Sesión | Token en SecureStore (Keychain / Keystore); renovación automática < 7 días | No se guardan contraseñas |
 | Offline | Solo **asistencia** tiene cola de escritura; el registro de pagos es idempotente (`client_uuid`) | Es lo que se hace en el aula; el resto es consulta (caché) y reintento seguro |
 | Menú | Construido con `/me.modulos` | La app no decide permisos: muestra lo que el backend habilita |
-| Partituras | Lectura nativa con el JSON de la API (`lectura`) y PDF por `/partituras/{slug}/archivo` | No abre el panel web |
+| Partituras | Lectura, grilla para escribir, escucha del conjunto y por cuerda, PDF por la API | El pentagrama grabado (VexFlow) sigue en la web. La app escribe en grilla de semicorcheas y suena con los WAV de `/partituras/muestras` |
 | Módulos de gestión | **Todos nativos** (ver [PARIDAD_MOBILE.md](PARIDAD_MOBILE.md)) | La app es un cliente administrativo completo |
 | Archivos | Subida multipart nativa con progreso/cancelación; descarga a disco y menú de compartir; PDF con `expo-print` | No se cargan archivos enteros en memoria de JS |
 
@@ -32,7 +32,7 @@ TypeScript, TanStack Query. Consume `/api/v1` ([API.md](API.md)); el backend Lar
 | Gestión | según permisos | personas, profesores, alumnos, bloques, sedes, eventos, shows, cuotas, pagos, comprobantes, becas, gastos, facturación, compras, reportes, usuarios, auditoría, Villa Gesell, diseño, biblioteca |
 | Alumnos | docentes / coordinación | búsqueda, ficha, llamar, estado de cuenta si tiene permiso |
 | Inventario | encargados | buscar, **escanear QR**/código, ficha con historial, registrar movimiento/estado, alta |
-| Partituras | todos | programa por año → visor, PDF, partes por instrumento, videos |
+| Partituras | todos | programa por año → lectura, escucha (conjunto, solo y mute por cuerda, tempo, metrónomo, conteo), PDF, videos. Quien administra: alta, grilla, guardar, publicar, PDF y baja |
 
 UX: fondo negro y acento naranja del panel, objetivos táctiles ≥ 48 px, botones grandes en las
 acciones principales, textos cortos, lectores de pantalla (roles y etiquetas accesibles).

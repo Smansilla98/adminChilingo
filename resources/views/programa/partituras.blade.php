@@ -29,6 +29,8 @@
     </div>
 </div>
 
+@include('programa.partials.grabar-sonidos')
+
 @if($esAdmin)
 <form action="{{ route('programa.partituras.toques.store') }}" method="POST" class="ito-card p-3 mb-3">
     @csrf

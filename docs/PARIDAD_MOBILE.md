@@ -71,16 +71,17 @@ requiera abrir el panel web. La web y la app son dos clientes del mismo backend.
 | Inventario | CRUD, movimientos, QR | ✅ todo | |
 | Asistencia | planilla por día (offline), corrección | ✅ todo | Matriz mensual y borrado de una celda por la API |
 | Seguimiento pedagógico | notas por alumno | ✅ todo | |
-| Partituras | visor, PDF, partes, videos; administración | ◐ | Lectura, PDF y publicar/ocultar por la API. El editor de notación tipo MuseScore sigue siendo de la web |
+| Partituras | visor, PDF, partes, videos; administración, escritura y audio | ✅ todo | Grilla de semicorcheas (no el pentagrama VexFlow). Escucha por cuerda con los WAV de la API. Alta, baja, publicar y PDF |
 | Operativo | Pendientes, resumen por WhatsApp/mail, chatbot | ✅ todo | Chat, WhatsApp y mail por `/recordatorios`, sin abrir el panel |
 
-La app no abre páginas del panel. La partitura se lee con `lectura` (símbolos por
-compás e instrumento) y el PDF original se baja de `GET /partituras/{slug}/archivo`.
+La app no abre páginas del panel. La partitura se lee con `lectura`, se escribe con el
+`score` v4 (`PUT /partituras/{slug}/score`) y se escucha con los WAV de
+`GET /partituras/muestras`. El PDF original se baja de `GET /partituras/{slug}/archivo`.
 Un enlace de biblioteca o un video solo se abre afuera si el host no es el de la API.
 
 ## Pendientes
 
-1. Editor de notación de partituras (cuadernillo, compases y audio) equivalente al de la web.
+1. Pentagrama grabado tipo MuseScore (VexFlow). En la app la escritura es la grilla y el sonido es el sampler.
 2. Matriz legacy de visibilidad de módulos por usuario (`/accesos`), reemplazada por
    roles y permisos con alcance.
 3. Pruebas manuales en dispositivos contra producción.

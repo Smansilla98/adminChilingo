@@ -38,6 +38,7 @@ const config: ExpoConfig = {
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
     predictiveBackGestureEnabled: false,
+    softwareKeyboardLayoutMode: 'resize',
   },
   web: {
     output: 'static',
@@ -46,6 +47,14 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     'expo-secure-store',
+    [
+      'expo-audio',
+      {
+        microphonePermission: false,
+        recordAudioAndroid: false,
+        enableBackgroundPlayback: false,
+      },
+    ],
     [
       'expo-camera',
       {

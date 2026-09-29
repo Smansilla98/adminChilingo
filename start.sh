@@ -132,7 +132,9 @@ PERC_DIR="public/sounds/perc"
 KIT_PY="scripts/build-chilinga-kit.py"
 KIT_SRC="${CHILINGA_KIT_SRC:-scripts/chilinga-kit-src}"
 mkdir -p "$PERC_DIR"
-if [ "${PERC_KIT_REBUILD:-1}" != "0" ] && [ -f "$KIT_PY" ]; then
+if [ -f "$PERC_DIR/PROPIO" ]; then
+    echo "(public/sounds/perc/PROPIO: kit grabado de la escuela, no se regenera)"
+elif [ "${PERC_KIT_REBUILD:-1}" != "0" ] && [ -f "$KIT_PY" ]; then
     if ! command -v python3 >/dev/null 2>&1; then
         echo "⚠️  python3 no está; se usan los WAV del repo."
     elif ! command -v ffmpeg >/dev/null 2>&1; then
