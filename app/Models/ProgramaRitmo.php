@@ -51,6 +51,26 @@ class ProgramaRitmo extends Model
         return 'slug';
     }
 
+    /**
+     * Toques ordenados por año y orden, sin pedirle a MySQL que ordene `medios`.
+     * Ese JSON es grande: el filesort agota el sort buffer (error 1038) cuando
+     * la consulta no puede usar el índice (publicado, año, orden).
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<static>  $consulta
+     * @return \Illuminate\Support\Collection<int, static>
+     */
+    public static function traerOrdenados($consulta)
+    {
+        $ids = (clone $consulta)->reorder()->orderBy('año')->orderBy('orden')->pluck('id');
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        $porId = static::query()->whereIn('id', $ids->all())->get()->keyBy('id');
+
+        return $ids->map(fn ($id) => $porId->get($id))->filter()->values();
+    }
+
     public function bibliotecaItems()
     {
         return $this->hasMany(BibliotecaItem::class, 'programa_ritmo_id');

@@ -25,12 +25,11 @@ class PartituraController extends Controller
     public function index(Request $request): JsonResponse
     {
         abort_unless($request->user()->acceso()->puede('partituras.view'), 403);
-        $q = ProgramaRitmo::query()->orderBy('año')->orderBy('orden');
+        $q = ProgramaRitmo::query();
         if (! ($request->boolean('todas') && $request->user()->acceso()->puede('partituras.admin'))) {
             $q->where('publicado', true);
         }
-        $toques = $q
-            ->get(['id', 'slug', 'nombre', 'año', 'orden', 'autor', 'opcional', 'publicado', 'medios']);
+        $toques = ProgramaRitmo::traerOrdenados($q);
 
         return response()->json(['data' => $toques->map(function (ProgramaRitmo $t) {
             $medios = $t->mediosNormalizados();

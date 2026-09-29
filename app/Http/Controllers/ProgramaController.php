@@ -39,11 +39,11 @@ class ProgramaController extends Controller
         try {
             $this->asegurarDatosBase();
 
-            $qRitmos = ProgramaRitmo::query()->orderBy('año')->orderBy('orden');
+            $qRitmos = ProgramaRitmo::query();
             if (Schema::hasColumn('programa_ritmos', 'publicado') && ! auth()->user()?->isAdmin()) {
                 $qRitmos->where('publicado', true);
             }
-            $ritmos = $qRitmos->get();
+            $ritmos = ProgramaRitmo::traerOrdenados($qRitmos);
             $totalRitmos = $ritmos->count();
             $porAño = $ritmos->groupBy(fn (ProgramaRitmo $r) => (int) $r->año);
 
@@ -90,7 +90,7 @@ class ProgramaController extends Controller
         try {
             $this->asegurarDatosBase();
 
-            $q = ProgramaRitmo::query()->orderBy('año')->orderBy('orden');
+            $q = ProgramaRitmo::query();
             if (Schema::hasColumn('programa_ritmos', 'publicado') && ! auth()->user()?->isAdmin()) {
                 $q->where('publicado', true);
             }
@@ -100,7 +100,7 @@ class ProgramaController extends Controller
                         ->orWhere('autor', 'like', '%'.$busqueda.'%');
                 });
             }
-            $ritmos = $q->get()->map(function (ProgramaRitmo $r) {
+            $ritmos = ProgramaRitmo::traerOrdenados($q)->map(function (ProgramaRitmo $r) {
                 $m = $r->mediosNormalizados();
                 $tieneArchivo = ! empty($m['partitura']['path']);
                 $videosBase = collect($m['videos_base'] ?? [])->filter(fn ($v) => ! empty($v['url']))->count();
