@@ -116,6 +116,13 @@ return [
             'biblioteca.admin' => 'Moderar biblioteca',
             'disenos.manage' => 'Usar el módulo Diseño',
         ],
+        'Archivo histórico' => [
+            'archivo.view' => 'Ver el archivo interno (material sin publicar)',
+            'archivo.manage' => 'Cargar y editar fotos, capítulos y acontecimientos',
+            'archivo.moderate' => 'Moderar aportes (aprobar, rechazar, pedir cambios)',
+            'archivo.publish' => 'Publicar y ocultar material del archivo',
+            'archivo.delete' => 'Eliminar material del archivo',
+        ],
         'Reportes' => [
             'reportes.view' => 'Ver reportes',
             'auditoria.view' => 'Ver auditoría',
@@ -248,6 +255,15 @@ return [
                 'notificaciones.send',
             ],
         ],
+        'archivista' => [
+            'nombre' => 'Archivista',
+            'descripcion' => 'Cuida el archivo histórico: carga, documenta, modera y publica.',
+            'ambitos' => ['global', 'sede'],
+            'permisos' => [
+                'archivo.view', 'archivo.manage', 'archivo.moderate', 'archivo.publish', 'archivo.delete',
+                'sedes.view', 'eventos.view', 'shows.view',
+            ],
+        ],
         'contador' => [
             'nombre' => 'Contador',
             'descripcion' => 'Consulta toda la información financiera.',
@@ -312,6 +328,8 @@ return [
         'compras' => ['etiqueta' => 'Compras', 'icono' => 'shopping_cart', 'permisos' => ['compras.view']],
         'auditoria' => ['etiqueta' => 'Auditoría', 'icono' => 'history', 'permisos' => ['auditoria.view']],
         'usuarios' => ['etiqueta' => 'Usuarios y permisos', 'icono' => 'admin_panel_settings', 'permisos' => ['usuarios.view']],
+        'archivo' => ['etiqueta' => 'Archivo histórico', 'icono' => 'photo_library', 'permisos' => []],
+        'archivo_gestion' => ['etiqueta' => 'Gestión del archivo', 'icono' => 'collections', 'permisos' => ['archivo.view', 'archivo.manage', 'archivo.moderate']],
         'biblioteca' => ['etiqueta' => 'Biblioteca', 'icono' => 'local_library', 'permisos' => []],
         'notificaciones' => ['etiqueta' => 'Avisos', 'icono' => 'notifications', 'permisos' => []],
     ],

@@ -23,6 +23,12 @@ class BibliotecaTag extends Model
         return $this->belongsToMany(BibliotecaItem::class, 'biblioteca_item_tag');
     }
 
+    /** Fotos del archivo histórico que comparten la etiqueta. */
+    public function archivoFotos(): BelongsToMany
+    {
+        return $this->belongsToMany(ArchivoFoto::class, 'archivo_foto_tag', 'biblioteca_tag_id', 'archivo_foto_id');
+    }
+
     public static function normalizarNombre(string $raw): string
     {
         $t = trim($raw);

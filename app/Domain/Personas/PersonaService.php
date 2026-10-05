@@ -3,6 +3,7 @@
 namespace App\Domain\Personas;
 
 use App\Models\Alumno;
+use App\Models\ArchivoFotoPersona;
 use App\Models\Asignacion;
 use App\Models\Auditoria;
 use App\Models\Persona;
@@ -280,6 +281,7 @@ class PersonaService
             Alumno::query()->where('persona_id', $duplicada->id)->update(['persona_id' => $conservar->id]);
             Profesor::query()->where('persona_id', $duplicada->id)->update(['persona_id' => $conservar->id]);
             Asignacion::query()->where('persona_id', $duplicada->id)->update(['persona_id' => $conservar->id]);
+            ArchivoFotoPersona::query()->where('persona_id', $duplicada->id)->update(['persona_id' => $conservar->id]);
             if ($userDuplicada) {
                 $userDuplicada->forceFill(['persona_id' => $conservar->id])->saveQuietly();
             }
