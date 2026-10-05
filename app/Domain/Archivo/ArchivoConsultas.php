@@ -67,7 +67,10 @@ class ArchivoConsultas
                 ]),
             ])
             ->withCount(['fotos as fotos_publicadas_count' => fn ($q) => $q->publicadas()])
-            ->get();
+            ->get()
+            ->each(fn (ArchivoCapitulo $c) => $c->acontecimientos->each(
+                fn (ArchivoAcontecimiento $a) => $a->fotos->each->setRelation('acontecimiento', $a)
+            ));
     }
 
     public function fotoDePortada(): ?ArchivoFoto

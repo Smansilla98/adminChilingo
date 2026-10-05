@@ -7,6 +7,7 @@ use App\Models\ArchivoAcontecimiento;
 use App\Models\ArchivoCapitulo;
 use App\Models\ArchivoFoto;
 use App\Models\ArchivoFotoPersona;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -92,8 +93,10 @@ class ArchivoHistoricoTest extends TestCase
         $this->postJson(route('archivo.gestion.fotos.orden'), ['ids' => [$f2->id, $f1->id]])->assertOk();
         $this->assertSame([$f2->id, $f1->id], $acontecimiento->fotos()->pluck('id')->all());
 
-        // Público, sin sesión.
+        // Público, sin sesión. Sin consultas perezosas (N+1) en las páginas públicas.
         auth()->logout();
+        ArchivoFoto::query()->whereKey($f1->id)->update(['titulo' => null]);
+        Model::preventLazyLoading();
         $this->get(route('archivo.index'))->assertOk()->assertSee('Los primeros años')->assertSee('Primeros ensayos')
             ->assertSee('og:image', false)->assertSee('rel="canonical"', false);
         $this->get(route('archivo.anio', 1996))->assertOk()->assertSee('1996');
@@ -110,6 +113,8 @@ class ArchivoHistoricoTest extends TestCase
         $this->get(route('archivo.buscar', ['q' => 'Banfield']))->assertOk()->assertSee('Primeros ensayos');
         $this->get(route('archivo.buscar', ['persona' => (string) $dani->id, 'tags' => ['ensayo', 'tambores'], 'decada' => 1990]))->assertOk()->assertSee($f2->tituloVisible());
         $this->get(route('archivo.buscar', ['tags' => ['gira']]))->assertOk()->assertDontSee($f2->tituloVisible());
+
+        Model::preventLazyLoading(false);
 
         // Imagen pública cacheable.
         $this->get(route('archivo.imagen', ['foto' => $f1->id, 'ancho' => 800]))->assertOk()

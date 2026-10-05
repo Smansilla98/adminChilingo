@@ -164,9 +164,12 @@ class ArchivoFoto extends Model
         return $this->ancho && $this->alto && $this->alto > $this->ancho * 1.1;
     }
 
+    /** Sin título propio usa el del acontecimiento, solo si ya está cargado (evita N+1 en grillas). */
     public function tituloVisible(): string
     {
-        return $this->titulo ?: ($this->acontecimiento?->titulo ?? 'Fotografía sin título');
+        $acontecimiento = $this->relationLoaded('acontecimiento') ? $this->acontecimiento : null;
+
+        return $this->titulo ?: ($acontecimiento?->titulo ?? 'Fotografía sin título');
     }
 
     public function textoAlternativo(): string

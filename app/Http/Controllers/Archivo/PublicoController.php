@@ -31,7 +31,7 @@ class PublicoController extends Controller
         $capitulos = $this->consultas->capitulosConRelato();
         $sueltos = ArchivoAcontecimiento::query()->publicados()->whereNull('capitulo_id')
             ->with(['portada', 'fotos' => fn ($q) => $q->publicadas()->limit(6)])
-            ->cronologico()->get();
+            ->cronologico()->get()->each(fn ($a) => $a->fotos->each->setRelation('acontecimiento', $a));
         $portada = $this->consultas->fotoDePortada();
         $linea = $this->consultas->linea();
 
@@ -70,7 +70,7 @@ class PublicoController extends Controller
     {
         $acontecimientos = ArchivoAcontecimiento::query()->publicados()->where('anio', $anio)
             ->with(['portada', 'capitulo', 'fotos' => fn ($q) => $q->publicadas()->limit(8)])
-            ->cronologico()->get();
+            ->cronologico()->get()->each(fn ($a) => $a->fotos->each->setRelation('acontecimiento', $a));
         $fotos = ArchivoFoto::query()->publicadas()->where('anio', $anio)->with(ArchivoConsultas::CON_FOTO)->cronologico()->get();
         abort_if($acontecimientos->isEmpty() && $fotos->isEmpty(), 404);
 
@@ -93,7 +93,8 @@ class PublicoController extends Controller
     {
         $capitulo = ArchivoCapitulo::query()->where('slug', $slug)->publicados()->with('portada')->firstOrFail();
         $acontecimientos = $capitulo->acontecimientos()->publicados()
-            ->with(['portada', 'fotos' => fn ($q) => $q->publicadas()->limit(8)])->get();
+            ->with(['portada', 'fotos' => fn ($q) => $q->publicadas()->limit(8)])->get()
+            ->each(fn ($a) => $a->fotos->each->setRelation('acontecimiento', $a));
         $fotos = $capitulo->fotos()->publicadas()->with(ArchivoConsultas::CON_FOTO)->cronologico()->get();
         $todos = ArchivoCapitulo::query()->publicados()->cronologico()->get(['id', 'titulo', 'slug', 'anio_desde', 'anio_hasta']);
         $i = $todos->search(fn ($c) => $c->id === $capitulo->id);
