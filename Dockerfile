@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     libpng-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
+    libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
@@ -24,6 +27,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
+
+# GD con JPEG, WebP y FreeType: derivados del archivo histórico y miniaturas de la biblioteca.
+# (Sin --with-jpeg, GD solo lee PNG y las fotos no generan derivados.)
+RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype
 
 # Instalar extensiones PHP para MySQL y tests (sqlite)
 RUN docker-php-ext-install -j$(nproc) \
