@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\V1\AccesosController;
 use App\Http\Controllers\Api\V1\AgendaController;
 use App\Http\Controllers\Api\V1\AlumnoController;
+use App\Http\Controllers\Api\V1\ArchivoController;
+use App\Http\Controllers\Api\V1\ArchivoGestionController;
 use App\Http\Controllers\Api\V1\AsistenciaController;
 use App\Http\Controllers\Api\V1\AuditoriaController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -39,6 +41,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login');
 Route::get('salud', fn () => response()->json(['ok' => true, 'version' => 'v1', 'hora' => now()->toIso8601String()]))->name('salud');
+
+// Archivo histórico: lectura del material publicado, sin cuenta (docs/ARCHIVO_HISTORICO.md).
+Route::prefix('archivo')->name('archivo.')->middleware('throttle:90,1')->group(function () {
+    Route::get('/', [ArchivoController::class, 'index'])->name('index');
+    Route::get('timeline', [ArchivoController::class, 'linea'])->name('timeline');
+    Route::get('capitulos', [ArchivoController::class, 'capitulos'])->name('capitulos');
+    Route::get('capitulos/{slug}', [ArchivoController::class, 'capitulo'])->name('capitulo');
+    Route::get('eventos', [ArchivoController::class, 'acontecimientos'])->name('eventos');
+    Route::get('eventos/{slug}', [ArchivoController::class, 'acontecimiento'])->name('evento');
+    Route::get('fotos', [ArchivoController::class, 'fotos'])->name('fotos');
+    Route::get('fotos/{foto}', [ArchivoController::class, 'foto'])->name('foto');
+    Route::get('personas', [ArchivoController::class, 'personas'])->name('personas');
+});
 
 Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function () {
     Route::post('auth/refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
@@ -297,4 +312,40 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::post('usuarios/{usuario}/resetear-acceso', [UsuarioController::class, 'resetear'])->whereNumber('usuario')->middleware('permiso:usuarios.update')->name('usuarios.resetear');
     Route::post('usuarios/{usuario}/asignaciones', [AccesosController::class, 'asignar'])->name('usuarios.asignar');
     Route::delete('usuarios/{usuario}/asignaciones/{asignacion}', [AccesosController::class, 'quitar'])->name('usuarios.quitar');
+
+    // Archivo histórico: aportes (cualquier cuenta) y gestión (archivo.*)
+    Route::prefix('archivo')->name('archivo.')->group(function () {
+        Route::get('catalogo', [ArchivoController::class, 'catalogo'])->name('catalogo');
+        Route::get('imagen/{foto}/{ancho}', [ArchivoController::class, 'imagen'])->whereNumber('foto')->whereIn('ancho', ['400', '800', '1200', '2048'])->name('imagen');
+        Route::get('aportes', [ArchivoController::class, 'misAportes'])->name('aportes.index');
+        Route::post('aportes', [ArchivoController::class, 'aportar'])->middleware('throttle:120,1')->name('aportes.store');
+        Route::get('aportes/{foto}', [ArchivoController::class, 'aporte'])->whereNumber('foto')->name('aportes.show');
+        Route::put('aportes/{foto}', [ArchivoController::class, 'actualizarAporte'])->whereNumber('foto')->name('aportes.update');
+        Route::post('aportes/{foto}/enviar', [ArchivoController::class, 'enviarAporte'])->whereNumber('foto')->name('aportes.enviar');
+        Route::delete('aportes/{foto}', [ArchivoController::class, 'eliminarAporte'])->whereNumber('foto')->name('aportes.destroy');
+
+        Route::middleware('permiso:archivo.view|archivo.manage|archivo.moderate')->prefix('gestion')->name('gestion.')->group(function () {
+            Route::get('resumen', [ArchivoGestionController::class, 'resumen'])->name('resumen');
+            Route::get('moderacion', [ArchivoGestionController::class, 'moderacion'])->name('moderacion');
+            Route::get('personas', [ArchivoGestionController::class, 'personas'])->name('personas');
+            Route::get('fotos', [ArchivoGestionController::class, 'fotos'])->name('fotos.index');
+            Route::post('fotos', [ArchivoGestionController::class, 'subir'])->middleware('throttle:240,1')->name('fotos.store');
+            Route::post('fotos/lote', [ArchivoGestionController::class, 'lote'])->name('fotos.lote');
+            Route::post('fotos/orden', [ArchivoGestionController::class, 'ordenar'])->name('fotos.orden');
+            Route::get('fotos/{foto}', [ArchivoGestionController::class, 'foto'])->whereNumber('foto')->name('fotos.show');
+            Route::put('fotos/{foto}', [ArchivoGestionController::class, 'actualizar'])->whereNumber('foto')->name('fotos.update');
+            Route::post('fotos/{foto}/imagen', [ArchivoGestionController::class, 'reemplazar'])->whereNumber('foto')->name('fotos.imagen');
+            Route::post('fotos/{foto}/estado', [ArchivoGestionController::class, 'estado'])->whereNumber('foto')->name('fotos.estado');
+            Route::delete('fotos/{foto}', [ArchivoGestionController::class, 'eliminar'])->whereNumber('foto')->name('fotos.destroy');
+            Route::get('capitulos', [ArchivoGestionController::class, 'capitulos'])->name('capitulos.index');
+            Route::post('capitulos', [ArchivoGestionController::class, 'guardarCapitulo'])->name('capitulos.store');
+            Route::put('capitulos/{capitulo}', [ArchivoGestionController::class, 'guardarCapitulo'])->whereNumber('capitulo')->name('capitulos.update');
+            Route::delete('capitulos/{capitulo}', [ArchivoGestionController::class, 'eliminarCapitulo'])->whereNumber('capitulo')->name('capitulos.destroy');
+            Route::get('eventos', [ArchivoGestionController::class, 'acontecimientos'])->name('eventos.index');
+            Route::post('eventos', [ArchivoGestionController::class, 'guardarAcontecimiento'])->name('eventos.store');
+            Route::get('eventos/{acontecimiento}', [ArchivoGestionController::class, 'acontecimiento'])->whereNumber('acontecimiento')->name('eventos.show');
+            Route::put('eventos/{acontecimiento}', [ArchivoGestionController::class, 'guardarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.update');
+            Route::delete('eventos/{acontecimiento}', [ArchivoGestionController::class, 'eliminarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.destroy');
+        });
+    });
 });

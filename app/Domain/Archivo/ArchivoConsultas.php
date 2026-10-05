@@ -7,6 +7,7 @@ use App\Models\ArchivoCapitulo;
 use App\Models\ArchivoFoto;
 use App\Models\ArchivoFotoPersona;
 use App\Models\BibliotecaTag;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -197,6 +198,34 @@ class ArchivoConsultas
             ])
             ->filter(fn ($p) => $p['nombre'] !== '' && (! $q || str_contains(mb_strtolower($p['nombre']), mb_strtolower($q))))
             ->sortByDesc('fotos')->take($limite)->values();
+    }
+
+    /**
+     * Fotos que una cuenta puede ver en el backoffice: todo con alcance global; con
+     * alcance de sede, las de sus sedes y las que cargó.
+     */
+    public function gestionables(User $user): Builder
+    {
+        $query = ArchivoFoto::query();
+        $alcance = $user->acceso()->alcance('archivo.view')
+            ->unir($user->acceso()->alcance('archivo.manage'))
+            ->unir($user->acceso()->alcance('archivo.moderate'));
+        if ($user->acceso()->esSuperadmin() || $alcance->esGlobal()) {
+            return $query;
+        }
+
+        return $query->where(fn ($w) => $w->whereIn('sede_id', $alcance->sedeIds())->orWhere('aportada_por', $user->id));
+    }
+
+    /** @return array{pendiente: int, cambios: int, rechazada: int, aprobadas_hoy: int} */
+    public function conteosModeracion(Builder $fotos): array
+    {
+        return [
+            'pendiente' => (clone $fotos)->where('estado', 'pendiente')->count(),
+            'cambios' => (clone $fotos)->where('estado', 'cambios')->count(),
+            'rechazada' => (clone $fotos)->where('estado', 'rechazada')->count(),
+            'aprobadas_hoy' => (clone $fotos)->whereNotNull('enviada_at')->where('estado', 'publicada')->where('revisada_at', '>=', now()->startOfDay())->count(),
+        ];
     }
 
     /**

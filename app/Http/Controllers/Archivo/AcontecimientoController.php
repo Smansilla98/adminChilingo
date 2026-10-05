@@ -49,9 +49,9 @@ class AcontecimientoController extends Controller
     {
         $this->authorize('create', ArchivoAcontecimiento::class);
         $datos = $request->validate($this->editorial->reglasAcontecimiento());
+        $this->authorize('createEnSede', [ArchivoAcontecimiento::class, $datos['sede_id'] ?? null]);
         $datos['publicado'] = $request->boolean('publicado');
         $a = $this->editorial->guardarAcontecimiento(null, $datos);
-        abort_unless($request->user()->can('update', $a), 403); // con alcance de sede, la sede debe ser suya
 
         return redirect()->route('archivo.gestion.eventos.edit', $a)->with('success', 'Creamos el acontecimiento. Ahora sumale fotos.');
     }
@@ -68,6 +68,7 @@ class AcontecimientoController extends Controller
     {
         $this->authorize('update', $acontecimiento);
         $datos = $request->validate($this->editorial->reglasAcontecimiento());
+        $this->authorize('createEnSede', [ArchivoAcontecimiento::class, $datos['sede_id'] ?? null]);
         $datos['publicado'] = $request->boolean('publicado');
         $datos['relacionados'] ??= [];
         $this->editorial->guardarAcontecimiento($acontecimiento, $datos);

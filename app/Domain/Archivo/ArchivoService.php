@@ -209,6 +209,60 @@ class ArchivoService
         return $fotos->count();
     }
 
+    /**
+     * Acción sobre una selección: aplicar datos, publicar, ocultar o eliminar. Cada foto
+     * se autoriza por separado; las que quedan fuera del alcance se cuentan como omitidas.
+     *
+     * @param  Collection<int, ArchivoFoto>  $fotos
+     * @param  array<string, mixed>  $datos  metadatos validados (para `aplicar`) + `publicar`
+     * @return array{hechas: int, omitidas: int}
+     */
+    public function accionEnLote(Collection $fotos, string $accion, array $datos, User $user): array
+    {
+        $permiso = match ($accion) {
+            'aplicar' => 'editarComoEquipo',
+            'publicar', 'ocultar' => 'publish',
+            'eliminar' => 'delete',
+        };
+        $permitidas = $fotos->filter(fn ($f) => $user->can($permiso, $f))->values();
+        $hechas = 0;
+
+        switch ($accion) {
+            case 'aplicar':
+                $cambios = collect($datos)->except(['ids', 'accion', 'publicar', 'volver'])->all();
+                $hechas = $this->aplicarEnLote($permitidas, $cambios, $user, true);
+                if (! empty($datos['publicar'])) {
+                    foreach ($permitidas as $f) {
+                        $f->refresh();
+                        if ($user->can('publish', $f) && in_array($f->estado, ['borrador', 'oculta'], true)) {
+                            $this->publicar($f, $user);
+                        }
+                    }
+                }
+                break;
+            case 'publicar':
+            case 'ocultar':
+                foreach ($permitidas as $f) {
+                    if ($accion === 'publicar' && in_array($f->estado, ['borrador', 'oculta'], true)) {
+                        $this->publicar($f, $user);
+                        $hechas++;
+                    } elseif ($accion === 'ocultar' && $f->estado === 'publicada') {
+                        $this->ocultar($f, $user);
+                        $hechas++;
+                    }
+                }
+                break;
+            case 'eliminar':
+                foreach ($permitidas as $f) {
+                    $this->eliminar($f);
+                    $hechas++;
+                }
+                break;
+        }
+
+        return ['hechas' => $hechas, 'omitidas' => $fotos->count() - $permitidas->count()];
+    }
+
     public function reemplazarImagen(ArchivoFoto $foto, UploadedFile $archivo, User $user): ArchivoFoto
     {
         $anterior = $foto->path;
@@ -310,6 +364,24 @@ class ArchivoService
         $this->exigirEstado($foto, ['publicada']);
 
         return $this->transicion($foto, 'oculta', 'ocultada', $user);
+    }
+
+    /** Permiso de ArchivoFotoPolicy que exige cada acción de estado. */
+    public static function permisoDeAccion(string $accion): string
+    {
+        return in_array($accion, ['publicar', 'ocultar'], true) ? 'publish' : 'moderate';
+    }
+
+    /** Aplica una acción de estado (la autorización la hace quien llama). */
+    public function cambiarEstado(ArchivoFoto $foto, string $accion, ?string $notas, User $user): ArchivoFoto
+    {
+        return match ($accion) {
+            'aprobar' => $this->aprobar($foto, $user, $notas),
+            'rechazar' => $this->rechazar($foto, $user, (string) $notas),
+            'cambios' => $this->pedirCambios($foto, $user, (string) $notas),
+            'publicar' => $this->publicar($foto, $user),
+            'ocultar' => $this->ocultar($foto, $user),
+        };
     }
 
     // ── Etiquetas y personas ─────────────────────────────────────────────────

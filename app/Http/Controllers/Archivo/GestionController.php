@@ -13,8 +13,6 @@ use App\Models\ArchivoFotoPersona;
 use App\Models\BibliotecaTag;
 use App\Models\Persona;
 use App\Models\Sede;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,7 +34,7 @@ class GestionController extends Controller
     public function tablero(Request $request): View
     {
         $this->authorize('viewAny', ArchivoFoto::class);
-        $fotos = $this->visibles($request->user());
+        $fotos = $this->consultas->gestionables($request->user());
 
         $porDecada = (clone $fotos)->whereNotNull('anio')->pluck('anio')
             ->countBy(fn ($anio) => intdiv((int) $anio, 10) * 10)->sortKeys();
@@ -58,7 +56,7 @@ class GestionController extends Controller
                 'sin_portada' => ArchivoAcontecimiento::query()->whereNull('portada_foto_id')->count(),
                 'borradores' => (clone $fotos)->where('estado', 'borrador')->count(),
             ],
-            'moderacion' => $this->conteosModeracion($fotos),
+            'moderacion' => $this->consultas->conteosModeracion($fotos),
             'porDecada' => $porDecada,
             'recientes' => (clone $fotos)->latest('id')->limit(12)->get(),
         ]);
@@ -68,7 +66,7 @@ class GestionController extends Controller
     {
         $this->authorize('viewAny', ArchivoFoto::class);
         $f = $request->only(['q', 'estado', 'decada', 'anio', 'sin', 'capitulo', 'acontecimiento', 'sede', 'tag', 'tipo']);
-        $query = $this->visibles($request->user())->with(['acontecimiento:id,titulo', 'sede:id,nombre', 'aportante:id,name']);
+        $query = $this->consultas->gestionables($request->user())->with(['acontecimiento:id,titulo', 'sede:id,nombre', 'aportante:id,name']);
         $this->consultas->filtrar($query, ['q' => $f['q'] ?? null, 'decada' => $f['decada'] ?? null, 'anio' => $f['anio'] ?? null,
             'capitulo' => $f['capitulo'] ?? null, 'acontecimiento' => $f['acontecimiento'] ?? null, 'sede' => $f['sede'] ?? null,
             'tipo' => $f['tipo'] ?? null, 'tags' => array_filter([$f['tag'] ?? null])]);
@@ -139,45 +137,11 @@ class GestionController extends Controller
             'publicar' => 'nullable|boolean',
         ], $this->archivo->mensajes() + ['ids.required' => 'Elegí al menos una foto.']);
 
-        $fotos = ArchivoFoto::query()->whereIn('id', $datos['ids'])->get();
-        $permiso = match ($datos['accion']) {
-            'aplicar' => 'editarComoEquipo',
-            'publicar', 'ocultar' => 'publish',
-            'eliminar' => 'delete',
-        };
-        $permitidas = $fotos->filter(fn ($f) => $user->can($permiso, $f))->values();
-        $omitidas = $fotos->count() - $permitidas->count();
-        $hechas = 0;
-
-        switch ($datos['accion']) {
-            case 'aplicar':
-                $cambios = collect($datos)->except(['ids', 'accion', 'publicar'])->all();
-                $hechas = $this->archivo->aplicarEnLote($permitidas, $cambios, $user, true);
-                if ($request->boolean('publicar')) {
-                    foreach ($permitidas as $f) {
-                        if ($user->can('publish', $f) && in_array($f->fresh()->estado, ['borrador', 'oculta'], true)) {
-                            $this->archivo->publicar($f, $user);
-                        }
-                    }
-                }
-                break;
-            case 'publicar':
-            case 'ocultar':
-                foreach ($permitidas as $f) {
-                    $puede = $datos['accion'] === 'publicar' ? in_array($f->estado, ['borrador', 'oculta'], true) : $f->estado === 'publicada';
-                    if ($puede) {
-                        $datos['accion'] === 'publicar' ? $this->archivo->publicar($f, $user) : $this->archivo->ocultar($f, $user);
-                        $hechas++;
-                    }
-                }
-                break;
-            case 'eliminar':
-                foreach ($permitidas as $f) {
-                    $this->archivo->eliminar($f);
-                    $hechas++;
-                }
-                break;
+        if (! empty($datos['sede_id'])) {
+            $this->authorize('asignarSede', [ArchivoFoto::class, (int) $datos['sede_id']]);
         }
+        $fotos = ArchivoFoto::query()->whereIn('id', $datos['ids'])->get();
+        ['hechas' => $hechas, 'omitidas' => $omitidas] = $this->archivo->accionEnLote($fotos, $datos['accion'], $datos + ['publicar' => $request->boolean('publicar')], $user);
 
         $mensaje = match ($datos['accion']) {
             'aplicar' => "Actualizamos {$hechas} fotos.",
@@ -226,6 +190,9 @@ class GestionController extends Controller
     {
         $this->authorize('editarComoEquipo', $foto);
         $datos = $request->validate($this->archivo->reglasMetadatos(true) + ['orden' => 'nullable|integer|min:0'], $this->archivo->mensajes());
+        if (! empty($datos['sede_id'])) {
+            $this->authorize('asignarSede', [ArchivoFoto::class, (int) $datos['sede_id']]);
+        }
         foreach (['mostrar_aportante', 'destacada'] as $b) {
             $datos[$b] = $request->boolean($b);
         }
@@ -256,13 +223,8 @@ class GestionController extends Controller
         ], ['notas.required' => 'Escribí el motivo o lo que necesitás que complete.']);
         $user = $request->user();
 
-        match ($datos['accion']) {
-            'aprobar' => $this->autorizarYHacer('moderate', $foto, fn () => $this->archivo->aprobar($foto, $user, $datos['notas'] ?? null)),
-            'rechazar' => $this->autorizarYHacer('moderate', $foto, fn () => $this->archivo->rechazar($foto, $user, $datos['notas'])),
-            'cambios' => $this->autorizarYHacer('moderate', $foto, fn () => $this->archivo->pedirCambios($foto, $user, $datos['notas'])),
-            'publicar' => $this->autorizarYHacer('publish', $foto, fn () => $this->archivo->publicar($foto, $user)),
-            'ocultar' => $this->autorizarYHacer('publish', $foto, fn () => $this->archivo->ocultar($foto, $user)),
-        };
+        $this->authorize(ArchivoService::permisoDeAccion($datos['accion']), $foto);
+        $this->archivo->cambiarEstado($foto, $datos['accion'], $datos['notas'] ?? null, $user);
 
         $mensaje = [
             'aprobar' => 'Aprobada y publicada. Le avisamos a quien la aportó.',
@@ -288,7 +250,7 @@ class GestionController extends Controller
     {
         $this->authorize('viewAny', ArchivoFoto::class);
         $estado = in_array($request->query('estado'), ['pendiente', 'cambios', 'rechazada'], true) ? $request->query('estado') : 'pendiente';
-        $fotos = $this->visibles($request->user());
+        $fotos = $this->consultas->gestionables($request->user());
 
         $cola = (clone $fotos)->where('estado', $estado)
             ->whereNotNull('aportada_por')
@@ -304,7 +266,7 @@ class GestionController extends Controller
         return view('archivo.gestion.moderacion', [
             'cola' => $cola,
             'estado' => $estado,
-            'conteos' => $this->conteosModeracion($fotos),
+            'conteos' => $this->consultas->conteosModeracion($fotos),
             'repetidos' => $repetidos,
         ]);
     }
@@ -323,42 +285,6 @@ class GestionController extends Controller
             ->distinct()->limit(8)->pluck('nombre')->map(fn ($n) => ['persona_id' => null, 'nombre' => $n]);
 
         return response()->json(['data' => $delSistema->concat($libres)->unique('nombre')->values()]);
-    }
-
-    /** @param  callable(): mixed  $accion */
-    private function autorizarYHacer(string $permiso, ArchivoFoto $foto, callable $accion): mixed
-    {
-        $this->authorize($permiso, $foto);
-
-        return $accion();
-    }
-
-    /**
-     * Fotos que esta cuenta puede ver en el backoffice: todo con alcance global; con
-     * alcance de sede, las de sus sedes y las que cargó.
-     */
-    private function visibles(User $user): Builder
-    {
-        $query = ArchivoFoto::query();
-        $alcance = $user->acceso()->alcance('archivo.view')
-            ->unir($user->acceso()->alcance('archivo.manage'))
-            ->unir($user->acceso()->alcance('archivo.moderate'));
-        if ($user->acceso()->esSuperadmin() || $alcance->esGlobal()) {
-            return $query;
-        }
-
-        return $query->where(fn ($w) => $w->whereIn('sede_id', $alcance->sedeIds())->orWhere('aportada_por', $user->id));
-    }
-
-    /** @return array<string, int> */
-    private function conteosModeracion(Builder $fotos): array
-    {
-        return [
-            'pendiente' => (clone $fotos)->where('estado', 'pendiente')->count(),
-            'cambios' => (clone $fotos)->where('estado', 'cambios')->count(),
-            'rechazada' => (clone $fotos)->where('estado', 'rechazada')->count(),
-            'aprobadas_hoy' => (clone $fotos)->whereNotNull('aportada_por')->where('estado', 'publicada')->where('revisada_at', '>=', now()->startOfDay())->count(),
-        ];
     }
 
     /** @return array<string, mixed> */

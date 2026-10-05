@@ -58,6 +58,14 @@ class ArchivoFotoPolicy
         return $this->alcanza($user, 'archivo.manage', $foto);
     }
 
+    /** El equipo con alcance de sede solo asigna fotos a sus sedes. */
+    public function asignarSede(User $user, ?int $sedeId): bool
+    {
+        $alcance = $user->acceso()->alcance('archivo.manage');
+
+        return $alcance->esGlobal() || ! $sedeId || $alcance->incluyeSede($sedeId);
+    }
+
     public function delete(User $user, ArchivoFoto $foto): bool
     {
         return $this->alcanza($user, 'archivo.delete', $foto)

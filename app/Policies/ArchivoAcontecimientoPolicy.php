@@ -23,6 +23,14 @@ class ArchivoAcontecimientoPolicy
         return $user->acceso()->puede('archivo.manage');
     }
 
+    /** Antes de guardar: con alcance de sede, el acontecimiento tiene que ser de una sede propia. */
+    public function createEnSede(User $user, ?int $sedeId): bool
+    {
+        $alcance = $user->acceso()->alcance('archivo.manage');
+
+        return $alcance->esGlobal() || ($sedeId && $alcance->incluyeSede($sedeId));
+    }
+
     public function update(User $user, ArchivoAcontecimiento $a): bool
     {
         return $this->alcanza($user, 'archivo.manage', $a);
