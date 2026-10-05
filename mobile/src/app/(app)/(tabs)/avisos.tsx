@@ -8,6 +8,14 @@ import { C } from '@/lib/theme';
 
 const DESTINOS: Record<string, string> = { 'app://cuotas': '/cuotas', 'app://calendario': '/agenda' };
 
+/** Enlace del aviso → pantalla de la app (los del archivo apuntan a la web: se traducen). */
+function destinoDe(enlace: string | null): string | undefined {
+  if (!enlace) return undefined;
+  const aporte = enlace.match(/\/archivo\/mis-aportes\/(\d+)/);
+  if (aporte) return `/archivo/aportes/${aporte[1]}`;
+  return DESTINOS[enlace];
+}
+
 export default function Avisos() {
   const q = useAvisos();
   const qc = useQueryClient();
@@ -29,7 +37,7 @@ export default function Avisos() {
           acento={a.leida ? undefined : C.acento}
           onPress={() => {
             if (!a.leida) leer.mutate(a.id);
-            const destino = a.enlace ? DESTINOS[a.enlace] : undefined;
+            const destino = destinoDe(a.enlace);
             if (destino) router.push(destino as never);
           }}>
           <Texto style={{ fontWeight: a.leida ? '400' : '800' }}>{a.titulo}</Texto>

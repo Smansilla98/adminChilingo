@@ -42,6 +42,16 @@ export async function elegirImagen(origen: 'galeria' | 'camara' = 'galeria'): Pr
   return { uri: a.uri, nombre: a.fileName ?? `foto.${mime.split('/')[1] ?? 'jpg'}`, mime, tamano: a.fileSize, ancho: a.width, alto: a.height };
 }
 
+/** Varias fotos de la galería (archivo histórico). Devuelve [] si se cancela. */
+export async function elegirImagenes(limite = 30): Promise<ArchivoLocal[]> {
+  const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: limite, quality: 1, exif: false });
+  if (r.canceled || !r.assets?.length) return [];
+  return r.assets.map((a, i) => {
+    const mime = a.mimeType ?? 'image/jpeg';
+    return { uri: a.uri, nombre: a.fileName ?? `foto-${i + 1}.${mime.split('/')[1] ?? 'jpg'}`, mime, tamano: a.fileSize, ancho: a.width, alto: a.height };
+  });
+}
+
 interface OpcionesSubida {
   /** Campo del formulario donde va el archivo (por defecto "archivo"). */
   campo?: string;

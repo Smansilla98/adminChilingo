@@ -31,6 +31,8 @@ export const RUTAS: Record<string, { ruta: string; icono: Icono; grupo: Grupo }>
   villa_gesell: { ruta: '/villa-gesell', icono: 'beach-access', grupo: 'Comunidad' },
   disenos: { ruta: '/disenos', icono: 'palette', grupo: 'Comunidad' },
   biblioteca: { ruta: '/biblioteca', icono: 'local-library', grupo: 'Comunidad' },
+  archivo: { ruta: '/archivo', icono: 'photo-library', grupo: 'Comunidad' },
+  archivo_gestion: { ruta: '/archivo/moderacion', icono: 'collections', grupo: 'Comunidad' },
   usuarios: { ruta: '/usuarios', icono: 'admin-panel-settings', grupo: 'Administración' },
   auditoria: { ruta: '/auditoria', icono: 'history', grupo: 'Administración' },
 };
