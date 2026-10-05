@@ -57,7 +57,7 @@
                 @foreach(['DateTimeOriginal' => 'Fecha EXIF', 'Make' => 'Marca', 'Model' => 'Cámara', 'Orientation' => 'Orientación'] as $k => $l)
                     @if(! empty($foto->exif[$k]))<div><dt>{{ $l }}</dt><dd>{{ $foto->exif[$k] }}</dd></div>@endif
                 @endforeach
-                <div><dt>Aportada por</dt><dd>{{ $foto->aportante?->name ?: '—' }}@if($foto->aportada_por) · {{ $foto->mostrar_aportante ? 'muestra su nombre' : 'anónimo en público' }}@endif</dd></div>
+                <div><dt>Aportada por</dt><dd>{{ $foto->aportante?->name ?: '—' }}@if($foto->enviada_at) · {{ $foto->mostrar_aportante ? 'muestra su nombre' : 'anónimo en público' }}@else · carga del equipo@endif</dd></div>
                 @if($foto->revisor)<div><dt>Revisada por</dt><dd>{{ $foto->revisor->name }} · {{ $foto->revisada_at?->format('d/m/Y') }}</dd></div>@endif
                 <div><dt>Derivados web</dt><dd>{{ collect($foto->derivados ?? [])->keys()->implode(' · ') ?: 'sin generar' }}</dd></div>
             </dl>

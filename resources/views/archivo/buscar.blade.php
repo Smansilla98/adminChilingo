@@ -70,7 +70,6 @@
                 @if($hayFiltros)<a class="ar-enlace" href="{{ route('archivo.buscar') }}">Limpiar todo</a>@endif
             </div>
         </div>
-    </form>
 
     <div class="ar-busqueda__resultados" aria-live="polite">
         @if($historias->isNotEmpty())
@@ -117,5 +116,6 @@
             @endif
         </section>
     </div>
+    </form>
 </div>
 @endsection

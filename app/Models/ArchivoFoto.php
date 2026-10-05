@@ -184,10 +184,10 @@ class ArchivoFoto extends Model
         return $this->anio ? intdiv($this->anio, 10) * 10 : null;
     }
 
-    /** Nombre del aportante solo si dio permiso para mostrarlo. */
+    /** Nombre del aportante (solo aportes de la comunidad) si dio permiso para mostrarlo. */
     public function aportanteVisible(): ?string
     {
-        if (! $this->aportada_por) {
+        if (! $this->aportada_por || ! $this->enviada_at) {
             return null;
         }
 
