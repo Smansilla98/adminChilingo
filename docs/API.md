@@ -143,6 +143,30 @@ Estado de cuenta:
 | POST | `/usuarios/{id}/asignaciones` | `usuarios.permissions` — `{ tipo: rol\|permiso, nombre, ambito, sede_id?, bloque_id?, desde?, hasta?, notas? }` |
 | DELETE | `/usuarios/{id}/asignaciones/{asignacion}` | idem |
 
+### Archivo histórico
+
+Ver `docs/ARCHIVO_HISTORICO.md`. Lo publicado se lee **sin token**; lo demás exige sesión.
+
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET | `/archivo` · `/archivo/timeline` | público — portada, línea de tiempo por décadas, capítulos |
+| GET | `/archivo/capitulos` · `/archivo/capitulos/{slug}` | público |
+| GET | `/archivo/eventos?anio=&capitulo=&q=` · `/archivo/eventos/{slug}` | público — acontecimientos (con fotos y relacionados) |
+| GET | `/archivo/fotos?q=&decada=&anio=&desde=&hasta=&sede=&tipo=&tags[]=&persona=` · `/archivo/fotos/{id\|slug}` | público (lo no publicado, solo con permiso) |
+| GET | `/archivo/personas?q=` | público — personas de fotos publicadas (solo nombre) |
+| GET | `/archivo/catalogo` | sesión — tipos, fuentes, sedes, acontecimientos y `permisos` |
+| GET | `/archivo/imagen/{id}/{400\|800\|1200\|2048}` | sesión — derivado de lo no publicado (aportante o equipo) |
+| GET/POST | `/archivo/aportes` | sesión — mis aportes / subir (multipart `archivo` + datos; `enviar=1`; `409` si ya existe salvo `confirmar_duplicado=1`) |
+| GET/PUT/DELETE | `/archivo/aportes/{id}` · POST `/archivo/aportes/{id}/enviar` | quien aportó, mientras el estado lo permita |
+| GET | `/archivo/gestion/resumen` · `/archivo/gestion/moderacion?estado=` | `archivo.view\|manage\|moderate` |
+| GET/POST | `/archivo/gestion/fotos` | listado con filtros (`estado`, `sin=fecha\|credito\|descripcion\|personas`, …) / carga del equipo |
+| GET/PUT/DELETE | `/archivo/gestion/fotos/{id}` · POST `…/{id}/imagen` (reemplazar) | `archivo.manage` / `archivo.delete` con alcance |
+| POST | `/archivo/gestion/fotos/{id}/estado` | `{ accion: aprobar\|rechazar\|cambios\|publicar\|ocultar, notas? }` — `moderate` / `publish` |
+| POST | `/archivo/gestion/fotos/lote` | `{ ids[], accion: aplicar\|publicar\|ocultar\|eliminar, …datos }` → `{ hechas, omitidas }` |
+| POST | `/archivo/gestion/fotos/orden` | `{ ids[] }` en el orden deseado |
+| GET/POST/PUT/DELETE | `/archivo/gestion/capitulos[/{id}]` · `/archivo/gestion/eventos[/{id}]` | capítulos: alcance global; acontecimientos: sede propia |
+| GET | `/archivo/gestion/personas?q=` | personas del sistema + nombres ya usados |
+
 ## Errores
 
 | Código | Significado |

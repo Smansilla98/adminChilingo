@@ -72,6 +72,7 @@ requiera abrir el panel web. La web y la app son dos clientes del mismo backend.
 | Asistencia | planilla por día (offline), corrección | ✅ todo | Matriz mensual y borrado de una celda por la API |
 | Seguimiento pedagógico | notas por alumno | ✅ todo | |
 | Partituras | visor, PDF, partes, videos; administración, escritura y audio | ✅ todo | Grilla de semicorcheas (no el pentagrama VexFlow). Escucha por cuerda con los WAV de la API. Alta, baja, publicar y PDF |
+| Archivo histórico | aportes (subida múltiple, seguimiento, corrección), moderación, fotos (edición, publicar/ocultar, eliminar), capítulos, acontecimientos, orden, lote | ✅ aportes, moderación, fotos | Capítulos, acontecimientos, lote y orden están en la API; en la app se gestionan desde la ficha de cada foto. La experiencia pública (línea de tiempo, Story Mode) es web y se abre desde la app |
 | Operativo | Pendientes, resumen por WhatsApp/mail, chatbot | ✅ todo | Chat, WhatsApp y mail por `/recordatorios`, sin abrir el panel |
 
 La app no abre páginas del panel. La partitura se lee con `lectura`, se escribe con el

@@ -129,8 +129,35 @@ Duplicados: mismo hash SHA-256 → aviso, nunca borrado automático.
 - Audio ambiente: no se implementa en esta etapa (no hay material sonoro curado); el
   Story Mode deja el lugar para un botón opcional que nunca suena solo.
 
-## 8. Pendientes conocidos
+## 8. Puesta en marcha
+
+- `php artisan migrate` crea las tablas (`start.sh` ya lo hace en cada deploy, y también
+  `chilinga:permisos:sync`, que agrega los permisos `archivo.*` y el rol `archivista`).
+- El Dockerfile compila GD con JPEG y WebP. Sin eso no hay derivados: verificalo con
+  `php -r 'print_r(gd_info());'` en el contenedor.
+- `php artisan archivo:derivados` genera los derivados que falten (`--todas` regenera).
+- `php artisan db:seed --class=ArchivoHistoricoSeeder` carga capítulos de ejemplo
+  (solo fuera de producción y si el archivo está vacío).
+- Para dar acceso: asignar el rol **Archivista** (global o por sede) desde Usuarios.
+
+## 9. Qué se implementó
+
+| Área | Dónde |
+|---|---|
+| Dominio | `app/Domain/Archivo/` — `ArchivoService` (carga, metadatos, lote, orden, moderación), `ArchivoEditorialService`, `ArchivoConsultas`, `ImagenesArchivo`, `PresentadorArchivo` |
+| Autorización | `ArchivoFotoPolicy`, `ArchivoAcontecimientoPolicy`, `ArchivoCapituloPolicy` |
+| Web pública | `PublicoController`, vistas `resources/views/archivo/*`, `public/css/archivo.css`, `public/js/archivo.js` |
+| Aportes | `AporteController`, `public/js/archivo-carga.js` (subida de a una, progreso, duplicados) |
+| Gestión | `GestionController`, `CapituloController`, `AcontecimientoController`, `EtiquetaController`, `public/js/archivo-gestion.js` (selección, arrastre) |
+| API | `Api\V1\ArchivoController`, `Api\V1\ArchivoGestionController` (ver `docs/API.md`) |
+| App | `mobile/src/app/(app)/archivo/*`, `mobile/src/features/archivo/*` |
+| Tests | `tests/Feature/ArchivoHistoricoTest.php`, `tests/Feature/Api/ArchivoApiTest.php`, `mobile/src/__tests__/archivo.test.tsx` |
+
+## 10. Pendientes conocidos
 
 - Mapa (los campos de lugar y coordenadas ya existen).
+- Audio ambiente opcional en el Story Mode (falta material sonoro curado).
+- Orden por arrastre en pantallas táctiles de la web: hoy es con mouse o con flechas del
+  teclado; en el teléfono se ordena desde el campo "Orden" de cada foto.
 - Hash perceptual para duplicados visuales.
 - AVIF (el GD del servidor no lo trae).
