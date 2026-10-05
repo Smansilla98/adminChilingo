@@ -59,6 +59,7 @@ class Navegacion
             $mod('programa') ? self::link('programa.index', 'Programa', 'bi-journal-text', 'programa.index') : null,
             $mod('programa') ? self::link('programa.partituras.index', 'Partituras', 'bi-file-earmark-music', 'programa.partituras.*') : null,
             self::link('biblioteca.index', 'Biblioteca', 'bi-images', 'biblioteca.*'),
+            self::link('archivo.index', 'Archivo histórico', 'bi-camera', 'archivo.*'),
             self::link('comprobante-cuota-public.create', 'Pagar cuota', 'bi-credit-card', 'comprobante-cuota-public.*'),
             $mod('calendario') ? self::link('calendario.index', 'Calendario', 'bi-calendar3', 'calendario.*') : null,
         ];
@@ -131,6 +132,9 @@ class Navegacion
                 $mod('programa') ? self::link('programa.partituras.index', 'Partituras', 'bi-file-earmark-music', 'programa.partituras.*') : null,
                 $mod('admin.disenos') ? self::link('disenos.index', 'Diseño', 'bi-palette', 'disenos.*') : null,
                 $u->can('biblioteca.admin') ? self::link('biblioteca.admin.index', 'Biblioteca', 'bi-images', 'biblioteca.admin.*') : null,
+                $u->acceso()->puedeAlguno(['archivo.view', 'archivo.manage', 'archivo.moderate'])
+                    ? self::link('archivo.gestion.tablero', 'Archivo histórico', 'bi-camera', 'archivo.gestion.*')
+                    : self::link('archivo.aportes.index', 'Mis aportes al archivo', 'bi-camera', 'archivo.aportes.*'),
             ], ['programa.seccion.*', 'programa.toque.*']);
             $grupos[] = self::grupo('config', 'Configuración', [
                 $u->can('auditoria.view') ? self::link('auditoria.index', 'Auditoría', 'bi-clock-history', 'auditoria.*') : null,

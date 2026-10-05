@@ -26,6 +26,7 @@
         <a href="{{ route('comunidad.agenda') }}" class="{{ request()->routeIs('comunidad.agenda') ? 'is-active' : '' }}">Agenda</a>
         <a href="{{ route('biblioteca.index') }}" class="{{ request()->routeIs('biblioteca.index') || request()->routeIs('biblioteca.show') ? 'is-active' : '' }}">Biblioteca</a>
         <a href="{{ route('biblioteca.create') }}" class="{{ request()->routeIs('biblioteca.create') ? 'is-active' : '' }}">Subir</a>
+        <a href="{{ route('archivo.index') }}">Archivo histórico</a>
         @auth
             <a href="{{ route('dashboard') }}">Panel</a>
         @else

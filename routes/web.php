@@ -102,6 +102,8 @@ Route::prefix('biblioteca')->middleware('throttle:60,1')->group(function () {
     Route::get('/{bibliotecaItem}', [BibliotecaPublicController::class, 'show'])->name('biblioteca.show')->whereNumber('bibliotecaItem');
 });
 
+require __DIR__.'/archivo.php';
+
 // Programa y partituras públicos (lectura, como la biblioteca)
 Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
     Route::get('/', [ProgramaController::class, 'index'])->name('programa.index');
