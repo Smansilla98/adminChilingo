@@ -13,7 +13,7 @@
  */
 import {
     Renderer, Stave, StaveNote, GhostNote, Beam, Tuplet, Formatter, Articulation,
-    Barline, Volta, Annotation, Fraction, Voice, GraceNote, GraceNoteGroup,
+    Barline, Volta, Annotation, Fraction, Voice, GraceNote, GraceNoteGroup, Parenthesis,
 } from 'vexflow';
 import { instrumentoPorId, cabezaVexflow, GOLPES, sistemasVisuales } from './instruments.js';
 import { TPQ, ticksDeNota, ticksDeCompas } from './model.js';
@@ -148,6 +148,9 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
 
             if (di === 0 && m.ending) {
                 stave.setVoltaType(Volta.type.BEGIN_END, `${m.ending}.`, 0);
+            }
+            if (di === 0 && m.sena?.texto) {
+                stave.setText(`✋ ${m.sena.texto}`, 3, { shift_y: m.texto ? -22 : -8, justification: 1 });
             }
             if (di === 0 && m.texto && !['Todos', 'Toque', 'Llamada intermedia'].includes(m.texto)) {
                 stave.setText(m.texto, 3, { shift_y: -8, justification: 1 });
@@ -381,6 +384,9 @@ function construirNota(n, pitch, ts) {
                     .setVerticalJustification(Annotation.VerticalJustify.TOP)
             );
         }
+    }
+    if (golpe?.parentesis) {
+        try { Parenthesis.buildAndAttach([note]); } catch { /* versión de VexFlow sin paréntesis */ }
     }
     if (n.digitacion === 'D' || n.digitacion === 'I') {
         note.addModifier(

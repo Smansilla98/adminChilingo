@@ -187,6 +187,7 @@ function parsearCompas(mEl, instId, divisions, voiceFilter) {
             stroke = golpeDesdeCabeza(instId, cabeza);
             if (note.querySelector('accent, strong-accent')) stroke = instId === 'timbal' ? 'abierto' : 'acentuado';
             else if (note.querySelector('tenuto')) stroke = instId === 'timbal' ? 'presionado' : 'tapado';
+            if (note.querySelector('notehead')?.getAttribute('parentheses') === 'yes') stroke = 'fantasma';
         }
         let tuplet = null;
         const tm = note.querySelector('time-modification');

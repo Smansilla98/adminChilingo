@@ -1,5 +1,7 @@
 /**
- * Modelo de partitura v4 — percusión multi-instrumento, duraciones reales.
+ * Modelo de partitura v5 — percusión multi-instrumento, duraciones reales.
+ * v5 suma sobre v4 (se lee cualquiera de los dos): golpe `fantasma`, `vel` por nota,
+ * `pan`/`pitch` por instrumento y `sena` (seña de dirección) por compás.
  *
  * Fuente de duraciones: hoja «Equivalencias» del Cuadernillo de Toques
  * (database/data/partituras-v4/revision/EQUIVALENCIAS.md).
@@ -10,7 +12,7 @@ import {
     resolverStroke, tipoGolpeDe,
 } from './instruments.js';
 
-export const VERSION = 4;
+export const VERSION = 5;
 export const TPQ = 48;
 
 /**
@@ -91,7 +93,7 @@ export function ticksDeVoz(voz) {
 }
 
 export function crearNota({
-    dur = 'q', dots = 0, rest = false, stroke = 'nota', dyn = null, tuplet = null, digitacion = null,
+    dur = 'q', dots = 0, rest = false, stroke = 'nota', dyn = null, tuplet = null, digitacion = null, vel = null,
 } = {}) {
     return {
         id: nextId(),
@@ -102,7 +104,13 @@ export function crearNota({
         dyn,
         tuplet,
         digitacion: digitacion === 'D' || digitacion === 'I' ? digitacion : null,
+        vel: rest || vel === null || vel === undefined ? null : clampVel(vel),
     };
+}
+
+function clampVel(v) {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) ? Math.min(127, Math.max(1, n)) : null;
 }
 
 /** Descompone una cantidad de ticks en silencios "limpios". */
@@ -160,6 +168,7 @@ export function crearCompas(instrumentos, timeSignature) {
         repeatEnd: false,
         ending: null,
         texto: null,
+        sena: null,
         voces,
     };
 }
@@ -188,7 +197,7 @@ export function crearPartitura({ title = 'Toque nuevo', autor = '', instrumentos
 
 function instrumentoConfig(id) {
     const base = instrumentoPorId(id) || INSTRUMENTOS[0];
-    return { id: base.id, volume: 0.9, mute: false, solo: false, visible: true };
+    return { id: base.id, volume: 0.9, mute: false, solo: false, visible: true, pan: 0, pitch: 0 };
 }
 
 /** ---------------------------------------------------------------- normalización */
@@ -223,6 +232,7 @@ function normNota(raw, instId) {
         dyn: typeof raw.dyn === 'string' && raw.dyn ? raw.dyn : null,
         tuplet,
         digitacion: rest ? null : dig,
+        vel: rest || raw.vel === null || raw.vel === undefined ? null : clampVel(raw.vel),
     };
 }
 
@@ -269,10 +279,27 @@ export function tickAPosicion(tickLocal, timeSignature) {
     };
 }
 
+/**
+ * Intensidad de reproducción (1 ≈ golpe pleno mf). Una sola regla: `vel` (1–127) si la
+ * nota lo tiene; si no, golpe × dinámica.
+ */
 export function velocidadDeNota(nota) {
+    if (nota.vel) return Math.min(1.4, Math.max(0.05, nota.vel / 100));
     const golpe = GOLPES[nota.stroke] || GOLPES.nota;
     const dyn = nota.dyn ? (DYN_VEL[nota.dyn] || 1) : 1;
     return dyn * (golpe.gain || 1);
+}
+
+/** ¿Suena el instrumento con el mute/solo actual? (misma regla que el mixer). */
+export function esAudible(score, instId) {
+    const insts = score.instruments || [];
+    const cfg = insts.find((i) => i.id === instId);
+    if (!cfg || cfg.mute) return false;
+    const soloActivo = insts.some((i) => i.solo);
+    if (!soloActivo) return true;
+    const todos = insts.find((i) => i.id === 'todos');
+    if (todos?.solo && instId !== 'todos') return true;
+    return !!cfg.solo;
 }
 
 /**
@@ -358,6 +385,8 @@ export function normalizarPartitura(raw) {
             mute: !!i?.mute,
             solo: !!i?.solo,
             visible: i?.visible === undefined ? true : !!i.visible,
+            pan: clamp(parseFloat(i?.pan ?? 0), -1, 1) || 0,
+            pitch: Math.min(12, Math.max(-12, parseInt(i?.pitch ?? 0, 10) || 0)),
         });
     });
     if (!instruments.length) {
@@ -388,6 +417,7 @@ export function normalizarPartitura(raw) {
                     repeatEnd: !!m?.repeatEnd,
                     ending: ending >= 1 && ending <= 4 ? ending : null,
                     texto: typeof m?.texto === 'string' && m.texto.trim() ? m.texto.trim().slice(0, 40) : null,
+                    sena: normalizarSena(m?.sena, ids),
                     voces,
                 };
             }),
@@ -412,6 +442,19 @@ export function normalizarPartitura(raw) {
     if (source) out.source = source;
 
     return out;
+}
+
+const SENAS_IDS = ['entrada', 'corte', 'llamada', 'cambio', 'otra'];
+
+export function normalizarSena(raw, ids = []) {
+    if (!raw || typeof raw !== 'object') return null;
+    const texto = String(raw.texto || '').trim().slice(0, 80);
+    if (!texto) return null;
+    return {
+        texto,
+        tipo: SENAS_IDS.includes(raw.tipo) ? raw.tipo : 'otra',
+        instrumento: ids.includes(raw.instrumento) ? raw.instrumento : null,
+    };
 }
 
 function normalizarFuente(raw) {
@@ -653,7 +696,111 @@ export const ops = {
         );
         return true;
     },
+
+    /** Compás vacío antes o después de `measureIdx`. */
+    insertarCompas(score, sectionIdx, measureIdx, { antes = false } = {}) {
+        const sec = score.sections[sectionIdx];
+        if (!sec || sec.measures.length >= 64) return false;
+        const nuevo = crearCompas(score.instruments.map((i) => i.id), score.timeSignature);
+        sec.measures.splice(antes ? measureIdx : measureIdx + 1, 0, nuevo);
+        return true;
+    },
+
+    /** Copia profunda de los compases [desde, hasta] (portapapeles musical). */
+    copiarCompases(score, sectionIdx, desde, hasta) {
+        const sec = score.sections[sectionIdx];
+        if (!sec) return null;
+        const a = Math.max(0, Math.min(desde, hasta));
+        const b = Math.min(sec.measures.length - 1, Math.max(desde, hasta));
+        return {
+            timeSignature: { ...score.timeSignature },
+            measures: JSON.parse(JSON.stringify(sec.measures.slice(a, b + 1))),
+        };
+    },
+
+    /**
+     * Pega compases empezando en `measureIdx` (pisa los existentes y agrega los que falten).
+     * Los instrumentos que no están en la partitura se ignoran; los que faltan quedan en silencio.
+     */
+    pegarCompases(score, sectionIdx, measureIdx, clip) {
+        const sec = score.sections[sectionIdx];
+        if (!sec || !clip?.measures?.length) return false;
+        const capacidad = ticksDeCompas(score.timeSignature);
+        const ids = score.instruments.map((i) => i.id);
+        clip.measures.forEach((src, k) => {
+            const destino = measureIdx + k;
+            if (destino >= 64) return;
+            const m = clonarCompas(src, ids, capacidad);
+            if (destino < sec.measures.length) sec.measures[destino] = m;
+            else sec.measures.push(m);
+        });
+        return true;
+    },
+
+    /** Repite los compases [desde, hasta] `veces` veces justo después (R / Repetir ×N). */
+    repetirCompases(score, sectionIdx, desde, hasta, veces = 1) {
+        const sec = score.sections[sectionIdx];
+        if (!sec) return false;
+        const clip = ops.copiarCompases(score, sectionIdx, desde, hasta);
+        const n = clip.measures.length;
+        const capacidad = ticksDeCompas(score.timeSignature);
+        const ids = score.instruments.map((i) => i.id);
+        const copias = [];
+        for (let v = 0; v < Math.max(1, veces); v++) {
+            clip.measures.forEach((src) => copias.push(clonarCompas(src, ids, capacidad)));
+        }
+        const lugar = Math.max(desde, hasta) + 1;
+        const libres = 64 - sec.measures.length;
+        if (libres <= 0) return false;
+        sec.measures.splice(lugar, 0, ...copias.slice(0, Math.floor(libres / n) * n || libres));
+        return true;
+    },
+
+    /** Intensidad fina (1–127) o null para volver a golpe × dinámica. */
+    setVel(score, sel, vel) {
+        const nota = notaDe(score, sel);
+        if (!nota || nota.rest) return false;
+        nota.vel = vel === null || vel === '' ? null : clampVel(vel);
+        return true;
+    },
+
+    /** Sube o baja un escalón de dinámica (pp … ff). Sin dinámica arranca en mf. */
+    pasoDinamica(score, sel, delta) {
+        const nota = notaDe(score, sel);
+        if (!nota || nota.rest) return false;
+        const escala = ['pp', 'p', 'mp', 'mf', 'f', 'ff'];
+        const i = escala.indexOf(nota.dyn || 'mf');
+        const j = Math.min(escala.length - 1, Math.max(0, i + delta));
+        nota.dyn = escala[j] === 'mf' && !nota.dyn ? null : escala[j];
+        nota.vel = null;
+        return true;
+    },
+
+    setSena(score, sectionIdx, measureIdx, sena) {
+        const m = score.sections[sectionIdx]?.measures[measureIdx];
+        if (!m) return false;
+        m.sena = normalizarSena(sena, score.instruments.map((i) => i.id));
+        return true;
+    },
 };
+
+/** Clona un compás con ids nuevos, ajustado a los instrumentos y la capacidad actuales. */
+function clonarCompas(src, ids, capacidad) {
+    const voces = {};
+    ids.forEach((id) => {
+        const voz = Array.isArray(src?.voces?.[id]) ? src.voces[id] : [];
+        voces[id] = ajustarVoz(voz.map((n) => ({ ...n, id: nextId(), tuplet: n.tuplet ? { ...n.tuplet } : null })), capacidad);
+    });
+    return {
+        id: nextId('m'),
+        repeatBegin: !!src?.repeatBegin,
+        repeatEnd: !!src?.repeatEnd,
+        ending: src?.ending ?? null,
+        texto: src?.texto ?? null,
+        sena: src?.sena ? { ...src.sena } : null,
+        voces,
+    };
+}
 
 export function notaDe(score, sel) {
     const voz = vozDe(score, sel);

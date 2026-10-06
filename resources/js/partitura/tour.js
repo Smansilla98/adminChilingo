@@ -46,7 +46,7 @@ export const PASOS_TOUR = [
                 <li>Debajo de cada botón está cuánto ocupa en <strong>tiempos</strong> (negra = 1 t).</li>
                 <li><strong>Grupos</strong>: 2 corcheas, 4 semis, tresillo, sextillo — llenan el tiempo de una vez.</li>
                 <li><strong>Silencios</strong>: el mismo valor, pero sin golpe.</li>
-                <li>Teclado: <kbd>1</kbd>–<kbd>6</kbd> figuras · <kbd>.</kbd> puntillo · <kbd>R</kbd> silencio · <kbd>Ctrl</kbd>+<kbd>3</kbd> tresillo.</li>
+                <li>Teclado: <kbd>1</kbd>–<kbd>6</kbd> figuras · <kbd>.</kbd> puntillo · <kbd>0</kbd> silencio · <kbd>Ctrl</kbd>+<kbd>3</kbd> tresillo · <kbd>R</kbd> repite el compás.</li>
             </ol>
             <p class="pt-tour-note">El inspector a la derecha te dice si el compás está completo (192/192 en 4/4). Si queda corto o largo, cambiá figuras hasta que cierre.</p>
         `,
@@ -60,7 +60,7 @@ export const PASOS_TOUR = [
             <ol>
                 <li>Seleccioná una nota en esa línea.</li>
                 <li>Clic en el golpe: pleno, chapa, tapado, acentuado, agudo…</li>
-                <li>O usá <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd> <kbd>T</kbd> <kbd>Y</kbd> en ese orden.</li>
+                <li>O usá <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> en ese orden.</li>
             </ol>
             <p class="pt-tour-note">Al aplicar un golpe se escucha el sample. Si no suena, hacé un clic en la página para activar el audio.</p>
         `,
@@ -142,11 +142,11 @@ export const PASOS_TOUR = [
         titulo: 'Guardar, original y exportar',
         html: `
             <ol>
-                <li><strong>Guardar</strong> o <kbd>Ctrl</kbd>+<kbd>S</kbd>: deja el toque en el servidor. El pie dice “Cambios sin guardar” si falta.</li>
+                <li><strong>Publicar</strong> o <kbd>Ctrl</kbd>+<kbd>S</kbd>: publica una versión nueva. Mientras tanto el borrador se guarda solo; el pie muestra el estado.</li>
                 <li><strong>Importar → PDF / imagen</strong>: el original al lado, para transcribir. Botón <strong>Original</strong> lo muestra u oculta.</li>
                 <li>MusicXML / JSON: traer un archivo de MuseScore o un backup del editor.</li>
                 <li><strong>Exportar</strong>: PDF, PNG, MusicXML o MIDI para afuera.</li>
-                <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> deshace · <kbd>Ctrl</kbd>+<kbd>Y</kbd> rehace.</li>
+                <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> deshace · <kbd>Ctrl</kbd>+<kbd>Y</kbd> rehace · <kbd>?</kbd> muestra todos los atajos.</li>
             </ol>
             <p class="pt-tour-note">Reabrí esta guía cuando quieras con el botón <strong>?</strong> de la barra.</p>
         `,

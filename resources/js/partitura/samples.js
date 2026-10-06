@@ -47,6 +47,11 @@ export function resolverGolpe(instId, strokeId) {
         return { instId, strokeId: 'agudo', velMul: 1, flam: false, choke: false };
     }
 
+    if (strokeId === 'fantasma') {
+        const base = strokes?.includes(strokeBase(instId)) ? strokeBase(instId) : strokes?.[0];
+        if (base) return { instId, strokeId: base, velMul: 1, flam: false, choke: false };
+    }
+
     if (strokeId === 'acentuado') {
         const base = strokeBase(instId);
         if (strokes?.includes(base)) {
@@ -203,14 +208,14 @@ export class BancoSamples {
      * de salida salvo choke (tapado sin sample propio).
      * @returns {AudioBufferSourceNode|null}
      */
-    disparar(ctx, out, instId, strokeId, t, vel = 1) {
+    disparar(ctx, out, instId, strokeId, t, vel = 1, rate = 1) {
         const plan = resolverGolpe(instId, strokeId);
         const buf = this.obtener(plan.instId, plan.strokeId);
         const amp = Math.min(0.85, Math.max(0.04, 0.52 * vel * plan.velMul));
         const voz = plan.instId;
         const start = Number.isFinite(t) ? t : (ctx.currentTime + 0.01);
         if (plan.flam) {
-            if (buf) this._oneshot(ctx, out, buf, start - 0.032, amp * 0.35, false, `${voz}__flam`);
+            if (buf) this._oneshot(ctx, out, buf, start - 0.032, amp * 0.35, false, `${voz}__flam`, rate);
         }
         if (!buf) {
             if (typeof console !== 'undefined') {
@@ -218,10 +223,10 @@ export class BancoSamples {
             }
             return this._thump(ctx, out, start, amp, plan.choke, voz);
         }
-        return this._oneshot(ctx, out, buf, start, amp, plan.choke, voz);
+        return this._oneshot(ctx, out, buf, start, amp, plan.choke, voz, rate);
     }
 
-    _oneshot(ctx, out, buf, t, amp, choke, voz) {
+    _oneshot(ctx, out, buf, t, amp, choke, voz, rate = 1) {
         const start = Math.max(ctx.currentTime, t);
         // Solo el tapado/choke corta la cola anterior. Cortar en cada golpe
         // al programar el timeline dejaba todas las notas en silencio:
@@ -230,6 +235,8 @@ export class BancoSamples {
         if (choke && voz) this._cortarVoz(ctx, voz, start);
         const src = ctx.createBufferSource();
         src.buffer = buf;
+        // Afinación por instrumento (semitonos → playbackRate).
+        if (rate !== 1 && src.playbackRate) src.playbackRate.value = rate;
         const g = ctx.createGain();
         g.gain.setValueAtTime(0, start);
         g.gain.linearRampToValueAtTime(amp, start + 0.002);

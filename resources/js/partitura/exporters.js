@@ -2,7 +2,7 @@
  * Exportaciones: PNG, PDF, MusicXML y MIDI.
  */
 import { instrumentoPorId, GOLPES, GOLPES_POR_INSTRUMENTO, midiDeGolpe, sistemasVisuales, UNISONO, vocesDeUnisono } from './instruments.js';
-import { TPQ, ticksDeNota, expandirTimeline, ticksDeCompas } from './model.js';
+import { TPQ, ticksDeNota, expandirTimeline, ticksDeCompas, velocidadDeNota } from './model.js';
 
 /* ------------------------------------------------------------------ imágenes */
 
@@ -330,7 +330,7 @@ function notaXML(n, def, opts = {}) {
     });
     if (!n.rest) {
         const g = GOLPES[n.stroke] || GOLPES.nota;
-        s += `        <notehead>${CABEZA_XML[g.cabeza] || 'normal'}</notehead>\n`;
+        s += `        <notehead${g.parentesis ? ' parentheses="yes"' : ''}>${CABEZA_XML[g.cabeza] || 'normal'}</notehead>\n`;
         const arts = [];
         if (g.articulacion === 'a>' || n.stroke === 'acentuado') {
             const below = def.id === 'redoblante' || def.id === 'repique';
@@ -380,9 +380,8 @@ export function generarMIDI(score) {
                 let local = 0;
                 (m.voces[cfg.id] || []).forEach((n) => {
                     if (!n.rest) {
-                        const golpe = GOLPES[n.stroke] || GOLPES.nota;
                         const noteMidi = midiDeGolpe(id, n.stroke);
-                        const vel = Math.max(20, Math.min(127, Math.round(96 * golpe.gain * (cfg.volume || 1))));
+                        const vel = Math.max(8, Math.min(127, Math.round(96 * velocidadDeNota(n) * (cfg.volume || 1))));
                         eventos.push({ t: cursor + local, on: true, note: noteMidi, vel });
                         eventos.push({ t: cursor + local + 6, on: false, note: noteMidi, vel: 0 });
                     }

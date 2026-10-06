@@ -32,6 +32,10 @@ function montar() {
             refUrl: el.dataset.refUrl || null,
             refTipo: el.dataset.refTipo || 'imagen',
             refNombre: el.dataset.refNombre || '',
+            slug: el.dataset.slug || '',
+            borradorUrl: el.dataset.borradorUrl || null,
+            versionesUrl: el.dataset.versionesUrl || null,
+            borrador: leerJson(el, 'data-borrador'),
         });
         window.partituraEditor = editor;
     });

@@ -17,7 +17,8 @@ const GANANCIA_TIMBRE = {
     todos: 0.85,
 };
 import {
-    TPQ, ticksDeCompas, expandirTimeline, eventosMusicales, segundosDeTicks,
+    TPQ, ticksDeCompas, expandirTimeline, eventosMusicales, segundosDeTicks, esAudible,
+    ticksDeNota as ticksDeNotaLocal, velocidadDeNota as velocidadNota,
 } from './model.js';
 import { bancoSamples } from './samples.js';
 
@@ -41,6 +42,12 @@ export class MotorAudio {
         this.gains = {};
         this.metronomo = false;
         this.metroGain = 0.5;
+        /** Clicks por pulso: 1 negras, 2 corcheas, 4 semicorcheas. */
+        this.metroSub = 1;
+        /** Acentuar el primer tiempo del compás. */
+        this.metroAcento = true;
+        this.panners = {};
+        this.rates = {};
         this.playing = false;
         this.paused = false;
         this.stopFlag = false;
@@ -92,7 +99,14 @@ export class MotorAudio {
         if (!this.gains[instId]) {
             const g = this.ctx.createGain();
             g.gain.value = GANANCIA_TIMBRE[instId] ?? 0.9;
-            g.connect(this.master);
+            // Paneo por instrumento (si el navegador lo soporta).
+            if (typeof this.ctx.createStereoPanner === 'function') {
+                const pan = this.ctx.createStereoPanner();
+                g.connect(pan).connect(this.master);
+                this.panners[instId] = pan;
+            } else {
+                g.connect(this.master);
+            }
             this.gains[instId] = g;
         }
         return this.gains[instId];
@@ -113,6 +127,8 @@ export class MotorAudio {
             const vol = i.id === UNISONO ? (todos?.volume ?? 0.9) : i.volume;
             const timbre = GANANCIA_TIMBRE[i.id] ?? 1;
             g.gain.value = audible ? vol * timbre : 0;
+            if (this.panners[i.id]) this.panners[i.id].pan.value = Math.max(-1, Math.min(1, Number(i.pan) || 0));
+            this.rates[i.id] = 2 ** ((Number(i.pitch) || 0) / 12);
         });
     }
 
@@ -134,7 +150,7 @@ export class MotorAudio {
         destinos.forEach((id) => {
             const dt = n > 1 ? (UNISON_OFFSET[id] || 0) : 0;
             const src = bancoSamples.disparar(
-                this.ctx, this.canalDe(id), id, strokeId, t + dt, velocidad * comp,
+                this.ctx, this.canalDe(id), id, strokeId, t + dt, velocidad * comp, this.rates[id] ?? 1,
             );
             if (src) this._sources.push(src);
             last = src || last;
@@ -142,16 +158,16 @@ export class MotorAudio {
         return last;
     }
 
-    _click(t, fuerte) {
-        const ctx = this.ctx;
+    _click(t, fuerte, sub = false, ctx = this.ctx, destino = this.master) {
         const osc = ctx.createOscillator();
         const g = ctx.createGain();
         osc.type = 'square';
-        osc.frequency.value = fuerte ? 1600 : 1100;
+        osc.frequency.value = fuerte ? 1600 : sub ? 900 : 1100;
+        const nivel = fuerte ? 0.25 : sub ? 0.08 : 0.15;
         g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(this.metroGain * (fuerte ? 0.25 : 0.15), t + 0.001);
+        g.gain.linearRampToValueAtTime(Math.max(0.0005, this.metroGain * nivel), t + 0.001);
         g.gain.exponentialRampToValueAtTime(0.0004, t + 0.045);
-        osc.connect(g).connect(this.master);
+        osc.connect(g).connect(destino);
         osc.start(t);
         osc.stop(t + 0.06);
         this._sources.push(osc);
@@ -185,6 +201,7 @@ export class MotorAudio {
         this._duration = plan.duration;
         this._measureStarts = plan.measureStarts;
         this._countInSec = plan.countInSec || 0;
+        this._bpm = score.tempo;
         this._loop = !!opts.loop;
         this._playOpts = opts;
         this.playing = true;
@@ -196,7 +213,7 @@ export class MotorAudio {
             if (ev.tipo === 'nota') {
                 this._dispararGolpe(ev.instrument, ev.articulation, t, ev.velocity);
             } else if (ev.tipo === 'click') {
-                this._click(t, ev.fuerte);
+                this._click(t, ev.fuerte, ev.sub);
             }
         });
 
@@ -209,6 +226,16 @@ export class MotorAudio {
         let timeline = expandirTimeline(score);
         if (opts.soloSeccion !== null && opts.soloSeccion !== undefined) {
             timeline = timeline.filter((s) => s.sectionIdx === opts.soloSeccion);
+        }
+        // Loop de un tramo: compases [desde, hasta] de una parte (una pasada, sin repeticiones).
+        if (opts.rango) {
+            const { sectionIdx, desde, hasta } = opts.rango;
+            const a = Math.min(desde, hasta);
+            const b = Math.max(desde, hasta);
+            timeline = [];
+            for (let mi = a; mi <= b; mi++) {
+                if (score.sections[sectionIdx]?.measures[mi]) timeline.push({ sectionIdx, measureIdx: mi });
+            }
         }
         if (opts.desde) {
             const i = timeline.findIndex((s) => s.sectionIdx === opts.desde.sectionIdx && s.measureIdx === opts.desde.measureIdx);
@@ -233,9 +260,14 @@ export class MotorAudio {
             ? Math.max(0, full.findIndex((s) => s.sectionIdx === timeline[0].sectionIdx && s.measureIdx === timeline[0].measureIdx)) * cap
             : 0;
 
-        const eventosRebase = eventosMusicales(score)
+        const eventosBase = opts.rango
+            ? eventosDeTramo(score, timeline, cap, firstAbs)
+            : eventosMusicales(score);
+        const eventosRebase = eventosBase
             .filter((ev) => {
                 if (opts.soloSeccion !== null && opts.soloSeccion !== undefined && ev.sectionIdx !== opts.soloSeccion) return false;
+                // Lo silenciado (mute/solo) no se programa.
+                if (score.instruments?.length && !esAudible(score, ev.instrument)) return false;
                 return ev.absTick >= firstAbs;
             })
             .map((ev) => ({
@@ -250,27 +282,30 @@ export class MotorAudio {
 
         const porPulso = Math.round((TPQ * 4) / (score.timeSignature.den || 4));
         const pulsos = score.timeSignature.num || 4;
-        const countIn = opts.countIn !== false && !(opts.offsetSec > 0);
-        const countInSec = countIn ? segundosDeTicks(cap, bpm) : 0;
+        const compasesPrevios = opts.countIn === false || opts.offsetSec > 0 ? 0 : Math.min(2, Math.max(0, opts.countInCompases ?? 1));
+        const countInSec = compasesPrevios ? segundosDeTicks(cap * compasesPrevios, bpm) : 0;
 
         const clicks = [];
-        if (countIn) {
+        for (let c = 0; c < compasesPrevios; c++) {
             for (let p = 0; p < pulsos; p++) {
                 clicks.push({
                     tipo: 'click',
-                    musicalSec: segundosDeTicks(p * porPulso, bpm),
+                    musicalSec: segundosDeTicks(c * cap + p * porPulso, bpm),
                     fuerte: p === 0,
                     countIn: true,
                 });
             }
         }
         if (this.metronomo) {
+            const sub = [1, 2, 4].includes(this.metroSub) ? this.metroSub : 1;
+            const paso = porPulso / sub;
             timeline.forEach((pos, mi) => {
-                for (let p = 0; p < pulsos; p++) {
+                for (let p = 0; p < pulsos * sub; p++) {
                     clicks.push({
                         tipo: 'click',
-                        musicalSec: countInSec + segundosDeTicks(mi * cap + p * porPulso, bpm),
-                        fuerte: p === 0,
+                        musicalSec: countInSec + segundosDeTicks(mi * cap + p * paso, bpm),
+                        fuerte: p === 0 && this.metroAcento,
+                        sub: p % sub !== 0,
                     });
                 }
             });
@@ -287,6 +322,67 @@ export class MotorAudio {
             countInSec,
             duration: countInSec + segundosDeTicks(cursorTick, bpm),
         };
+    }
+
+    /**
+     * Cambia el tempo sin cortar: retoma desde la misma posición musical al nuevo BPM.
+     */
+    async cambiarTempo(score) {
+        if (!this.playing || !this._score) return;
+        const bpmAnterior = this._bpm || score.tempo;
+        const musical = Math.max(0, this.musicalAhora() - (this._countInSec || 0));
+        const ticks = (musical * TPQ * bpmAnterior) / 60;
+        const offsetSec = segundosDeTicks(ticks, score.tempo);
+        await this.play(score, { ...this._playOpts, offsetSec, countIn: false });
+    }
+
+    /**
+     * Renderiza el ritmo a WAV (estéreo 44,1 kHz) con OfflineAudioContext, sin backend.
+     * @returns {Promise<Blob>}
+     */
+    async renderizarWav(score, opts = {}) {
+        await this.asegurarContexto();
+        await this.precargarSamples(score);
+        const plan = this._planificar(score, { ...opts, countIn: false });
+        const sr = 44100;
+        const dur = Math.max(0.5, plan.duration + 1.2);
+        const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        const off = new OAC(2, Math.ceil(sr * dur), sr);
+        const master = off.createGain();
+        master.gain.value = 0.7;
+        const lim = off.createDynamicsCompressor();
+        lim.threshold.value = -8;
+        lim.ratio.value = 3.5;
+        master.connect(lim).connect(off.destination);
+        const canales = {};
+        const canal = (id) => {
+            if (canales[id]) return canales[id];
+            const cfg = score.instruments.find((i) => i.id === id) || {};
+            const g = off.createGain();
+            g.gain.value = (cfg.volume ?? 0.9) * (GANANCIA_TIMBRE[id] ?? 1);
+            if (typeof off.createStereoPanner === 'function') {
+                const pan = off.createStereoPanner();
+                pan.pan.value = Math.max(-1, Math.min(1, Number(cfg.pan) || 0));
+                g.connect(pan).connect(master);
+            } else {
+                g.connect(master);
+            }
+            canales[id] = g;
+            return g;
+        };
+        plan.eventos.forEach((ev) => {
+            if (ev.tipo === 'click') {
+                if (opts.conMetronomo) this._click(ev.musicalSec + 0.05, ev.fuerte, ev.sub, off, master);
+                return;
+            }
+            const destinos = ev.instrument === UNISONO ? vocesDeUnisono(score) : [ev.instrument];
+            destinos.forEach((id) => {
+                const cfg = score.instruments.find((i) => i.id === id) || {};
+                bancoSamples.disparar(off, canal(id), id, ev.articulation, ev.musicalSec + 0.05, ev.velocity / Math.sqrt(destinos.length), 2 ** ((Number(cfg.pitch) || 0) / 12));
+            });
+        });
+        const buffer = await off.startRendering();
+        return wavDeBuffer(buffer);
     }
 
     _tickClock() {
@@ -371,4 +467,60 @@ export class MotorAudio {
         this._sources = [];
         bancoSamples.cortarTodas(this.ctx);
     }
+}
+
+/** Eventos de un tramo de compases (para el loop de una selección). */
+function eventosDeTramo(score, timeline, cap, firstAbs) {
+    const out = [];
+    timeline.forEach((pos, i) => {
+        const m = score.sections[pos.sectionIdx]?.measures[pos.measureIdx];
+        if (!m) return;
+        const absTick = firstAbs + i * cap;
+        Object.entries(m.voces || {}).forEach(([instId, voz]) => {
+            let local = 0;
+            (voz || []).forEach((n) => {
+                const d = ticksDeNotaLocal(n);
+                if (!n.rest) {
+                    out.push({
+                        instrument: instId, articulation: n.stroke, velocity: velocidadNota(n),
+                        sectionIdx: pos.sectionIdx, measureIdx: pos.measureIdx, tickLocal: local, absTick,
+                    });
+                }
+                local += d;
+            });
+        });
+    });
+    return out;
+}
+
+/** WAV PCM 16 bits a partir de un AudioBuffer. */
+export function wavDeBuffer(buffer) {
+    const canales = buffer.numberOfChannels;
+    const largo = buffer.length;
+    const bytes = 44 + largo * canales * 2;
+    const view = new DataView(new ArrayBuffer(bytes));
+    const texto = (o, t) => { for (let i = 0; i < t.length; i++) view.setUint8(o + i, t.charCodeAt(i)); };
+    texto(0, 'RIFF');
+    view.setUint32(4, bytes - 8, true);
+    texto(8, 'WAVE');
+    texto(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, canales, true);
+    view.setUint32(24, buffer.sampleRate, true);
+    view.setUint32(28, buffer.sampleRate * canales * 2, true);
+    view.setUint16(32, canales * 2, true);
+    view.setUint16(34, 16, true);
+    texto(36, 'data');
+    view.setUint32(40, largo * canales * 2, true);
+    const datos = Array.from({ length: canales }, (_, c) => buffer.getChannelData(c));
+    let o = 44;
+    for (let i = 0; i < largo; i++) {
+        for (let c = 0; c < canales; c++) {
+            const v = Math.max(-1, Math.min(1, datos[c][i]));
+            view.setInt16(o, v < 0 ? v * 0x8000 : v * 0x7fff, true);
+            o += 2;
+        }
+    }
+    return new Blob([view], { type: 'audio/wav' });
 }

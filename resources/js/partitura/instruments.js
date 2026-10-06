@@ -106,6 +106,11 @@ export const GOLPES = {
         id: 'flam', label: 'Mordente / flam', short: 'fl',
         cabeza: 'normal', articulacion: null, pos: 4, gain: 1, timbre: 'golpe', tipoGolpe: 'abierto',
     },
+    fantasma: {
+        // Ghost note: golpe muy suave. Se dibuja entre paréntesis.
+        id: 'fantasma', label: 'Fantasma (suave)', short: '◦',
+        cabeza: 'normal', articulacion: null, pos: 4, gain: 0.35, timbre: 'golpe', tipoGolpe: null, parentesis: true,
+    },
 };
 
 /** Alias plano (tipoGolpe del requisito) → id interno. */
@@ -136,6 +141,7 @@ export const ARTICULACION_SAMPLE = {
     presionado: 'presionado',
     dedo: 'dedo',
     agudo: 'agudo',
+    fantasma: 'normal',
 };
 
 /** Samples requeridos por instrumento (sin fallback a otra articulación). */
@@ -209,15 +215,15 @@ export const DIGITACIONES = [
 
 /** Golpes disponibles por instrumento (el primero es el default). */
 export const GOLPES_POR_INSTRUMENTO = {
-    todos: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
-    surdo_grave: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
-    surdo_agudo: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
-    surdo_medio: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
-    redoblante: ['nota', 'acentuado', 'chapa', 'agudo', 'tapado', 'flam'],
-    repique: ['nota', 'acentuado', 'chapa', 'agudo', 'flam'],
-    timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo', 'acentuado'],
-    agogo: ['nota', 'acentuado', 'tapado'],
-    palmas: ['nota', 'acentuado'],
+    todos: ['nota', 'acentuado', 'chapa', 'tapado', 'flam', 'fantasma'],
+    surdo_grave: ['nota', 'acentuado', 'chapa', 'tapado', 'flam', 'fantasma'],
+    surdo_agudo: ['nota', 'acentuado', 'chapa', 'tapado', 'flam', 'fantasma'],
+    surdo_medio: ['nota', 'acentuado', 'chapa', 'tapado', 'flam', 'fantasma'],
+    redoblante: ['nota', 'acentuado', 'chapa', 'agudo', 'tapado', 'flam', 'fantasma'],
+    repique: ['nota', 'acentuado', 'chapa', 'agudo', 'flam', 'fantasma'],
+    timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo', 'acentuado', 'fantasma'],
+    agogo: ['nota', 'acentuado', 'tapado', 'fantasma'],
+    palmas: ['nota', 'acentuado', 'fantasma'],
 };
 
 /**
@@ -236,6 +242,15 @@ const MIDI_POR_GOLPE = {
 };
 
 export const DINAMICAS = ['pp', 'p', 'mp', 'mf', 'f', 'ff'];
+
+/** Señas de dirección por compás (germen de RhythmCue). Espejo de PartituraScore::SENAS. */
+export const SENAS = [
+    { id: 'entrada', label: 'Entrada' },
+    { id: 'corte', label: 'Corte' },
+    { id: 'llamada', label: 'Llamada' },
+    { id: 'cambio', label: 'Cambio' },
+    { id: 'otra', label: 'Otra' },
+];
 
 export const MARCAS_TEXTO = [
     { id: 'dc', label: 'D.C.', texto: 'D.C.' },
