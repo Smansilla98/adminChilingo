@@ -34,57 +34,18 @@
 
 @if($porAño->isNotEmpty())
 <nav class="prog-year-chips" aria-label="Años del programa">
+    @if($seccionesPorCategoria->isNotEmpty())
+        <a class="prog-chip" href="#contenido-programa">Contenido</a>
+    @endif
     <a class="prog-chip" href="#toques-por-anio">Todos los toques</a>
     @foreach($porAño as $año => $ritmos)
         <a class="prog-chip" href="#anio-{{ $año }}">{{ $años[$año] ?? $año.'°' }} · {{ $ritmos->count() }}</a>
     @endforeach
-    @if($seccionesPorCategoria->isNotEmpty())
-        <a class="prog-chip" href="#contenido-programa">Contenido</a>
-    @endif
 </nav>
 @endif
 
-<section id="toques-por-anio" class="mb-4">
-    @foreach([1, 2, 3, 4, 5, 6] as $año)
-        @php $ritmos = $porAño->get($año, collect()); @endphp
-        @if($ritmos->isNotEmpty())
-        <div id="anio-{{ $año }}" class="mb-4">
-            <div class="prog-anio-head">
-                <h2>{{ $años[$año] ?? $año.'° Año' }}</h2>
-                <span class="text-muted small">{{ $ritmos->count() }} toques</span>
-            </div>
-            <div class="prog-toque-grid">
-                @foreach($ritmos as $r)
-                    @php
-                        $m = $r->mediosNormalizados();
-                        $tieneScore = \App\Support\PartituraScore::tieneGolpes($m['partitura_score'] ?? null);
-                        $tienePdf = ! empty($m['partitura']['path']);
-                    @endphp
-                    <a href="{{ $r->slug ? route('programa.toque.show', $r) : '#' }}" class="prog-toque-tile {{ $r->slug ? '' : 'disabled' }}">
-                        <div class="prog-toque-tile__top">
-                            <span class="prog-toque-tile__n">{{ $r->orden }}.</span>
-                            @if($r->opcional)<span class="prog-pill">Opcional</span>@endif
-                        </div>
-                        <h3>{{ $r->nombre }}</h3>
-                        @if($r->autor)
-                            <p class="prog-toque-tile__meta">{{ $r->autor }}</p>
-                        @endif
-                        <div class="prog-pills">
-                            @if($tieneScore)<span class="prog-pill prog-pill--ok">Partitura</span>@endif
-                            @if($tienePdf)<span class="prog-pill">PDF</span>@endif
-                            @if($r->tieneProfundizacion())<span class="prog-pill">Textos</span>@endif
-                            @if($esAdmin && isset($r->publicado) && ! $r->publicado)<span class="prog-pill">Borrador</span>@endif
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-        </div>
-        @endif
-    @endforeach
-</section>
-
 @if($seccionesPorCategoria->isNotEmpty())
-<div id="contenido-programa" class="row g-3">
+<div id="contenido-programa" class="row g-3 mb-4">
     <div class="col-lg-4">
         <div class="card programa-nav-card sticky-lg-top" style="top: 4.5rem; z-index: 2;">
             <div class="card-header py-2">
@@ -131,6 +92,45 @@
     </div>
 </div>
 @endif
+
+<section id="toques-por-anio" class="mb-4">
+    @foreach([1, 2, 3, 4, 5, 6] as $año)
+        @php $ritmos = $porAño->get($año, collect()); @endphp
+        @if($ritmos->isNotEmpty())
+        <div id="anio-{{ $año }}" class="mb-4">
+            <div class="prog-anio-head">
+                <h2>{{ $años[$año] ?? $año.'° Año' }}</h2>
+                <span class="text-muted small">{{ $ritmos->count() }} toques</span>
+            </div>
+            <div class="prog-toque-grid">
+                @foreach($ritmos as $r)
+                    @php
+                        $m = $r->mediosNormalizados();
+                        $tieneScore = \App\Support\PartituraScore::tieneGolpes($m['partitura_score'] ?? null);
+                        $tienePdf = ! empty($m['partitura']['path']);
+                    @endphp
+                    <a href="{{ $r->slug ? route('programa.toque.show', $r) : '#' }}" class="prog-toque-tile {{ $r->slug ? '' : 'disabled' }}">
+                        <div class="prog-toque-tile__top">
+                            <span class="prog-toque-tile__n">{{ $r->orden }}.</span>
+                            @if($r->opcional)<span class="prog-pill">Opcional</span>@endif
+                        </div>
+                        <h3>{{ $r->nombre }}</h3>
+                        @if($r->autor)
+                            <p class="prog-toque-tile__meta">{{ $r->autor }}</p>
+                        @endif
+                        <div class="prog-pills">
+                            @if($tieneScore)<span class="prog-pill prog-pill--ok">Partitura</span>@endif
+                            @if($tienePdf)<span class="prog-pill">PDF</span>@endif
+                            @if($r->tieneProfundizacion())<span class="prog-pill">Textos</span>@endif
+                            @if($esAdmin && isset($r->publicado) && ! $r->publicado)<span class="prog-pill">Borrador</span>@endif
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    @endforeach
+</section>
 
 @endif
 @endsection
