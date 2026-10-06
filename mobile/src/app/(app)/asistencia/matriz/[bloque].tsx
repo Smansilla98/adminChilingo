@@ -58,10 +58,10 @@ export default function MatrizAsistencia() {
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
       <Stack.Screen options={{ title: nombre || 'Matriz' }} />
       <View style={{ flexDirection: 'row', gap: E.s }}>
-        <Texto onPress={() => setMes((x) => x === 1 ? 12 : x - 1)} style={{ color: C.acento, fontWeight: '800' }}>◀</Texto>
+        <Texto accessibilityRole="button" accessibilityLabel="Mes anterior" onPress={() => setMes((x) => x === 1 ? 12 : x - 1)} style={{ color: C.acento, fontWeight: '800' }}>◀</Texto>
         <Texto style={{ fontWeight: '800' }}>{m.mes}/{m.anio}</Texto>
-        <Texto onPress={() => setMes((x) => x === 12 ? 1 : x + 1)} style={{ color: C.acento, fontWeight: '800' }}>▶</Texto>
-        <Texto onPress={() => setAnio((x) => x - 1)} style={{ color: C.tenue }}> {anio - 1}</Texto>
+        <Texto accessibilityRole="button" accessibilityLabel="Mes siguiente" onPress={() => setMes((x) => x === 12 ? 1 : x + 1)} style={{ color: C.acento, fontWeight: '800' }}>▶</Texto>
+        <Texto accessibilityRole="button" accessibilityLabel={`Ir a ${anio - 1}`} onPress={() => setAnio((x) => x - 1)} style={{ color: C.tenue }}> {anio - 1}</Texto>
       </View>
       <Tenue>P presente · T tarde · J justificada · A ausencia. Mantener apretado borra.</Tenue>
       <ScrollView horizontal>

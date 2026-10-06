@@ -65,13 +65,19 @@ export default function Partitura() {
     return () => m.soltar();
   }, []);
 
-  useEffect(() => {
-    if (!q.data?.score || sucio) return;
-    setScore(q.data.score);
-    setTempo(Math.min(100, Math.max(60, q.data.score.tempo || 88)));
-  }, [q.data, sucio]);
+  // Toma la partitura del servidor cada vez que llega una nueva, salvo que haya
+  // cambios sin guardar (ajuste de estado durante el render, sin efecto en cascada).
+  const remoto = q.data?.score ?? null;
+  const [origen, setOrigen] = useState<Score | null>(null);
+  if (remoto && remoto !== origen && !sucio) {
+    setOrigen(remoto);
+    setScore(remoto);
+    setTempo(Math.min(100, Math.max(60, remoto.tempo || 88)));
+  }
 
-  motor.current.mezcla = { solo, mudas };
+  useEffect(() => {
+    motor.current.mezcla = { solo, mudas };
+  }, [solo, mudas]);
 
   if (q.isPending && !q.data) return <Cargando />;
   if (q.isError && !q.data) return <ErrorVista error={q.error} onReintentar={() => q.refetch()} />;

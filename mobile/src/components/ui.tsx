@@ -1,6 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import type { ComponentProps, ReactNode } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, type TextProps, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { C, E, TOQUE } from '@/lib/theme';
@@ -38,8 +38,8 @@ export function Tenue({ children, style }: { children: ReactNode; style?: object
   return <Text style={[s.tenue, style]}>{children}</Text>;
 }
 
-export function Texto({ children, style }: { children: ReactNode; style?: object }) {
-  return <Text style={[s.texto, style]}>{children}</Text>;
+export function Texto({ children, style, ...props }: TextProps & { children: ReactNode }) {
+  return <Text {...props} style={[s.texto, style]}>{children}</Text>;
 }
 
 export function Tarjeta({ children, onPress, style, acento }: { children: ReactNode; onPress?: () => void; style?: ViewStyle; acento?: string }) {
