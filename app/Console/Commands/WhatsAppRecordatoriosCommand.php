@@ -87,11 +87,11 @@ class WhatsAppRecordatoriosCommand extends Command
 
         $enviados = 0;
         $errores = 0;
-        $mensaje = "La Chilinga - Recordatorio: la cuota de {$cuotaActiva->nombre} (\$".number_format($cuotaActiva->monto, 0, ',', '.').') sigue pendiente. Cualquier duda contactanos.';
+        $mensaje = "La Chilinga - Recordatorio: la cuota de {$cuotaActiva->nombre} (\$".number_format((float) $cuotaActiva->monto, 0, ',', '.').') sigue pendiente. Cualquier duda contactanos.';
 
         foreach ($alumnosImpagos as $alumno) {
             if ($dryRun) {
-                $this->line("  [dry-run] {$alumno->nombre} - {$alumno->telefono}");
+                $this->line("  [dry-run] {$alumno->nombre_apellido} - {$alumno->telefono}");
                 $enviados++;
 
                 continue;
@@ -103,10 +103,10 @@ class WhatsAppRecordatoriosCommand extends Command
             ]);
             if ($result['success']) {
                 $enviados++;
-                $this->line('  '.$alumno->nombre.': Twilio aceptó SID '.($result['sid'] ?? ''));
+                $this->line('  '.$alumno->nombre_apellido.': Twilio aceptó SID '.($result['sid'] ?? ''));
             } else {
                 $errores++;
-                $this->warn("  {$alumno->nombre}: ".($result['error'] ?? ''));
+                $this->warn("  {$alumno->nombre_apellido}: ".($result['error'] ?? ''));
             }
         }
 
@@ -144,7 +144,7 @@ class WhatsAppRecordatoriosCommand extends Command
         $errores = 0;
         foreach ($alumnos as $alumno) {
             if ($dryRun) {
-                $this->line("  [dry-run] {$alumno->nombre} - {$alumno->telefono}");
+                $this->line("  [dry-run] {$alumno->nombre_apellido} - {$alumno->telefono}");
                 $enviados++;
 
                 continue;
@@ -157,7 +157,7 @@ class WhatsAppRecordatoriosCommand extends Command
                 $enviados++;
             } else {
                 $errores++;
-                $this->warn("  {$alumno->nombre}: ".($result['error'] ?? ''));
+                $this->warn("  {$alumno->nombre_apellido}: ".($result['error'] ?? ''));
             }
         }
 
