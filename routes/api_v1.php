@@ -279,6 +279,8 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('partituras/muestras/{archivo}', [PartituraController::class, 'muestra'])->where('archivo', '[a-z0-9_]+\.wav')->name('partituras.muestra');
     Route::get('partituras/{slug}/archivo', [PartituraController::class, 'archivo'])->name('partituras.archivo');
     Route::post('partituras/{slug}/archivo', [PartituraController::class, 'subirArchivo'])->middleware('permiso:partituras.admin')->name('partituras.archivo.subir');
+    Route::get('partituras/{slug}/versiones', [PartituraController::class, 'versiones'])->name('partituras.versiones');
+    Route::get('partituras/{slug}/versiones/{numero}', [PartituraController::class, 'version'])->whereNumber('numero')->name('partituras.version');
     Route::put('partituras/{slug}/score', [PartituraController::class, 'guardarScore'])->middleware('permiso:partituras.admin')->name('partituras.score');
     Route::put('partituras/{slug}', [PartituraController::class, 'update'])->middleware('permiso:partituras.admin')->name('partituras.update');
     Route::delete('partituras/{slug}', [PartituraController::class, 'destroy'])->middleware('permiso:partituras.admin')->name('partituras.destroy');

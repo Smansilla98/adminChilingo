@@ -115,6 +115,14 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
     Route::post('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'guardar'])
         ->middleware('throttle:20,1')
         ->name('programa.toque.editor.guardar');
+    Route::post('/toque/{programaRitmo:slug}/editor/borrador', [PartituraController::class, 'guardarBorrador'])
+        ->middleware('throttle:60,1')
+        ->name('programa.toque.editor.borrador');
+    Route::delete('/toque/{programaRitmo:slug}/editor/borrador', [PartituraController::class, 'descartarBorrador'])
+        ->middleware('throttle:20,1')
+        ->name('programa.toque.editor.borrador.descartar');
+    Route::get('/toque/{programaRitmo:slug}/editor/versiones', [PartituraController::class, 'versiones'])->name('programa.toque.editor.versiones');
+    Route::get('/toque/{programaRitmo:slug}/editor/versiones/{numero}', [PartituraController::class, 'version'])->whereNumber('numero')->name('programa.toque.editor.version');
     Route::post('/toque/{programaRitmo:slug}/editor/referencia', [PartituraController::class, 'subirReferencia'])
         ->middleware('throttle:10,1')
         ->name('programa.toque.editor.referencia');

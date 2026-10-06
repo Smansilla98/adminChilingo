@@ -68,6 +68,14 @@
     data-ref-url="{{ $refUrl ?? '' }}"
     data-ref-tipo="{{ $refTipo ?? 'imagen' }}"
     data-ref-nombre="{{ e($refNombre ?? '') }}"
+    data-slug="{{ $programaRitmo->slug }}"
+    @if(!empty($conHistorial))
+        data-borrador-url="{{ route('programa.toque.editor.borrador', $programaRitmo) }}"
+        data-versiones-url="{{ route('programa.toque.editor.versiones', $programaRitmo) }}"
+    @endif
+    @if(!empty($borrador))
+        data-borrador="{{ json_encode($borrador, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}"
+    @endif
 ></div>
 @endsection
 

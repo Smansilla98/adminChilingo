@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProgramaRitmo;
+use App\Services\PartituraHistorialService;
 use App\Services\ProgramaRitmoMediosService;
 use App\Support\PartituraMuestras;
 use App\Support\PartituraScore;
@@ -136,12 +137,31 @@ class PartituraController extends Controller
             $request->ip()
         );
         $toque->update(['medios' => $medios]);
+        $version = app(PartituraHistorialService::class)->registrarVersion($toque, $medios['partitura_score'], $nombre, $request->input('nota'));
 
         return response()->json([
             'ok' => true,
             'score' => $medios['partitura_score'],
             'lectura' => PartituraScore::lectura($medios['partitura_score']),
+            'version' => $version?->numero,
         ]);
+    }
+
+    /** Versiones publicadas de la partitura (más nueva primero). */
+    public function versiones(string $slug, PartituraHistorialService $historial): JsonResponse
+    {
+        $toque = ProgramaRitmo::query()->where('slug', $slug)->firstOrFail();
+
+        return response()->json(['data' => $historial->listar($toque)]);
+    }
+
+    public function version(string $slug, int $numero, PartituraHistorialService $historial): JsonResponse
+    {
+        $toque = ProgramaRitmo::query()->where('slug', $slug)->firstOrFail();
+        $v = $historial->version($toque, $numero);
+        abort_unless($v, 404);
+
+        return response()->json(['data' => ['numero' => $v->numero, 'autor' => $v->autor, 'nota' => $v->nota, 'fecha' => $v->created_at?->toIso8601String(), 'score' => $v->score]]);
     }
 
     /** PDF o imagen de referencia del toque. */

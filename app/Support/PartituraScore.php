@@ -3,13 +3,15 @@
 namespace App\Support;
 
 /**
- * Modelo de partitura v4 (editor tipo MuseScore) — validación y normalización server-side.
+ * Modelo de partitura (editor de ritmos) — validación y normalización server-side.
  *
  * Espejo de resources/js/partitura/model.js. Unidad: ticks, TPQ = 48.
+ * v5 suma campos opcionales sobre v4 (se lee cualquiera de los dos, nada se pierde):
+ * golpe `fantasma`, `vel` por nota, `pan`/`pitch` por instrumento y `sena` por compás.
  */
 class PartituraScore
 {
-    public const VERSION = 4;
+    public const VERSION = 5;
 
     public const TPQ = 48;
 
@@ -42,8 +44,11 @@ class PartituraScore
 
     /** Golpes válidos. */
     public const GOLPES = [
-        'nota', 'acentuado', 'chapa', 'tapado', 'presionado', 'abierto', 'slap', 'palma', 'dedo', 'agudo', 'flam',
+        'nota', 'acentuado', 'chapa', 'tapado', 'presionado', 'abierto', 'slap', 'palma', 'dedo', 'agudo', 'flam', 'fantasma',
     ];
+
+    /** Tipos de seña de dirección por compás (germen de RhythmCue). */
+    public const SENAS = ['entrada', 'corte', 'llamada', 'cambio', 'otra'];
 
     public const DINAMICAS = ['pp', 'p', 'mp', 'mf', 'f', 'ff'];
 
@@ -64,6 +69,7 @@ class PartituraScore
         'dedo' => '·',
         'agudo' => '▲',
         'flam' => 'fl',
+        'fantasma' => '◦',
     ];
 
     /**
@@ -225,6 +231,7 @@ class PartituraScore
             'dyn' => $attrs['dyn'] ?? null,
             'tuplet' => $attrs['tuplet'] ?? null,
             'digitacion' => $digitacion,
+            'vel' => isset($attrs['vel']) && $attrs['vel'] !== null ? max(1, min(127, (int) $attrs['vel'])) : null,
         ];
     }
 
@@ -257,11 +264,13 @@ class PartituraScore
                 'mute' => (bool) (is_array($cfg) ? ($cfg['mute'] ?? false) : false),
                 'solo' => (bool) (is_array($cfg) ? ($cfg['solo'] ?? false) : false),
                 'visible' => is_array($cfg) ? ($cfg['visible'] ?? true) !== false : true,
+                'pan' => round(max(-1, min(1, (float) (is_array($cfg) ? ($cfg['pan'] ?? 0) : 0))), 2),
+                'pitch' => max(-12, min(12, (int) (is_array($cfg) ? ($cfg['pitch'] ?? 0) : 0))),
             ];
         }
         if ($instrumentos === []) {
             foreach (self::INSTRUMENTOS_DEFAULT as $id) {
-                $instrumentos[$id] = ['id' => $id, 'volume' => 0.9, 'mute' => false, 'solo' => false, 'visible' => true];
+                $instrumentos[$id] = ['id' => $id, 'volume' => 0.9, 'mute' => false, 'solo' => false, 'visible' => true, 'pan' => 0, 'pitch' => 0];
             }
         }
         $ids = array_keys($instrumentos);
@@ -290,6 +299,7 @@ class PartituraScore
                     'repeatEnd' => ! empty($m['repeatEnd']),
                     'ending' => $ending,
                     'texto' => $texto !== '' ? mb_substr($texto, 0, 60) : null,
+                    'sena' => self::normalizarSena($m['sena'] ?? null, $ids),
                     'voces' => $voces,
                 ];
             }
@@ -335,6 +345,27 @@ class PartituraScore
         }
 
         return $out;
+    }
+
+    /**
+     * Seña de dirección de un compás: texto corto, tipo y (opcional) a quién va.
+     *
+     * @param  string[]  $ids
+     * @return array{texto: string, tipo: string, instrumento: ?string}|null
+     */
+    public static function normalizarSena(mixed $raw, array $ids): ?array
+    {
+        if (! is_array($raw)) {
+            return null;
+        }
+        $texto = mb_substr(trim((string) ($raw['texto'] ?? '')), 0, 80);
+        if ($texto === '') {
+            return null;
+        }
+        $tipo = in_array($raw['tipo'] ?? null, self::SENAS, true) ? $raw['tipo'] : 'otra';
+        $inst = in_array($raw['instrumento'] ?? null, $ids, true) ? $raw['instrumento'] : null;
+
+        return ['texto' => $texto, 'tipo' => $tipo, 'instrumento' => $inst];
     }
 
     /**
@@ -450,6 +481,7 @@ class PartituraScore
                 'dyn' => in_array((string) ($n['dyn'] ?? ''), self::DINAMICAS, true) ? (string) $n['dyn'] : null,
                 'tuplet' => $tuplet,
                 'digitacion' => $rest ? null : ($n['digitacion'] ?? null),
+                'vel' => $rest ? null : ($n['vel'] ?? null),
             ]);
             $t = self::ticksDeNota($nota);
             if ($acum + $t > $capacidad) {

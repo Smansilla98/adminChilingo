@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BibliotecaItem;
 use App\Models\ProgramaRitmo;
+use App\Services\PartituraHistorialService;
 use App\Services\ProgramaRitmoMediosService;
 use App\Support\PartituraScore;
 use App\Support\ProgramaRitmoMedios;
@@ -44,9 +45,13 @@ class PartituraController extends Controller
             $refNombre = $biblio['nombre'];
         }
 
+        $historial = app(PartituraHistorialService::class);
+
         return view('programa.partitura-editor', [
             'programaRitmo' => $programaRitmo,
             'score' => $score,
+            'borrador' => $historial->borradorPendiente($programaRitmo),
+            'conHistorial' => $historial->disponible(),
             'ultimaEdicion' => ProgramaRitmoMedios::ultimaEdicion($medios),
             'nombreSugerido' => auth()->user()?->name ?: auth()->user()?->username,
             'refUrl' => $refUrl,
@@ -107,6 +112,7 @@ class PartituraController extends Controller
             'score' => 'nullable|array',
             'quitar' => 'nullable|boolean',
             'editor_nombre' => 'required|string|min:2|max:80',
+            'nota' => 'nullable|string|max:200',
         ], [
             'editor_nombre.required' => 'Indicá tu nombre para dejar registro de la edición.',
             'editor_nombre.min' => 'El nombre debe tener al menos 2 caracteres.',
@@ -135,13 +141,66 @@ class PartituraController extends Controller
             $request->ip()
         );
         $programaRitmo->update(['medios' => $medios]);
+        $historial = app(PartituraHistorialService::class);
+        $version = $medios['partitura_score'] ? $historial->registrarVersion($programaRitmo, $medios['partitura_score'], $nombre, $data['nota'] ?? null) : null;
+        $historial->descartarBorrador($programaRitmo);
 
         return response()->json([
             'ok' => true,
             'score' => $medios['partitura_score'],
             'resumen' => PartituraScore::resumen($medios['partitura_score']),
             'editado_por' => $nombre,
+            'version' => $version?->numero,
         ]);
+    }
+
+    /** Autoguardado del borrador (no publica). Mismas reglas que guardar. */
+    public function guardarBorrador(Request $request, ProgramaRitmo $programaRitmo, PartituraHistorialService $historial): JsonResponse
+    {
+        $this->exigirEdicion($programaRitmo);
+        $data = $request->validate([
+            'score' => 'required|array',
+            'editor_nombre' => 'required|string|min:2|max:80',
+        ]);
+        $score = PartituraScore::normalizar($data['score']);
+        if ($score === null) {
+            return response()->json(['ok' => false, 'error' => 'La partitura está vacía o es inválida.'], 422);
+        }
+        $historial->guardarBorrador($programaRitmo, $score, trim($data['editor_nombre']));
+
+        return response()->json(['ok' => true, 'at' => now()->toIso8601String()]);
+    }
+
+    public function descartarBorrador(ProgramaRitmo $programaRitmo, PartituraHistorialService $historial): JsonResponse
+    {
+        $this->exigirEdicion($programaRitmo);
+        $historial->descartarBorrador($programaRitmo);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function versiones(ProgramaRitmo $programaRitmo, PartituraHistorialService $historial): JsonResponse
+    {
+        $this->abortSiToqueNoPublico($programaRitmo);
+
+        return response()->json(['data' => $historial->listar($programaRitmo)]);
+    }
+
+    public function version(ProgramaRitmo $programaRitmo, int $numero, PartituraHistorialService $historial): JsonResponse
+    {
+        $this->abortSiToqueNoPublico($programaRitmo);
+        $v = $historial->version($programaRitmo, $numero);
+        abort_unless($v, 404);
+
+        return response()->json(['data' => ['numero' => $v->numero, 'autor' => $v->autor, 'nota' => $v->nota, 'fecha' => $v->created_at?->toIso8601String(), 'score' => $v->score]]);
+    }
+
+    private function exigirEdicion(ProgramaRitmo $programaRitmo): void
+    {
+        if (! config('chilinga.edicion_publica_programa') && ! auth()->user()?->can('partituras.admin')) {
+            abort(403, 'La edición del programa requiere iniciar sesión con permiso.');
+        }
+        $this->abortSiToqueNoPublico($programaRitmo);
     }
 
     /** Parte separada por instrumento, lista para imprimir. */
