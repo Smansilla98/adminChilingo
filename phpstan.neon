@@ -1,0 +1,10 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app/
+    # Nivel 5: tipos de argumentos y retornos. Lo existente queda en la línea base;
+    # el código nuevo no puede sumar errores.
+    level: 5

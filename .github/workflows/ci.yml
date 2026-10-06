@@ -58,6 +58,12 @@ jobs:
       - name: Verificar formato de codigo (Pint)
         run: vendor/bin/pint --test
 
+      - name: Análisis estático (Larastan, con línea base)
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: Auditoría de dependencias JS (producción)
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Skip-link en layouts (a11y)
         run: |
           grep -q 'ito-skip' resources/views/layouts/app.blade.php

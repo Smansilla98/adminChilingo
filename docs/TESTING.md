@@ -7,11 +7,20 @@ php artisan test                      # SQLite en memoria (phpunit.xml)
 DB_CONNECTION=mysql DB_DATABASE=chilinga_test php artisan test   # contra MySQL
 npm run test:partitura                # tests JS del modelo de partituras
 vendor/bin/pint --test                # estilo
-cd mobile && npm run typecheck && npm run lint
+vendor/bin/phpstan analyse --memory-limit=1G   # análisis estático (Larastan nivel 5)
+composer audit && npm audit --omit=dev --audit-level=high
+cd mobile && npm run typecheck && npm run lint && npm test
 ```
 
 Si el PHP local no tiene `pdo_sqlite`: `sudo apt install php8.3-sqlite3`, o usar MySQL como
 arriba, o `composer test` (usa Docker).
+
+### Análisis estático
+
+`phpstan.neon` corre Larastan a nivel 5 sobre `app/`. Los ~700 avisos que ya existían
+(casi todos relaciones de Eloquent sin genéricos) están en `phpstan-baseline.neon`: el CI
+falla solo si el código nuevo agrega errores. Al arreglar algo de la línea base, regenerala:
+`vendor/bin/phpstan analyse --memory-limit=1G --generate-baseline`.
 
 Todos los tests con base de datos usan **las migraciones reales** (`RefreshDatabase`): lo que
 se prueba es el esquema de producción. (Antes existía un esquema armado a mano en
@@ -30,6 +39,7 @@ se prueba es el esquema de producción. (Antes existía un esquema armado a mano
 | `Feature/NotificacionesTest` | aviso de pago sin duplicados, cuotas vencidas, eventos por sede, push (Expo simulado) |
 | `Feature/SeguridadTest` | límite de intentos de login, cabeceras de seguridad, cierre de edición pública de partituras, login sin rol por defecto |
 | `Feature/PantallasWebTest` | render de Personas, Usuarios y permisos, Auditoría, altas desde persona, menú multirrol |
+| `Feature/WhatsAppRecordatoriosCommandTest` | recordatorio de cuotas en simulación: solo impagos con teléfono, con su nombre |
 | `Feature/RolesYNegocioTest`, `DisenoOwnershipTest`, `WhatsAppStatusTrackingTest`, `PagoCuotaTokenTest` | tests previos, adaptados al esquema real |
 
 ## Helpers
@@ -41,6 +51,6 @@ se prueba es el esquema de producción. (Antes existía un esquema armado a mano
 
 | Job | Pasos |
 |-----|-------|
-| Backend (SQLite) | `composer audit`, build Vite, tests JS, Pint, a11y, validación de rutas API, suite completa |
+| Backend (SQLite) | `composer audit`, build Vite, tests JS, Pint, Larastan, `npm audit` (producción), a11y, validación de rutas API, suite completa |
 | MySQL | migra base vacía, revierte y re-aplica la migración de plataforma, `chilinga:diagnose`, suite completa sobre MySQL |
-| App móvil | `npm ci`, typecheck, lint, bundle Android + iOS |
+| App móvil | `npm ci`, typecheck, lint, tests (jest), bundle Android + iOS |
