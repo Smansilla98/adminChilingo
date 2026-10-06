@@ -17,6 +17,8 @@ export interface Nota {
   stroke?: string;
   dyn?: string | null;
   tuplet?: { id?: string; num: number; den: number } | null;
+  /** Intensidad fina 1–127 (v5): si está, manda sobre golpe × dinámica. */
+  vel?: number | null;
 }
 
 export interface Compas {
@@ -169,7 +171,7 @@ export function eventosMusicales(score: Score): EventoNota[] {
             out.push({
               instrument: instId,
               articulation: n.stroke || (instId === 'timbal' ? 'abierto' : 'nota'),
-              velocity: dyn * gananciaDe(n.stroke || 'nota'),
+              velocity: n.vel ? Math.min(1.4, Math.max(0.05, n.vel / 100)) : dyn * gananciaDe(n.stroke || 'nota'),
               sectionIdx: pos.sectionIdx,
               measureIdx: pos.measureIdx,
               tickLocal: local,

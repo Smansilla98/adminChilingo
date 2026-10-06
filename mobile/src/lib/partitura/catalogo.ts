@@ -15,15 +15,15 @@ export const INSTRUMENTOS: { id: string; nombre: string; corto: string }[] = [
 export const INSTRUMENTOS_DEFAULT = ['surdo_grave', 'surdo_agudo', 'surdo_medio', 'redoblante', 'repique', 'timbal'];
 
 export const GOLPES_POR_INSTRUMENTO: Record<string, string[]> = {
-  todos: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
-  surdo_grave: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
-  surdo_agudo: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
-  surdo_medio: ['nota', 'acentuado', 'chapa', 'tapado', 'flam'],
-  redoblante: ['nota', 'acentuado', 'chapa', 'agudo', 'tapado', 'flam'],
-  repique: ['nota', 'acentuado', 'chapa', 'agudo', 'flam'],
-  timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo', 'acentuado'],
-  agogo: ['nota', 'acentuado', 'tapado'],
-  palmas: ['nota', 'acentuado'],
+  todos: ['nota', 'acentuado', 'chapa', 'tapado', 'flam', 'fantasma'],
+  surdo_grave: ['nota', 'acentuado', 'chapa', 'tapado', 'flam', 'fantasma'],
+  surdo_agudo: ['nota', 'acentuado', 'chapa', 'tapado', 'flam', 'fantasma'],
+  surdo_medio: ['nota', 'acentuado', 'chapa', 'tapado', 'flam', 'fantasma'],
+  redoblante: ['nota', 'acentuado', 'chapa', 'agudo', 'tapado', 'flam', 'fantasma'],
+  repique: ['nota', 'acentuado', 'chapa', 'agudo', 'flam', 'fantasma'],
+  timbal: ['abierto', 'slap', 'palma', 'presionado', 'dedo', 'acentuado', 'fantasma'],
+  agogo: ['nota', 'acentuado', 'tapado', 'fantasma'],
+  palmas: ['nota', 'acentuado', 'fantasma'],
 };
 
 export const SIMBOLOS: Record<string, string> = {
@@ -38,6 +38,7 @@ export const SIMBOLOS: Record<string, string> = {
   dedo: '✕',
   agudo: '▲',
   flam: 'fl',
+  fantasma: '◦',
 };
 
 export const ETIQUETA_GOLPE: Record<string, string> = {
@@ -52,11 +53,12 @@ export const ETIQUETA_GOLPE: Record<string, string> = {
   dedo: 'Dedos',
   agudo: 'Agudo',
   flam: 'Flam',
+  fantasma: 'Fantasma',
 };
 
 const GANANCIA: Record<string, number> = {
   nota: 1, acentuado: 1.2, chapa: 0.85, tapado: 0.6, presionado: 0.55,
-  abierto: 1.1, slap: 1.15, palma: 0.9, dedo: 0.5, agudo: 1, flam: 1,
+  abierto: 1.1, slap: 1.15, palma: 0.9, dedo: 0.5, agudo: 1, flam: 1, fantasma: 0.35,
 };
 
 export const GANANCIA_TIMBRE: Record<string, number> = {
@@ -121,6 +123,7 @@ export function resolverGolpe(instId: string, strokeId: string): ResolucionGolpe
     const s = strokes?.includes(base) ? base : strokes?.[0];
     if (s) return { instId, strokeId: s, vel: 1, flam: true };
   }
+  if (strokeId === 'fantasma' && strokes?.length) return { instId, strokeId: strokes.includes(base) ? base : strokes[0], vel: 1, flam: false };
   if (strokeId === 'tapado' && strokes?.includes('nota')) return { instId, strokeId: 'nota', vel: 0.72, flam: false };
   if (strokeId === 'nota' && strokes?.includes('abierto')) return { instId, strokeId: 'abierto', vel: 1, flam: false };
   if (strokeId === 'abierto' && strokes?.includes('nota')) return { instId, strokeId: 'nota', vel: 1, flam: false };
