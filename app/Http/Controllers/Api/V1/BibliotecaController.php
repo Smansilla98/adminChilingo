@@ -105,7 +105,7 @@ class BibliotecaController extends Controller
             'tipos' => BibliotecaItem::TIPOS,
             'instrumentos' => BibliotecaItem::instrumentosOpciones(),
             'toques' => Schema::hasTable('programa_ritmos')
-                ? ProgramaRitmo::query()->when(Schema::hasColumn('programa_ritmos', 'publicado'), fn ($q) => $q->where('publicado', true))->orderBy('año')->orderBy('orden')->orderBy('nombre')->get(['id', 'nombre', 'slug'])
+                ? ProgramaRitmo::soloEnPrograma(ProgramaRitmo::query())->when(Schema::hasColumn('programa_ritmos', 'publicado'), fn ($q) => $q->where('publicado', true))->orderBy('año')->orderBy('orden')->orderBy('nombre')->get(['id', 'nombre', 'slug'])
                 : [],
             'tags' => BibliotecaTag::query()->orderByDesc('usos')->orderBy('nombre')->limit(30)->get(['nombre', 'slug', 'usos']),
             'modera' => $this->modera($request),

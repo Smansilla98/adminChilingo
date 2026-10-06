@@ -21,6 +21,11 @@
             <i class="bi bi-music-note-beamed"></i> Ir a partituras
         </a>
         <a href="#toques-por-anio" class="btn btn-outline-secondary">Ver toques</a>
+        @if($esAdmin)
+        <a href="{{ route('programa.gestion') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-sliders"></i> Gestionar toques
+        </a>
+        @endif
     </div>
 </div>
 
@@ -94,7 +99,7 @@
 @endif
 
 <section id="toques-por-anio" class="mb-4">
-    @foreach([1, 2, 3, 4, 5, 6] as $año)
+    @foreach(array_keys($años) as $año)
         @php $ritmos = $porAño->get($año, collect()); @endphp
         @if($ritmos->isNotEmpty())
         <div id="anio-{{ $año }}" class="mb-4">
@@ -113,6 +118,7 @@
                         <div class="prog-toque-tile__top">
                             <span class="prog-toque-tile__n">{{ $r->orden }}.</span>
                             @if($r->opcional)<span class="prog-pill">Opcional</span>@endif
+                            @if(! $r->sigueVigente())<span class="prog-pill">Ya no se toca</span>@endif
                         </div>
                         <h3>{{ $r->nombre }}</h3>
                         @if($r->autor)

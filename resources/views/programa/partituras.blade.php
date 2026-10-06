@@ -18,6 +18,7 @@
     <div class="prog-hero-actions">
         <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary">Programa</a>
         @if($esAdmin)
+        <a href="{{ route('programa.gestion') }}" class="btn btn-outline-secondary"><i class="bi bi-sliders"></i> Gestionar toques</a>
         <form action="{{ route('programa.partituras.importar-cuadernillo') }}" method="POST" class="d-inline"
               data-confirm="¿Asignar a cada toque su PDF del Cuadernillo de Toques? Reemplaza el archivo de partitura actual.">
             @csrf

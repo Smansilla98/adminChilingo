@@ -36,6 +36,7 @@ use App\Http\Controllers\PlanComprasController;
 use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\ProfesorPagoCuotaController;
 use App\Http\Controllers\ProgramaController;
+use App\Http\Controllers\ProgramaGestionController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioMailController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
@@ -305,6 +306,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/programa/partituras/toques', [ProgramaController::class, 'storeToque'])->name('programa.partituras.toques.store');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
+        Route::get('/programa/gestion', [ProgramaGestionController::class, 'index'])->name('programa.gestion');
+        Route::put('/programa/gestion/{programaRitmo:id}', [ProgramaGestionController::class, 'update'])
+            ->whereNumber('programaRitmo')
+            ->name('programa.gestion.update');
     });
 
     Route::middleware('permiso:biblioteca.admin')->group(function () {

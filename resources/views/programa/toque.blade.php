@@ -24,10 +24,21 @@
     </ol>
 </nav>
 
+@if(! $programaRitmo->estaEnPrograma() || ! $programaRitmo->sigueVigente())
+<div class="alert {{ $programaRitmo->estaEnPrograma() ? 'alert-secondary' : 'alert-warning' }}" role="status">
+    <strong>{{ $programaRitmo->estaEnPrograma() ? 'Este toque ya no se toca en la escuela.' : 'Este toque ya no forma parte del programa.' }}</strong>
+    Queda como referencia.@if($programaRitmo->estado_nota) {{ $programaRitmo->estado_nota }}@endif
+    @if($esAdmin)<a href="{{ route('programa.gestion') }}#toque-{{ $programaRitmo->id }}" class="alert-link ms-1">Cambiar</a>@endif
+</div>
+@endif
+
 <div class="biblio-hero biblio-hero--compact">
     <div>
         <p class="biblio-eyebrow">{{ $añoLabel }} · Toque {{ $programaRitmo->orden }}</p>
         <h1>{{ $programaRitmo->nombre }}</h1>
+        @if($programaRitmo->historialNombres())
+            <p class="small text-muted mb-1">Antes: {{ collect($programaRitmo->historialNombres())->pluck('nombre')->join(', ') }}</p>
+        @endif
         @if($programaRitmo->autor)
             <p class="biblio-lead">{{ $programaRitmo->autor }}</p>
         @endif

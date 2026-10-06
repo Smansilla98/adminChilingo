@@ -22,6 +22,10 @@ class ProgramaRitmo extends Model
         'enlaces',
         'medios',
         'publicado',
+        'vigente',
+        'en_programa',
+        'nombres_anteriores',
+        'estado_nota',
     ];
 
     protected $casts = [
@@ -32,6 +36,9 @@ class ProgramaRitmo extends Model
         'enlaces' => 'array',
         'medios' => 'array',
         'publicado' => 'boolean',
+        'vigente' => 'boolean',
+        'en_programa' => 'boolean',
+        'nombres_anteriores' => 'array',
     ];
 
     /**
@@ -44,6 +51,69 @@ class ProgramaRitmo extends Model
         }
 
         return \App\Support\ProgramaRitmoMedios::normalizar($this->medios);
+    }
+
+    /**
+     * Toques que forman parte del programa oficial (los retirados quedan fuera).
+     * Tolera bases sin migrar.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<static>  $consulta
+     * @return \Illuminate\Database\Eloquent\Builder<static>
+     */
+    public static function soloEnPrograma($consulta)
+    {
+        if (\Illuminate\Support\Facades\Schema::hasColumn('programa_ritmos', 'en_programa')) {
+            $consulta->where('en_programa', true);
+        }
+
+        return $consulta;
+    }
+
+    public function estaEnPrograma(): bool
+    {
+        return $this->en_programa ?? true;
+    }
+
+    public function sigueVigente(): bool
+    {
+        return $this->vigente ?? true;
+    }
+
+    /**
+     * @return list<array{nombre: string, hasta: string|null}>
+     */
+    public function historialNombres(): array
+    {
+        return array_values(array_filter(
+            is_array($this->nombres_anteriores) ? $this->nombres_anteriores : [],
+            fn ($n) => is_array($n) && filled($n['nombre'] ?? null)
+        ));
+    }
+
+    /**
+     * Toque por nombre actual o anterior (para no duplicarlo al reimportar
+     * después de un renombre o de un cambio de año).
+     */
+    public static function porNombre(string $nombre, ?int $año = null): ?self
+    {
+        $nombre = trim($nombre);
+        if ($nombre === '') {
+            return null;
+        }
+        $actual = static::query()->where('nombre', $nombre)
+            ->when($año !== null, fn ($q) => $q->orderByRaw('CASE WHEN año = ? THEN 0 ELSE 1 END', [$año]))
+            ->first();
+        if ($actual || ! \Illuminate\Support\Facades\Schema::hasColumn('programa_ritmos', 'nombres_anteriores')) {
+            return $actual;
+        }
+
+        $buscado = mb_strtolower($nombre);
+
+        // Pocas decenas de toques: se filtra en PHP (el JSON guarda los acentos escapados).
+        return static::query()->whereNotNull('nombres_anteriores')
+            ->get(['id', 'nombre', 'nombres_anteriores'])
+            ->first(fn (self $r) => collect($r->historialNombres())->contains(fn ($n) => mb_strtolower($n['nombre']) === $buscado))
+            ?->fresh();
     }
 
     public function getRouteKeyName(): string

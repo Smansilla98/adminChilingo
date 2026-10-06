@@ -29,6 +29,7 @@ class PartituraController extends Controller
         $q = ProgramaRitmo::query();
         if (! ($request->boolean('todas') && $request->user()->acceso()->puede('partituras.admin'))) {
             $q->where('publicado', true);
+            ProgramaRitmo::soloEnPrograma($q);
         }
         $toques = ProgramaRitmo::traerOrdenados($q);
 
@@ -45,6 +46,9 @@ class PartituraController extends Controller
                 'tiene_partitura' => ! empty($medios['partitura_score']) || ! empty($medios['partitura']),
                 'tiene_pdf' => ! empty($medios['partitura']['path']),
                 'publicado' => (bool) $t->publicado,
+                'vigente' => $t->sigueVigente(),
+                'en_programa' => $t->estaEnPrograma(),
+                'nombres_anteriores' => array_column($t->historialNombres(), 'nombre'),
             ];
         })->values()]);
     }

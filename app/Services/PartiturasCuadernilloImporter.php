@@ -120,7 +120,9 @@ class PartiturasCuadernilloImporter
             $ritmo = ProgramaRitmo::query()
                 ->where('año', $crear['año'] ?? 0)
                 ->where('nombre', $crear['nombre'] ?? '')
-                ->first();
+                ->first()
+                // Renombrado o movido de año desde la gestión del programa: no duplicarlo.
+                ?? ProgramaRitmo::porNombre((string) ($crear['nombre'] ?? ''), (int) ($crear['año'] ?? 0));
 
             if ($ritmo) {
                 return $ritmo;
@@ -153,7 +155,8 @@ class PartiturasCuadernilloImporter
             ->where('año', $m['año'] ?? 0)
             ->where('orden', $m['orden'] ?? 0)
             ->where('nombre', $m['nombre'] ?? '')
-            ->first();
+            ->first()
+            ?? ProgramaRitmo::porNombre((string) ($m['nombre'] ?? ''), (int) ($m['año'] ?? 0));
     }
 
     /**

@@ -39,7 +39,7 @@ class ProgramaController extends Controller
         try {
             $this->asegurarDatosBase();
 
-            $qRitmos = ProgramaRitmo::query();
+            $qRitmos = ProgramaRitmo::soloEnPrograma(ProgramaRitmo::query());
             if (Schema::hasColumn('programa_ritmos', 'publicado') && ! auth()->user()?->isAdmin()) {
                 $qRitmos->where('publicado', true);
             }
@@ -90,17 +90,19 @@ class ProgramaController extends Controller
         try {
             $this->asegurarDatosBase();
 
-            $q = ProgramaRitmo::query();
+            $q = ProgramaRitmo::soloEnPrograma(ProgramaRitmo::query());
             if (Schema::hasColumn('programa_ritmos', 'publicado') && ! auth()->user()?->isAdmin()) {
                 $q->where('publicado', true);
             }
+            $ritmos = ProgramaRitmo::traerOrdenados($q);
             if ($busqueda !== '') {
-                $q->where(function ($sub) use ($busqueda) {
-                    $sub->where('nombre', 'like', '%'.$busqueda.'%')
-                        ->orWhere('autor', 'like', '%'.$busqueda.'%');
-                });
+                // También por nombre anterior: un toque renombrado se sigue encontrando.
+                $buscado = mb_strtolower($busqueda);
+                $ritmos = $ritmos->filter(fn (ProgramaRitmo $r) => str_contains(mb_strtolower($r->nombre), $buscado)
+                    || str_contains(mb_strtolower((string) $r->autor), $buscado)
+                    || collect($r->historialNombres())->contains(fn ($n) => str_contains(mb_strtolower($n['nombre']), $buscado)));
             }
-            $ritmos = ProgramaRitmo::traerOrdenados($q)->map(function (ProgramaRitmo $r) {
+            $ritmos = $ritmos->map(function (ProgramaRitmo $r) {
                 $m = $r->mediosNormalizados();
                 $tieneArchivo = ! empty($m['partitura']['path']);
                 $videosBase = collect($m['videos_base'] ?? [])->filter(fn ($v) => ! empty($v['url']))->count();
@@ -190,7 +192,7 @@ class ProgramaController extends Controller
         }
 
         $años = ProgramaRitmo::años();
-        $qVecinos = ProgramaRitmo::query()->orderBy('año')->orderBy('orden');
+        $qVecinos = ProgramaRitmo::soloEnPrograma(ProgramaRitmo::query())->orderBy('año')->orderBy('orden');
         if (Schema::hasColumn('programa_ritmos', 'publicado')) {
             $qVecinos->where('publicado', true);
         }
