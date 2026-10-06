@@ -89,6 +89,13 @@ class ArchivoHistoricoTest extends TestCase
         $this->assertEqualsCanonicalizing(['ensayo', 'tambores'], $f1->tags->pluck('nombre')->all());
         $this->assertCount(2, $f1->personas);
 
+        // Pantallas de gestión (regresión: un @endif mal cerrado rompía la ficha).
+        $this->get(route('archivo.gestion.fotos.edit', $f1))->assertOk()->assertSee('carga del equipo');
+        $this->get(route('archivo.gestion.fotos'))->assertOk();
+        $this->get(route('archivo.gestion.tablero'))->assertOk();
+        $this->get(route('archivo.gestion.eventos.edit', $acontecimiento))->assertOk();
+        $this->get(route('archivo.gestion.capitulos.edit', $capitulo))->assertOk();
+
         // Orden dentro del acontecimiento (drag & drop).
         $this->postJson(route('archivo.gestion.fotos.orden'), ['ids' => [$f2->id, $f1->id]])->assertOk();
         $this->assertSame([$f2->id, $f1->id], $acontecimiento->fotos()->pluck('id')->all());
