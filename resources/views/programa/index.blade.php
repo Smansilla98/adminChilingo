@@ -89,6 +89,11 @@
                     @endif
                 </div>
                 <div class="card-body programa-contenido">
+                    @if($sec->slug === 'discos')
+                        @include('programa.partials.seccion-discos')
+                    @elseif($sec->slug === 'sedes-programa')
+                        @include('programa.partials.seccion-sedes')
+                    @endif
                     {!! $sec->cuerpo !!}
                 </div>
             </section>

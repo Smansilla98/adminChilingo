@@ -42,6 +42,42 @@
     </div>
 </x-ito.form-section>
 
+@if(\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'en_mapa'))
+<x-ito.form-section title="Ubicación en el mapa" icon="bi-map"
+    help="Lo que se publica en el mapa del programa: nombre, dirección y este punto. Nada más de la sede.">
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="form-check form-switch">
+                <input type="hidden" name="en_mapa" value="0">
+                <input type="checkbox" name="en_mapa" class="form-check-input" id="sede-en-mapa" value="1" role="switch" @checked(old('en_mapa', $sede?->en_mapa ?? false))>
+                <label class="form-check-label" for="sede-en-mapa">Mostrar en el mapa público de sedes</label>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="sm-mapa" style="height: 300px" data-mapa-picker role="application" aria-label="Mapa para ubicar la sede: hacé clic donde está la puerta"></div>
+            <p class="form-text mb-0" data-mapa-aviso aria-live="polite">Hacé clic en el mapa donde está la puerta (podés arrastrar el punto), o buscá por la dirección.</p>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="sede-lat">Latitud</label>
+            <input type="number" step="any" id="sede-lat" name="latitud" class="form-control @error('latitud') is-invalid @enderror" value="{{ old('latitud', $sede?->latitud) }}" inputmode="decimal">
+            @error('latitud')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="sede-lng">Longitud</label>
+            <input type="number" step="any" id="sede-lng" name="longitud" class="form-control @error('longitud') is-invalid @enderror" value="{{ old('longitud', $sede?->longitud) }}" inputmode="decimal">
+            @error('longitud')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="button" class="btn btn-outline-secondary" data-mapa-buscar><i class="bi bi-search"></i> Buscar dirección</button>
+            <button type="button" class="btn btn-outline-secondary" data-mapa-limpiar title="Quitar la ubicación" aria-label="Quitar la ubicación"><i class="bi bi-x-lg"></i></button>
+        </div>
+    </div>
+</x-ito.form-section>
+@push('scripts')
+    @vite(['resources/js/sedes-mapa.js'])
+@endpush
+@endif
+
 @if(\Illuminate\Support\Facades\Schema::hasColumn('sedes', 'liquidacion_porc_docente'))
 <x-ito.form-section title="Reparto de la cuota" icon="bi-pie-chart"
     help="Cuánto se queda la escuela y qué porcentaje va al profe. Al registrar un pago de esta sede se usan estos valores si no escribís otro monto.">

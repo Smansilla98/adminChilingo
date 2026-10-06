@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/partitura.js',
+                'resources/js/sedes-mapa.js',
             ],
             refresh: true,
         }),

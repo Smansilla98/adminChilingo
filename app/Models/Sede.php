@@ -14,6 +14,9 @@ class Sede extends Model
     protected $fillable = [
         'nombre',
         'direccion',
+        'latitud',
+        'longitud',
+        'en_mapa',
         'tipo_propiedad',
         'costo_alquiler_mensual',
         'coordinador_id',
@@ -24,9 +27,29 @@ class Sede extends Model
 
     protected $casts = [
         'activo' => 'boolean',
+        'latitud' => 'float',
+        'longitud' => 'float',
+        'en_mapa' => 'boolean',
         'liquidacion_retencion_escuela' => 'decimal:2',
         'liquidacion_porc_docente' => 'decimal:2',
     ];
+
+    public function tieneUbicacion(): bool
+    {
+        return $this->latitud !== null && $this->longitud !== null;
+    }
+
+    /** Búsqueda de la dirección en Google Maps (para "Cómo llegar"). */
+    public function urlComoLlegar(): ?string
+    {
+        if ($this->tieneUbicacion()) {
+            return 'https://www.google.com/maps/dir/?api=1&destination='.$this->latitud.','.$this->longitud;
+        }
+
+        return filled($this->direccion)
+            ? 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($this->direccion.', Argentina')
+            : null;
+    }
 
     /**
      * Base sobre la que se aplica el % al docente (monto cuota de referencia − retención fija escuela).

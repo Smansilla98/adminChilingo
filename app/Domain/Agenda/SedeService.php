@@ -24,6 +24,9 @@ class SedeService
         return [
             'nombre' => 'required|string|max:255|unique:sedes,nombre'.($sede ? ','.$sede->id : ''),
             'direccion' => 'nullable|string|max:255',
+            'latitud' => 'nullable|numeric|between:-90,90|required_with:longitud',
+            'longitud' => 'nullable|numeric|between:-180,180|required_with:latitud',
+            'en_mapa' => 'boolean',
             'tipo_propiedad' => 'nullable|string|in:'.implode(',', array_keys(self::TIPOS_PROPIEDAD)),
             'costo_alquiler_mensual' => 'nullable|numeric|min:0',
             'liquidacion_retencion_escuela' => 'nullable|numeric|min:0',
@@ -68,7 +71,7 @@ class SedeService
 
         // Solo columnas presentes en la tabla (algunas llegaron en migraciones posteriores).
         $permitidas = ['nombre', 'direccion', 'activo'];
-        foreach (['tipo_propiedad', 'costo_alquiler_mensual', 'liquidacion_retencion_escuela', 'liquidacion_porc_docente'] as $col) {
+        foreach (['tipo_propiedad', 'costo_alquiler_mensual', 'liquidacion_retencion_escuela', 'liquidacion_porc_docente', 'latitud', 'longitud', 'en_mapa'] as $col) {
             if (Schema::hasColumn('sedes', $col)) {
                 $permitidas[] = $col;
             }

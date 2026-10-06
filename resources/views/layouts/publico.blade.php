@@ -5,7 +5,7 @@
     <meta name="chilinga-samples" content="{{ parse_url(asset('sounds/perc'), PHP_URL_PATH) ?: '/sounds/perc' }}">
     <link rel="stylesheet" href="{{ asset('css/biblioteca.css') }}?v=9">
     <link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=7">
-    <link rel="stylesheet" href="{{ asset('css/programa-publico.css') }}?v=7">
+    <link rel="stylesheet" href="{{ asset('css/programa-publico.css') }}?v=8">
     @stack('head')
     @stack('vite')
     @stack('styles')

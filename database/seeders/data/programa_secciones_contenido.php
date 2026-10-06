@@ -26,7 +26,8 @@ return [
         'slug' => 'discos',
         'titulo' => 'Discos de La Chilinga',
         'subtitulo' => 'Donde podés escuchar la mayoría de los ritmos del programa',
-        'cuerpo' => '<ul><li><strong>Percusión</strong> (1998)</li><li><strong>Viejos dioses</strong> (2001)</li><li><strong>Muñequitos del tambor</strong> (2004)</li><li><strong>Raíces</strong> (2007)</li><li><strong>Fantasma</strong> (2010)</li></ul><p>Podés escucharlos en YouTube o Spotify.</p>',
+        // La lista de discos sale de la tabla `discos` (ver /programa/discografia).
+        'cuerpo' => '<p>Podés escucharlos en YouTube, Spotify y otras plataformas.</p>',
         'orden' => 3,
         'categoria' => 'recursos',
     ],
@@ -119,7 +120,8 @@ return [
         'slug' => 'sedes-programa',
         'titulo' => 'Sedes',
         'subtitulo' => null,
-        'cuerpo' => '<ul><li><strong>Palomar</strong> — Ing. Marconi 181</li><li><strong>Saavedra</strong> — Ruiz Huidobro 4228</li><li><strong>Varela</strong> — Cerro Aconcagua 2153</li><li><strong>Quilmes</strong> — Humberto Primo 320</li><li><strong>Banfield</strong> — Av. Alsina 251</li><li><strong>Tacheles</strong> — Alsina 1475 (Congreso)</li></ul><p>Redes: Facebook <strong>La Chilinga</strong> · Instagram <strong>@lachilinga</strong></p><p class="mb-0"><strong>Todos/as queremos, podemos y debemos tocar el tambor. ¡Hace bien!</strong></p><p class="text-muted small mt-2">Programa creado, adaptado y puesto en actividad por Dani Buira — Director General.</p>',
+        // Las sedes y el mapa salen de la tabla `sedes` (ver /programa/sedes).
+        'cuerpo' => '<p>Redes: Facebook <strong>La Chilinga</strong> · Instagram <strong>@lachilinga</strong></p><p class="mb-0"><strong>Todos/as queremos, podemos y debemos tocar el tambor. ¡Hace bien!</strong></p><p class="text-muted small mt-2">Programa creado, adaptado y puesto en actividad por Dani Buira — Director General.</p>',
         'orden' => 16,
         'categoria' => 'recursos',
     ],

@@ -19,6 +19,7 @@ use App\Http\Controllers\ComunidadAgendaController;
 use App\Http\Controllers\ContextoController;
 use App\Http\Controllers\CuotaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DiscografiaController;
 use App\Http\Controllers\DisenoEditorController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\FacturacionMensualController;
@@ -42,6 +43,7 @@ use App\Http\Controllers\RecordatorioMailController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\SedeController;
+use App\Http\Controllers\SedesMapaController;
 use App\Http\Controllers\SeguimientoPedagogicoController;
 use App\Http\Controllers\ShowController;
 use App\Http\Controllers\TwilioWhatsAppStatusController;
@@ -109,6 +111,10 @@ require __DIR__.'/archivo.php';
 Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
     Route::get('/', [ProgramaController::class, 'index'])->name('programa.index');
     Route::get('/partituras', [ProgramaController::class, 'partiturasIndex'])->name('programa.partituras.index');
+    Route::get('/discografia', [DiscografiaController::class, 'index'])->name('programa.discos.index');
+    Route::get('/discografia/{disco}', [DiscografiaController::class, 'show'])->name('programa.discos.show');
+    Route::get('/discografia/{disco}/portada', [DiscografiaController::class, 'portada'])->name('programa.discos.portada');
+    Route::get('/sedes', SedesMapaController::class)->name('programa.sedes');
     Route::get('/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->name('programa.toque.show');
     Route::get('/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->name('programa.toque.archivo');
     Route::get('/toque/{programaRitmo:slug}/parte/{instrumento}', [PartituraController::class, 'parte'])->name('programa.toque.parte');
@@ -306,6 +312,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/programa/partituras/toques', [ProgramaController::class, 'storeToque'])->name('programa.partituras.toques.store');
         Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
         Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
+        Route::get('/programa/discografia/{disco}/editar', [DiscografiaController::class, 'edit'])->name('programa.discos.edit');
+        Route::put('/programa/discografia/{disco}', [DiscografiaController::class, 'update'])->name('programa.discos.update');
         Route::get('/programa/gestion', [ProgramaGestionController::class, 'index'])->name('programa.gestion');
         Route::put('/programa/gestion/{programaRitmo:id}', [ProgramaGestionController::class, 'update'])
             ->whereNumber('programaRitmo')

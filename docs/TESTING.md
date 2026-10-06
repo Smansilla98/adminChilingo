@@ -40,6 +40,7 @@ se prueba es el esquema de producción. (Antes existía un esquema armado a mano
 | `Feature/SeguridadTest` | límite de intentos de login, cabeceras de seguridad, cierre de edición pública de partituras, login sin rol por defecto |
 | `Feature/PantallasWebTest` | render de Personas, Usuarios y permisos, Auditoría, altas desde persona, menú multirrol |
 | `Feature/ProgramaGestionTest` | gestión del programa solo para administración; renombre con historial (el enlace no cambia), cambio de año, «ya no se toca», fuera del programa (web, partituras y API), búsqueda por nombre anterior, 7° año |
+| `Feature/DiscografiaYSedesTest` | discografía (orden, temas, duración total, fuentes, dudas marcadas), cruce de temas con toques del programa (sin cruzar «II» con «I» ni toques retirados), discos sin publicar, edición con portada y auditoría, mapa de sedes sin datos internos, ubicación desde la ficha de la sede |
 | `Feature/WhatsAppRecordatoriosCommandTest` | recordatorio de cuotas en simulación: solo impagos con teléfono, con su nombre |
 | `Feature/RolesYNegocioTest`, `DisenoOwnershipTest`, `WhatsAppStatusTrackingTest`, `PagoCuotaTokenTest` | tests previos, adaptados al esquema real |
 

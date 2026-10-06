@@ -30,6 +30,7 @@ class SedeController extends Controller
         $this->authorize('create', Sede::class);
         $validated = $request->validate($sedes->reglas());
         $validated['activo'] = $request->boolean('activo');
+        $validated['en_mapa'] = $request->boolean('en_mapa');
         $sedes->crear($validated);
 
         return redirect()->route('sedes.index')
@@ -56,6 +57,7 @@ class SedeController extends Controller
         $this->authorize('update', $sede);
         $validated = $request->validate($sedes->reglas($sede));
         $validated['activo'] = $request->has('activo') ? true : false;
+        $validated['en_mapa'] = $request->boolean('en_mapa');
         $sedes->actualizar($sede, $validated);
 
         return redirect()->route('sedes.index')
