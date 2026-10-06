@@ -211,6 +211,7 @@ Detalle: `{ data: {...} }`. En los campos de año se usa `anio`.
 | Auditoría | `GET /auditoria`, `GET /auditoria/{id}`, `GET /auditoria/catalogo` |
 | Villa Gesell | `GET /villa-gesell`, `PUT /villa-gesell/config`, inscriptos (`GET/POST`, `GET/PUT/DELETE {id}`, `GET nueva`, `GET alumnos-disponibles`), `POST alumnos-rapidos\|profesores-rapidos\|bloques-rapidos`, calendario (`GET calendario`, `POST dias/generar`, `PUT dias/{id}`, `POST dias/{id}/slots\|tocadas`, `PUT/DELETE tocadas/{id}`), gastos e insumos (`GET/POST`, `PUT/DELETE {id}`) |
 | Diseño | `GET/POST /disenos`, `GET/PUT/DELETE /disenos/{id}`, `POST /disenos/{id}/paginas`, `PUT/DELETE /disenos/paginas/{id}`, `POST /disenos/paginas/{id}/duplicar`, `GET /disenos/plantillas[/{id}]`, `POST /disenos/imagenes`, `GET /disenos/marca`, `POST/DELETE /disenos/marca/kit[/{id}]` |
+| Partituras | `GET /partituras/{slug}/versiones`, `GET /partituras/{slug}/versiones/{n}` (cada `PUT /partituras/{slug}/score` publica una versión nueva si la música cambió) |
 | Biblioteca | `GET/POST /biblioteca`, `GET /biblioteca/{id}`, `GET /biblioteca/{id}/archivo`, `POST /biblioteca/{id}/visibilidad`, `DELETE /biblioteca/{id}`, `GET /biblioteca/catalogo` |
 | Inventario | `DELETE /inventario/{id}` (además de lo ya documentado) |
 
