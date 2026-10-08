@@ -1,6 +1,6 @@
 # Sistema de diseño del panel
 
-Guía para mantener la interfaz consistente. Todo vive en `public/css/chilinga-admin.css` (sin frameworks nuevos: Bootstrap 5.3 por CDN + bootstrap-icons).
+Guía para mantener la interfaz consistente. Para la marca (logos, paleta con contrastes, tipografía, recursos y piezas gráficas) ver [IDENTIDAD_VISUAL.md](IDENTIDAD_VISUAL.md). Todo vive en `public/css/chilinga-admin.css` (sin frameworks nuevos: Bootstrap 5.3 por CDN + bootstrap-icons).
 
 ## Principios
 
