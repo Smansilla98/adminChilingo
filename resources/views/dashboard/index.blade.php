@@ -47,6 +47,7 @@
     <div class="hub-hero">
         <div class="hub-hero-main">
             <h1 class="hub-greeting">{{ $saludo }}, {{ $primerNombre }}</h1>
+            <p class="small mb-1"><a href="{{ route('ayuda.direccion') }}"><i class="bi bi-signpost-split" aria-hidden="true"></i> ¿Estás aprendiendo a usar el sistema? Abrí la guía paso a paso</a></p>
             <p class="hub-lead">
                 {{ ucfirst(now()->locale('es')->translatedFormat('l j \d\e F')) }} ·
                 {{ $sedesActivasEnBloques ?? 0 }} sedes activas ·

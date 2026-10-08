@@ -7,6 +7,7 @@ use App\Models\ProgramaRitmo;
 use App\Models\ProgramaSeccion;
 use App\Services\PartiturasCuadernilloImporter;
 use App\Services\ProgramaRitmoMediosService;
+use App\Support\AccesoMaterial;
 use App\Support\ProgramaRitmoMedios;
 use App\Support\ProgramaRitmoSlug;
 use Database\Seeders\ProgramaRitmosSeeder;
@@ -73,6 +74,13 @@ class ProgramaController extends Controller
      */
     public function partiturasIndex(Request $request)
     {
+        // Las partituras son material: piden cuenta (el programa sigue público).
+        if (! $request->user()) {
+            return redirect()->guest(route('login'))
+                ->with('info', 'Para ver las partituras entrá con tu cuenta. Si sos alumno y no tenés, podés crearla con tu DNI.');
+        }
+        $anioMaximo = AccesoMaterial::anioMaximo($request->user());
+
         $años = ProgramaRitmo::años();
         $porAño = collect();
         $estadoPrograma = 'ok';
@@ -84,7 +92,7 @@ class ProgramaController extends Controller
         if (! Schema::hasTable('programa_ritmos')) {
             $estadoPrograma = 'sin_tabla';
 
-            return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital', 'crear'));
+            return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital', 'crear', 'anioMaximo'));
         }
 
         try {
@@ -93,6 +101,9 @@ class ProgramaController extends Controller
             $q = ProgramaRitmo::soloEnPrograma(ProgramaRitmo::query());
             if (Schema::hasColumn('programa_ritmos', 'publicado') && ! auth()->user()?->isAdmin()) {
                 $q->where('publicado', true);
+            }
+            if ($anioMaximo !== AccesoMaterial::SIN_LIMITE) {
+                $q->where('año', '<=', $anioMaximo);
             }
             $ritmos = ProgramaRitmo::traerOrdenados($q);
             if ($busqueda !== '') {
@@ -136,7 +147,7 @@ class ProgramaController extends Controller
             $estadoPrograma = 'error';
         }
 
-        return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital', 'crear'));
+        return view('programa.partituras', compact('porAño', 'años', 'estadoPrograma', 'busqueda', 'pendientes', 'digital', 'crear', 'anioMaximo'));
     }
 
     public function editPartitura(ProgramaRitmo $programaRitmo)

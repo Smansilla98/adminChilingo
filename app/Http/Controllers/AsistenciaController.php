@@ -251,6 +251,14 @@ class AsistenciaController extends Controller
         }
         $bloques = $bloquesQuery->get();
 
+        // Con un solo bloque no hay nada que elegir: se abre directo la lista de hoy.
+        if (! $bloqueId && $bloques->count() === 1) {
+            return redirect()->to($request->url().'?'.http_build_query([
+                'bloque_id' => $bloques->first()->id,
+                'fecha' => $request->get('fecha', date('Y-m-d')),
+            ]));
+        }
+
         if ($bloqueId) {
             $bloque = Bloque::with(['alumnos', 'sede'])->findOrFail($bloqueId);
             if ($user && ! $user->puedeAccederBloque((int) $bloque->id)) {

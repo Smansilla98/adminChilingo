@@ -5,7 +5,7 @@
     @stack('vite')
     @stack('styles')
     @auth
-    <link rel="stylesheet" href="{{ asset('css/recordatorio-chatbot.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('css/recordatorio-chatbot.css') }}?v=5">
     @endauth
 </head>
 <body>

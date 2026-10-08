@@ -118,10 +118,8 @@ class EspacioAlumnoService
         $anio = (int) now()->year;
         $periodo = str_pad((string) $mes, 2, '0', STR_PAD_LEFT).'/'.$anio;
 
-        $pagarUrl = route('comprobante-cuota-public.create', array_filter([
-            'dni' => $alumno->dni,
-            'sede_id' => $alumno->sede_id,
-        ]));
+        // Con cuenta, el alumno sube su comprobante sin buscarse en ninguna lista.
+        $pagarUrl = route('alumno.cuota', ['anio' => $anio, 'mes' => $mes]);
 
         try {
             $cuotas = Cuota::query()

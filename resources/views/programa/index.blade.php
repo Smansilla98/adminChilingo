@@ -8,13 +8,14 @@
     $catLabels = \App\Models\ProgramaSeccion::categorias();
     $seccionActiva = request('seccion');
     $esAdmin = auth()->user()?->isAdmin();
+    $anioMaximo = \App\Support\AccesoMaterial::anioMaximo(auth()->user());
 @endphp
 
 <div class="biblio-hero">
     <div>
-        <p class="biblio-eyebrow">Abierto · sin cuenta</p>
+        <p class="biblio-eyebrow">Programa de la escuela</p>
         <h1>Programa oficial</h1>
-        <p class="biblio-lead">Toques por año, textos de la escuela y la partitura de cada ritmo. Entrá, escuchá y estudiá tu parte.</p>
+        <p class="biblio-lead">Toques por año y textos de la escuela, abiertos para todos. Con tu cuenta abrís la partitura, los videos y el material de cada toque.</p>
     </div>
     <div class="prog-hero-actions">
         <a href="{{ route('programa.partituras.index') }}" class="btn btn-primary">
@@ -103,6 +104,18 @@
 </div>
 @endif
 
+@if($anioMaximo === 0)
+<div class="alert alert-info" role="status">
+    <i class="bi bi-lock" aria-hidden="true"></i>
+    La lista de toques y los textos de la escuela son públicos. Para abrir las partituras, los videos y el material de cada toque, <a href="{{ route('login') }}" class="alert-link">entrá con tu cuenta</a>@if(Route::has('registro.alumno')) o <a href="{{ route('registro.alumno') }}" class="alert-link">creala con tu DNI si sos alumno</a>@endif.
+</div>
+@elseif($anioMaximo !== null)
+<div class="alert alert-info" role="status">
+    <i class="bi bi-info-circle" aria-hidden="true"></i>
+    Podés abrir el material de <strong>1° a {{ $anioMaximo }}° año</strong>. Los toques de los años siguientes se abren cuando tu bloque llegue ahí.
+</div>
+@endif
+
 <section id="toques-por-anio" class="mb-4">
     @foreach(array_keys($años) as $año)
         @php $ritmos = $porAño->get($año, collect()); @endphp
@@ -119,11 +132,13 @@
                         $tieneScore = \App\Support\PartituraScore::tieneGolpes($m['partitura_score'] ?? null);
                         $tienePdf = ! empty($m['partitura']['path']);
                     @endphp
-                    <a href="{{ $r->slug ? route('programa.toque.show', $r) : '#' }}" class="prog-toque-tile {{ $r->slug ? '' : 'disabled' }}">
+                    @php $abre = $r->slug && ($anioMaximo === null || $anioMaximo === 0 || (int) $r->año <= $anioMaximo); @endphp
+                    <a href="{{ $abre ? route('programa.toque.show', $r) : '#toques-por-anio' }}" class="prog-toque-tile {{ $abre ? '' : 'disabled' }}" @unless($abre) aria-disabled="true" tabindex="-1" @endunless>
                         <div class="prog-toque-tile__top">
                             <span class="prog-toque-tile__n">{{ $r->orden }}.</span>
                             @if($r->opcional)<span class="prog-pill">Opcional</span>@endif
                             @if(! $r->sigueVigente())<span class="prog-pill">Ya no se toca</span>@endif
+                            @unless($abre)<span class="prog-pill">Se abre en {{ (int) $r->año }}° año</span>@endunless
                         </div>
                         <h3>{{ $r->nombre }}</h3>
                         @if($r->autor)

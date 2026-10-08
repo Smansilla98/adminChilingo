@@ -105,6 +105,8 @@ class ProgramaGestionTest extends TestCase
 
         auth()->logout();
         $this->get(route('programa.index'))->assertOk()->assertSeeInOrder(['Cumbia', 'Ya no se toca']);
+        // El material del toque pide cuenta (cualquier persona de la escuela).
+        $this->actingAs($this->usuario('Visitante'));
         $this->get(route('programa.toque.show', $t))->assertOk()
             ->assertSee('Este toque ya no se toca en la escuela.')
             ->assertSee('Se dejó de tocar en 2024.');
@@ -126,6 +128,7 @@ class ProgramaGestionTest extends TestCase
 
         auth()->logout();
         $this->get(route('programa.index'))->assertOk()->assertSee('Samba')->assertDontSee('Toque retirado');
+        $this->actingAs($this->usuario('Visitante'));
         $this->get(route('programa.partituras.index'))->assertOk()->assertDontSee('Toque retirado');
         $this->get(route('programa.toque.show', $retirado))->assertOk()
             ->assertSee('Este toque ya no forma parte del programa.');

@@ -27,6 +27,7 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\HubSearchController;
 use App\Http\Controllers\InventarioItemController;
 use App\Http\Controllers\InventarioPublicoController;
+use App\Http\Controllers\MiCuotaController;
 use App\Http\Controllers\NotificacionWebController;
 use App\Http\Controllers\OperativoController;
 use App\Http\Controllers\OrdenCompraController;
@@ -41,6 +42,7 @@ use App\Http\Controllers\ProgramaGestionController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioMailController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
+use App\Http\Controllers\RegistroAlumnoController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\SedeController;
 use App\Http\Controllers\SedesMapaController;
@@ -115,40 +117,42 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
     Route::get('/discografia/{disco}', [DiscografiaController::class, 'show'])->name('programa.discos.show');
     Route::get('/discografia/{disco}/portada', [DiscografiaController::class, 'portada'])->name('programa.discos.portada');
     Route::get('/sedes', SedesMapaController::class)->name('programa.sedes');
-    Route::get('/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->name('programa.toque.show');
-    Route::get('/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->name('programa.toque.archivo');
-    Route::get('/toque/{programaRitmo:slug}/parte/{instrumento}', [PartituraController::class, 'parte'])->name('programa.toque.parte');
-    Route::get('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'editor'])->name('programa.toque.editor');
-    Route::post('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'guardar'])
-        ->middleware('throttle:20,1')
-        ->name('programa.toque.editor.guardar');
-    Route::post('/toque/{programaRitmo:slug}/editor/borrador', [PartituraController::class, 'guardarBorrador'])
-        ->middleware('throttle:60,1')
-        ->name('programa.toque.editor.borrador');
-    Route::delete('/toque/{programaRitmo:slug}/editor/borrador', [PartituraController::class, 'descartarBorrador'])
-        ->middleware('throttle:20,1')
-        ->name('programa.toque.editor.borrador.descartar');
-    Route::get('/toque/{programaRitmo:slug}/editor/versiones', [PartituraController::class, 'versiones'])->name('programa.toque.editor.versiones');
-    Route::get('/toque/{programaRitmo:slug}/editor/versiones/{numero}', [PartituraController::class, 'version'])->whereNumber('numero')->name('programa.toque.editor.version');
-    Route::post('/toque/{programaRitmo:slug}/editor/referencia', [PartituraController::class, 'subirReferencia'])
-        ->middleware('throttle:10,1')
-        ->name('programa.toque.editor.referencia');
-    Route::get('/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
-    Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])
-        ->middleware('throttle:20,1')
-        ->name('programa.toque.update');
+    // Material de cada toque: pide cuenta; un alumno ve hasta el año que cursa.
+    Route::middleware('material')->group(function () {
+        Route::get('/toque/{programaRitmo:slug}', [ProgramaController::class, 'showToque'])->name('programa.toque.show');
+        Route::get('/toque/{programaRitmo:slug}/archivo', [ProgramaController::class, 'descargarMedio'])->name('programa.toque.archivo');
+        Route::get('/toque/{programaRitmo:slug}/parte/{instrumento}', [PartituraController::class, 'parte'])->name('programa.toque.parte');
+        Route::get('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'editor'])->name('programa.toque.editor');
+        Route::post('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'guardar'])
+            ->middleware('throttle:20,1')
+            ->name('programa.toque.editor.guardar');
+        Route::post('/toque/{programaRitmo:slug}/editor/borrador', [PartituraController::class, 'guardarBorrador'])
+            ->middleware('throttle:60,1')
+            ->name('programa.toque.editor.borrador');
+        Route::delete('/toque/{programaRitmo:slug}/editor/borrador', [PartituraController::class, 'descartarBorrador'])
+            ->middleware('throttle:20,1')
+            ->name('programa.toque.editor.borrador.descartar');
+        Route::get('/toque/{programaRitmo:slug}/editor/versiones', [PartituraController::class, 'versiones'])->name('programa.toque.editor.versiones');
+        Route::get('/toque/{programaRitmo:slug}/editor/versiones/{numero}', [PartituraController::class, 'version'])->whereNumber('numero')->name('programa.toque.editor.version');
+        Route::post('/toque/{programaRitmo:slug}/editor/referencia', [PartituraController::class, 'subirReferencia'])
+            ->middleware('throttle:10,1')
+            ->name('programa.toque.editor.referencia');
+        Route::get('/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
+        Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])
+            ->middleware('throttle:20,1')
+            ->name('programa.toque.update');
+    });
 });
 
 // Rutas públicas
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
-if (filter_var(env('ALLOW_PUBLIC_REGISTER', false), FILTER_VALIDATE_BOOLEAN)) {
-    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:login');
-} else {
-    Route::get('/register', fn () => redirect()->route('login')->with('error', 'El registro público está deshabilitado. Pedile acceso a administración.'))->name('register');
-    Route::post('/register', fn () => abort(403, 'Registro público deshabilitado.'));
-}
+// Registro: solo alumnos que ya están cargados en la escuela (se validan con DNI y fecha
+// de nacimiento). Ya no existe un registro abierto que cree cuentas de profesor.
+Route::get('/registro', [RegistroAlumnoController::class, 'create'])->name('registro.alumno');
+Route::post('/registro', [RegistroAlumnoController::class, 'store'])->middleware('throttle:6,1')->name('registro.alumno.store');
+Route::get('/register', fn () => redirect()->route('registro.alumno'))->name('register');
+Route::post('/register', fn () => abort(404));
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 /*
@@ -170,6 +174,7 @@ Route::middleware(['auth'])->group(function () {
     // Ayuda (guía de uso)
     Route::get('/ayuda', [AyudaController::class, 'index'])->middleware('modulo:ayuda')->name('ayuda');
     Route::get('/roles', [AyudaController::class, 'roles'])->middleware('modulo:ayuda')->name('roles');
+    Route::get('/ayuda/direccion', [AyudaController::class, 'direccion'])->name('ayuda.direccion');
 
     // Apariencia (preferencia visual por usuario)
     Route::get('/apariencia', [AparienciaController::class, 'edit'])->name('apariencia.edit');
@@ -404,6 +409,9 @@ Route::middleware(['auth'])->group(function () {
         ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permiso:compras.create');
 
     // Espacio docente (las mismas pantallas, acotadas a sus bloques)
+    // Alumno: subir el comprobante de su cuota con su cuenta.
+    Route::get('/mi-cuota', [MiCuotaController::class, 'create'])->name('alumno.cuota');
+    Route::post('/mi-cuota', [MiCuotaController::class, 'store'])->middleware('throttle:10,1')->name('alumno.cuota.store');
     Route::get('/mis-bloques', [BloqueController::class, 'index'])->middleware(['permiso:bloques.view', 'modulo:profesor.mis_bloques'])->name('profesor.bloques');
     Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->middleware(['permiso:alumnos.view', 'modulo:profesor.mis_alumnos'])->name('profesor.alumnos');
     Route::get('/profesor/alumnos/{alumno}', [AlumnoController::class, 'show'])->middleware(['permiso:alumnos.view', 'modulo:profesor.mis_alumnos'])->name('profesor.alumnos.show');

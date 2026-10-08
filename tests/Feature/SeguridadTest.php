@@ -39,7 +39,8 @@ class SeguridadTest extends TestCase
         $payload = ['editor_nombre' => 'Visitante', 'score' => ['title' => 'x']];
 
         config(['chilinga.edicion_publica_programa' => false]);
-        $this->postJson(route('programa.toque.editor.guardar', $toque), $payload)->assertForbidden();
+        $this->postJson(route('programa.toque.editor.guardar', $toque), $payload)->assertUnauthorized();
+        $this->actingAs($this->usuario('Visitante'))->postJson(route('programa.toque.editor.guardar', $toque), $payload)->assertForbidden();
 
         // Con el permiso de administración del programa sí se puede.
         $this->actingAs($this->admin())->postJson(route('programa.toque.editor.guardar', $toque), $payload)->assertStatus(422);

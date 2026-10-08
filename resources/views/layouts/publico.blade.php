@@ -5,7 +5,7 @@
     <meta name="chilinga-samples" content="{{ parse_url(asset('sounds/perc'), PHP_URL_PATH) ?: '/sounds/perc' }}">
     <link rel="stylesheet" href="{{ asset('css/biblioteca.css') }}?v=9">
     <link rel="stylesheet" href="{{ asset('css/programa.css') }}?v=7">
-    <link rel="stylesheet" href="{{ asset('css/programa-publico.css') }}?v=8">
+    <link rel="stylesheet" href="{{ asset('css/programa-publico.css') }}?v=9">
     @stack('head')
     @stack('vite')
     @stack('styles')
@@ -55,7 +55,7 @@
 </main>
 
 <footer class="biblio-foot">
-    @yield('publico-foot', 'Espacio abierto · Programa, partituras y biblioteca sin cuenta')
+    @yield('publico-foot', 'El programa y la biblioteca son abiertos · El material de cada toque es para alumnos y profes con cuenta')
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/ito-a11y.js') }}?v=1"></script>

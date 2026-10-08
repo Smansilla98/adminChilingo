@@ -10,6 +10,12 @@
     subtitle="Explicado con palabras simples. Buscá por pago, alumno o cuota."
 >
 
+        @if(auth()->user()->isAdmin() || auth()->user()->puedeGestionarOperativo())
+            <div class="alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-2" role="note">
+                <span><strong>¿Dirigís o administrás la escuela?</strong> Hay una guía paso a paso pensada para vos.</span>
+                <a href="{{ route('ayuda.direccion') }}" class="btn btn-sm btn-primary">Abrir la guía para dirección</a>
+            </div>
+        @endif
         <div class="mb-3">
             <label for="ayudaBuscar" class="form-label">Buscar en esta guía</label>
             <input type="text" id="ayudaBuscar" class="form-control" placeholder="Una palabra alcanza…">

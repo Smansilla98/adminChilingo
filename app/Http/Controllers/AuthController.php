@@ -2,13 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\Rules\Password;
-use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
@@ -39,70 +35,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Mostrar formulario de registro
-     */
-    public function showRegisterForm()
-    {
-        if (Auth::check()) {
-            return redirect()->route('dashboard');
-        }
-
-        return view('auth.register', [
-            'hasUsernameColumn' => $this->hasUsernameColumn(),
-        ]);
-    }
-
-    /**
-     * Procesar registro de nuevo usuario (compatible con y sin columna username)
-     */
-    public function register(Request $request)
-    {
-        $hasUsername = $this->hasUsernameColumn();
-
-        $rules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => ['required', 'confirmed', Password::defaults()],
-        ];
-        $messages = [
-            'name.required' => 'El nombre es obligatorio.',
-            'email.required' => 'El correo es obligatorio.',
-            'email.email' => 'El correo no es válido.',
-            'email.unique' => 'Ese correo ya está registrado.',
-            'password.required' => 'La contraseña es obligatoria.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
-        ];
-
-        if ($hasUsername) {
-            $rules['username'] = 'required|string|max:80|unique:users,username';
-            $messages['username.required'] = 'El usuario es obligatorio.';
-            $messages['username.unique'] = 'Ese nombre de usuario ya está en uso.';
-        }
-
-        $validated = $request->validate($rules, $messages);
-
-        $data = [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'profesor',
-        ];
-        if ($hasUsername) {
-            $data['username'] = $validated['username'];
-        }
-
-        $user = User::create($data);
-
-        Role::firstOrCreate(['name' => 'profesor']);
-        $user->assignRole('profesor');
-
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('dashboard'));
-    }
-
-    /**
      * Procesar login (usuario o correo según exista la columna username)
      */
     public function login(Request $request)
@@ -118,7 +50,13 @@ class AuthController extends Controller
                 'password.required' => 'La contraseña es obligatoria.',
             ]);
             $credentialKey = 'username';
-            $credentialValue = $credentials['username'];
+            $credentialValue = trim($credentials['username']);
+            // Se puede entrar con el correo o con el DNI aunque tenga puntos ("30.123.456").
+            if (str_contains($credentialValue, '@')) {
+                $credentialKey = 'email';
+            } elseif (preg_match('/^[\d.\s-]+$/', $credentialValue)) {
+                $credentialValue = preg_replace('/\D+/', '', $credentialValue);
+            }
         } else {
             $credentials = $request->validate([
                 'username' => 'required|email',
@@ -147,7 +85,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'username' => 'Usuario o contraseña incorrectos.',
+            'username' => 'El usuario o la contraseña no son correctos. Revisalos y probá de nuevo. Si no te acordás la contraseña, pedile a tu profe o a administración que te la cambie.',
         ])->onlyInput('username');
     }
 

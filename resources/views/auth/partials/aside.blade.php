@@ -11,7 +11,7 @@
     <nav class="auth-aside-links" aria-label="Accesos sin cuenta">
         <a href="{{ route('comprobante-cuota-public.create') }}">Cargar comprobante de cuota</a>
         <a href="{{ route('programa.index') }}">Programa</a>
-        <a href="{{ route('programa.partituras.index') }}">Partituras</a>
         <a href="{{ route('biblioteca.index') }}">Biblioteca</a>
+        <a href="{{ route('registro.alumno') }}">Crear mi cuenta de alumno</a>
     </nav>
 </aside>

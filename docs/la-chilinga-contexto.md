@@ -114,6 +114,12 @@ y da clases en cárceles (Ezeiza) como ONG.
 >    toque de 3° da por sabido lo que se vio en 1° y 2°, y por eso es más difícil. No es
 >    una etiqueta de "nivel" del toque en abstracto ni de nivel del alumno. La UI puede
 >    mostrar el año como *orden y dificultad acumulada*, nunca como aprobación.
+>    → **Decisión (octubre de 2026):** el material de cada toque (partitura, PDF, videos,
+>    editor) pide cuenta, y un alumno lo ve **hasta el año de su bloque**. Es coherente
+>    con el saber acumulado: el material de 4° da por sabido lo de 1° a 3°. Se comunica
+>    como *"se abre en 4° año"* o *"se abre cuando tu bloque llegue a ese año"*, nunca
+>    como bloqueo, aprobación ni mérito. Profes, coordinación y administración ven todo.
+>    El programa (lista de toques y textos de la escuela) sigue público.
 > 4. El tempo es una **sugerencia**: el `tempo` del score arranca en el del cuadernillo,
 >    pero el reproductor tiene que permitir bajarlo sin friccion (el grupo baja el ritmo
 >    para el que le cuesta).

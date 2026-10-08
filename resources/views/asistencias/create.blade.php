@@ -9,9 +9,9 @@
     $matrixRoute = $esProfeSolo ? 'profesor.asistencias.matrix' : 'asistencias.index';
     $chipsRapidos = [
         'presente' => ['letra' => 'P', 'texto' => 'Presente'],
-        'tarde' => ['letra' => 'T', 'texto' => 'Tarde'],
-        'ausencia_justificada' => ['letra' => 'J', 'texto' => 'Justificada'],
-        'ausencia_injustificada' => ['letra' => 'I', 'texto' => 'Ausente'],
+        'tarde' => ['letra' => 'T', 'texto' => 'Llegó tarde'],
+        'ausencia_justificada' => ['letra' => 'J', 'texto' => 'Faltó con aviso'],
+        'ausencia_injustificada' => ['letra' => 'I', 'texto' => 'Faltó sin aviso'],
     ];
     $otrosTipos = collect($tiposAsistencia)->except(array_keys($chipsRapidos));
 @endphp
@@ -23,7 +23,7 @@
     <x-slot:actions>
         <a href="{{ route($matrixRoute) }}" class="btn btn-sm btn-outline-secondary">Ir a planilla del mes</a>
     </x-slot:actions>
-        @include('partials.form-ayuda-intro', ['text' => 'Primero elegí el bloque y el día. Después marcá cada alumno con letra y texto (P, T, J o I).'])
+        @include('partials.form-ayuda-intro', ['text' => 'Todos empiezan como "Presente". Tocá el botón de quien llegó tarde o faltó, y al final tocá "Guardar asistencias". Si te equivocás, volvé a tocar: se puede cambiar.'])
         <form method="GET" class="mb-4">
             <div class="row g-3">
                 <div class="col-md-5">

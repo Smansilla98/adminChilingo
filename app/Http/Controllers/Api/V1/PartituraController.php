@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProgramaRitmo;
 use App\Services\PartituraHistorialService;
 use App\Services\ProgramaRitmoMediosService;
+use App\Support\AccesoMaterial;
 use App\Support\PartituraMuestras;
 use App\Support\PartituraScore;
 use App\Support\ProgramaRitmoMedios;
@@ -31,6 +32,11 @@ class PartituraController extends Controller
             $q->where('publicado', true);
             ProgramaRitmo::soloEnPrograma($q);
         }
+        // Un alumno ve el material hasta el año que cursa.
+        $anioMaximo = AccesoMaterial::anioMaximo($request->user());
+        if ($anioMaximo !== AccesoMaterial::SIN_LIMITE) {
+            $q->where('año', '<=', $anioMaximo);
+        }
         $toques = ProgramaRitmo::traerOrdenados($q);
 
         return response()->json(['data' => $toques->map(function (ProgramaRitmo $t) {
@@ -50,7 +56,7 @@ class PartituraController extends Controller
                 'en_programa' => $t->estaEnPrograma(),
                 'nombres_anteriores' => array_column($t->historialNombres(), 'nombre'),
             ];
-        })->values()]);
+        })->values(), 'meta' => ['anio_maximo' => $anioMaximo]]);
     }
 
     /** Alta de un toque con partitura vacía, lista para escribir en la app. */
@@ -252,8 +258,10 @@ class PartituraController extends Controller
         if (! $admin && Schema::hasColumn('programa_ritmos', 'publicado')) {
             $q->where('publicado', true);
         }
+        $toque = $q->firstOrFail();
+        abort_unless(AccesoMaterial::puedeVer($request->user(), $toque), 403, 'Este material es de '.(int) $toque->año.'° año: se abre cuando tu bloque llegue a ese año.');
 
-        return $q->firstOrFail();
+        return $toque;
     }
 
     /** Un video alojado en el mismo host que la API es una página del panel, no un recurso externo. */

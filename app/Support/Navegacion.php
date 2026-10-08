@@ -60,7 +60,7 @@ class Navegacion
             $mod('programa') ? self::link('programa.partituras.index', 'Partituras', 'bi-file-earmark-music', 'programa.partituras.*') : null,
             self::link('biblioteca.index', 'Biblioteca', 'bi-images', 'biblioteca.*'),
             self::link('archivo.index', 'Archivo histórico', 'bi-camera', 'archivo.*'),
-            self::link('comprobante-cuota-public.create', 'Pagar cuota', 'bi-credit-card', 'comprobante-cuota-public.*'),
+            self::link('alumno.cuota', 'Pagar mi cuota', 'bi-credit-card', 'alumno.cuota*'),
             $mod('calendario') ? self::link('calendario.index', 'Calendario', 'bi-calendar3', 'calendario.*') : null,
         ];
 
@@ -68,6 +68,7 @@ class Navegacion
             self::link('apariencia.edit', 'Apariencia', 'bi-palette2', 'apariencia.*'),
             $mod('ayuda') ? self::link('roles', 'Perfiles y roles', 'bi-person-badge', 'roles') : null,
             $mod('ayuda') ? self::link('ayuda', 'Ayuda', 'bi-question-circle', 'ayuda') : null,
+            ($mod('ayuda') && auth()->user() && (auth()->user()->isAdmin() || auth()->user()->puedeGestionarOperativo())) ? self::link('ayuda.direccion', 'Guía para dirección', 'bi-signpost-split', 'ayuda.direccion') : null,
         ];
 
         $top = [];
@@ -84,7 +85,7 @@ class Navegacion
                 $grupos[] = self::grupo('docente', 'Docente', array_filter($profesorLinks, fn ($l) => $l && ! in_array($l['route'], ['dashboard', 'calendario.index'], true)), ['profesor.*']);
             }
             if ($u->isAlumno()) {
-                $grupos[] = self::grupo('familia', 'Mi espacio (alumno)', array_filter($alumnoLinks, fn ($l) => $l && ! in_array($l['route'], ['dashboard', 'calendario.index'], true)), ['comprobante-cuota-public.*']);
+                $grupos[] = self::grupo('familia', 'Mi espacio (alumno)', array_filter($alumnoLinks, fn ($l) => $l && ! in_array($l['route'], ['dashboard', 'calendario.index'], true)), ['alumno.cuota*']);
             }
 
             $grupos[] = self::grupo('personas', 'Personas', [
@@ -182,6 +183,12 @@ class Navegacion
                 $migas = [['label' => $g['label'], 'href' => null]];
             }
             $salida[] = ['clave' => $g['clave'], 'label' => $g['label'], 'abierto' => $abierto, 'links' => $links];
+        }
+
+        // Menús cortos (docente, alumno): todo a la vista. Un grupo plegado esconde
+        // opciones a quien recién empieza y no sabe que existen.
+        if (count($salida) <= 3) {
+            $salida = array_map(fn ($g) => ['abierto' => true] + $g, $salida);
         }
 
         return ['top' => $top, 'grupos' => $salida, 'migas' => $migas];

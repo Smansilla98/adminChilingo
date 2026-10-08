@@ -78,7 +78,9 @@ Vienen de la escuela, no del código. Si un pedido choca con esto, decilo antes 
 1. **Nada se lee como evaluación.** Cero puntajes, "aprobado", "nivel alcanzado", "ejecución
    correcta" o feedback de acierto/error. La partitura es **guía de bloque**.
 2. **Los años (1° a 7°) son saber acumulado y orden de repertorio**, nunca nivel del alumno ni
-   habilitación. Prohibido "año 3 bloqueado".
+   habilitación. Prohibido "año 3 bloqueado". El material de cada toque se abre al alumno
+   hasta el año de su bloque (decisión de octubre de 2026): decilo como "se abre en 3° año",
+   nunca como bloqueo o aprobación.
 3. **El tempo es sugerencia**: el repertorio vive entre **80 y 90 bpm** y bajarlo tiene que ser un
    gesto sin fricción.
 4. **El Cuadernillo manda** sobre cualquier notación estándar. Nombres y orden de secciones tal

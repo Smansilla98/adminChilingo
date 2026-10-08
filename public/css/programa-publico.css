@@ -418,3 +418,6 @@
 .sede-item__acciones .btn { --bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .8rem; }
 .sede-sin-punto { font-size: 12px; color: var(--muted); }
 .programa-contenido .sedes-lista { padding-left: 0; margin: 0; }
+
+/* Toque cuyo material todavía no corresponde (alumno de un año anterior). */
+.prog-toque-tile.disabled { opacity: .62; cursor: default; pointer-events: none; border-top-color: var(--border); }

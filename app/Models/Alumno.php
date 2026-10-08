@@ -39,6 +39,8 @@ class Alumno extends Model
      */
     /**
      * Persona (identidad única) a la que pertenece este perfil.
+     *
+     * @return BelongsTo<Persona, $this>
      */
     public function persona(): BelongsTo
     {
@@ -52,6 +54,8 @@ class Alumno extends Model
 
     /**
      * Bloques a los que pertenece el alumno (un alumno puede estar en varios bloques)
+     *
+     * @return BelongsToMany<Bloque, $this>
      */
     public function bloques(): BelongsToMany
     {
@@ -62,6 +66,8 @@ class Alumno extends Model
 
     /**
      * Bloque principal (compatibilidad: el primero con es_principal o el de bloque_id)
+     *
+     * @return BelongsTo<Bloque, $this>
      */
     public function bloque(): BelongsTo
     {

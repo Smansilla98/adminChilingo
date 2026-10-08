@@ -7,7 +7,6 @@
 <a class="ito-skip" href="#contenido-principal">Ir al formulario</a>
 @php
     $loginEmail = ! empty($loginUsesEmail);
-    $registroAbierto = filter_var(env('ALLOW_PUBLIC_REGISTER', false), FILTER_VALIDATE_BOOLEAN);
 @endphp
 <div class="auth-split">
     @include('auth.partials.aside')
@@ -20,11 +19,14 @@
             </div>
             <div class="auth-card-ito__head">
                 <h1 class="auth-card-ito__title">Iniciar sesión</h1>
-                <p class="auth-card-ito__sub">Entrá con tu {{ $loginEmail ? 'correo' : 'usuario' }} y contraseña.</p>
+                <p class="auth-card-ito__sub">{{ $loginEmail ? 'Entrá con tu correo y tu contraseña.' : 'Entrá con tu usuario (si sos alumno, es tu DNI) y tu contraseña.' }}</p>
             </div>
             <div class="auth-card-ito__body">
                 @if(session('success'))
                     <div class="auth-alerts"><div class="alert alert-success" role="status">{{ session('success') }}</div></div>
+                @endif
+                @if(session('info'))
+                    <div class="auth-alerts"><div class="alert alert-info" role="status">{{ session('info') }}</div></div>
                 @endif
                 @if(session('error'))
                     <div class="auth-alerts"><div class="alert alert-warning" role="alert">{{ session('error') }}</div></div>
@@ -87,12 +89,10 @@
                 </form>
             </div>
             <div class="auth-card-ito__foot">
-                @if($registroAbierto)
-                    <div class="mb-1">
-                        <span class="auth-foot-muted">¿No tenés cuenta?</span>
-                        <a href="{{ route('register') }}">Registrate</a>
-                    </div>
-                @endif
+                <div class="mb-1">
+                    <span class="auth-foot-muted">¿Sos alumno y no tenés cuenta?</span>
+                    <a href="{{ route('registro.alumno') }}">Creala con tu DNI</a>
+                </div>
                 <div>
                     <span class="auth-foot-muted">¿Pagaste la cuota?</span>
                     <a href="{{ route('comprobante-cuota-public.create') }}">Cargá el comprobante sin cuenta</a>

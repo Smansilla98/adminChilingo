@@ -63,6 +63,8 @@ class PartituraHistorialTest extends TestCase
     {
         $toque = $this->toque();
         $url = route('programa.toque.editor.guardar', $toque);
+        // El material pide cuenta: la edición abierta es para quien entró.
+        $this->actingAs($this->usuario('Lu'));
 
         // Autoguardado: no publica, queda como borrador pendiente.
         $this->postJson(route('programa.toque.editor.borrador', $toque), ['score' => $this->score([['dur' => 'h', 'stroke' => 'acentuado']]), 'editor_nombre' => 'Lu'])
@@ -90,7 +92,9 @@ class PartituraHistorialTest extends TestCase
     {
         config(['chilinga.edicion_publica_programa' => false]);
         $toque = $this->toque();
-        $this->postJson(route('programa.toque.editor.borrador', $toque), ['score' => $this->score([]), 'editor_nombre' => 'Lu'])->assertForbidden();
+        $this->postJson(route('programa.toque.editor.borrador', $toque), ['score' => $this->score([]), 'editor_nombre' => 'Lu'])->assertUnauthorized();
+        $this->actingAs($this->usuario('Lu'))
+            ->postJson(route('programa.toque.editor.borrador', $toque), ['score' => $this->score([]), 'editor_nombre' => 'Lu'])->assertForbidden();
 
         $this->actingAs($this->admin());
         $this->postJson(route('programa.toque.editor.borrador', $toque), ['score' => $this->score([]), 'editor_nombre' => 'Lu'])->assertOk();

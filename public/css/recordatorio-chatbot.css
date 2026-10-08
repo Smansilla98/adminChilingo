@@ -195,3 +195,9 @@
 body:has(.ito-page-body .ito-form-actions, .asist-sticky-save) .recordatorio-chatbot {
   bottom: max(5.5rem, env(safe-area-inset-bottom));
 }
+
+/* En celular el botón flotante tapaba los últimos botones de la página (asistencia,
+   accesos rápidos): se deja lugar abajo para que todo se pueda tocar. */
+@media (max-width: 991.98px) {
+  body:has(.recordatorio-chatbot) main.content { padding-bottom: 5.5rem; }
+}

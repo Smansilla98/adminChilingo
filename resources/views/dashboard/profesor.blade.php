@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Dashboard')
-@section('page-title', 'Mi panel')
+@section('page-title', 'Hoy en clase')
 
 @section('content')
 @php
@@ -20,9 +20,9 @@
             <h1 class="hub-greeting">{{ $saludo }}, <em>{{ $primer }}</em>.</h1>
             <p class="hub-lead">
                 @if($faltaLista)
-                    Primero: pasar lista. Después: el cuaderno (eje + próximo paso).
+                    Hoy tenés clase y todavía falta tomar asistencia. Empezá por ahí: es un solo paso.
                 @else
-                    Antes de clase: asistencia. Durante: chips grandes. Después: el cuaderno.
+                    Antes de la clase, tomá asistencia. Después, si querés, anotá qué trabajaron.
                 @endif
             </p>
         </div>
@@ -36,14 +36,14 @@
                 <dd>Profesor</dd>
             </div>
             <div>
-                <dt>Lista</dt>
+                <dt>Asistencia de hoy</dt>
                 <dd>
                     @if($faltaLista)
                         <span class="hub-status-dot hub-status-dot--alert" aria-hidden="true"></span>
-                        Pendiente
+                        Falta tomarla
                     @else
                         <span class="hub-status-dot hub-status-dot--ok" aria-hidden="true"></span>
-                        Al día
+                        Ya está cargada
                     @endif
                 </dd>
             </div>

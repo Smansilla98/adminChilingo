@@ -30,6 +30,13 @@
     </div>
 </div>
 
+@if(($anioMaximo ?? null) !== null && $anioMaximo > 0)
+<div class="alert alert-info" role="status">
+    <i class="bi bi-info-circle" aria-hidden="true"></i>
+    Ves las partituras de <strong>1° a {{ $anioMaximo }}° año</strong>, los años que ya cursaste o estás cursando. Las de los años siguientes se suman cuando tu bloque llegue ahí.
+</div>
+@endif
+
 @include('programa.partials.grabar-sonidos')
 
 @if($esAdmin)
