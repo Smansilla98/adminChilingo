@@ -36,7 +36,6 @@ class DiscografiaYSedesTest extends TestCase
             ->assertOk()
             ->assertSeeInOrder(['Intro', '2:51', 'Sacateca', '1:53', 'Toque a Eleggua', '2:12'])
             ->assertSee('31:00 en total')
-            ->assertSee('Algunas ediciones figuran como de 2003.')
             ->assertSee('Toque del programa: Sacateca')
             ->assertSee('Toque del programa: Malamakua I')
             ->assertSee('https://www.tagtuner.com/music/albums/La-Chilinga/Percusion/album-v292ab7', false)
@@ -47,6 +46,30 @@ class DiscografiaYSedesTest extends TestCase
             ->assertOk()
             ->assertSee('También aparece como')
             ->assertSee('falta confirmarla con la escuela');
+    }
+
+    public function test_la_discografia_queda_corregida_con_fuentes(): void
+    {
+        $this->assertNull(Disco::query()->where('slug', 'percusion')->value('nota_anio'));
+        $raices = Disco::query()->where('slug', 'raices')->sole();
+        $this->assertContains('Grabado por más de 250 alumnos', $raices->datos);
+        $this->assertSame('Ciudad.com — ¡Tambores a la calle! (22/08/2007)', $raices->fuentes[0]['etiqueta']);
+
+        $this->get(route('programa.discos.show', 'percusion'))->assertOk()->assertDontSee('2003');
+        $this->get(route('programa.discos.show', 'viejos-dioses'))->assertOk()->assertSee('Jaime Roos');
+    }
+
+    public function test_la_correccion_no_pisa_lo_que_edito_la_escuela(): void
+    {
+        $migracion = require database_path('migrations/2026_10_08_000001_corregir_discografia_con_fuentes.php');
+        Disco::query()->where('slug', 'raices')->update(['descripcion' => 'Texto de la escuela']);
+
+        $migracion->down();
+        $migracion->up();
+
+        $this->assertSame('Texto de la escuela', Disco::query()->where('slug', 'raices')->value('descripcion'));
+        // Lo que nadie tocó vuelve a quedar corregido.
+        $this->assertNull(Disco::query()->where('slug', 'percusion')->value('nota_anio'));
     }
 
     public function test_un_tema_numerado_no_se_cruza_con_otro_numero(): void

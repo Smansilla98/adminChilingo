@@ -8,6 +8,9 @@
  * otra fecha en otra fuente (`nota_anio`), lista de temas de una sola fuente
  * (`nota_temas`). No se completa nada "por probabilidad": la escuela lo corrige
  * desde /programa/discografia/{disco}/editar.
+ *
+ * Es lo que se sembró originalmente. Las correcciones posteriores con fuente están en
+ * `discos_correcciones_2026_10.php` y las aplica su migración (también en instalaciones nuevas).
  */
 return [
     [

@@ -3,34 +3,57 @@
 > Documento de fundamento para las decisiones de producto del módulo de partituras.
 > No es historia por la historia: cada punto cierra con la implicancia concreta para el
 > editor, el modelo de datos y el criterio de digitalización del Cuadernillo de Toques.
-> Fecha de relevamiento: agosto 2026.
+> Fecha de relevamiento: agosto 2026; hechos revisados contra prensa el 7/10/2026.
+>
+> **Cómo leer las fuentes.** Lo que viene del Cuadernillo, del Programa de la escuela o de
+> aclaraciones de la escuela es **fuente interna** (no está publicado en la web, y no por
+> eso es menos válido). Lo demás lleva su fuente pública; *(paráfrasis)* indica que la cita
+> llegó resumida y hay que cotejarla con el original; *(fuente única)*, que descansa en un
+> solo medio. Investigación completa: informe "Historia y cultura de La Chilinga"
+> (octubre de 2026), fuera del repo.
 
 ---
 
 ## 1. Qué es La Chilinga
 
-Escuela de **percusión popular** fundada el **3 de octubre de 1995** por **Daniel Buira**
-(baterista fundador de Los Piojos, después con Vicentico y ~100 discos como sesionista).
-Nació en la sala de ensayo de la "casa piojosa" de Ciudad Jardín, Tres de Febrero
-(Avenida Libertad y Palazzo, la "Esquina Libertad" de la canción), con unas quince
-personas tocando en el pasillo.
+**Escuela popular de percusión** (asociación civil, según La Nación 2007) fundada en
+**octubre de 1995** por **Daniel "Dani" Buira** en Tres de Febrero; el aniversario se
+festeja el **3 de octubre**. Buira (Villa Bosch, 26/09/1971) cofundó **Los Piojos** en 1988
+y fundó la escuela **cinco años antes de dejar la banda**: *"La Chilinga nació en el 95 y yo
+me fui de Piojos en 2000"* (La Nación, 24/07/2007). Después tocó con Vicentico y grabó con
+Calle 13, Mercedes Sosa y Fito Páez, entre otros; volvió a Los Piojos para la reunión de
+2024–2025.
 
-Hoy es una de las escuelas de percusión más grandes de América Latina: **cientos de
-alumnos** (Wikipedia habla de +900 entre Argentina y Uruguay) repartidos en múltiples
-sedes. Las comunicaciones oficiales de 2026 (`@lachilinga`, "30 años 1995-2025") listan
-**Palomar, Saavedra, Avellaneda, Quilmes, Florencio Varela** y más, con antecedentes en
-Martín Coronado, El Palomar, Lanús, San Justo, Santos Lugares, Lomas de Zamora, Villa
-Bosch, microcentro, Morón y Córdoba (Villa General Belgrano), más anexos en el Centro
-Cultural Sábato y el ECUNHI. Suma **"La Chilinguita"** (infantil, 6-16) y talleres de
-verano.
+- **Origen**: tras ver a Olodum en Bahía; el nombre viene de "Chinga Chilinga" de Rubén
+  Rada (Rolling Stone, 21/04/2026, paráfrasis). La cuna está en disputa entre **Martín
+  Coronado** (La Nación 2000 y 2007, Concejo Deliberante de Tres de Febrero 2016, Liska 2022)
+  y **Ciudad Jardín / El Palomar** (Página/12 2025, Wikipedia): son barrios vecinos y no hay
+  registro de la mudanza. La versión de la "casa piojosa" no aparece en ninguna fuente.
+- **Escala**: más de cien alumnos en 2000; unos 600 y más de 30 docentes en 2007 (unos 100
+  becados); **"más de 900"** desde entonces, cifra que se repite hasta 2026 (parece un número
+  institucional, no un conteo). Seis sedes en 2020 (Página/12, 28/12/2020).
+- **Sedes**: hoy la bio de Instagram `@lachilinga` declara **Varela, Quilmes, Banfield,
+  Saavedra, Avellaneda, Palomar, Sarandí, Córdoba y Congreso**. El Programa de la escuela
+  (fuente interna) lista Palomar (Ing. Marconi 181), Saavedra (Ruiz Huidobro 4228), Varela,
+  Quilmes, Banfield y Tacheles (Alsina 1475, Congreso). Antecedentes: Martín Coronado,
+  Villa Bosch, Lomas de Zamora, Villa General Belgrano (Córdoba) y anexos en el Centro
+  Cultural Sábato y el ECuNHi (Wikipedia, fuente única).
+- **La Chilinguita** (6 a 16 años); **gira de verano en Villa Gesell** (110 músicos, 15 días,
+  en 2025; el municipio la data desde 1996–1997); talleres en las **cárceles de Ezeiza**;
+  30 años festejados el 4 y 5/10/2025 en la Plaza de los Aviadores de El Palomar con más de
+  300 tambores.
+- **Discografía**: *Percusión* (1998), *Viejos Dioses* (2001; con Jaime Roos, Ariel Prat,
+  Pablo Guerra, Carlos Huerta y Peteco Carabajal), *Muñequitos del tambor* (fechado 2004; en
+  2006 la prensa lo presentaba como nuevo), *Raíces* (2007; grabado por **más de 250
+  alumnos**, "el 90 por ciento" no profesionales) y *Banda Fantasma* (2010; también aparece
+  como *Fantasma*). Colaboración acreditada: **"La Perla"** de Calle 13 con Rubén Blades
+  (2009).
 
-Discografía: *Percusión* (1998), *Viejos Dioses* (2001), *Muñequitos del tambor* (2004),
-*Raíces* (2007) — grabado con ~200 alumnos —, *Banda Fantasma* (2010). Grabaron o
-tocaron con Mercedes Sosa, Fito Páez, Pedro Aznar, Peteco Carabajal, Kevin Johansen,
-Los Cafres, Vicentico y **Calle 13** (los nombra "La Perla", junto a Rubén Blades).
-
-**Daniel Buira murió el 21 de marzo de 2026, a los 54 años**, en la sede de Morón
-(Marconi 183). La escuela continúa.
+**Daniel Buira murió el 21 de marzo de 2026, a los 54 años**, en la sede de Ciudad Jardín
+(la causa no está confirmada: las fuentes dicen paro cardiorrespiratorio o infarto tras
+una crisis de asma). Fue despedido con una batucada de la escuela. Según Rolling Stone
+(fuente única), la escuela sigue conducida por su hijo **Caetano Buira** "junto a
+profesores históricos".
 
 > **Implicancia para el sistema:** el cuadernillo dejó de tener un autor al que
 > preguntarle. Cada normalización silenciosa que hagamos ("esto seguro quiso decir X")
@@ -44,8 +67,9 @@ Los Cafres, Vicentico y **Calle 13** (los nombra "La Perla", junto a Rubén Blad
 
 Esto es el corazón del proyecto y la razón por la que la notación es como es.
 
-- **"En La Chilinga todos tocan, nadie se queda afuera"** (lema de Buira, Página/12,
-  28/12/2020). No hay examen, no hay calificaciones, no se divide por niveles.
+- *"En la agrupación de percusión fundada y dirigida por Daniel Buira no hay exámenes:
+  todos tocan, nadie se queda afuera."* (Página/12, 28/12/2020). **Es la descripción del
+  periodista, no un lema textual de Buira**: citarla así. No hay examen ni calificaciones.
 - Buira, textual (Sudestada, 16/03/2024): *"En la escuela no tenés que estudiar. Está
   prohibido estudiar. Está prohibido el examen, está prohibido pasar de año."*
 - Hay **cuota social**, pero no es condición: *"si no la podés pagar, no la pagás.
@@ -57,7 +81,18 @@ Esto es el corazón del proyecto y la razón por la que la notación es como es.
 - Y el motivo explícito: *"Si vos a una persona la corregís, ya la vas a hacer imitar. Y
   la imitación te lleva a un lugar más profesional, a un lugar donde ya tenés que
   estudiar."*
-- Si a alguien le cuesta, **baja el tempo el grupo entero**, no se lo deja atrás.
+- Si a alguien le cuesta, **baja el tempo el grupo entero**: *"Si le cuesta, bajamos todos
+  el ritmo para que lleguemos al ritmo"* (Sudestada, 16/03/2024).
+- Prioridades, en sus palabras: *"Lo que primero le brindamos, antes que nada, es afecto
+  social. Después viene el estudio, la música y, por último, el percusionista"*
+  (Ciudad.com, 22/08/2007). Y: *"La Chilinga es una generadora de músicos y docentes"*
+  (La Nación, 18/11/2006): muchos docentes empezaron como alumnos.
+- **Matices documentados** (no esconderlos): la escuela se organiza por **años de cursada**
+  (Buira en 2007: *"Estos son los de primer año"*; Villa Gesell 2025: carrera de 6 años); se
+  avanza por permanencia, no por aprobación. Y "no enseñar técnica" significa no imponer un
+  modelo de ejecución: una ex alumna cuenta que se formó en técnica de palos, repique y
+  surdo (Liska, *TRANS* 26, 2022). La misma fuente registra una dirección históricamente
+  masculina con un alumnado muy feminizado.
 
 Está catalogada como **educación no formal / educación popular** (no como conservatorio),
 y da clases en cárceles (Ezeiza) como ONG.
@@ -91,16 +126,21 @@ y da clases en cárceles (Ezeiza) como ONG.
 ## 3. La transmisión es oral; el cuadernillo es apoyo, no canon
 
 La escuela nació sin internet, sin discos de referencia accesibles y sin tambores
-comprables: Buira le encargó los surdos a un **zinguero** amigo pidiéndole
-explícitamente que **no** sonaran como los brasileros — más graves y más cortos, "el
-sonido al sur tiene que ser más grave". Los instrumentos de la escuela son, literalmente,
-un diseño propio.
+comprables: Buira le encargó los tambores a *"un amigo que era zinguero"*, pidiéndole
+explícitamente que **no** sonaran como los brasileros: *"Me imaginaba que el sonido al sur
+tenía que ser más grave... Más graves y más cortitos. Así salió un sonido bastante propio"*
+(Sudestada, 16/03/2024). Los instrumentos de la escuela son, literalmente, un diseño propio.
+(El nombre del zinguero y cómo consiguen hoy los tambores los alumnos no tienen fuente.)
 
-De ahí que *"un samba reggae de origen brasilero no va a sonar nunca a brasilero"*: no se
+De ahí que *"un samba reggie que es de origen brasilero no va a sonar nunca a brasilero"*: no se
 copia la técnica de origen, se ordena el ritmo y cada uno lo toca a su manera. Buira lo
-llama, polémicamente, "ritmo blanco": nace de lo afro, pero pasa por el tango, la
-milonga, la cancha y la murga rioplatense. **"Chilinga 1"** —el primer ritmo que se
-enseña, el de *Verano del '92* de Los Piojos— es exactamente eso.
+llama, polémicamente, "ritmo blanco": *"Nace en lo afro. O sea, todo le debemos a lo afro.
+No se discute eso. Pero hay una cadena que se rompió en un momento... nace el ritmo blanco,
+nace nuestro ritmo"*. Él mismo reconoce que tuvo *"un quilombo importante con los afros"*
+por esa idea: presentarla siempre como **postura del fundador, discutida**, no como
+categoría musicológica. **"Chilinga 1"** (también llamado *Fasolita*) es el primer ritmo
+que se enseña, el de *Verano del '92* de Los Piojos: *"Es el tango, es la milonga"*
+(Sudestada, 16/03/2024).
 
 > **Implicancias para el sistema:**
 > 1. **La fuente de verdad es el PDF del cuadernillo**, no la notación estándar de
@@ -121,8 +161,11 @@ enseña, el de *Verano del '92* de Los Piojos— es exactamente eso.
 ## 4. Lo que se toca es un bloque en la calle, no un ensamble de concierto
 
 La escuela se forma tocando en la vereda, en escraches, en marchas: nació el mismo año
-que H.I.J.O.S., toca cada **24 de marzo** con Madres de Plaza de Mayo (Buira: *"somos
-familia, cuidamos a Las Madres"*), en Ni Una Menos, en actos populares. Repertorio
+que H.I.J.O.S. (Buira: en los primeros escraches le pidieron *"dale, trae los tambores"*),
+toca cada **24 de marzo** con Madres de Plaza de Mayo (*"Donde está La Chilinga está el
+pañuelo de las Madres"*, *"somos familia, cuidamos a Las Madres"*, Sudestada 2024;
+*"Me sensibiliza mucho más tocar en la marcha del 24 de Marzo que en el Pepsi Music"*,
+Página/12 2007) y en actos populares (Ni Una Menos solo figura en Wikipedia). Repertorio
 afro-rioplatense y afrobrasileño: candombe uruguayo y argentino, samba-reggae, murga,
 marcha camión, makuta, bembé, rumba, columbia, abakuá, son, candomblé, baguala, alcatraz,
 guaguancó, iyesá.
@@ -206,14 +249,28 @@ Ya resueltas:
 
 ## Fuentes
 
-- Wikipedia (ES), *La Chilinga*.
-- Página/12, "La Chilinga cumplió 25 años durante la pandemia", Sergio Sánchez,
-  28/12/2020 — <https://www.pagina12.com.ar/313916-la-chilinga-cumplio-25-anos-durante-la-pandemia/>
+**Internas** (no publicadas): Cuadernillo de Toques (PDF en `database/data/fuentes/`),
+Programa de la escuela (secciones en `programa_secciones`), aclaraciones de la escuela.
+
+**Públicas**:
+- Wikipedia (ES), *La Chilinga* y *Daniel Buira*.
+- Página/12, "La Chilinga cumplió 25 años durante la pandemia", 28/12/2020 (autor no
+  identificado en la página) — <https://www.pagina12.com.ar/313916-la-chilinga-cumplio-25-anos-durante-la-pandemia/>
+- Página/12 suplemento NO, "Me sensibiliza más el 24 de Marzo que el Pepsi Music",
+  02/08/2007 — <https://www.pagina12.com.ar/diario/suplementos/no/12-2918-2007-08-02.html>
+- La Nación, 17/12/2000, 18/11/2006 y 24/07/2007 —
+  <https://www.lanacion.com.ar/espectaculos/musica/vivir-aprender-y-ayudar-al-ritmo-del-tambor-nid928299/>
+- Ciudad.com, "¡Tambores a la calle!", 22/08/2007, y "Papá chilingo", 20/12/2006.
+- Mercedes Liska, "Experiencias de feminismo en prácticas de tambores", *TRANS* 26 (2022) —
+  <https://www.sibetrans.com/trans/public/docs/9-batuka-mercedes-liska.pdf>
+- Rolling Stone en Español, a un mes de la muerte de Buira, 21/04/2026.
+- Infobae, muerte de Daniel Buira, 21/03/2026.
 - Sudestada, "Daniel Buira: 'el tambor es el primer instrumento del ser humano'",
   Natalia Bericat, 16/03/2024 —
   <https://sudestadarevista.com.ar/daniel-buira-el-tambor-es-el-primer-instrumento-del-ser-humano/>
-- Rolling Stone Argentina, fallecimiento de Daniel Buira, 21/03/2026.
-- Instagram oficial `@lachilinga` (sedes y talleres 2026).
-- Municipalidad de Tres de Febrero (Facebook), 25 años de La Chilinga.
+- Instagram oficial `@lachilinga` (bio con las sedes, consultada el 7/10/2026). El sitio
+  lachilinga.com.ar no resuelve (7/10/2026).
+- Municipio de Villa Gesell, "La Chilinga: 29 años sonando en los veranos geselinos", 06/02/2025.
+- Concejo Deliberante de Tres de Febrero, "Personalidad Destacada de la Cultura", 06/12/2016.
 - Discografía: *Percusión* (1998) — track "Sacateca" (1:53), referencia sonora del
   toque 13 del set.
