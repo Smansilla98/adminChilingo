@@ -1,86 +1,59 @@
-"""Samba Reggae Tradicional — Cuadernillo págs. 12-13 (PDF págs. 15-16).
-
-Transcripción literal del PDF (figuras = escritura de la escuela).
-"""
-from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti
+"""Samba Reggae Tradicional — Cuadernillo págs. 12-13 (PDF págs. 15-16)."""
+from cuad import hoja, surdos
+from dsl import INSTS, score, seccion
 
 TITULO = 'Samba Reggae Tradicional'
 MATCH = {'año': 1, 'orden': 6, 'nombre': 'Samba Reggae I y II'}
 PDF_PAGES = [15, 16]
 
-# Toque
-TOQUE_SG = 'x===----x===----'
-TOQUE_SA = '----x===----x==='
-TOQUE_SM = '------x=----xxxx'          # sil.negra · sil.corchea+corchea · sil.negra · 4 semis
-TOQUE_RE = 'xx>>xx>>xx>>xx>>'          # 16 semis; acento en 3ª y 4ª de cada tiempo
-TOQUE_RP = '>xx>xx>xx>xx>xx>'          # 16 semis; acento cada 3 (ternario)
-TOQUE_TI = 'xpp-xxxxxpp-xxxx'          # (nota + 2 palmas + sil.semi + 4 semis) × 2
+c = hoja(INSTS)
+
+SG = 'x===----x===----'
+SA = '----x===----x==='
+SM = '------x=----xxxx'
+RE = 'xx>>' * 4
+RP = '>xx>xx>xx>x>xx>x'
 
 toque = [
-    compas({
-        'surdo_grave': TOQUE_SG, 'surdo_agudo': TOQUE_SA,
-        'surdo_medio': TOQUE_SM, 'redoblante': TOQUE_RE,
-        'repique': TOQUE_RP, 'timbal': TOQUE_TI,
-    }, repeat_begin=True, texto='Toque', dyn='mf'),
-    compas({
-        'surdo_grave': TOQUE_SG, 'surdo_agudo': TOQUE_SA,
-        'surdo_medio': TOQUE_SM, 'redoblante': TOQUE_RE,
-        'repique': TOQUE_RP, 'timbal': TOQUE_TI,
-    }, repeat_end=True),
+    c(rb=True, surdo_grave=SG, surdo_agudo=SA, surdo_medio=SM, redoblante=RE,
+      timbal='o=ss-sooo=ss-soo', repique=RP, rev='acentos del repique'),
+    c(re=True, surdo_grave=SG, surdo_agudo=SA, surdo_medio=SM, redoblante=RE,
+      timbal=('o===s=s=--s=o=o=o=s=s=s=--ooo=o=', 32), repique=RP,
+      rev='timbal, tiempos 3 y 4 (cabezas y fusas)'),
 ]
 
-# Llamadas "sobre toque": solo repique llama; surdos entran al final
-# Figuras densas del escaneo → revisar frases exactas con la escuela
-LL_RP_1 = 'x==x--x=-xxxx==='
-LL_RP_2A = '--xxxxxxxxxxxx--'
-LL_RP_3 = '----------------'
-LL_SU_ENTRA = '--------------x='
-LL_SU_ROLL = '----xxxxxxxxxxxx'
-ROLL = 'xxxxxxxxxxxxxxxx'
+# Repique: corchea c/punto + semi · sil. corchea + corchea · sil. semi + 2 fusas + 2 semis · negra
+RP_A = ('x=====x=----x===--xxx=x=x=======', 32)
+RP_C = '---------x=x--x='
+SU_ENTRA = '--------------x='
+SU_SUBE = 'xxxxxxxxx===xxxx'
 
-llamada_1 = [
-    compas({'repique': LL_RP_1, **tutti(VACIO, SURDOS),
-            'redoblante': VACIO, 'timbal': VACIO},
-           texto='Llamada 1 (sobre toque)', dyn='f'),
-    compas({'repique': LL_RP_2A, **tutti(LL_SU_ENTRA, SURDOS),
-            'redoblante': VACIO, 'timbal': VACIO}),
-    compas({'repique': LL_RP_3, **tutti(LL_SU_ROLL, SURDOS),
-            'redoblante': VACIO, 'timbal': VACIO}, dyn='p'),
+llamada1 = [
+    c(repique=RP_A, **surdos(SU_ENTRA)),
+    c(repique=('--x===x=--x===x=--xxx=x=x===x===', 32), **surdos('x===============')),
+    c(dyn='p', repique=RP_C, **surdos(SU_SUBE), rev='surdos p < f (regulador)'),
 ]
 
-llamada_2 = [
-    compas({'repique': LL_RP_1, **tutti(VACIO, SURDOS),
-            'redoblante': VACIO, 'timbal': VACIO},
-           texto='Llamada 2 (sobre toque)', dyn='f'),
-    compas({'repique': '-xxxxx==-xxxxx==',
-            'surdo_grave': 'x===--x=x===--x=',
-            'surdo_agudo': 'x===--x=x===--x=',
-            'surdo_medio': 'x===--x=x===--x=',
-            'redoblante': VACIO, 'timbal': VACIO}),
-    compas({'repique': LL_RP_3, **tutti(ROLL, SURDOS),
-            'redoblante': VACIO, 'timbal': VACIO}, dyn='p'),
+llamada2 = [
+    c(repique=RP_A, **surdos(SU_ENTRA)),
+    c(repique=('--xxx=x=x=======--xxx=x=x=======', 32), **surdos('x===--x=x===--x=')),
+    c(dyn='p', repique=RP_C, **surdos(SU_SUBE), rev='surdos p < f (regulador)'),
 ]
 
 variacion = [
-    compas({'surdo_medio': '----xxxx----xxxx', 'surdo_grave': TOQUE_SG,
-            'surdo_agudo': TOQUE_SA, 'redoblante': TOQUE_RE,
-            'repique': TOQUE_RP, 'timbal': TOQUE_TI},
-           repeat_begin=True, repeat_end=True,
-           texto='Variación de surdo medio'),
+    c(surdo_medio='----xxxx----xxxx'),
+    c(surdo_medio='----xxxx----xxxx'),
 ]
 
-llamada_final = [
-    compas({'repique': LL_RP_1, **tutti(VACIO, SURDOS),
-            'redoblante': VACIO, 'timbal': VACIO},
-           texto='Llamada final (sobre toque)', dyn='f'),
-    compas({'repique': VACIO, **tutti('x===============', SURDOS),
-            'redoblante': VACIO, 'timbal': VACIO}),
+final = [
+    c(repique=RP_A, **surdos(SU_ENTRA)),
+    c(**surdos('x===============')),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
     seccion('Toque', toque, 4),
-    seccion('Llamada 1 (sobre toque)', llamada_1, 1),
-    seccion('Llamada 2 (sobre toque)', llamada_2, 1),
-    seccion('Variación de surdo medio', variacion, 2),
-    seccion('Llamada final (sobre toque)', llamada_final, 1),
+    seccion('Llamada 1 (sobre Toque)', llamada1, 1),
+    seccion('Llamada 2 (sobre Toque)', llamada2, 1),
+    seccion('Variación', variacion, 1),
+    seccion('Llamada final (sobre Toque)', final, 1),
 ])

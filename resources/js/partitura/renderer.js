@@ -3,11 +3,11 @@
  * Redoblante y Repique comparten un único sistema. Las voces de un mismo
  * compás se formatean juntas (Formatter.joinVoices) para alinear la coordenada X.
  *
- * Grabado según hoja Equivalencias del cuadernillo: cabeza en la línea del
- * medio, plica abajo, barras horizontales debajo (2 corcheas / 4 semis / 8 fusas
- * por tiempo), igual que la hoja Equivalencias. También en Redo+Repi / Agudos.
+ * Grabado según el cuadernillo: cabeza en el 2º espacio, plica arriba, barras
+ * horizontales arriba (2 corcheas / 4 semis / 8 fusas por tiempo), acentos y
+ * guiones debajo del pentagrama. También en Redo+Repi / Agudos.
  *
- * Orden VexFlow: notas → Voice → format → plica abajo → beams/tuplets →
+ * Orden VexFlow: notas → Voice → format → plica arriba → beams/tuplets →
  * stave.draw → voice.draw → beam.draw. Los beams van DESPUÉS del formateo
  * porque StaveNote.format llama setStemDirection y eso borra note.beam.
  */
@@ -15,7 +15,7 @@ import {
     Renderer, Stave, StaveNote, GhostNote, Beam, Tuplet, Formatter, Articulation,
     Barline, Volta, Annotation, Fraction, Voice, GraceNote, GraceNoteGroup, Parenthesis,
 } from 'vexflow';
-import { instrumentoPorId, cabezaVexflow, GOLPES, sistemasVisuales } from './instruments.js';
+import { instrumentoPorId, cabezaVexflow, glifoDeCabeza, GOLPES, sistemasVisuales } from './instruments.js';
 import { TPQ, ticksDeNota, ticksDeCompas } from './model.js';
 
 const LABEL_W = 188;
@@ -23,6 +23,8 @@ const STAVE_H = 94;
 const LINE_PAD_TOP = 28;
 const LINE_PAD_BOTTOM = 22;
 const MIN_MEASURE_W = 180;
+const PX_POR_GOLPE = 27;
+const PX_PRIMER_COMPAS = 64;
 const LINE_SPACING = 10;
 const FONT = 'Inter, system-ui, sans-serif';
 
@@ -65,12 +67,15 @@ export function renderScore(host, score, opts = {}) {
         }`;
         secEl.appendChild(head);
 
-        const porLinea = Math.max(1, Math.floor((anchoPagina - LABEL_W - 30) / MIN_MEASURE_W));
+        // Un compás de 16 semicorcheas no entra en el ancho mínimo: la cantidad de
+        // compases por línea sale del compás más denso de la parte.
+        const necesario = Math.max(MIN_MEASURE_W, ...sec.measures.map((m) => anchoDeCompas(m, instrumentos)));
+        const porLinea = Math.max(1, Math.floor((anchoPagina - LABEL_W - 30 - PX_PRIMER_COMPAS) / necesario));
         for (let start = 0; start < sec.measures.length; start += porLinea) {
             const idxs = [];
             for (let k = start; k < Math.min(start + porLinea, sec.measures.length); k++) idxs.push(k);
             try {
-                secEl.appendChild(renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes));
+                secEl.appendChild(renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes, necesario));
             } catch (e) {
                 console.warn('Partitura: no se pudo dibujar una línea', e);
             }
@@ -90,15 +95,17 @@ function instrumentosDeSeccion(sec, todos) {
     return conGolpes.length ? conGolpes : todos;
 }
 
-function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes) {
+function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, measureBoxes, necesario = MIN_MEASURE_W) {
     const wrap = document.createElement('div');
     wrap.className = 'pt-line';
     wrap.dataset.section = String(si);
 
-    const sistemas = sistemasVisuales(instrumentos, sec.agrupar || null);
-    const width = anchoPagina - 12;
+    const sistemas = sistemasVisuales(instrumentos, sec.agrupar || null, { separarAgudos: !agudosIguales(sec) });
+    // Pantalla angosta: si ni un compás entra, la línea se ensancha y se desplaza de costado.
+    const width = Math.max(anchoPagina - 12, LABEL_W + 24 + PX_PRIMER_COMPAS + necesario * idxs.length);
     const usable = width - LABEL_W - 24;
-    const measureW = Math.max(MIN_MEASURE_W, Math.floor(usable / idxs.length));
+    // El primer compás de la línea lleva clave y cifra de compás: se le da ese lugar de más.
+    const anchoBase = Math.max(MIN_MEASURE_W, Math.floor((usable - PX_PRIMER_COMPAS) / idxs.length));
     const height = LINE_PAD_TOP + sistemas.length * STAVE_H + LINE_PAD_BOTTOM;
 
     const renderer = new Renderer(wrap, Renderer.Backends.SVG);
@@ -115,7 +122,8 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
         try {
         const m = sec.measures[mi];
         if (!m) return;
-        const x = LABEL_W + k * measureW;
+        const measureW = anchoBase + (k === 0 ? PX_PRIMER_COMPAS : 0);
+        const x = LABEL_W + k * anchoBase + (k === 0 ? 0 : PX_PRIMER_COMPAS);
         const vocesFmt = [];
         const sistemasStave = [];
 
@@ -144,7 +152,10 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
             }
             if (m.repeatBegin) stave.setBegBarType(Barline.type.REPEAT_BEGIN);
             if (m.repeatEnd) stave.setEndBarType(Barline.type.REPEAT_END);
-            else if (mi === sec.measures.length - 1) stave.setEndBarType(Barline.type.END);
+            else if (mi === sec.measures.length - 1) {
+                // Cuadernillo: doble barra fina al cerrar cada parte; la gruesa sólo al final del toque.
+                stave.setEndBarType(si === score.sections.length - 1 ? Barline.type.END : Barline.type.DOUBLE);
+            }
 
             if (di === 0 && m.ending) {
                 stave.setVoltaType(Volta.type.BEGIN_END, `${m.ending}.`, 0);
@@ -160,7 +171,8 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
 
             sis.members.forEach((inst, vi) => {
                 const vozData = m.voces[inst.def.id] || [];
-                const pitch = inst.def.pitch || 'b/4';
+                const pitch = inst.def.pitch || 'a/4';
+                const plica = inst.def.stem === -1 ? -1 : 1;
                 const built = [];
                 const tuplets = [];
                 let grupoActual = null;
@@ -169,7 +181,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 const tickables = (vozData.length ? vozData : [{ dur: 'w', rest: true, dots: 0, stroke: 'nota' }]).map((n, ni) => {
                     let vf;
                     try {
-                        vf = construirNota(n, pitch, ts);
+                        vf = construirNota(n, pitch, ts, plica);
                     } catch (e) {
                         console.warn('Partitura: nota inválida, se dibuja como silencio', e);
                         vf = new StaveNote({ keys: [pitch], duration: '4r', clef: 'percussion' });
@@ -189,7 +201,7 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
                 const voice = vozConTickables(tickables, voiceTime);
                 voice.setStave(stave);
 
-                vocesFmt.push({ voice, stave, built, tuplets, beams: [], instId: inst.def.id, di });
+                vocesFmt.push({ voice, stave, built, tuplets, beams: [], instId: inst.def.id, di, plica });
             });
         });
 
@@ -217,16 +229,16 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
         }
 
         // Format puede invertir plicas (voces juntas) y borrar beams con setStemDirection.
-        // Equivalencias: plica abajo en todas, barras después del formato.
-        vocesFmt.forEach(({ built }) => {
-            built.forEach(({ vf, data }) => forzarPlicaAbajo(vf, data));
+        // Cuadernillo: plica arriba en todas, barras después del formato.
+        vocesFmt.forEach(({ built, plica }) => {
+            built.forEach(({ vf, data }) => forzarPlica(vf, data, plica));
         });
         vocesFmt.forEach((entry) => {
             try {
                 entry.beams = Beam.generateBeams(entry.built.map((b) => b.vf), {
                     beam_rests: false,
                     groups: gruposDeBeam(ts),
-                    stem_direction: -1,
+                    stem_direction: entry.plica,
                     flat_beams: true,
                 });
             } catch (e) {
@@ -244,6 +256,11 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
         });
 
         vocesFmt.forEach(({ voice, stave, built, tuplets, beams, instId }) => {
+            // Recién acá: los beams llaman reset() y rearman las cabezas con el glifo de la figura.
+            built.forEach(({ vf, data }) => {
+                const glifo = data.rest || data.dur === 'w' ? null : glifoDeCabeza(data.stroke);
+                if (glifo) (vf.noteHeads || []).forEach((h) => { h.glyph_code = glifo; });
+            });
             try {
                 voice.draw(ctx, stave);
             } catch (e) {
@@ -307,6 +324,29 @@ function renderLinea(score, sec, si, idxs, instrumentos, anchoPagina, hits, meas
     return wrap;
 }
 
+/** Ancho que pide un compás: un lugar por cada ataque distinto entre todas sus voces. */
+function anchoDeCompas(m, instrumentos) {
+    const ataques = new Set();
+    instrumentos.forEach(({ def }) => {
+        let t = 0;
+        (m.voces[def.id] || []).forEach((n) => {
+            ataques.add(Math.round(t));
+            t += ticksDeNota(n);
+        });
+    });
+    return ataques.size * PX_POR_GOLPE + 24;
+}
+
+/** Redoblante y repique tocan lo mismo en toda la parte (misma figura y mismo golpe). */
+function agudosIguales(sec) {
+    const firma = (voz) => (voz || []).map((n) => `${n.dur}.${n.dots || 0}.${n.rest ? 'r' : n.stroke}.${n.tuplet?.num || ''}`).join(' ');
+    return sec.measures.every((m) => {
+        const a = firma(m.voces.redoblante);
+        const b = firma(m.voces.repique);
+        return !a || !b || a === b;
+    });
+}
+
 function vozConTickables(tickables, voiceTime) {
     const intentar = (mode) => {
         const voice = new Voice(voiceTime).setMode(mode);
@@ -339,7 +379,7 @@ function formatearVocesUnaAUna(vocesFmt, measureW, primerCompas) {
     });
 }
 
-function construirNota(n, pitch, ts) {
+function construirNota(n, pitch, ts, plica = 1) {
     const dots = Math.min(2, Math.max(0, n.dots || 0));
     // VexFlow cuenta el puntillo en la duración (`qd`, `hdr`), no en el modificador Dot.
     const dur = n.dur + (dots === 2 ? 'dd' : dots === 1 ? 'd' : '') + (n.rest ? 'r' : '');
@@ -358,14 +398,16 @@ function construirNota(n, pitch, ts) {
     const note = new StaveNote({
         keys: [cabezaVexflow(pitch, n.stroke)],
         duration: dur,
-        stem_direction: -1,
+        stem_direction: plica,
         clef: 'percussion',
     });
-
     const golpe = GOLPES[n.stroke];
     if (golpe?.articulacion) {
         const pos = (golpe.articulacion === 'a>' || golpe.articulacion === 'a-') ? 4 : (golpe.pos || 4);
-        note.addModifier(new Articulation(golpe.articulacion).setPosition(pos));
+        const art = new Articulation(golpe.articulacion).setPosition(pos);
+        // Cuadernillo: acentos y guiones siempre fuera del pentagrama, en una misma línea.
+        if (art.articulation) art.articulation = { ...art.articulation, between_lines: false };
+        note.addModifier(art);
     }
     if (n.stroke === 'flam') {
         try {
@@ -374,7 +416,7 @@ function construirNota(n, pitch, ts) {
                 duration: '16',
                 slash: true,
                 clef: 'percussion',
-                stem_direction: -1,
+                stem_direction: plica,
             });
             note.addModifier(new GraceNoteGroup([grace], true));
         } catch {
@@ -418,12 +460,12 @@ function gruposDeBeam(ts) {
     return [new Fraction(1, 4)];
 }
 
-/** Hoja Equivalencias: plica abajo. No usar setStemDirection: borra el beam. */
-function forzarPlicaAbajo(vf, data) {
+/** Cuadernillo: plica arriba. No usar setStemDirection: borra el beam. */
+function forzarPlica(vf, data, plica) {
     if (!vf || data.rest || data.dur === 'w') return;
-    vf.stem_direction = -1;
+    vf.stem_direction = plica;
     if (vf.stem && typeof vf.stem.setDirection === 'function') {
-        vf.stem.setDirection(-1);
+        vf.stem.setDirection(plica);
     }
 }
 
@@ -432,7 +474,7 @@ function direccionPlica(vf, data) {
     try {
         if (typeof vf.getStemDirection === 'function') return vf.getStemDirection();
     } catch { /* sin plica */ }
-    return typeof vf.stem_direction === 'number' ? vf.stem_direction : -1;
+    return typeof vf.stem_direction === 'number' ? vf.stem_direction : 1;
 }
 
 function cajaDeNota(vf, stave) {

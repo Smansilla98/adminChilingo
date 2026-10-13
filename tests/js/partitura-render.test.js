@@ -72,17 +72,46 @@ describe('render VexFlow', () => {
         assert.doesNotMatch(host.textContent, /Redoblante\n/);
     });
 
-    it('Redoblante y Repique no generan dos pentagramas separados', () => {
+    it('Redoblante y Repique comparten pentagrama sólo si tocan lo mismo (cuadernillo)', () => {
+        const contar = (score) => {
+            const host = document.createElement('div');
+            document.body.appendChild(host);
+            renderScore(host, score, { anchoPagina: 900 });
+            // La partitura de prueba trae una segunda parte en blanco: se mira sólo la primera.
+            const text = host.querySelector('.pt-section').innerHTML;
+            return {
+                solo: (text.match(/>Redoblante</g) || []).length,
+                compartido: (text.match(/Redoblante y Repique/g) || []).length,
+            };
+        };
+        const distintos = contar(scorePrueba());
+        assert.equal(distintos.compartido, 0, 'tocan distinto: un pentagrama cada uno');
+        assert.ok(distintos.solo >= 1);
+
+        const score = scorePrueba();
+        const m = score.sections[0].measures[0];
+        m.voces.repique = m.voces.redoblante.map((n) => ({ ...n, id: `${n.id}-rp` }));
+        const iguales = contar(score);
+        assert.ok(iguales.compartido >= 1, 'tocan lo mismo: etiqueta compartida');
+        assert.equal(iguales.solo, 0);
+    });
+
+    it('un compás de 16 semicorcheas entra en su pentagrama', () => {
         const host = document.createElement('div');
         document.body.appendChild(host);
-        const score = scorePrueba();
-        renderScore(host, score, { anchoPagina: 900 });
-        const labels = [...host.querySelectorAll('svg')].map((s) => s.parentElement);
-        const text = host.innerHTML;
-        const redoSolo = (text.match(/>Redoblante</g) || []).length;
-        const compartido = (text.match(/Redoblante y Repique/g) || []).length;
-        assert.ok(compartido >= 1, 'etiqueta compartida');
-        assert.equal(redoSolo, 0, 'no debe haber pentagrama solo de Redoblante');
+        const score = crearPartitura({ title: 'Ancho', instrumentos: ['redoblante'] });
+        const cap = ticksDeCompas(score.timeSignature);
+        const sec = score.sections[0];
+        sec.measures = [0, 1, 2, 3].map(() => {
+            const c = crearCompas(['redoblante'], score.timeSignature);
+            c.voces.redoblante = ajustarVoz(Array.from({ length: 16 }, () => crearNota({ dur: '16', stroke: 'acentuado' })), cap);
+            return c;
+        });
+        const { hits, measureBoxes } = renderScore(host, score, { anchoPagina: 1100 });
+        hits.forEach((h) => {
+            const b = measureBoxes.find((x) => x.measureIdx === h.measureIdx);
+            assert.ok(h.x + h.w <= b.x + b.w + 4, `compás ${h.measureIdx}: la nota se sale del pentagrama`);
+        });
     });
 
     it('alineación X: beat 1 de surdo y redoblante coinciden', () => {
@@ -119,11 +148,11 @@ describe('render VexFlow', () => {
         const beams = host.querySelectorAll('g.vf-beam');
         assert.ok(beams.length >= 1, `beams: ${beams.length}`);
         hits.filter((h) => !h.rest && h.dur !== 'w').forEach((h) => {
-            assert.equal(h.stem, -1, `${h.instId} plica abajo (Equivalencias)`);
+            assert.equal(h.stem, 1, `${h.instId} plica arriba (cuadernillo)`);
         });
     });
 
-    it('Equivalencias: plica abajo y barras de a 2 / 4 / 8 por tiempo', () => {
+    it('Equivalencias: plica arriba y barras de a 2 / 4 / 8 por tiempo', () => {
         const host = document.createElement('div');
         document.body.appendChild(host);
         const score = crearPartitura({ title: 'Equivalencias', instrumentos: ['surdo_grave'] });
@@ -144,7 +173,7 @@ describe('render VexFlow', () => {
         const conPlica = hits.filter((h) => !h.rest && h.dur !== 'w');
         assert.ok(conPlica.length >= 8 + 16 + 32, `notas: ${conPlica.length}`);
         conPlica.forEach((h) => {
-            assert.equal(h.stem, -1, `plica abajo dur=${h.dur}`);
+            assert.equal(h.stem, 1, `plica arriba dur=${h.dur}`);
         });
         const beams = host.querySelectorAll('g.vf-beam');
         assert.equal(beams.length, 12, `2 corcheas / 4 semis / 8 fusas × 4 tiempos = 12 barras, obtuvo ${beams.length}`);

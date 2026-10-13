@@ -51,10 +51,32 @@ def validar(score):
     return problemas
 
 
+def pendientes(resumen):
+    """revision/PENDIENTES.md: lo que quedó marcado «Revisar» en cada toque."""
+    total = sum(len(r) for _, _, _, r in resumen)
+    out = ['# Pendientes de revisar con la escuela', '',
+           'Lo escribe `generar.py`: no editar a mano. Cada línea es un compás cuyo `texto`',
+           'empieza con «Revisar:» (se ve sobre el pentagrama en el editor).', '',
+           f'Total: {total} compases marcados.', '']
+    for slug, titulo, paginas, revs in resumen:
+        pags = ', '.join(str(p) for p in (paginas or []))
+        out.append(f'## {titulo} — `{slug}.json` (PDF pág. {pags})')
+        out.append('')
+        if not revs:
+            out.append('Sin marcas.')
+        for parte, compas, nota in revs:
+            out.append(f'- {parte}, compás {compas}: {nota}')
+        out.append('')
+    os.makedirs(os.path.join(BASE, 'revision'), exist_ok=True)
+    with open(os.path.join(BASE, 'revision', 'PENDIENTES.md'), 'w', encoding='utf-8') as fh:
+        fh.write('\n'.join(out))
+    return total
+
+
 def main():
     dir_toques = os.path.join(BASE, 'toques')
     archivos = sorted(f for f in os.listdir(dir_toques) if f.endswith('.py') and f[0].isdigit())
-    manifest, errores = [], 0
+    manifest, errores, resumen = [], 0, []
 
     for f in archivos:
         mod = cargar(os.path.join(dir_toques, f))
@@ -72,6 +94,10 @@ def main():
         with open(out, 'w', encoding='utf-8') as fh:
             json.dump(score, fh, ensure_ascii=False, indent=2)
         compases = sum(len(s['measures']) for s in score['sections'])
+        resumen.append((slug, score['title'], paginas, [
+            (s['name'], i, m['texto'][len('Revisar: '):])
+            for s in score['sections'] for i, m in enumerate(s['measures'], 1)
+            if (m.get('texto') or '').startswith('Revisar: ')]))
         golpes = sum(1 for s in score['sections'] for m in s['measures']
                      for v in m['voces'].values() for n in v if not n['rest'])
         estado = 'OK' if not problemas else f'{len(problemas)} PROBLEMAS'
@@ -90,6 +116,7 @@ def main():
     with open(os.path.join(BASE, 'manifest.json'), 'w', encoding='utf-8') as fh:
         json.dump(manifest, fh, ensure_ascii=False, indent=2)
     print(f'\nmanifest.json: {len(manifest)} partituras, {errores} problemas')
+    print(f'revision/PENDIENTES.md: {pendientes(resumen)} compases para revisar')
     return 1 if errores else 0
 
 

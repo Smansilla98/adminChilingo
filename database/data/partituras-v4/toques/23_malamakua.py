@@ -1,78 +1,65 @@
 """Malamakuá — Cuadernillo págs. 47-48 (PDF págs. 50-51). Compás de 6/8.
 
-Transcripción literal del PDF. Grilla de 12 (2 celdas = corchea).
-Sin inventar x-x alternado: preferir corcheas x= / semis de a grupo.
+En los surdos el cuadernillo escribe cruz (chapa), negra, y las dos a la vez.
+El editor admite una cabeza por golpe: donde van las dos se carga la negra.
 """
-from dsl import INSTS, compas, score, seccion, unisono
+from cuad import hoja, surdos
+from dsl import INSTS, score, seccion, unisono
 
 TITULO = 'Malamakuá'
 MATCH = {'año': 3, 'orden': 3, 'nombre': 'Malamakua I'}
 PDF_PAGES = [50, 51]
 
-V = '------------'
+# Grilla de 12 semicorcheas: corchea `x=`, negra `x===`, negra con punto `x=====`.
+c = hoja(INSTS, num=6, den=8, grid=12)
 
+RP_A = 'x=--x=--xxx='
+RP_B = '--x===x=--xx'
+GOLPE = 'x=====------'
 
-def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
-    return compas({'surdo_grave': sg, 'surdo_agudo': sa, 'surdo_medio': sm,
-                   'redoblante': re, 'repique': rp, 'timbal': ti},
-                  grid=12, num=6, den=8, **kw)
-
-
-# ------------------------------------------------------------- Introducción
-INTRO_S = 'x=--------x='
-
-introduccion = [
-    c(rp='x=--x=--xxx=', sg='x=====------', sa='x=====------',
-      sm='x=====------',
-      texto='Introducción — 6/8', dyn='mf'),
-    c(rp='--x===x=--xx', sg='------------', sa='------------',
-      sm='------------'),
-    c(rp='x=--x=--x=x=', sg='x=====----x=', sa='x=====----x=',
-      sm='x=====----x='),
-    c(rp='-x--x=x=x=--', sg='x=x=----x=--', sa='x=x=----x=--',
-      sm='x=x=----x=--'),
+intro = [
+    c(repique=RP_A, **surdos(GOLPE), rev='¿el repique sigue durante los 8 compases?'),
+    c(repique=RP_B),
+    c(repique=RP_A, **surdos(GOLPE)),
+    c(repique=RP_B),
+    c(repique=RP_A, **surdos(GOLPE)),
+    c(repique=RP_B, **surdos(GOLPE)),
+    c(repique=RP_A, **surdos('x=--x=--x===')),
+    c(repique=RP_B, **surdos(GOLPE)),
 ]
 
-# ------------------------------------------------------------------- Toque
-T_S1 = 'x=x=t=x=t=--'
-T_S2 = 'x=t=x=t=x=--'
-T_RE = '>x=>x=>x=>x='
-T_TI = 'x=-x=--x=x=-'
-T_RP = 'x=x=x=x=x=x='   # 6 corcheas (no x-x inventado)
+RE_A = '>=x=>=x=x=>='
+RE_B = 'x=>=x=>=x=x='
+TI = '----s=--o=o='
+DOS = 'surdos: negra y cruz a la vez'
 
+SU = ['c=x=x=c=x=x=', 'c=x===x=====', 'x=x=x=c=x=x=', 'x=--x=x=====',
+      'c=x=x=c=x=x=', 'c=x===x=====', 'x=--x=c=x===', 'x=====c=====']
+toque = [
+    c(**surdos(s), redoblante=(RE_A, RE_B)[i % 2], timbal=TI, repique=(RP_A, RP_B)[i % 2],
+      rev=DOS if i in (1, 2, 3, 5, 6, 7) else None)
+    for i, s in enumerate(SU)
+]
 
-def toque(texto='Toque'):
-    return [
-        c(sg=T_S1, sa=T_S1, sm=T_S1, re=T_RE, ti=T_TI, rp=T_RP,
-          repeat_begin=True,
-          texto=texto + '', dyn='mf'),
-        c(sg=T_S2, sa=T_S2, sm=T_S2, re='>x=>x=>x=>xx',
-          ti='x=--x=-x=x=-', rp=T_RP, repeat_end=True),
-    ]
-
-
-# --------------------------------------------------------------- Variación
+VS_A, VS_B = 'x=x=x=--x=x=', 'x=--x=x=x==='
+TV = 's=--o=o====='
 variacion = [
-    c(sg='xxx=xxx=xxx=', sa='xxx=xxx=xxx=', sm='xxx=xxx=xxx=',
-      re='>>x>>x>>x>>x', ti='x=x=x=x=x=x=', rp='x=x=x=x=x=x=',
-      repeat_begin=True,
-      texto='Variación', dyn='mf'),
-    c(sg='xxxxxx-x=---', sa='xxxxxx-x=---', sm='xxxxxx-x=---',
-      re='>>x>>x>>xxxx', ti='x=x=x=x=x=--', rp='x=x=x=xxx-x=',
-      repeat_end=True),
+    c(**surdos((VS_A, VS_B)[i % 2]), redoblante=(RE_A, RE_B)[i % 2], timbal=TV,
+      repique=(RP_A, RP_B)[i % 2])
+    for i in range(6)
+] + [
+    c(**surdos('x=--x=--x==='), redoblante='>=x=>=x=>=x=', timbal='o===o=--o===',
+      repique='x===x=--x==='),
+    c(**surdos(GOLPE), redoblante='>=-->>>=====', timbal=GOLPE.replace('x', 'o'),
+      repique='x=--xxx====='),
 ]
 
-# ------------------------------------------------------------ Llamada final
-llamada_final = [
-    compas(unisono('-x=-x=-x=x=-'), grid=12, num=6, den=8,
-           texto='Llamada final — todos', dyn='f'),
-    compas(unisono('x=--x=x=x=--'), grid=12, num=6, den=8),
-]
+FINAL = ['--x=x=x=x=x=', '--x=x=--x===', 'x=x===x=--x=', 'x=--x=------']
+final = [c(**unisono(p)) for p in FINAL]
 
 SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
-    seccion('Introducción', introduccion, 1),
-    seccion('Toque', toque(), 4),
-    seccion('Variación', variacion, 2),
-    seccion('Toque (vuelve)', toque('Toque (vuelve)'), 2),
-    seccion('Llamada final', llamada_final, 1),
+    seccion('Introducción', intro, 1),
+    seccion('Toque', toque, 1),
+    seccion('Variación', variacion, 1),
+    seccion('Llamada final', final, 1),
 ], num=6, den=8)

@@ -31,19 +31,19 @@ llamada = [
     frase_llamada(),
 ]
 
-# --- TOQUE (×8) — PDF pág. 6
+# --- TOQUE — PDF pág. 6
 # Grave: negras 1 y 3 · Agudo: negras 2 y 4
-# Medio: (2 corcheas + negra) × 2
-# Redo/Repi: 16 semis; acento en la 1ª de cada tiempo
-# Timbal: (2 corcheas + sil. negra) × 2
+# Medio: corchea + 2 semis · negra · 2 corcheas · negra
+# Redo/Repi: (corchea + 2 semis) × 4; acento en la corchea y en la última semi
+# Timbal: (sil. corchea + 2 semis slap · sil. corchea + 2 semis abiertas) × 2
 toque = [
     compas({
         'surdo_grave': 'x===----x===----',
         'surdo_agudo': '----x===----x===',
-        'surdo_medio': 'x=x=x===x=x=x===',
-        'redoblante': '>xxx>xxx>xxx>xxx',
-        'repique': '>xxx>xxx>xxx>xxx',
-        'timbal': '----x=x=----x=x=',
+        'surdo_medio': 'x=xxx===x=x=x===',
+        'redoblante': '>=x>>=x>>=x>>=x>',
+        'repique': '>=x>>=x>>=x>>=x>',
+        'timbal': '--ss--oo--ss--oo',
     }, repeat_begin=True, repeat_end=True, texto='Toque'),
 ]
 

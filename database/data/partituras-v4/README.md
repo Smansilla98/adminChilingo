@@ -63,7 +63,7 @@ No inventar patrones tipo `xx-x`: escribir la figura que declara el PDF.
 
 * Nombres de sección **en MAYÚSCULAS**. La cantidad de compases y los `×N` no van en el nombre: los `×N` viven en `section.repeatX` y el renderer muestra los compases al lado del título.
 
-* Cabezas del cuadernillo: óvalo/blanca = `abierto`, negra = `nota`, rombo = `palma`, cruz = `tapado`.
+* Cabezas del cuadernillo (hoja Nomenclatura): negra = `nota` (`abierto` en timbal), **hueca = `slap`**, rombo = `palma`, **cruz = `chapa`** (`dedo` en timbal), triángulo = `agudo`; guión debajo = `tapado` (surdos) / `presionado` (timbal). Varios `.py` todavía usan el mapeo viejo (hueca = `abierto` o `palma`, cruz = `tapado`): ver `docs/agente-musico/ESCRITURA.md`.
 
 * **Tempos entre 80 y 90 bpm** para todo el repertorio (es la franja en la que se toca en la escuela). `dsl.score()` valida ese rango y falla si se sale.
 
@@ -71,37 +71,52 @@ No inventar patrones tipo `xx-x`: escribir la figura que declara el PDF.
 
 ## Criterio de transcripción
 
-Transcripción visual página por página del PDF. Lo que el escaneo no permite leer con certeza **no se adivina**: se transcribe la lectura más probable y se deja la marca `revisar con la escuela` en el campo `texto` del compás, para resolverlo contra el audio y recién entonces corregirlo en el editor (que guarda el cambio en la base). Puntos abiertos hoy: llamadas y cortes en fusas/sextillos, solos de timbal, redoblante en fusas continuas, y en particular las llamadas densas de Iyesá, Chiruda, La Meta, Muñequitos I y Toque a Oxosi, más los timbales de Samba Reggae.
+Transcripción visual del PDF, página por página y ampliada (retranscripta completa el
+2026-10-13 con la hoja Nomenclatura como referencia de cabezas). Lo que el escaneo no deja
+leer con certeza **no se adivina en silencio**: se carga la lectura más probable y el compás
+lleva `Revisar: …` en el campo `texto`, que se ve sobre el pentagrama en el editor. La lista
+completa, toque por toque, está en [`revision/PENDIENTES.md`](revision/PENDIENTES.md)
+(la escribe `generar.py`).
 
-La auditoría toque por toque contra el PDF se documenta en `revision/NN-slug.md`, un archivo por toque.
+Para escribir un toque: `cuad.py` (`hoja()`, `surdos()`, `agudos()`, `rtr()`, `p24()`).
+
+Límites del modelo que obligan a adaptar lo que dice el cuadernillo:
+
+* Un solo compás por partitura: los compases de 2/4 o 1/4 intercalados se completan con
+  silencio, y los de 6/8 dentro de un toque en C (o al revés) se escriben por corcheas. Cada
+  uno lleva la aclaración en `texto`.
+* Una sola cabeza por golpe: donde el cuadernillo escribe negra y cruz a la vez (surdos de
+  La Meta, Malamakuá y Solo de Surdos; timbal del Solo de Timbales) se carga una y se marca.
+* Los reguladores `p < f` no existen: queda la dinámica de arranque y la marca.
+* «Director (Timbaletas)» va en el timbal y «Campana» en el agogó.
 
 ## Los 26 toques
 
 | Archivo                            | Título                             | Ritmo del programa                     | Compás | Tempo | Estructura              | Unísono "Todos" |
 | ---------------------------------- | ---------------------------------- | -------------------------------------- | ------ | ----- | ----------------------- | --------------- |
-| 01-toque-de-chilinga.json          | Toque de Chilinga                  | 1° / 1 — Ritmo Chilinga                | 4/4    | 88    | 3 partes / 9 compases   | sí              |
-| 02-marcha-camion.json              | Marcha Camión                      | 1° / 3 — Marcha Camión                 | 4/4    | 86    | 7 partes / 16 compases  | sí              |
-| 03-ochosi.json                     | Ochosi                             | 1° / 2 — Ochosi                        | 4/4    | 84    | 4 partes / 6 compases   | —               |
-| 04-murga-en-comparsa.json          | Murga en Comparsa                  | 1° / 10 — Murga en Comparsa            | 4/4    | 88    | 3 partes / 7 compases   | —               |
-| 05-toque-de-rap.json               | Toque de Rap                       | 1° / 8 — Rap - Murga                   | 4/4    | 82    | 4 partes / 9 compases   | —               |
-| 06-candombe-argentino.json         | Candombe Argentino                 | 2° / 2 — Candombe Argentino            | 4/4    | 88    | 3 partes / 4 compases   | sí              |
-| 07-samba-reggae-tradicional.json   | Samba Reggae Tradicional           | 1° / 6 — Samba Reggae I y II           | 4/4    | 86    | 5 partes / 11 compases  | —               |
-| 08-samba-reggae-contemporaneo.json | Samba Reggae Contemporáneo         | 1° / 11 — Samba Reggae Contemporáneo   | 4/4    | 86    | 4 partes / 5 compases   | sí              |
-| 09-iyesa.json                      | Iyesá I, II y III                  | 1° / 9 — Ixesa I                       | 4/4    | 84    | 13 partes / 20 compases | —               |
-| 10-claves.json                     | Claves                             | 2° / 8 — Claves                        | 4/4    | 85    | 12 partes / 18 compases | —               |
-| 11-rumba.json                      | Rumba                              | 2° / 7 — Ritmo de Rumba                | 4/4    | 86    | 5 partes / 12 compases  | sí              |
-| 12-chiruda.json                    | Chiruda                            | 2° / 5 — Chiruda                       | 4/4    | 88    | 7 partes / 16 compases  | —               |
-| 13-sacateca.json                   | Sacateca                           | 2° / 4 — Sacateca                      | 4/4    | 88    | 7 partes / 16 compases  | sí              |
-| 14-buscando-a-coco.json            | Buscando a Coco                    | 3° / 1 — Buscando a Coco               | 4/4    | 86    | 7 partes / 16 compases  | —               |
-| 15-malambo-en-comparsa.json        | Malambo en Comparsa                | 2° / 9 — Malambo en Comparsa           | 6/8    | 90    | 3 partes / 12 compases  | —               |
-| 16-toque-de-marcha.json            | Toque de Marcha                    | 1° / 7 — Toque de Marcha               | 4/4    | 90    | 4 partes / 7 compases   | —               |
-| 17-chilinga-ii.json                | Chilinga II                        | 5° / 2 — Chilinga II                   | 4/4    | 88    | 1 partes / 5 compases   | —               |
-| 18-makuta.json                     | Makuta                             | 4° / 9 — Ritmo de Makuta (Cuba)        | 4/4    | 84    | 3 partes / 7 compases   | —               |
-| 19-solo-de-timbales.json           | Solo de Timbales (Buscando a Coco) | 3° / 2 — Solo de timbales I            | 4/4    | 86    | 1 partes / 19 compases  | —               |
-| 20-solo-de-tambores.json           | Solo de Tambores (Chiruda)         | 3° / 4 — Solo de redoblantes (Chiruda) | 4/4    | 86    | 1 partes / 19 compases  | sí              |
-| 21-mongo-kuta.json                 | Mongo kutá                         | 3° / 6 — Mongokuta I                   | 4/4    | 84    | 7 partes / 24 compases  | —               |
-| 22-la-meta.json                    | La Meta                            | 4° / 2 — La Meta                       | 4/4    | 86    | 15 partes / 41 compases | —               |
-| 23-malamakua.json                  | Malamakuá                          | 3° / 3 — Malamakua I                   | 6/8    | 88    | 5 partes / 12 compases  | sí              |
-| 24-solo-de-surdos.json             | Solo de Surdos (Malamakuá)         | 3° / 10 — Solo de Surdos (Malamakuá)   | 6/8    | 88    | 5 partes / 16 compases  | sí              |
-| 25-munequitos.json                 | Muñequitos I                       | 4° / 5 — Muñequitos I                  | 4/4    | 86    | 10 partes / 40 compases | —               |
-| 26-toque-a-oxosi.json              | Toque a Oxosi                      | 4° / 6 — Oxosi II                      | 4/4    | 84    | 8 partes / 24 compases  | sí              |
+| 01-toque-de-chilinga.json          | Toque de Chilinga                  | 1° / 1 — Ritmo Chilinga                | 4/4 | 88 | 3 partes / 7 compases | — |
+| 02-marcha-camion.json              | Marcha Camión                      | 1° / 3 — Marcha Camión                 | 4/4 | 86 | 7 partes / 16 compases | sí |
+| 03-ochosi.json                     | Ochosi                             | 1° / 2 — Ochosi                        | 4/4 | 84 | 4 partes / 6 compases | — |
+| 04-murga-en-comparsa.json          | Murga en Comparsa                  | 1° / 10 — Murga en Comparsa            | 4/4 | 88 | 3 partes / 7 compases | — |
+| 05-toque-de-rap.json               | Toque de Rap                       | 1° / 8 — Rap - Murga                   | 4/4 | 82 | 4 partes / 9 compases | — |
+| 06-candombe-argentino.json         | Candombe Argentino                 | 2° / 2 — Candombe Argentino            | 4/4 | 88 | 3 partes / 7 compases | — |
+| 07-samba-reggae-tradicional.json   | Samba Reggae Tradicional           | 1° / 6 — Samba Reggae I y II           | 4/4 | 86 | 5 partes / 12 compases | — |
+| 08-samba-reggae-contemporaneo.json | Samba Reggae Contemporáneo         | 1° / 11 — Samba Reggae Contemporáneo   | 4/4 | 86 | 3 partes / 4 compases | sí |
+| 09-iyesa.json                      | Iyesá I, II y III                  | 1° / 9 — Ixesa I                       | 4/4 | 84 | 14 partes / 21 compases | — |
+| 10-claves.json                     | Claves                             | 2° / 8 — Claves                        | 4/4 | 85 | 12 partes / 18 compases | — |
+| 11-rumba.json                      | Rumba                              | 2° / 7 — Ritmo de Rumba                | 4/4 | 86 | 5 partes / 12 compases | sí |
+| 12-chiruda.json                    | Chiruda                            | 2° / 5 — Chiruda                       | 4/4 | 88 | 7 partes / 19 compases | — |
+| 13-sacateca.json                   | Sacateca                           | 2° / 4 — Sacateca                      | 4/4 | 88 | 7 partes / 15 compases | sí |
+| 14-buscando-a-coco.json            | Buscando a Coco                    | 3° / 1 — Buscando a Coco               | 4/4 | 86 | 7 partes / 14 compases | — |
+| 15-malambo-en-comparsa.json        | Malambo en Comparsa                | 2° / 9 — Malambo en Comparsa           | 6/8 | 90 | 2 partes / 9 compases | — |
+| 16-toque-de-marcha.json            | Toque de Marcha                    | 1° / 7 — Toque de Marcha               | 4/4 | 90 | 3 partes / 4 compases | — |
+| 17-chilinga-ii.json                | Chilinga II                        | 5° / 2 — Chilinga II                   | 4/4 | 88 | 1 partes / 4 compases | — |
+| 18-makuta.json                     | Makuta                             | 4° / 9 — Ritmo de Makuta (Cuba)        | 4/4 | 84 | 2 partes / 6 compases | — |
+| 19-solo-de-timbales.json           | Solo de Timbales (Buscando a Coco) | 3° / 2 — Solo de timbales I            | 4/4 | 86 | 1 partes / 19 compases | — |
+| 20-solo-de-tambores.json           | Solo de Tambores (Chiruda)         | 3° / 4 — Solo de redoblantes (Chiruda) | 4/4 | 86 | 1 partes / 27 compases | sí |
+| 21-mongo-kuta.json                 | Mongo kutá                         | 3° / 6 — Mongokuta I                   | 4/4 | 84 | 7 partes / 24 compases | — |
+| 22-la-meta.json                    | La Meta                            | 4° / 2 — La Meta                       | 4/4 | 86 | 14 partes / 41 compases | — |
+| 23-malamakua.json                  | Malamakuá                          | 3° / 3 — Malamakua I                   | 6/8 | 88 | 4 partes / 28 compases | sí |
+| 24-solo-de-surdos.json             | Solo de Surdos (Malamakuá)         | 3° / 10 — Solo de Surdos (Malamakuá)   | 6/8 | 88 | 5 partes / 25 compases | sí |
+| 25-munequitos.json                 | Muñequitos I                       | 4° / 5 — Muñequitos I                  | 4/4 | 86 | 10 partes / 54 compases | — |
+| 26-toque-a-oxosi.json              | Toque a Oxosi                      | 4° / 6 — Oxosi II                      | 4/4 | 84 | 8 partes / 64 compases | — |

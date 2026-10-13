@@ -1,88 +1,72 @@
-"""Chiruda — Cuadernillo págs. 23-25 (PDF págs. 26-28).
-
-Transcripción literal del PDF (figuras = escritura de la escuela).
-"""
-from dsl import INSTS, VACIO, compas, score, seccion, tutti
+"""Chiruda — Cuadernillo págs. 23-25 (PDF págs. 26-28)."""
+from cuad import T24, agudos, hoja, p24, rtr, surdos
+from dsl import INSTS, score, seccion
 
 TITULO = 'Chiruda'
 MATCH = {'año': 2, 'orden': 5, 'nombre': 'Chiruda'}
 PDF_PAGES = [26, 27, 28]
 
-V = VACIO
-RE_BASE = '>xx>>xx>x>xx>x>x'
+c = hoja(INSTS)
 
+FRASE = 'x==xx==xx=x=x==='
 
-def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
-    return compas({'surdo_grave': sg, 'surdo_agudo': sa, 'surdo_medio': sm,
-                   'redoblante': re, 'repique': rp, 'timbal': ti}, **kw)
-
-
-# Llamada — HI y surdos en diálogo; frases densas → revisar acentos finos
-HI_LL = 'x=xxx=xxx=xxx=xx'          # (corchea + 2 semis) × 4
 llamada = [
-    c(re=HI_LL, rp=HI_LL, ti=HI_LL,
-      sg='-x=x=-x=--x=x=--', sa='-x=x=-x=--x=x=--', sm='-x=x=-x=--x=x=--',
-      texto='Llamada', dyn='f'),
-    c(re='----x=--x=xxx=xx', rp='----x=--x=xxx=xx', ti='----x=--x=xxx=xx',
-      sg='x=xxx=x=--------', sa='x=xxx=x=--------', sm='x=xxx=x=--------'),
-    c(re='x=xxx=x=x=======', rp='x=xxx=x=x=======', ti='x=xxx=x=x=======',
-      sg='x=--x===--------', sa='x=--x===--------', sm='x=--x===--------'),
-    c(sg='--------xxxxx=x=', sa='--------xxxxx=x=', sm='--------xxxxx=x='),
+    c(**rtr('xxx=----xxx=----'), **surdos('----x=x=----x=x=')),
+    c(**rtr('xxx=xxx=----x==='), **surdos('--------xxx=----')),
+    c(**rtr('----x===----x==='), **surdos('x=x=----x=x=----')),
+    c(**rtr('----xxx=xxx=----'), **surdos('x=x=--------x===')),
+    c(**rtr(FRASE)),
+    c(**surdos(FRASE)),
 ]
 
-BASE = dict(sg='----x===----x===', sa='x=x=-x=x=x=x=x=-',
-            sm='x===-x=x=---x=x=', re=RE_BASE, rp=RE_BASE,
-            ti='-o=o=-x=x=-o=o=-')
-toque = [c(**BASE, repeat_begin=True, repeat_end=True,
-           texto='Toque', dyn='mf')]
+SA = 'x=x=---x-x=x----'
+SG = '----x===----x==='
+SM = 'x===-x=x------x='
+RR = '>xx>>xx>x>xx>x>x'
+TI = '--ss--oo--ss--oo'
+TI_VAR = '-----s==-----s=='
+CRUCES = 'c==c--c=--c=c==='      # golpes de chapa
 
-variacion_1 = [
-    c(sa='--------xx--fx=x', sg='----x===----x===', sm='--x=xxx=--------',
-      re=RE_BASE, ti='---o=---x=--o=--',
-      repeat_begin=True, texto='Variación 1 (x4)'),
-    c(sa='x=x=--fx=-x=----', sg='----x===----x===', sm='t=-t=t=-t=x=----',
-      re=RE_BASE, ti='---o=---x=--o=--', rp='t=-t=t=-t=x=----',
-      repeat_end=True),
+toque = [
+    c(rb=True, re=True, surdo_agudo=SA, surdo_grave=SG, surdo_medio=SM, **agudos(RR), timbal=TI),
 ]
 
-variacion_2 = [
-    c(sa='x=x=--fx=-x=x=--', sg='----x===----x===', sm='x=xxx=x=--xxxx--',
-      re=RE_BASE, ti='-x=x=--x=x=-----',
-      repeat_begin=True, texto='Variación 2 (x4)', dyn='p'),
-    c(sa='x=x=--fx=-x=----', sg='----x===----x===', sm='x===------------',
-      re=RE_BASE, ti='-x=x=--x=x=-----', rp='-x=x=-x=-x=x=---',
-      repeat_end=True, dyn='f'),
+variacion1 = [
+    c(timbal='-------------s==', texto='Entrada del timbal'),
+    c(surdo_agudo=SA, surdo_grave=SG, surdo_medio='xxx=xxx=--------', redoblante=RR, timbal=TI_VAR),
+    c(surdo_agudo=SA, surdo_grave=SG, surdo_medio=CRUCES, redoblante=RR, timbal=TI_VAR, repique=CRUCES),
 ]
 
-llamada_2 = [
-    c(re='x=xx=x=---x=x=--', rp='x=xx=x=---x=x=--', ti='x=xx=x=---x=x=--',
-      sg='----x=x=----x=x=', sa='----x=x=----x=x=', sm='----x=x=----x=x=',
-      texto='Llamada', dyn='f'),
-    c(re='x=xx=x=x=---x=--', rp='x=xx=x=x=---x=--', ti='x=xx=x=x=---x=--',
-      sg='--------x=x=----', sa='--------x=x=----', sm='--------x=x=----'),
+variacion2 = [
+    c(surdo_agudo=SA, surdo_grave=SG, surdo_medio='xxx=xxx=----xxxx', redoblante=RR, timbal=TI_VAR,
+      rev='surdo medio p < f en el 4º tiempo'),
+    c(surdo_agudo=SA, surdo_grave=SG, surdo_medio='x===------------', redoblante=RR, timbal=TI_VAR,
+      repique='--x=-x==x==x--x='),
+]
+
+llamada2 = [
+    c(**rtr('xxx=----xxx=----'), **surdos('----x=x=----x=x=')),
+    c(**rtr('xxx=xxx=----x==='), **surdos('--------xxx=----')),
 ]
 
 base_final = [
-    c(sa='x=-fx=x=--------', sg='----x===----x===', sm='x=-fx=--x=--x=--',
-      re=RE_BASE, rp=RE_BASE, ti='x=-x=-o=x=-o=---',
-      repeat_begin=True, texto='Base final', dyn='mf'),
-    c(sa='x=--fx=x=-------', sg='----x===----x===', sm='x=x=--x=-x=x=---',
-      re=RE_BASE, rp=RE_BASE, ti='x=-x=-o=x=-o=---', repeat_end=True),
-    c(sa='x===============', sm='x==-------xxxxx-', dyn='p'),
+    c(surdo_agudo=SA, surdo_grave=SG, surdo_medio=SM, **agudos(RR), timbal=TI),
+    c(surdo_agudo=SA, surdo_grave=SG, surdo_medio=SM, **agudos(RR), timbal=TI),
+    c(surdo_agudo=SA, surdo_grave=SG, surdo_medio=SM, **agudos(RR), timbal=TI),
+    c(surdo_agudo='x===============', surdo_grave='----x===--------', surdo_medio='x===--xxxxxxx=x=',
+      rev='surdo medio: p < f; tiempo 2 (¿semis o fusas?)'),
 ]
 
-llamada_final = [
-    c(re='x=x=x===--------', rp='x=x=x===--------', ti='x=x=x===--------',
-      texto='Llamada final (compás de 2/4 completado con silencios)', dyn='f'),
-    c(sg='--------x===x===', sa='--------x===x===', sm='--------x===x==='),
+final = [
+    c(texto=T24, **rtr(p24('xxx=----')), **surdos(p24('----x=x='))),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 88, INSTS, [
     seccion('Llamada', llamada, 1),
-    seccion('Toque', toque, 8),
-    seccion('Variación 1', variacion_1, 4),
-    seccion('Variación 2', variacion_2, 4),
-    seccion('Llamada', llamada_2, 1),
-    seccion('Base final', base_final, 2),
-    seccion('Llamada final', llamada_final, 1),
+    seccion('Toque', toque, 4),
+    seccion('Variación 1', variacion1, 4),
+    seccion('Variación 2', variacion2, 4),
+    seccion('Llamada', llamada2, 1),
+    seccion('Base final', base_final, 1),
+    seccion('Llamada final', final, 1),
 ])

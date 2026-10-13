@@ -1,64 +1,55 @@
-"""Rumba — Cuadernillo págs. 21-22 (PDF págs. 24-25).
-
-Transcripción literal del PDF (figuras = escritura de la escuela).
-"""
-from dsl import INSTS, SURDOS, VACIO, compas, score, seccion, tutti, unisono
+"""Rumba — Cuadernillo págs. 21-22 (PDF págs. 24-25)."""
+from cuad import T24, hoja, p24
+from dsl import INSTS, score, seccion, unisono
 
 TITULO = 'Rumba'
 MATCH = {'año': 2, 'orden': 7, 'nombre': 'Ritmo de Rumba'}
 PDF_PAGES = [24, 25]
 
-V = VACIO
+c = hoja(INSTS)
 
-# Llamada todos: corchea c/punto + semi · sil. corchea c/punto + flam · …
-LLAMADA = 'x==x---x--x=x==='
+CLAVE = 'x==x---x--x=x==='      # clave de rumba en un compás
 
-BASE = {
-    'surdo_grave': 'x==x------------',
-    'surdo_agudo': 'xx--x=x=xx--x=x=',
-    'surdo_medio': '--------x==xx===',
-    'redoblante': '>xxx>xxx>xxx>xxx',
-    'repique': 'x=x=-x=x=x=-x=x=',
-    'timbal': 'x=o--x=t=t--o=xx',
-}
+llamada = [c(**unisono(CLAVE))]
 
-llamada = [compas(unisono(LLAMADA), texto='Llamada inicial y final', dyn='f')]
+RE = '>xx>xxx>xx>x>xxx'
+TI = 'ps-odd-s-ooo-ooo'
+RP = 'xx-xxx-xx=x=xx-x'
 
-toque = [compas(dict(BASE), repeat_begin=True, repeat_end=True,
-                texto='Toque', dyn='mf')]
-
-TRES = '3(xxx)3(xxx)'
-
-llamada_sobre = [
-    compas({**BASE, 'surdo_medio': 'x==x---fx=x===--'},
-           texto='Llamada (sobre el toque)', dyn='f'),
-    compas({**BASE, 'surdo_medio': '-x=x=-x=x=--x=x='},
-           texto='Llamada (sobre el toque)'),
-    compas({**BASE, 'surdo_medio': 'xxxxxxxx' + TRES}),
-    compas({**BASE, 'surdo_medio': 'xxxxxxxx' + TRES}),
+toque = [
+    c(rb=True, re=True, surdo_grave='t==x------------', surdo_agudo='tt-tt=x=tt-tt=x=',
+      surdo_medio='--------x==xx===', redoblante=RE, timbal=TI, repique=RP,
+      rev='timbal (cabezas y guiones); guiones del surdo agudo'),
 ]
 
-UNISONO_1 = 'xxxxxxxx' + TRES
-UNISONO_2 = 'x==xx===--------'   # el cuadernillo lo escribe en 2/4
+llamada_medio = [
+    c(surdo_medio=CLAVE),
+    c(surdo_medio='-x=x-xx=-x=xx===', rev='surdo medio, tiempos 1 a 3'),
+    c(surdo_medio='3(xxx)3(xxx)x==xx==='),
+    c(surdo_medio='3(xxx)3(xxx)x==xx==='),
+]
 
+TRES = '3(xxx)3(xxx)'
+CIERRE = p24('x==xx===')
 final_unisono = [
-    compas(unisono(UNISONO_1), texto='Final unísono de llamada', dyn='f'),
-    compas(unisono(UNISONO_2), texto='(compás de 2/4 con silencios)'),
+    c(surdo_medio='--------' + TRES, surdo_grave='x==x----' + TRES, surdo_agudo='--------' + TRES,
+      redoblante='>xx>xxx>3(>>>)3(>>>)', timbal='ps-odd-s3(ooo)3(ooo)',
+      repique='xx-xxx-x' + TRES),
+    c(texto=T24, surdo_medio=CIERRE, surdo_grave=CIERRE, surdo_agudo=CIERRE,
+      redoblante=p24('>==>>==='), timbal=p24('o==oo==='), repique=CIERRE),
 ]
 
 variacion = [
-    compas({**BASE, 'timbal': '6(oooooo)6(xxxxxx)6(oooooo)6(xxxxxx)'},
-           repeat_begin=True, texto='Variación de timbal (sobre el toque)'),
-    compas({**BASE, 'timbal': 'x=o=-o=x=-x=x=--'}),
-    compas({**BASE, 'timbal': 'oxoxo===' + TRES},
-           texto='Variación de timbal'),
-    compas({**BASE, 'timbal': 'x==o=-x=-fx=o=--'}, repeat_end=True),
+    c(timbal='6(ssssss)6(oooooo)6(ssssss)6(oooooo)'),
+    c(timbal='s=s=s=s=ssoo----'),
+    c(timbal='ssooss==3(ooo)3(ooo)'),
+    c(timbal='s==s---s--s=s==='),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
     seccion('Llamada inicial y final', llamada, 1),
-    seccion('Toque', toque, 8),
-    seccion('Llamada (sobre el toque)', llamada_sobre, 1),
+    seccion('Toque', toque, 4),
+    seccion('Llamada (sobre el toque)', llamada_medio, 1),
     seccion('Final unísono de llamada', final_unisono, 1),
-    seccion('Variación de timbal', variacion, 1),
+    seccion('Variación (sobre el toque)', variacion, 1),
 ])

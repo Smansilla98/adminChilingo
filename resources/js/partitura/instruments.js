@@ -18,16 +18,17 @@
 
 /** @type {Instrumento[]} */
 export const INSTRUMENTOS = [
-    // Equivalencias + Toque de Chilinga: cabeza en la línea del medio, plica abajo.
-    { id: 'todos', label: 'Todos', short: 'Tod', pitch: 'b/4', stem: -1, midi: 38, color: '#6d5b45', familia: 'membrana', freq: 120 },
-    { id: 'surdo_grave', label: 'Surdo Grave', short: 'S.Gr', pitch: 'b/4', stem: -1, midi: 87, color: '#e86a3c', familia: 'membrana', freq: 62 },
-    { id: 'surdo_agudo', label: 'Surdo Agudo', short: 'S.Ag', pitch: 'b/4', stem: -1, midi: 43, color: '#f0a04b', familia: 'membrana', freq: 96 },
-    { id: 'surdo_medio', label: 'Surdo Medio', short: 'S.Me', pitch: 'b/4', stem: -1, midi: 41, color: '#d1a054', familia: 'membrana', freq: 78 },
-    { id: 'redoblante', label: 'Redoblante', short: 'Redo', pitch: 'b/4', stem: -1, midi: 38, color: '#5b9ef0', familia: 'membrana', freq: 205 },
-    { id: 'repique', label: 'Repique', short: 'Repi', pitch: 'b/4', stem: -1, midi: 40, color: '#4a9a86', familia: 'membrana', freq: 300 },
-    { id: 'timbal', label: 'Timbal', short: 'Timb', pitch: 'b/4', stem: -1, midi: 66, color: '#9c8ad1', familia: 'membrana', freq: 168 },
-    { id: 'agogo', label: 'Agogó', short: 'Ago', pitch: 'b/4', stem: -1, midi: 67, color: '#c1432b', familia: 'metal', freq: 780 },
-    { id: 'palmas', label: 'Palmas', short: 'Palm', pitch: 'b/4', stem: -1, midi: 39, color: '#b6a488', familia: 'mano', freq: 1200 },
+    // Cuadernillo (Equivalencias, Nomenclatura y los 26 toques): cabeza en el 2º espacio,
+    // plica arriba, barras arriba; acentos y guiones debajo del pentagrama.
+    { id: 'todos', label: 'Todos', short: 'Tod', pitch: 'a/4', stem: 1, midi: 38, color: '#6d5b45', familia: 'membrana', freq: 120 },
+    { id: 'surdo_grave', label: 'Surdo Grave', short: 'S.Gr', pitch: 'a/4', stem: 1, midi: 87, color: '#e86a3c', familia: 'membrana', freq: 62 },
+    { id: 'surdo_agudo', label: 'Surdo Agudo', short: 'S.Ag', pitch: 'a/4', stem: 1, midi: 43, color: '#f0a04b', familia: 'membrana', freq: 96 },
+    { id: 'surdo_medio', label: 'Surdo Medio', short: 'S.Me', pitch: 'a/4', stem: 1, midi: 41, color: '#d1a054', familia: 'membrana', freq: 78 },
+    { id: 'redoblante', label: 'Redoblante', short: 'Redo', pitch: 'a/4', stem: 1, midi: 38, color: '#5b9ef0', familia: 'membrana', freq: 205 },
+    { id: 'repique', label: 'Repique', short: 'Repi', pitch: 'a/4', stem: 1, midi: 40, color: '#4a9a86', familia: 'membrana', freq: 300 },
+    { id: 'timbal', label: 'Timbal', short: 'Timb', pitch: 'a/4', stem: 1, midi: 66, color: '#9c8ad1', familia: 'membrana', freq: 168 },
+    { id: 'agogo', label: 'Agogó', short: 'Ago', pitch: 'a/4', stem: 1, midi: 67, color: '#c1432b', familia: 'metal', freq: 780 },
+    { id: 'palmas', label: 'Palmas', short: 'Palm', pitch: 'a/4', stem: 1, midi: 39, color: '#b6a488', familia: 'mano', freq: 1200 },
 ];
 
 /** Instrumentos que arrancan en una partitura nueva. */
@@ -38,7 +39,7 @@ export const INSTRUMENTOS_DEFAULT = ['surdo_grave', 'surdo_agudo', 'surdo_medio'
  * @property {string} id
  * @property {string} label
  * @property {string} short
- * @property {'normal'|'x'|'triangle'|'diamond'|'circled'|'slash'} cabeza
+ * @property {'normal'|'x'|'triangle'|'diamond'|'hollow'|'slash'} cabeza
  * @property {string|null} articulacion  Código VexFlow (a>, a-, ao, a^)
  * @property {number} pos        4 = debajo, 3 = arriba
  * @property {number} gain
@@ -47,14 +48,14 @@ export const INSTRUMENTOS_DEFAULT = ['surdo_grave', 'surdo_agudo', 'surdo_medio'
  */
 
 /**
- * Cabezas según nomenclatura La Chilinga:
- * - Abierto / nota / palma: óvalo negro
- * - Chapa / dedo: X
- * - Slap (timbal): círculo vacío
- * - Presionado: nota + barra debajo
- * - Tapado (surdo): nota + barra encima
- * - Acentuado: nota + >
- * - Agudo (repique): triángulo
+ * Cabezas según la hoja Nomenclatura del cuadernillo (PDF pág. 5):
+ * - Nota / abierto: óvalo negro
+ * - Chapa (surdos, redoblante, repique) / dedo (timbal): X
+ * - Slap (timbal): cabeza hueca, con plica y barras (en los toques va en semicorcheas)
+ * - Palma (timbal): rombo negro
+ * - Presionado (timbal) y tapado (surdos): nota + guión DEBAJO del pentagrama
+ * - Acentuado: nota + > debajo
+ * - Agudo (repique): triángulo negro
  */
 /** @type {Record<string, Golpe>} */
 export const GOLPES = {
@@ -72,8 +73,8 @@ export const GOLPES = {
     },
     tapado: {
         id: 'tapado', label: 'Tapado', short: '—',
-        // Surdos: óvalo + guión arriba (Nomenclatura).
-        cabeza: 'normal', articulacion: 'a-', pos: 3, gain: 0.6, timbre: 'apagado', tipoGolpe: 'tapado',
+        // Surdos: óvalo + guión debajo (Nomenclatura; Candombe, Rumba, Mongo kutá).
+        cabeza: 'normal', articulacion: 'a-', pos: 4, gain: 0.6, timbre: 'apagado', tipoGolpe: 'tapado',
     },
     presionado: {
         id: 'presionado', label: 'Presionado', short: '=',
@@ -81,18 +82,18 @@ export const GOLPES = {
     },
     abierto: {
         id: 'abierto', label: 'Abierto', short: '●',
-        // Timbal: óvalo negro (el círculo vacío es slap).
-        cabeza: 'normal', articulacion: null, pos: 3, gain: 1.1, timbre: 'golpe', tipoGolpe: 'abierto',
+        // Timbal: óvalo negro (la cabeza hueca es slap).
+        cabeza: 'normal', articulacion: null, pos: 4, gain: 1.1, timbre: 'golpe', tipoGolpe: 'abierto',
     },
     slap: {
         id: 'slap', label: 'Slap', short: '○',
-        // Hoja Nomenclatura: círculo vacío pequeño.
-        cabeza: 'circled', articulacion: null, pos: 3, gain: 1.15, timbre: 'aro', tipoGolpe: 'slap',
+        // Hoja Nomenclatura: cabeza hueca. No es una blanca: dura lo que diga la figura.
+        cabeza: 'hollow', articulacion: null, pos: 4, gain: 1.15, timbre: 'aro', tipoGolpe: 'slap',
     },
     palma: {
-        id: 'palma', label: 'Palma', short: '●',
-        // Hoja Nomenclatura: óvalo negro (posición baja).
-        cabeza: 'normal', articulacion: null, pos: 4, gain: 0.9, timbre: 'palma', tipoGolpe: 'palma',
+        id: 'palma', label: 'Palma', short: '◆',
+        // Hoja Nomenclatura: rombo negro (La Meta Toque 2, Toque de Marcha, Iyesá III).
+        cabeza: 'diamond', articulacion: null, pos: 4, gain: 0.9, timbre: 'palma', tipoGolpe: 'palma',
     },
     dedo: {
         id: 'dedo', label: 'Dedos', short: '✕',
@@ -163,9 +164,10 @@ export function nombreArchivoSample(instId, strokeId) {
 
 /**
  * Agrupa instrumentos en sistemas de pentagrama.
- * Redoblante y Repique comparten un único pentagrama de 5 líneas.
+ * Redoblante y Repique comparten un único pentagrama de 5 líneas, salvo
+ * `opts.separarAgudos` (cuando en esa parte no tocan lo mismo).
  */
-export function sistemasVisuales(insts, agrupar = null) {
+export function sistemasVisuales(insts, agrupar = null, opts = {}) {
     const byId = {};
     insts.forEach((x) => { byId[x.def.id] = x; });
     const seen = new Set();
@@ -197,7 +199,13 @@ export function sistemasVisuales(insts, agrupar = null) {
     push(['surdo_grave']);
     push(['surdo_agudo']);
     push(['surdo_medio']);
-    push(['redoblante', 'repique'], 'Redoblante y Repique');
+    // El cuadernillo junta «Redoblante y Repique» sólo cuando tocan lo mismo.
+    if (opts.separarAgudos) {
+        push(['redoblante']);
+        push(['repique']);
+    } else {
+        push(['redoblante', 'repique'], 'Redoblante y Repique');
+    }
     push(['timbal']);
     push(['agogo']);
     push(['palmas']);
@@ -358,10 +366,20 @@ export function cabezaVexflow(pitch, golpeId) {
     const g = GOLPES[golpeId] || GOLPES.nota;
     switch (g.cabeza) {
         case 'x': return `${pitch}/x2`;
-        case 'circled': return `${pitch}/x3`;
-        case 'triangle': return `${pitch}/tu`;
-        case 'diamond': return `${pitch}/d`;
+        // Negros siempre: en el cuadernillo el triángulo y el rombo no cambian con la figura.
+        case 'triangle': return `${pitch}/t2`;
+        case 'diamond': return `${pitch}/d2`;
         case 'slash': return `${pitch}/s`;
         default: return pitch;
     }
+}
+
+/**
+ * Glifo que pisa al de la figura. El slap es cabeza hueca aunque sea semicorchea,
+ * y VexFlow no tiene un código de cabeza para eso.
+ * @param {string} golpeId
+ * @returns {string|null}
+ */
+export function glifoDeCabeza(golpeId) {
+    return (GOLPES[golpeId] || GOLPES.nota).cabeza === 'hollow' ? 'noteheadHalf' : null;
 }

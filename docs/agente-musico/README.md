@@ -7,6 +7,7 @@ Base estructurada del **Cuadernillo de Toques** (PDF, 61 páginas).
 | [FUENTES.md](FUENTES.md) | Jerarquía y ficha del PDF |
 | [TOQUES_PDF_INDEX.md](TOQUES_PDF_INDEX.md) | 61 páginas |
 | [TOQUES.md](TOQUES.md) | Inventario JSON / MIDI / MusicXML |
+| [ESCRITURA.md](ESCRITURA.md) | Cómo escribe la escuela: pentagrama, golpes, pendientes |
 | [INSTRUMENTOS.md](INSTRUMENTOS.md) | Nombres PDF ↔ ids |
 | [MIDI_MAPPING.md](MIDI_MAPPING.md) | GM2 convención (no está en el PDF) |
 | [AUDIO_BACKLOG.md](AUDIO_BACKLOG.md) | Samples faltantes |

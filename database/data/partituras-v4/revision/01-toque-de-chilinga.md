@@ -19,20 +19,22 @@ El PDF imprime la llamada inicial en unísono `Todos` con semis densas. En panta
 
 ## TOQUE (×8)
 
+Retranscripto del PDF ampliado el 2026-10-13.
+
 | Instrumento | Figuras |
 |---|---|
 | Surdo Grave | negras 1 y 3 |
 | Surdo Agudo | negras 2 y 4 |
-| Surdo Medio | (2 corcheas + negra) × 2 |
-| Redoblante / Repique | 16 semis, acento en 1ª de cada tiempo |
-| Timbal | (sil. negra + 2 corcheas) × 2 |
+| Surdo Medio | corchea + 2 semis · negra · 2 corcheas · negra |
+| Redoblante / Repique | (corchea + 2 semis) × 4, acento en la corchea y en la última semi |
+| Timbal | (sil. corchea + 2 semis slap · sil. corchea + 2 semis abiertas) × 2 |
 
 ## Render
 
 - Compás **C**
 - Clave de percusión
-- Cabeza en la **línea del medio** (`b/4`)
-- **Plicas abajo** (Equivalencias), también en Agudos / Redo+Repi
+- Cabeza en el **2º espacio** (`a/4`)
+- **Plicas arriba** (cuadernillo), también en Agudos / Redo+Repi
 - Barras por negra (2 corcheas / 4 semis)
 - Llamada: `section.agrupar = agudos-graves`
 

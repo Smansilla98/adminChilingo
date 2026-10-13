@@ -185,6 +185,8 @@ function parsearCompas(mEl, instId, divisions, voiceFilter) {
         if (!rest) {
             const cabeza = (note.querySelector('notehead')?.textContent || 'normal').trim().toLowerCase();
             stroke = golpeDesdeCabeza(instId, cabeza);
+            // Cabeza hueca en una figura corta = slap del timbal (Nomenclatura).
+            if (instId === 'timbal' && note.querySelector('notehead')?.getAttribute('filled') === 'no') stroke = 'slap';
             if (note.querySelector('accent, strong-accent')) stroke = instId === 'timbal' ? 'abierto' : 'acentuado';
             else if (note.querySelector('tenuto')) stroke = instId === 'timbal' ? 'presionado' : 'tapado';
             if (note.querySelector('notehead')?.getAttribute('parentheses') === 'yes') stroke = 'fantasma';

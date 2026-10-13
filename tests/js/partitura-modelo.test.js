@@ -12,6 +12,7 @@ import {
 import {
     MAPA_SAMPLES, nombreArchivoSample, sistemasVisuales, instrumentoPorId,
     GOLPES_POR_INSTRUMENTO, ARTICULACION_SAMPLE, vocesDeUnisono, midiDeGolpe,
+    GOLPES, cabezaVexflow, glifoDeCabeza,
 } from '../../resources/js/partitura/instruments.js';
 import { BancoSamples, resolverGolpe, golpesPaletaAudibles } from '../../resources/js/partitura/samples.js';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -113,12 +114,28 @@ describe('golpes por instrumento (editor)', () => {
     });
 });
 
+describe('Nomenclatura del cuadernillo (cabezas)', () => {
+    it('slap hueco, palma rombo, agudo triángulo, chapa y dedo en X', () => {
+        assert.equal(GOLPES.slap.cabeza, 'hollow');
+        assert.equal(glifoDeCabeza('slap'), 'noteheadHalf');
+        assert.equal(glifoDeCabeza('abierto'), null);
+        assert.equal(cabezaVexflow('a/4', 'abierto'), 'a/4');
+        assert.equal(cabezaVexflow('a/4', 'palma'), 'a/4/d2');
+        assert.equal(cabezaVexflow('a/4', 'agudo'), 'a/4/t2');
+        assert.equal(cabezaVexflow('a/4', 'chapa'), 'a/4/x2');
+        assert.equal(cabezaVexflow('a/4', 'dedo'), 'a/4/x2');
+    });
+    it('tapado y presionado llevan el guión debajo, igual que el acento', () => {
+        ['tapado', 'presionado', 'acentuado'].forEach((g) => assert.equal(GOLPES[g].pos, 4, g));
+    });
+});
+
 describe('Equivalencias (grabado)', () => {
-    it('cabeza en la línea del medio y plica abajo', () => {
+    it('cabeza en el segundo espacio y plica arriba', () => {
         ['todos', 'surdo_grave', 'surdo_agudo', 'surdo_medio', 'redoblante', 'repique', 'timbal'].forEach((id) => {
             const def = instrumentoPorId(id);
-            assert.equal(def.pitch, 'b/4', id);
-            assert.equal(def.stem, -1, id);
+            assert.equal(def.pitch, 'a/4', id);
+            assert.equal(def.stem, 1, id);
         });
     });
 });

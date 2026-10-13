@@ -1,255 +1,160 @@
 """La Meta — Cuadernillo págs. 40-46 (PDF págs. 43-49).
 
-Transcripción literal donde se lee. Sextillos/llamadas densas del escaneo
-→ texto=None (no inventar xx-x).
+Cruz en surdos, redoblante y repique = golpe de chapa. En el timbal: hueca =
+slap, rombo = palma. Los seisillos de las introducciones y el solo de repique
+(triángulos = golpe agudo) son lectura aproximada del escaneo.
 """
-from dsl import INSTS, VACIO, compas, score, seccion
+from cuad import hoja, surdos
+from dsl import INSTS, score, seccion
 
 TITULO = 'La Meta'
 MATCH = {'año': 4, 'orden': 2, 'nombre': 'La Meta'}
 PDF_PAGES = [43, 44, 45, 46, 47, 48, 49]
 
-V = VACIO
+c = hoja(INSTS)
 
 
-def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, **kw):
-    return compas({'surdo_grave': sg, 'surdo_agudo': sa, 'surdo_medio': sm,
-                   'redoblante': re, 'repique': rp, 'timbal': ti}, **kw)
+def ga(pat):
+    return {'surdo_grave': pat, 'surdo_agudo': pat}
 
 
-# ------------------------------------------------------------- Introducción 1
-MARCHA = '--t=--t=--t=--t='
+OFF = '--c=--c=--c=--c='            # cruces a contratiempo
+OFF6 = '--c=--c=--c=6(--xx--)'
 
-introduccion_1 = [
-    c(ti='6(x-x-xo)6(x-x-xo)6(xxxx-x)6(o-x-x-)',
-      sg=MARCHA, sa=MARCHA, sm=MARCHA, re=MARCHA, rp=MARCHA,
-      texto='Introducción 1', dyn='mf'),
-    c(ti='6(x-xx-x)6(x-x-xo)6(xxxxxx)6(x-x-x-)',
-      sg=MARCHA, sa=MARCHA, sm=MARCHA, re=MARCHA, rp=MARCHA),
+intro1 = [
+    c(timbal='6(o-oo-o)6(s--o-s)6(oooo-o)6(s--o--)', **surdos(OFF), redoblante=OFF, repique=OFF,
+      rev='timbal: seisillos (figuras y cabezas)'),
 ]
 
-# --------------------------------------------------- Llamada (sobre el timbal)
-llamada_timbal = [
-    c(rp='6(-x-x-x)6(-xx-xx)6(xx-xxx)6(x-xx-x)',
-      sm='--x---x-----6(xxx-x-)',
-      sg=MARCHA, sa=MARCHA,
-      texto='Llamada (sobre timbal)', dyn='f'),
-    c(rp='6(-x-x-x)6(x-xx-x)6(xxx-xx)6(x-x---)',
-      sm='--x-6(xxx---)--x---x-',
-      sg=MARCHA, sa=MARCHA),
-    c(rp='--x---x---x---x-', sm='--x---x---x---x-',
-      sg='--x---x---x---x-', sa='--x---x---x---x-'),
-    c(rp='--x---x---x---x-', sm='--x---x---x---x-',
-      sg='x---x---x---x---', sa='x---x---x---x---'),
+llamada1 = [
+    c(repique='6(--x---)6(-x--xx)6(x-x--x)6(--xx--)', surdo_medio=OFF, **ga(OFF),
+      rev='repique: seisillos; orden de las líneas de la llamada'),
+    c(repique='6(--x---)6(-x--xx)6(x-x--x)----', surdo_medio=OFF6, **ga(OFF)),
+    c(repique=OFF, surdo_medio=OFF6, **ga(OFF)),
+    c(repique=OFF, surdo_medio=OFF, **ga('x===--c=--c=--c=')),
 ]
 
-# ------------------------------------------------------------------ Corte
-corte_1 = [
-    c(sg='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
-      sa='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
-      sm='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
-      re='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
-      rp='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
-      ti='6(x-oxox)6(xoxox-)6(x-oxox)6(xoxox-)',
-      texto='Corte', dyn='f'),
-    c(sg='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
-      sa='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
-      sm='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
-      re='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
-      rp='6(xxxxxx)6(xxxxxx)6(xxxxxx)x---',
-      ti='6(x-oxox)6(xoxox-)6(oxoxox)x---'),
+S6 = '6(x-x-xx)'
+T6 = '6(s-s-oo)'
+corte1 = [
+    c(**surdos(S6 * 4), redoblante=S6 * 4, repique=S6 * 4, timbal=T6 * 4),
+    c(**surdos(S6 * 3 + 'x==='), redoblante=S6 * 3 + 'x===', repique=S6 * 3 + 'x===',
+      timbal=T6 * 2 + '6(s-ss-s)s===', rev='timbal: último seisillo'),
 ]
 
-# ------------------------------------------------------------- Introducción 2
-introduccion_2 = [
-    c(ti='6(xx-xx-)6(xx-xx-)6(xx-xx-)6(xx-xx-)',
-      re='-x--x-x--x--x-x-',
-      sg='-t-t-t-t-t-t-t-t', sm='-t-t-t-t-t-t-t-t',
-      sa='-x--x---x--x---x', rp='-x--x-x--x--x-x-',
-      texto='Introducción 2', dyn='mf'),
-    c(ti='6(xx-xx-)6(xx-xx-)6(xx-xx-)6(xx-xx-)',
-      re='xxxx>xxxxxxx>xxx',
-      sg='-t-t-t-t-t-t-t-t', sm='-t-t-t-t-t-t-t-t',
-      sa='-x--x---x--x---x', rp='-x--x-x--x--x-x-'),
-    c(ti='----x=x-x=--x=x-',
-      re='xxxx>xxxxxxx>>>>',
-      sg='x==-x=--------x=', sm='x==-x=--------x=',
-      sa='x=--x---x---x---', rp='x=--x---x---x=x-'),
-    c(ti='--x=x---x=x-x=--',
-      re='xxxx>xxxxxxx>>>>',
-      sg='x==-x=--x=------', sm='x==-x=--x=------',
-      sa='x=--x---x---x---', rp='x=--x---x---x=x-'),
+GM = 'xx==--xx--------'
+intro2 = [
+    c(timbal='6(o-os-s)' * 4, redoblante=OFF, surdo_grave=OFF, surdo_medio=OFF, surdo_agudo=OFF,
+      repique=OFF, rev='timbal: seisillos (figuras y cabezas)'),
+    c(timbal='6(o-os-s)' * 4, redoblante='--c=--c=--x=x=x=', surdo_grave=OFF, surdo_medio=OFF,
+      surdo_agudo=OFF, repique=OFF),
+    c(timbal='----------ss--oo', redoblante='xxx>xxxxxxx>xxxx', surdo_grave=GM, surdo_medio=GM,
+      surdo_agudo='----x===----x===', repique='----x===----x===', rev='acentos del redoblante'),
+    c(timbal='--ss--oo--ss--oo', redoblante='xxx>xxxxx>>>xxxx', surdo_grave=GM, surdo_medio=GM,
+      surdo_agudo='----x===----x===', repique='----x===--x=x=x='),
 ]
 
-corte_2 = [
-    c(ti='6(x-xoxo)6(x-xoxo)6(xoxox-)6(x-xox-)',
-      rp='-x=-x=--x=-x-x--',
-      texto='Corte', dyn='f'),
-    c(ti='6(x-xoxo)6(xoxox-)6(x-xoxo)6(xoxox-)',
-      rp='-x=-x=--x-x-x=x-'),
+corte2 = [
+    c(timbal='6(o-o---)6(s----s)6(o-so--)6(s----s)', repique='-x=xx==x-xx=-x=x',
+      rev='timbal: seisillos (figuras y cabezas)'),
+    c(timbal='6(o-o---)6(s----s)6(o-so--)6(s---ss)', repique='x==x-xx=--x=x=x='),
 ]
 
-# -------------------------------------------------------- Llamada (p → f)
-llamada = [
-    c(sg='3(xxx)3(xxx)3(xxx)3(xxx)',
-      sa='3(xxx)3(xxx)3(xxx)3(xxx)',
-      sm='3(xxx)3(xxx)3(xxx)3(xxx)',
-      texto='Llamada — cresc. p → f', dyn='p'),
-    c(sg='x=x---x=--------', sa='x=x---x=--------',
-      sm='x=x---x=--------', dyn='f'),
-    c(rp='--x=--x---x=----', ti='--x=--x---x-x=--',
-      re='--x=--x---x-x=--', texto='Repique, timbal y redoblante'),
-    c(ti='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
-      re='6(tttttt)6(tttttt)6(tttttt)6(tttttt)', dyn='f'),
+GOLPE = '--x=----x===--x='
+llamada2 = [
+    c(dyn='p', **surdos('3(>xx)3(>xx)3(>xx)3(>xx)'), rev='surdos p < f (regulador)'),
+    c(dyn='f', **surdos('x===x=x=--x=x==='), repique=GOLPE, timbal='--s=----s===--s=', redoblante=GOLPE),
+    c(timbal='6(ssssss)6(oooooo)6(ssssss)6(oooooo)', redoblante='6(cccccc)6(xxxxxx)6(cccccc)6(xxxxxx)'),
 ]
 
-# ------------------------------------------------------------------- Toque 1
-T1_SGA = 'tttx----t===t==='
-T1_SM = 'tttx----t=x=t==='
-T1_RE = '>>>>>xxx>xxx>xxx'
-T1_TI = '--x=--xx--x=--xx'
-T1_RP = 'x=======x===x=--'
-
-
-def toque_1(texto='Toque 1'):
-    return [
-        c(sg=T1_SGA, sa=T1_SGA, sm=T1_SM, re=T1_RE, ti=T1_TI, rp=T1_RP,
-          repeat_begin=True, texto=texto, dyn='mf'),
-        c(sg='--------tt-t--x-', sa='--------tt-t--x-',
-          sm='--------tt-t--x-', re='>>>>xxxx>xxx>xxx',
-          ti='-x---x=--x-x-x--', rp='x-------x-x-x=--',
-          repeat_end=True),
-    ]
-
-
-# ------------------------------------------ Variación (cada 2 vueltas)
-variacion_1 = [
-    c(ti='-f-x----x=x---x-',
-      sg='----tt-t--x-----', sa='----tt-t--x-----',
-      sm='----tttt--x-----',
-      re='tttt>xxx>xxxtttt', rp='--x---x=--x---x-',
-      repeat_begin=True, texto='Variación (cada 2 vueltas)', dyn='mf'),
-    c(ti='---x----x=--x-x-',
-      sg='----tt-t--x-----', sa='----tt-t--x-----',
-      sm='----tttt--x=----',
-      re='tttt>xxx>xxx>xxx', rp='--x---x=--x---x-',
-      repeat_end=True),
+# --- Toque 1
+G1 = 'cccx----'
+M1 = 'cccc----'
+R1 = 'ccc>xxx>'
+DOS = 'surdo medio: negra y cruz a la vez'
+toque1 = [
+    c(**ga(G1 + 'c===c==='), surdo_medio=M1 + 'x=x=c===', redoblante='ccc>xx>xxx>x>xxx',
+      timbal='--o=-ss=--o=-sss', repique='x===----x===-x==', rev=DOS + ' (3er tiempo)'),
 ]
 
-# --------------------------------------------------------- Llamada intermedia
-llamada_intermedia = [
-    c(sg='tttx----tttx----', sa='tttx----tttx----',
-      sm='ttttxxxxttttxxxx', re='tttt----tttt----',
-      rp='tttt----tttt----',
-      texto='Llamada intermedia', dyn='f'),
-    c(sg='tttt----3(xxx)----', sa='tttt----3(xxx)----',
-      sm='tttt--x-3(xxx)----', re='tttt----3(xxx)----',
-      rp='tttt----3(xxx)----'),
-    c(sg='3(xxx)----tt-t----', sa='3(xxx)----tt-t----',
-      sm='3(xxx)----tt-t----', re='3(xxx)----x---x---',
-      rp='3(xxx)----tt-t----',
-      ti='--x-x=--x=--x=x-'),
-    c(ti='-x-x=---x=x-x=x-'),
+variacion1 = [
+    c(timbal='-------------oo=', texto='Entrada del timbal'),
+    c(**ga(G1 * 2), surdo_medio=M1 * 2, redoblante=R1 * 2, timbal='-----oo=-----oo=',
+      repique='x===-x==x===-x=='),
+    c(**ga(G1 + 'c===c==='), surdo_medio=M1 + 'x=x=c===', redoblante=R1 + 'xx>x>xxx',
+      timbal='-----oo=--o=-sss', repique='x===----x===-x==', rev=DOS + ' (3er tiempo)'),
 ]
 
-# ------------------------------------------------------------------ Variación
-variacion_2 = [
-    c(sg='tt-t----x-------', sa='tt-t----x-------',
-      sm='tt-t----x-------',
-      re='>>>>xxxx>xxx>xxx', ti='--x=--x---x=----',
-      rp='x-----x=--x-----',
-      repeat_begin=True, texto='Variación', dyn='mf'),
-    c(sg='tt-t--------x---', sa='tt-t--------x---',
-      sm='tt-t--------x---',
-      re='>>>>xxxx>xxx>xxx', ti='--x=--x---x=----',
-      rp='x-----x=--x-----', repeat_end=True),
+TRES_A, TRES_B = '3:8(xcx)', '3:8(cxc)'
+intermedia = [
+    c(**ga(G1 * 2), surdo_medio='ccccxxxx' * 2, redoblante=G1 * 2, repique=M1 * 2),
+    c(**ga(G1 + TRES_A), surdo_medio=G1 + TRES_A, redoblante='ccc-----3:8(-x-)',
+      repique='ccc-----3:8(-x-)', rev='tresillos de negra'),
+    c(**ga(TRES_B + 'c=x=----'), surdo_medio=TRES_B + 'c=x=----', redoblante='3:8(x-x)x===----',
+      repique='3:8(x-x)x===----', timbal='-----ss=--o=-sss'),
+    c(redoblante='----------x=x===', timbal='--o=-ss=--o=-sss'),
 ]
 
-# ------------------------------------------------------------------- Toque 2
-T2_SG = '----x=------x=--'
-T2_SA = '----x=--x=--x=--'
-T2_SMRP = 'tt-t----x-------'
-T2_RE = '>>>>xxxx>>>>xxxx'
-T2_TI = '--o=x-x-x---o=x-'
+variacion2 = [
+    c(**ga(G1 * 2), surdo_medio=M1 * 2, redoblante=R1 * 2, timbal='-----oo=-----oo=',
+      repique='x===-x==x===-x=='),
+]
 
+# --- Toque 2
+TI2 = 'p=s=p=ppp=s=p=pp'
+toque2 = [
+    c(surdo_grave='x===t===x===t===', surdo_agudo='t===x===t===x===', surdo_medio=M1 * 2,
+      repique=M1 * 2, redoblante=R1 * 2, timbal=TI2),
+]
 
-def toque_2(texto='Toque 2'):
-    return [
-        c(sg=T2_SG, sa=T2_SA, sm=T2_SMRP, rp=T2_SMRP, re=T2_RE, ti=T2_TI,
-          repeat_begin=True, texto=texto, dyn='mf'),
-        c(sg='----x=----------', sa='----x=--x=------',
-          sm='tt-t----x-------', rp='tt-t----x-------',
-          re='>>>>xxxx>xxx>xxx', ti='--o=x-x-x-x-x=--',
-          repeat_end=True),
-    ]
-
-
-# ---------------------------------------------------------------- Solo repique
+# --- Solo de repique
+B = dict(surdo_medio=M1 * 2, redoblante=R1 * 2, timbal=TI2)
+GA_X = 'cccx------------'
+GA_Y = '--x=--x=-x==----'
+REV_SOLO = 'solo de repique: lectura aproximada'
 solo = [
-    c(rp='-x-x6(xxx-xx)6(x-xxxx)x---',
-      sg='tttt----------x-', sm='tttt-x--tttt-x--',
-      re='6(>xxxxx)6(>xxxxx)6(>xxxxx)6(>xxxxx)',
-      repeat_begin=True, texto='Solo de repique', dyn='f'),
-    c(rp='6(-xxx-x)6(xxx-xx)6(x-xxxx)x---',
-      sg='--------tttt----', sm='tttt-x--tttt-x--',
-      re='6(>xxxxx)6(>xxxxx)6(>xxxxx)6(>xxxxx)'),
-    c(rp='x-x-x-x-6(xx-xxx)x-x-',
-      sm='tttt-x--tttt-x--',
-      re='6(>xxxxx)6(>xxxxx)6(>xxxxx)6(>xxxxx)'),
-    c(rp='6(xxxxxx)6(x-xxxx)6(xxxxxx)x---',
-      sm='tttt-x----------',
-      re='6(>xxxxx)6(>xxxxx)6(>xxxxx)6(>xxxxx)',
-      repeat_end=True),
+    c(repique='--------------x=', texto='Entrada del repique'),
+    c(rb=True, repique='a===--a=--aa-aaa', **ga(GA_X), rev=REV_SOLO, **B),
+    c(repique='a=aaaaa---x=--x=', **B),
+    c(repique='a===--a=--aa-aaa', **ga(GA_X), **B),
+    c(re=True, repique='a=aaaaa-------x=', **B),
+    c(repique='a=x=a=x=aa-a----', **ga(GA_Y), rev=REV_SOLO),
+    c(repique='aa-a-aa=aa-a-aa=', **ga(GA_X), **B),
+    c(repique='a=x=a=x=aa-a----', **ga(GA_Y)),
+    c(repique='aa-a-aa=aa-a-aa=', **ga(GA_X), rev=REV_SOLO, **B),
+    c(repique='--aaa=a=aaa=a=aa'),
+    c(repique='a=a=aa-a-a=a-aaa'),
 ]
 
-# ----------------------------------------------------------------- Solo timbal
-solo_timbal = [
-    c(ti='6(xoxoxo)6(xoxoxo)6(xoxoxo)6(xoxoxo)',
-      repeat_begin=True, texto='Solo de timbal', dyn='f'),
-    c(ti='6(xoxoxo)6(xoxoxo)6(xoxoxo)6(xoxox-)'),
-    c(ti='x-x-6(xoxoxo)x-x-x---', repeat_end=True),
+SUBE = 'x=x=x=x='
+variacion3 = [
+    c(**ga(G1 * 2), surdo_medio=M1 + 'x==xc===', redoblante=R1 * 2, repique='x===============',
+      rev=DOS + ' (3er tiempo)'),
+    c(**ga(G1 + SUBE), surdo_medio=M1 + SUBE, redoblante=R1 + '>x>x>x>x',
+      rev='surdos y redoblante p < f en los tiempos 3 y 4'),
 ]
 
-# ------------------------------------------------------- Variación (p → f)
-variacion_3 = [
-    c(sg='xx-x----tttt--x-', sa='xx-x----tttt--x-',
-      sm='xx-x----t=-t--x-',
-      re='tttt>xxx>xxx>xxx', rp='o===============',
-      repeat_begin=True, texto='Variación — cresc. p → f', dyn='p'),
-    c(sg='tttt----x-x-x=--', sa='tttt----x-x-x=--',
-      sm='tttt----x-x-x=--',
-      re='>xxx>xxx>xxx>xxx', rp='----------------',
-      repeat_end=True, dyn='f'),
-]
-
-# ----------------------------------------------------------------- Base final
 base_final = [
-    c(sg='-x-x----tttt--x-', sa='-x-x----tttt--x-',
-      sm='-x-x--x-t=-t--x-',
-      re='tt-t--x->xxx>xxx', rp='-x-x----x---x=--',
-      ti='-x-x----oo-x-x=-',
-      repeat_begin=True, texto='Base final — cresc. p → f', dyn='p'),
-    c(sg='tttt----x-x-x=--', sa='tttt----x-x-x=--',
-      sm='tttt----x-x-x=--',
-      re='>xxx>xxx>xxx>xxx', rp='x-----x=--x-x=--',
-      ti='oo-x-x--oo-x-x=-',
-      repeat_end=True, dyn='f'),
+    c(**ga('-t=x----cccx----'), surdo_medio='-t=x----x==x----', redoblante='-x=x----' + R1,
+      timbal='-s=s----ssso-oo=', repique='-x=x----x===-x==', rev=DOS + ' (3er tiempo)'),
+    c(**ga(G1 + SUBE), surdo_medio=M1 + SUBE, redoblante=R1 + '>x>x>x>x',
+      timbal='ssso-oo=ssso-oo=', repique='x===-x==x===-x==',
+      rev='surdos y redoblante p < f en los tiempos 3 y 4'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
-    seccion('Introducción 1', introduccion_1, 1),
-    seccion('Llamada (sobre timbal)', llamada_timbal, 1),
-    seccion('Corte', corte_1, 1),
-    seccion('Introducción 2', introduccion_2, 1),
-    seccion('Corte 2', corte_2, 1),
-    seccion('Llamada', llamada, 1),
-    seccion('Toque 1', toque_1(), 4),
-    seccion('Variación (cada 2 vueltas)', variacion_1, 2),
-    seccion('Llamada intermedia', llamada_intermedia, 1),
-    seccion('Variación', variacion_2, 2),
-    seccion('Toque 2', toque_2(), 4),
-    seccion('Solo de repique', solo, 2),
-    seccion('Solo de timbal', solo_timbal, 2),
-    seccion('Variación final', variacion_3, 2),
-    seccion('Base final', base_final, 4),
+    seccion('Introducción 1', intro1, 1),
+    seccion('Llamada (sobre timbal)', llamada1, 1),
+    seccion('Corte', corte1, 1),
+    seccion('Introducción 2', intro2, 1),
+    seccion('Corte', corte2, 1),
+    seccion('Llamada', llamada2, 1),
+    seccion('Toque 1', toque1, 1),
+    seccion('Variación (cada 2 vueltas)', variacion1, 1),
+    seccion('Llamada intermedia', intermedia, 1),
+    seccion('Variación', variacion2, 1),
+    seccion('Toque 2', toque2, 1),
+    seccion('Solo', solo, 1),
+    seccion('Variación', variacion3, 1),
+    seccion('Base final', base_final, 1),
 ])

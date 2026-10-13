@@ -1,176 +1,124 @@
 """Muñequitos I — Cuadernillo págs. 50-54 (PDF págs. 53-57).
 
-Surdo Base = surdo_grave · Surdo Melodía = surdo_agudo.
-Densidades (tresillos/fusas) → revisar; sin inventar xx-x.
+«Surdo Base» = surdo grave, «Surdo Melodía» = surdo agudo. En el redoblante la
+cruz es golpe de chapa. El cuadernillo no deja claro cómo se superponen las
+líneas de la introducción ni de la llamada intermedia: quedan marcadas.
 """
-from dsl import compas, score, seccion
+from cuad import hoja, surdos
+from dsl import INSTS, score, seccion
 
 TITULO = 'Muñequitos I'
 MATCH = {'año': 4, 'orden': 5, 'nombre': 'Muñequitos I'}
 PDF_PAGES = [53, 54, 55, 56, 57]
 
-INSTS = ['surdo_grave', 'surdo_agudo', 'redoblante', 'repique', 'timbal']
-V = '----------------'
+c = hoja(INSTS)
 
+CORCHEAS = 'x=x=x=x=x=x=x=x='
+MORD = 'f=x=x=x=x=x=x=x='          # mordente + 8 corcheas
+CIERRE = 'x==x------------'
+RE = 'c=>>' * 4
+TI = 'o==so=oos==ss=oo'
+RP = '--xx' * 4
+REDONDA = 'x==============='
+ORDEN = 'cómo se superponen las líneas'
 
-def c(sb=V, sme=V, re=V, rp=V, ti=V, **kw):
-    return compas({'surdo_grave': sb, 'surdo_agudo': sme,
-                   'redoblante': re, 'repique': rp, 'timbal': ti}, **kw)
-
-
-# ------------------------------------------------------------- Introducción
-introduccion = [
-    c(rp='xxxxxxxxxxxxxxxx',
-      texto='Introducción — repique cresc. p → f',
-      dyn='p'),
-    c(ti='------x-o=o=----', rp='xxxxxxxxxxxxxxxx', dyn='f'),
-    c(ti='-x=-x-xxxx-xxxx-', rp='xxxxxxxxxxxxxxxx', dyn='p'),
-    c(ti='x=x=xxxx-x=xxxx-', rp='xxxxxxxxxxxx----'),
+intro = [
+    c(timbal='-----------ss===', rev='introducción: ' + ORDEN),
+    c(timbal='---so=oos==ss=oo'),
+    c(repique=CORCHEAS, dyn='p', rev='repique p < f > p en 4 compases'),
+    c(repique=CORCHEAS), c(repique=CORCHEAS), c(repique=CORCHEAS),
+    c(rb=True, repique=MORD),
+    c(re=True, repique=CIERRE),
+    c(repique='x==x' * 4), c(repique='x==x' * 4),
+    c(repique='x===----3(-xx)3(xxx)'),
+    c(**surdos(REDONDA), timbal=TI, redoblante=RE),
 ]
 
 llamada_intro = [
-    c(rp='xxxxxxxxxxxxxxxx', repeat_begin=True,
-      texto='Llamada de introducción', dyn='f'),
-    c(rp='xxxxxxxxxxxxxxxx'),
-    c(rp='xxxxxxxxxxxx----'),
-    c(rp='----3(-xx)3(xxx)3(xxx)', repeat_end=True),
+    c(repique=REDONDA), c(repique=REDONDA), c(repique='x=======x======='),
+    c(repique='x===x===3(xxx)3(xxx)'),
 ]
 
-acompanamiento_intro = [
-    c(sb='o===============', sme='o===============',
-      ti='x==-----o=------', re='c=-c-x--c=-x-x--',
-      texto='Surdos, timbal y redoblante sobre la introducción', dyn='mf'),
-    c(sb='o===============', sme='o===============',
-      ti='x-x-----o=--x-x-', re='c=-c-x--c=-x-x--'),
-]
-
-# ------------------------------------------------------------------ Toque 1
-# Base/melodía: figuras de escuela (corcheas / grupos); HI densos → revisar
-T1_SB = '--x=------------'
-T1_SME = '--x=xxxxxxxxxxxx'
-T1_RE = 'x->>x->>x->>x->>'
-T1_TI = 'o==xo==xo==xo==x'
-T1_RP = '--xx--xx--xx--xx'
+# --- Toques
+B1 = '--x=------------'
+B3 = '--x=------x=----'
+B4 = '--x=----x==x--x='
+M1 = '--x=--xxxxxxxxxx'
+BASE_1 = [B1, B1, B3, B4]
+MELO_1 = [M1, M1, B3, B4]
+BASE_2 = [B1, B1, B3, B1]
+MELO_2 = [M1, M1, B3, M1]
+TRES = '3(o-s)3(ooo)3(s-s)3(soo)'
+TI_2 = [TI, TRES, '-o=ss=ss-o=ss=ss', '-o=ss=ss-o=ss=ss']
 
 
-def toque_1(texto='Toque 1 (x4)'):
-    return [
-        c(sb=T1_SB, sme=T1_SME, re=T1_RE, ti=T1_TI, rp=T1_RP,
-          repeat_begin=True,
-          texto=texto + '', dyn='mf'),
-        c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
-          re=T1_RE, ti=T1_TI, rp=T1_RP),
-        c(sb='-x--x---x---x=--', sme='xxxx----xxxxxx--',
-          re=T1_RE, ti=T1_TI, rp=T1_RP),
-        c(sb='-x--x-----x=x=--', sme='x=x=----x=x=x=--',
-          re=T1_RE, ti=T1_TI, rp=T1_RP,
-          repeat_end=True),
-    ]
+def toque(base, melo, timbal, rev=None):
+    return [c(surdo_grave=base[i], surdo_agudo=melo[i], redoblante=RE, timbal=timbal[i],
+              repique=RP, rev=rev if i == 1 else None) for i in range(4)]
 
+
+toque1 = toque(BASE_1, MELO_1, [TI] * 4)
 
 corte = [
-    c(rp='x=x=x=--x=x=x=--',
-      texto='Corte — repique', dyn='f'),
-    c(rp='xxxx-x=-x=x=x=--'),
+    c(repique='f=x=x=x=x==x-xxx', rev='repique, 4º tiempo (¿fusas?)'),
+    c(repique='x=x=x==x--------'),
 ]
 
-# ------------------------------------------------------------------ Toque 2
-T2_RE = 'x->>x->>x->>x->>'
-T2_RP = '--xx--xx--xx--xx'
+REV_TI = 'timbal: tresillos y cabezas'
+toque2 = toque(BASE_2, MELO_2, TI_2, rev=REV_TI)
+toque2_var = [c(timbal=t, rev=REV_TI if i == 1 else None) for i, t in enumerate([TI, TRES, TRES, TRES])]
 
-
-def toque_2(texto='Toque 2 (x4)'):
-    return [
-        c(sb=T1_SB, sme=T1_SME, re=T2_RE, rp=T2_RP,
-          ti='3(xoo)3(xoo)3(xoo)3(xoo)',
-          repeat_begin=True,
-          texto=texto + '', dyn='mf'),
-        c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
-          re=T2_RE, rp=T2_RP,
-          ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
-        c(sb='-x--x---x---x=--', sme='xxxx----xxxxxx--',
-          re=T2_RE, rp=T2_RP,
-          ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
-        c(sb='-x--x-----x=x=--', sme='x=x=----x=x=x=--',
-          re=T2_RE, rp=T2_RP,
-          ti='3(xoo)3(oxo)3(xoo)3(xxo)',
-          texto='Variación de timbal en la 4ta vuelta',
-          repeat_end=True),
-    ]
-
-
-# ---------------------------------------------------------------- Variación
+SEMIS = 'x' * 16
 variacion = [
-    c(sme='xxxxxx--xxxxxx--', re=T2_RE,
-      ti='x=--o=--x=--o=--',
-      repeat_begin=True,
-      texto='Variación', dyn='mf'),
-    c(sme='xxxxxx--xxxx----', re=T2_RE,
-      ti='x=--o=--x=--o=--', repeat_end=True),
+    c(surdo_agudo=SEMIS, redoblante=RE, timbal='oo==' * 4),
+    c(surdo_agudo=SEMIS, redoblante=RE, timbal='oo==' * 4),
 ]
 
-# -------------------------------------------------------- Llamada intermedia
-llamada_intermedia = [
-    c(rp='xxxxxxxxxxxx----',
-      texto='Llamada intermedia', dyn='f'),
-    c(rp='xxxxxxxxxxxx----'),
-    c(rp='o==============='),
-    c(rp='x=------x=------'),
-    c(rp='x=------x=x=x=--'),
-    c(sme='xxxxxxxxxxxxxxxx', sb='----------------',
-      texto='Surdo melodía en fusas / surdo base en silencio', dyn='f'),
-    c(sme='xxxxxxxxxxxxxxxx'),
-    c(sme='xxxxxxxx----x=x=', sb='------------x=x='),
-    c(re=T2_RE, ti=T1_TI,
-      texto='Redoblante y timbal sobre la llamada'),
-    c(re=T2_RE, ti=T1_TI),
+TO = 'oo==' * 4
+INTERMEDIA = [
+    # repique, surdo melodía, surdo base, redoblante, timbal
+    (MORD, SEMIS, None, RE, TO),
+    (CIERRE, SEMIS, None, RE, 'oo==oo==ss==ss=='),
+    (MORD, SEMIS, None, RE, TO),
+    (CIERRE, SEMIS, None, RE, 'oo==oo==s=s=ss=='),
+    (REDONDA, SEMIS, None, RE, TO),
+    (REDONDA, SEMIS, None, RE, TO),
+    ('x=======x=======', SEMIS, None, RE, TO),
+    (REDONDA, None, None, None, TO),
+    ('x===----x===----', '------xxxxxxxxxx', B1, RE, TI),
+    (None, None, None, None, 'oossoossoossooss'),
 ]
 
-# ------------------------------------------------------------------ Toque 3
-def toque_3(texto='Toque 3 (x2)'):
-    return [
-        c(sb=T1_SB, sme='xxxxxxxxxxxxxxxx',
-          re=T2_RE, rp=T2_RP,
-          ti='3(xoo)3(xoo)3(xoo)3(xoo)',
-          repeat_begin=True,
-          texto=texto + '', dyn='mf'),
-        c(sb='--x---x---x=x=--', sme='xxxxxx--xxxxxx--',
-          re=T2_RE, rp=T2_RP,
-          ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
-        c(sb='-x--x---x---x=--', sme='xxxx----xxxxxx--',
-          re=T2_RE, rp=T2_RP,
-          ti='3(xoo)3(xoo)3(xoo)3(xoo)'),
-        c(sb='-x--x-----x=x=--', sme='x=x=----x=x=x=--',
-          re='x>>-x>>-x>>-x>>>', rp='-x=--x=--x=-x=x-',
-          ti='3(xoo)3(oxo)3(xoo)3(xxo)', repeat_end=True),
-    ]
+
+def fila(i, f):
+    voces = {k: v for k, v in zip(('repique', 'surdo_agudo', 'surdo_grave', 'redoblante', 'timbal'), f) if v}
+    return c(rev=('llamada intermedia: ' + ORDEN) if i == 0 else
+             ('timbal: cabezas huecas' if i in (1, 3) else None), **voces)
 
 
-# ------------------------------------------------------------- Llamada final
-llamada_final = [
-    c(rp='3(xxx)3(xxx)--------', ti='----------xxxx--',
-      re=T2_RE, sb=T1_SB, sme='xxxxxxxxxxxxxxxx',
-      texto='Llamada final', dyn='f'),
-    c(rp='--------3(xxx)3(xxx)', ti='o===============',
-      re=T2_RE, sb='--x---x---x=x=--',
-      sme='xxxxxx--xxxxxx--'),
-    c(rp='-x=-x=-x=-x=-x=-', ti='xxxx----oo--oo--',
-      re=T2_RE, sb='-x--x---x---x=--',
-      sme='xxxx----xxxxxx--'),
-    c(rp='-x=-x=-x=-x=----', ti='oo--x=--x=x=x=--',
-      re='x>>-x>>-x>>>x->-', sb='-x--x-----x=x=--',
-      sme='x=x=----x=x=x=--'),
+intermedia = [fila(i, f) for i, f in enumerate(INTERMEDIA)]
+
+toque3 = toque(BASE_1, MELO_1, TI_2, rev=REV_TI) + toque(BASE_2, MELO_2, TI_2, rev=REV_TI)
+
+final = [
+    c(repique='3(xxx)3(xxx)x===----', timbal='--------3(-oo)3(ooo)', redoblante=RE,
+      surdo_grave=B1, surdo_agudo=M1),
+    c(repique='----3(xxx)3(xxx)x===', timbal='o===============', redoblante=RE,
+      surdo_grave=B1, surdo_agudo=M1),
+    c(repique=RP, timbal='-o=ss=ss-o=ss=ss', redoblante=RE, surdo_grave=B3, surdo_agudo=B3),
+    c(repique='--xx--xxx==x--x=', timbal='-s=ss=ooo==o--o=', redoblante='c=>>c=>>>==>-->=',
+      surdo_grave=B4, surdo_agudo=B4, rev='timbal: cabezas de los tiempos 1 y 2'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 86, INSTS, [
-    seccion('Introducción', introduccion, 1),
+    seccion('Introducción', intro, 1),
     seccion('Llamada de introducción', llamada_intro, 1),
-    seccion('Acompañamiento de la introducción', acompanamiento_intro, 1),
-    seccion('Toque 1', toque_1(), 4),
+    seccion('Toque 1', toque1, 4),
     seccion('Corte', corte, 1),
-    seccion('Toque 2', toque_2(), 4),
-    seccion('Variación', variacion, 2),
-    seccion('Llamada intermedia', llamada_intermedia, 1),
-    seccion('Toque 3', toque_3(), 2),
-    seccion('Llamada final', llamada_final, 1),
+    seccion('Toque 2', toque2, 4),
+    seccion('Toque 2: timbal en la 4ª vuelta', toque2_var, 1),
+    seccion('Variación', variacion, 1),
+    seccion('Llamada intermedia', intermedia, 1),
+    seccion('Toque 3', toque3, 2),
+    seccion('Llamada final', final, 1),
 ])

@@ -10,7 +10,7 @@ Nombres internos = ids del editor (`instruments.js`). No se inventó un id `snar
 | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- |
 | Surdo grave | SURDOS GRAVE, AGUDO Y MEDIO | `surdo_grave` | Nota | óvalo negro | CONVENTION (no en PDF) | `surdo_grave_normal` | Nomenclatura | 5 | VIEWED |
 | Surdo grave | Golpe de Chapa | `surdo_grave` | chapa | cabeza X | CONVENTION | `surdo_grave_chapa` | Nomenclatura | 5 | VIEWED |
-| Surdo grave | Golpe Tapado | `surdo_grave` | tapado | óvalo + guión encima | CONVENTION | `surdo_grave_tapado` | Nomenclatura | 5 | VIEWED |
+| Surdo grave | Golpe Tapado | `surdo_grave` | tapado | óvalo + guión **debajo** del pentagrama | CONVENTION | `surdo_grave_tapado` | Nomenclatura | 5 | VIEWED |
 | Surdo agudo | (mismo bloque SURDOS) | `surdo_agudo` | igual | igual | CONVENTION | `surdo_agudo_*` | Nomenclatura | 5 | VIEWED |
 | Surdo medio | (mismo bloque SURDOS) | `surdo_medio` | igual | igual | CONVENTION | `surdo_medio_*` | Nomenclatura | 5 | VIEWED |
 | Redoblante | REDOBLANTE | `redoblante` | Nota | óvalo negro | CONVENTION | `redoblante_normal` | Nomenclatura | 5 | VIEWED |
@@ -18,8 +18,8 @@ Nombres internos = ids del editor (`instruments.js`). No se inventó un id `snar
 | Redoblante | Golpe de Chapa | `redoblante` | chapa | X | CONVENTION | `redoblante_chapa` | Nomenclatura | 5 | VIEWED |
 | Redoblante | Golpe Agudo | `redoblante` | agudo | **triángulo** (mismo glifo que repique) | CONVENTION | `redoblante_agudo` (proxy CC0) | Toque a Oxosi Final + Nomenclatura | 5 y 60 | TRANSCRIPTION=VALID glifo; sample AVAILABLE (no es grabación de escuela) |
 | Timbal | TIMBAL / Golpe Abierto | `timbal` | abierto | óvalo negro | CONVENTION | `timbal_abierto` | Nomenclatura | 5 | VIEWED |
-| Timbal | Golpe de Slap | `timbal` | slap | círculo vacío | CONVENTION | `timbal_slap` | Nomenclatura | 5 | VIEWED (círculo, no X) |
-| Timbal | Golpe de Palma | `timbal` | palma | cabeza pequeña / rombo — **ambigua en el escaneo** | CONVENTION | `timbal_palma` | Nomenclatura | 5 | PENDING_HUMAN_REVIEW |
+| Timbal | Golpe de Slap | `timbal` | slap | cabeza hueca (con plica y barras en los toques) | CONVENTION | `timbal_slap` | Nomenclatura | 5 | VIEWED (círculo, no X) |
+| Timbal | Golpe de Palma | `timbal` | palma | **rombo negro** | CONVENTION | `timbal_palma` | Nomenclatura + La Meta Toque 2 | 5 y 47 | VIEWED (ampliado 2026-10-13) |
 | Timbal | Golpe Presionado | `timbal` | presionado | óvalo + guión debajo | CONVENTION | `timbal_presionado` | Nomenclatura | 5 | VIEWED |
 | Timbal | Golpe de Dedo | `timbal` | dedo | X | CONVENTION | `timbal_dedo` | Nomenclatura | 5 | VIEWED |
 | Repique | REPIQUE | `repique` | Nota | óvalo | CONVENTION | `repique_normal` | Nomenclatura | 5 | VIEWED |
@@ -30,12 +30,12 @@ Nombres internos = ids del editor (`instruments.js`). No se inventó un id `snar
 | Agogó | no está en Nomenclatura p.2 | `agogo` | — | — | CONVENTION | `agogo_*` | aparece en toques (Iyesá, Makuta, Claves) | — | PENDING_HUMAN_REVIEW nombre en PDF |
 | Palmas | no está en Nomenclatura p.2 | `palmas` | — | — | CONVENTION | `palmas_*` | Iyesá | — | PENDING_HUMAN_REVIEW nombre en PDF |
 
-## Discrepancia Equivalencias vs Nomenclatura (no resolver)
+## Posición y plica (resuelto 2026-10-13)
 
-- Equivalencias (archivo 4): todas las figuras en la **línea del medio**, plica abajo.
-- Nomenclatura (archivo 5): algunas cabezas parecen en espacios distintos (surdo vs redo).
-
-El renderer actual usa `pitch: b/4` y `stem: -1` para todos (criterio Equivalencias + Toque de Chilinga). **No se cambió** porque las dos hojas del PDF no coinciden. Estado: `PENDING_HUMAN_REVIEW`.
+Ampliando las páginas 4, 5 y 6 del PDF, Equivalencias, Nomenclatura y los toques coinciden:
+cabeza en el **2º espacio**, **plica arriba**, barras arriba, acentos y guiones debajo del
+pentagrama. El renderer usa `pitch: a/4` y `stem: 1`. La lectura anterior («línea del medio,
+plica abajo») era un error. Detalle en [`ESCRITURA.md`](ESCRITURA.md).
 
 ## Eventos simultáneos
 

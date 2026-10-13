@@ -112,7 +112,7 @@ export async function exportarPDF(host, score) {
 /* ------------------------------------------------------------------ MusicXML 4.0 */
 
 const TIPO_XML = { w: 'whole', h: 'half', q: 'quarter', 8: 'eighth', 16: '16th', 32: '32nd' };
-const CABEZA_XML = { x: 'x', circled: 'circle-x', triangle: 'triangle', diamond: 'diamond', slash: 'slash', normal: 'normal' };
+const CABEZA_XML = { x: 'x', hollow: 'normal', triangle: 'triangle', diamond: 'diamond', slash: 'slash', normal: 'normal' };
 const SOUND_FAMILIA = {
     surdo_grave: 'drum.tom',
     surdo_medio: 'drum.tom',
@@ -219,7 +219,7 @@ export function generarMusicXML(score) {
                     const voz = m.voces[mem.def.id] || [];
                     const notas = voz.length ? voz : [{ dur: 'w', rest: true, dots: 0, stroke: 'nota' }];
                     const beams = calcularBeams(notas, ts);
-                    const stem = 'down';
+                    const stem = mem.def.stem === -1 ? 'down' : 'up';
                     notas.forEach((n, ni) => {
                         xml += notaXML(n, mem.def, {
                             voice: vi + 1,
@@ -324,13 +324,13 @@ function notaXML(n, def, opts = {}) {
     if (n.tuplet) {
         s += `        <time-modification><actual-notes>${n.tuplet.num}</actual-notes><normal-notes>${n.tuplet.den}</normal-notes></time-modification>\n`;
     }
-    if (!n.rest) s += `        <stem>${opts.stem || 'down'}</stem>\n`;
+    if (!n.rest) s += `        <stem>${opts.stem || 'up'}</stem>\n`;
     (opts.beams || []).forEach((b) => {
         s += `        <beam number="${b.number}">${b.tipo}</beam>\n`;
     });
     if (!n.rest) {
         const g = GOLPES[n.stroke] || GOLPES.nota;
-        s += `        <notehead${g.parentesis ? ' parentheses="yes"' : ''}>${CABEZA_XML[g.cabeza] || 'normal'}</notehead>\n`;
+        s += `        <notehead${g.parentesis ? ' parentheses="yes"' : ''}${g.cabeza === 'hollow' ? ' filled="no"' : ''}>${CABEZA_XML[g.cabeza] || 'normal'}</notehead>\n`;
         const arts = [];
         if (g.articulacion === 'a>' || n.stroke === 'acentuado') {
             const below = def.id === 'redoblante' || def.id === 'repique';

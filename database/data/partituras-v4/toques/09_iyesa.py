@@ -1,8 +1,9 @@
 """Iyesá I, II y III — Cuadernillo págs. 15-19 (PDF págs. 18-22).
 
-Transcripción literal del PDF (figuras = escritura de la escuela).
+Agogó y Palmas: la cruz se carga como `chapa` (en el agogó, la otra campana).
 """
-from dsl import compas, score, seccion
+from cuad import hoja, rtr, surdos
+from dsl import score, seccion
 
 TITULO = 'Iyesá I, II y III'
 MATCH = {'año': 1, 'orden': 9, 'nombre': 'Ixesa I'}
@@ -10,123 +11,110 @@ PDF_PAGES = [18, 19, 20, 21, 22]
 
 INSTS = ['surdo_grave', 'surdo_agudo', 'surdo_medio', 'redoblante', 'repique',
          'timbal', 'agogo', 'palmas']
-V = '----------------'
-
-# Agogó / palmas de la introducción (figuras del PDF)
-AGOGO = 'x=x=x=x=xxx=--xx'
-PALMAS = 'x===x=x=x===x=x='
+c = hoja(INSTS)
 
 
-def c(sg=V, sa=V, sm=V, re=V, rp=V, ti=V, ag=V, pa=V, **kw):
-    return compas({'surdo_grave': sg, 'surdo_agudo': sa, 'surdo_medio': sm,
-                   'redoblante': re, 'repique': rp, 'timbal': ti,
-                   'agogo': ag, 'palmas': pa}, **kw)
+def ga(pat):
+    """Rótulo «Surdos Grave y Agudo»."""
+    return {'surdo_grave': pat, 'surdo_agudo': pat}
 
 
-introduccion = [
-    c(ag=AGOGO, texto='Introducción (Iyesá I) — agogó',
-      dyn='mf'),
-    c(ag=AGOGO, pa=PALMAS, texto='Entran las palmas'),
+AGOGO = 'c=c=x=x=cc-x-xx='
+intro = [
+    c(agogo=AGOGO, rev='agogó: cruz y negra, qué campana es cada una'),
+    c(agogo=AGOGO, palmas='c===c=c=c===c=c='),
 ]
 
-LL_RE = '>x>>x>>x>>>>6(xxxxxx)'
-LL_TI = 'xxxx--xo=o=o=oo-'
+# --- Iyesá I
+RE1 = '>=x>>=x>>=x>6(>>>>--)'     # (corchea + 2 semis) × 3 · seisillo de 4 + silencio
+TI1 = 'ssoo--ooss==sso='
+SU_LL = '----x=x=x===----'
 llamada = [
-    c(rp='f==x-fx=x===----', re=V, texto='Llamada', dyn='f'),
-    c(rp='x===------fx=x==', sg='----x=x=x===----', sa='----x=x=x===----',
-      sm='----x=x=x===----', re=LL_RE, ti=LL_TI),
-    c(rp='x===------fx=x==', sg='----x=x=x===----', sa='----x=x=x===----',
-      sm='----x=x=x===----', re=LL_RE, ti=LL_TI),
-    c(rp='x===----fx=x=x==', sg='----x=x=--------', sa='----x=x=--------',
-      sm='----x=x=--------', re=LL_RE, ti=LL_TI),
+    c(repique='-x==x===-x=xx=x='),
+    c(repique='x===-------x-x=x', **surdos(SU_LL), redoblante=RE1, timbal=TI1),
+    c(repique='x===-------x-x=x', **surdos(SU_LL), redoblante=RE1, timbal=TI1,
+      rev='repique, 4º tiempo'),
+    c(repique='x===-----x=xx===', **surdos('----x=x=--------'), redoblante=RE1, timbal=TI1),
 ]
 
-I1 = dict(sg='x===----x===----', sa='x===----x===----', sm='----x=x=----x=x=',
-          re='>xx>x=>xx>x=6(xx>>>>)', rp='>x>xxx>x>xx>x>>x',
-          ti='o=o=xxxxo=o=x=x=', ag=AGOGO, pa=PALMAS)
-toque_1 = [c(**I1, repeat_begin=True, repeat_end=True,
-             texto='Toque Iyesá I', dyn='mf')]
-
-variacion_1 = [c(**{**I1, 'rp': '6(>>>>xx)xx>x>xx>x>>x'},
-                 repeat_begin=True, repeat_end=True,
-                 texto='Variación de repique (Iyesá I)')]
-
-llamada_2 = [
-    c(rp='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)',
-      sg='x===----x===----', sa='x===----x===----', sm='----x=x=----x=x=',
-      re=LL_RE, ti=LL_TI, texto='Llamada para Iyesá II (sobre Iyesá I)',
-      dyn='f'),
-    c(rp='x=x=--x=--------', sg='x===---------xx-', sa='x===---------xx-',
-      sm='----x=x=--------', re=LL_RE, ti=LL_TI),
+GA1 = 'x===----x===----'
+SM1 = '----x=x=----x=x='
+toque1 = [
+    c(rb=True, re=True, **ga(GA1), surdo_medio=SM1, redoblante=RE1, timbal=TI1,
+      repique='>x>xxx>x>xx>x>>x', rev='acentos del repique'),
 ]
 
-I2 = dict(sg='----x===-----x=x', sa='----x===-----x=x', sm='-x=x=---x==x=---',
-          re='x=>=x=>=x=>=x=>=', rp='x==x=x=x==x=----',
-          ti='-x=x=--x=x=-x=x=', ag=AGOGO)
-toque_2 = [c(**I2, repeat_begin=True, repeat_end=True,
-             texto='Toque Iyesá II', dyn='mf')]
-
-LL_SU = '---f=x=x=-x=x=--'
-
-llamada_3a = [
-    c(sg=LL_SU, sa=LL_SU, sm='t===t===t===t=x=',
-      re='xx>x>xxx>xx>xx>x', ti='-o===o=-x=------',
-      rp='x==---------x==-',
-      texto='Llamada para Iyesá III A (sobre Iyesá II)', dyn='f'),
+variacion = [
+    c(repique='6(>>>>--)xx>x>xx>x>>x'),
 ]
 
-I3A = dict(sg='---t=-t=-x=t--t=', sa='---t=-t=-x=t--t=', sm='t===t===t===t=x=',
-           re='xx>x>xxx>xx>xx>x', rp='x==---------x==-',
-           ti='-o===o=-x=------', ag=AGOGO)
-toque_3a = [c(**I3A, repeat_begin=True, repeat_end=True,
-              texto='Toque Iyesá III A', dyn='mf')]
-
-llamada_3b = [
-    c(sg=LL_SU, sa=LL_SU, texto='Llamada para Iyesá III B (sobre Iyesá III A)',
-      dyn='f'),
+# --- Llamada para Iyesá II (sobre Iyesá I)
+llamada2 = [
+    c(repique='6(xxxxxx)6(xxxxxx)6(xxxxxx)6(xxxxxx)', **ga(GA1), surdo_medio=SM1,
+      redoblante=RE1, timbal=TI1, rev='repique: seisillos (¿5 o 6 golpes cada uno?)'),
+    c(repique='x=x=--x=--------', **ga('x===---------x=x'), surdo_medio='----x=x=--------',
+      redoblante=RE1, timbal='ssoo--oo-s=s--oo'),
 ]
 
-I3B = dict(sg='-x=x=-x=--x=x=--', sa='-x=x=-x=--x=x=--', sm='----t=x=x---x=x=',
-           re='x=>=x=>=x=>=x=>=', rp='-x==--x=----x==-',
-           ti='-o=x=-x=--o=o=--')
-toque_3b = [c(**I3B, repeat_begin=True, repeat_end=True,
-              texto='Toque Iyesá III B', dyn='mf')]
-
-llamada_3c = [
-    c(sg=LL_SU, sa=LL_SU, texto='Llamada para Iyesá III C (sobre Iyesá III B)',
-      dyn='f'),
+# --- Iyesá II
+RE2 = 'xx>x>xxx>xx>xxx>'
+SM2 = '-x=x----x==x----'
+RP2 = 'xx==xx==xx==----'
+toque2 = [
+    c(rb=True, re=True, agogo=AGOGO, **ga('----x===-----x=x'), surdo_medio=SM2,
+      redoblante=RE2, timbal='--oo--oo-s=s--oo', repique=RP2),
 ]
 
-I3C = dict(sg='-x=x==-t--x=x=t=', sa='-x=x==-t--x=x=t=', sm='----x=x=xx=t----',
-           re='x=>=x=>=x=>=x=>=', rp='-x=--x=x==-x==--',
-           ti='-x=x=-x=--x=x=--')
-toque_3c = [c(**I3C, repeat_begin=True, repeat_end=True,
-              texto='Iyesá III C', dyn='mf')]
+GA_LL = '-------xx=xx-xx='     # llamada de surdos grave y agudo para cada cambio
+llamada3a = [
+    c(**ga(GA_LL), surdo_medio=SM2, redoblante=RE2, timbal='--oo--oo-s-s--oo', repique=RP2),
+]
 
-ROLL = 'xxxxxxxxxxxxx==='
-llamada_final = [
-    c(sg=ROLL, sa=ROLL, sm=ROLL, re=ROLL, rp=ROLL, ti=ROLL,
-      texto='Llamada final', dyn='p'),
-    c(sg='x=x=----x=x=----', sa='x=x=----x=x=----', sm='x=x=----x=x=----',
-      re='x=x=----x=x=----', rp='x=x=----x=x=----', ti='x=x=----x=x=----',
-      dyn='f'),
-    c(sg='x===x=--3(xxx)----', sa='x===x=--3(xxx)----',
-      sm='x===x=--3(xxx)----', re='x===x=--3(xxx)----',
-      rp='x===x=--3(xxx)----', ti='x===x=--3(xxx)----'),
+# --- Iyesá III A / B / C: en los surdos la cruz es golpe de chapa
+TI3 = '-s=s--o=-s=s--o='
+toque3a = [
+    c(rb=True, re=True, agogo='--x=x===x==x---x', **ga('---c--c=-x=c--c='),
+      surdo_medio='c===c===c===c=x=', redoblante=RE2, timbal='-s=s--o=--------',
+      repique='-x=x---------x=='),
+]
+
+llamada3b = [c(**ga(GA_LL))]
+
+toque3b = [
+    c(rb=True, re=True, **ga('-xxc--c=-xxc--c='), surdo_medio='c===c=xxc===c=xx',
+      redoblante=RE2, timbal=TI3, repique='-x==---x-----x=='),
+]
+
+llamada3c = [c(**ga(GA_LL))]
+
+toque3c = [
+    c(rb=True, re=True, **ga('x=xc--c=-x=c--c='), surdo_medio='c===x=xxc===c=x=',
+      redoblante=RE2, timbal=TI3, repique='-x=x---x-x==-x==',
+      rev='surdo medio, 2º tiempo: cruz y negra a la vez'),
+]
+
+llamada_fin = [c(**ga(GA_LL))]
+
+final = [
+    c(dyn='p', **surdos('xxxxxxxxxxxxx==='), **rtr('xxxxxxxxxxxxx==='), rev='todos p < f (regulador)'),
+    c(**surdos('x=x=----x=x=----'), **rtr('----xx==----x==x')),
+    c(**surdos('x===x===3(x-x)----'), **rtr('---x---xx===x==='),
+      rev='redo, timbal y repique: tiempos 1 y 2 (tresillo)'),
 ]
 
 SCORE = score(TITULO, 'La Chilinga', 84, INSTS, [
-    seccion('Introducción (Iyesá I)', introduccion, 1),
+    seccion('Introducción (Iyesá I)', intro, 1),
     seccion('Llamada', llamada, 1),
-    seccion('Toque Iyesá I', toque_1, 4),
-    seccion('Variación de repique (Iyesá I)', variacion_1, 2),
-    seccion('Llamada para Iyesá II', llamada_2, 1),
-    seccion('Toque Iyesá II', toque_2, 4),
-    seccion('Llamada para Iyesá III A', llamada_3a, 1),
-    seccion('Toque Iyesá III A', toque_3a, 4),
-    seccion('Llamada para Iyesá III B', llamada_3b, 1),
-    seccion('Toque Iyesá III B', toque_3b, 4),
-    seccion('Llamada para Iyesá III C', llamada_3c, 1),
-    seccion('Iyesá III C', toque_3c, 4),
-    seccion('Llamada final', llamada_final, 1),
+    seccion('Toque', toque1, 4),
+    seccion('Variación', variacion, 1),
+    seccion('Llamada para Iyesá II (sobre Iyesá I)', llamada2, 1),
+    seccion('Toque (Iyesá II)', toque2, 4),
+    seccion('Llamada para Iyesá III A (sobre II)', llamada3a, 1),
+    seccion('Toque (Iyesá III A)', toque3a, 4),
+    seccion('Llamada para Iyesá III B (sobre III A)', llamada3b, 1),
+    seccion('Toque Iyesá III B', toque3b, 4),
+    seccion('Llamada para Iyesá III C (sobre III B)', llamada3c, 1),
+    seccion('Iyesá III C', toque3c, 4),
+    seccion('Llamada para final Iyesá III C', llamada_fin, 1),
+    seccion('Llamada final', final, 1),
 ])
