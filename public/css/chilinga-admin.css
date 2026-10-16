@@ -753,7 +753,7 @@ body.shell-nav-open { overflow: hidden; }
   font-size: 12px;
   font-weight: 800;
 }
-.topbar-menu { width: 280px; }
+.topbar-menu { width: 280px; max-height: calc(100dvh - 76px); overflow-y: auto; overscroll-behavior: contain; }
 .topbar-menu-head { padding: 10px 12px 8px; }
 .topbar-menu-head strong { display: block; font-size: 14px; }
 .topbar-menu-head span { font-size: 12px; color: var(--muted); }
