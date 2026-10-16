@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\Finanzas\CobroCuotasService;
 use App\Models\Alumno;
 use App\Models\ComprobanteCuotaAlumno;
+use App\Support\FichasAlumno;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -17,7 +18,9 @@ class CobroCuotaController extends Controller
     public function index(Request $request, CobroCuotasService $cobros): View
     {
         $fichas = $this->fichas($request);
-        abort_if($fichas->isEmpty(), 403, 'Tu cuenta no está vinculada a una ficha de alumno. Pedile a administración que la vincule.');
+        if ($fichas->isEmpty()) {
+            return $this->sinFicha($request);
+        }
         $alumno = $fichas->firstWhere('id', (int) $request->query('alumno')) ?? $fichas->first();
 
         return view('alumno.pagar-cuotas', [
@@ -102,15 +105,21 @@ class CobroCuotaController extends Controller
         return $pago;
     }
 
-    private function fichas(Request $request): Collection
+    /** Cuenta sin ficha de alumno: explica qué pasa y, a quien administra, qué ficha unir. */
+    private function sinFicha(Request $request): View
     {
         $user = $request->user();
+        $puedeUnir = $user->can('personas.merge') || $user->isAdmin();
 
-        return Alumno::query()
-            ->where('activo', true)
-            ->where(fn ($q) => $q->where('user_id', $user->id)
-                ->when($user->persona_id, fn ($q2) => $q2->orWhere('persona_id', $user->persona_id)))
-            ->with(['bloques', 'bloque', 'sede'])
-            ->get();
+        return view('alumno.sin-ficha', [
+            'user' => $user,
+            'puedeUnir' => $puedeUnir,
+            'candidatas' => $puedeUnir ? FichasAlumno::candidatas($user) : collect(),
+        ]);
+    }
+
+    private function fichas(Request $request): Collection
+    {
+        return FichasAlumno::delUsuario($request->user());
     }
 }

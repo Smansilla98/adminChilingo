@@ -169,6 +169,26 @@ class CobroCuotasTest extends TestCase
         $this->actingAs($ana)->post('/mi-cuota/pagar', ['alumno_id' => $this->alumno->id, 'cuota_ids' => [$this->cuotas[1]->id], 'medio' => 'transferencia'])->assertForbidden();
     }
 
+    public function test_admin_sin_ficha_ve_la_explicacion_y_la_ficha_que_podria_ser_suya(): void
+    {
+        $admin = $this->admin('Juan Pérez');
+        // La inscripción quedó cargada como otra persona con el mismo nombre.
+        $this->actingAs($admin)->get('/mi-cuota/pagar')
+            ->assertOk()
+            ->assertSee('Tu usuario no tiene una ficha de alumno vinculada')
+            ->assertSee('Bloque Palomar')
+            ->assertSee('Fusionar');
+        $this->actingAs($admin)->get('/mi-cuota')->assertOk()->assertSee('Tu usuario no tiene una ficha de alumno vinculada');
+    }
+
+    public function test_alumno_sin_ficha_no_ve_fichas_ajenas(): void
+    {
+        $this->actingAs($this->usuario('Juan Pérez'))->get('/mi-cuota/pagar')
+            ->assertOk()
+            ->assertSee('Pedile a administración')
+            ->assertDontSee('Bloque Palomar');
+    }
+
     public function test_cancelar_libera_las_cuotas(): void
     {
         $this->actingAs($this->juan)->post('/mi-cuota/pagar', ['alumno_id' => $this->alumno->id, 'cuota_ids' => [$this->cuotas[0]->id], 'medio' => 'transferencia']);

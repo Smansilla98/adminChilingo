@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\Finanzas\ComprobanteService;
 use App\Models\Alumno;
 use App\Models\ComprobanteCuotaAlumno;
+use App\Support\FichasAlumno;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -19,7 +20,9 @@ class MiCuotaController extends Controller
     public function create(Request $request, ComprobanteService $comprobantes): View
     {
         $fichas = $this->fichas($request);
-        abort_if($fichas->isEmpty(), 403, 'Tu cuenta no está vinculada a una ficha de alumno. Pedile a administración que la vincule.');
+        if ($fichas->isEmpty()) {
+            return $this->sinFicha($request);
+        }
 
         $alumno = $fichas->firstWhere('id', (int) $request->query('alumno')) ?? $fichas->first();
         $anio = (int) $request->query('anio', now()->year);
@@ -74,15 +77,22 @@ class MiCuotaController extends Controller
     }
 
     /** @return Collection<int, Alumno> fichas de alumno de la persona logueada */
-    private function fichas(Request $request): Collection
+
+    /** Cuenta sin ficha de alumno: explica qué pasa y, a quien administra, qué ficha unir. */
+    private function sinFicha(Request $request): View
     {
         $user = $request->user();
+        $puedeUnir = $user->can('personas.merge') || $user->isAdmin();
 
-        return Alumno::query()
-            ->where('activo', true)
-            ->where(fn ($q) => $q->where('user_id', $user->id)
-                ->when($user->persona_id, fn ($q2) => $q2->orWhere('persona_id', $user->persona_id)))
-            ->with(['bloques', 'bloque', 'sede'])
-            ->get();
+        return view('alumno.sin-ficha', [
+            'user' => $user,
+            'puedeUnir' => $puedeUnir,
+            'candidatas' => $puedeUnir ? FichasAlumno::candidatas($user) : collect(),
+        ]);
+    }
+
+    private function fichas(Request $request): Collection
+    {
+        return FichasAlumno::delUsuario($request->user());
     }
 }
