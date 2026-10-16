@@ -21,12 +21,18 @@ class CobroCuotaController extends Controller
         if ($fichas->isEmpty()) {
             return $this->sinFicha($request);
         }
-        $alumno = $fichas->firstWhere('id', (int) $request->query('alumno')) ?? $fichas->first();
+        // Sin elegir, se abre la primera ficha que tenga algo para pagar: una cuenta puede
+        // tener una ficha duplicada sin bloques y no tiene que tapar a la real.
+        $alumno = $fichas->firstWhere('id', (int) $request->query('alumno'))
+            ?? $fichas->first(fn (Alumno $a) => $cobros->pendientes($a)->isNotEmpty())
+            ?? $fichas->first(fn (Alumno $a) => $a->bloques->isNotEmpty() || $a->bloque_id)
+            ?? $fichas->first();
 
         return view('alumno.pagar-cuotas', [
             'fichas' => $fichas,
             'alumno' => $alumno,
             'pendientes' => $cobros->pendientes($alumno),
+            'resumen' => $cobros->resumen($alumno),
             'transferencia' => $cobros->datosTransferencia(),
             'mercadoPago' => $cobros->mercadoPagoDisponible(),
             'enCurso' => ComprobanteCuotaAlumno::query()

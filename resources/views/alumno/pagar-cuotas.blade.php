@@ -70,8 +70,28 @@
                 </label>
             </div>
         @empty
-            <div class="alert alert-success mb-0" role="status">¡Estás al día! No hay cuotas para pagar.</div>
+            @if($resumen['emitidas'] === 0)
+                <div class="alert alert-warning mb-0" role="status">
+                    <strong>No encontramos cuotas emitidas para tus bloques en {{ $resumen['anios'] }}.</strong>
+                    Si sabés que debés, puede que la escuela todavía no haya cargado la cuota de tu bloque o tu sede. Avisale a administración.
+                </div>
+            @else
+                <div class="alert alert-success mb-0" role="status">
+                    <strong>No hay cuotas para pagar desde acá.</strong>
+                    De {{ $resumen['emitidas'] }} {{ $resumen['emitidas'] === 1 ? 'cuota' : 'cuotas' }} de {{ $resumen['anios'] }}:
+                    {{ collect([
+                        $resumen['pagadas'] ? $resumen['pagadas'].' '.($resumen['pagadas'] === 1 ? 'paga' : 'pagas') : null,
+                        $resumen['becadas'] ? $resumen['becadas'].' con beca completa' : null,
+                        $resumen['parciales'] ? $resumen['parciales'].' con pago parcial' : null,
+                    ])->filter()->implode(', ') ?: 'ninguna con saldo' }}.
+                    @if($resumen['parciales'])<br>Lo que falta de un pago parcial se arregla con administración.@endif
+                </div>
+            @endif
         @endforelse
+
+        @if($fichas->count() > 1)
+            <p class="small text-muted mt-2 mb-0">Estás viendo las cuotas de <strong>{{ $alumno->nombre_apellido }}</strong> ({{ $alumno->bloques->pluck('nombre')->join(', ') ?: 'sin bloque' }}).</p>
+        @endif
 
         @if($pagables->isNotEmpty())
             @if($pagables->count() > 1)

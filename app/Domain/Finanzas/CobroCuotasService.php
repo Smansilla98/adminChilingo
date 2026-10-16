@@ -118,6 +118,27 @@ class CobroCuotasService
         return collect($lineas);
     }
 
+    /**
+     * Por qué una cuota no aparece para pagar: cuántas hay pagas, becadas, con pago parcial
+     * o con un pago en curso, en el año actual y el anterior.
+     *
+     * @return array{emitidas: int, pagadas: int, becadas: int, parciales: int, en_curso: int, anios: string}
+     */
+    public function resumen(Alumno $alumno): array
+    {
+        $anios = [now()->year - 1, now()->year];
+        $items = collect($anios)->flatMap(fn (int $anio) => $this->estadoCuenta->paraAlumno($alumno, $anio)['items']);
+
+        return [
+            'emitidas' => $items->count(),
+            'pagadas' => $items->where('estado', 'pagada')->count(),
+            'becadas' => $items->where('estado', 'becada')->count(),
+            'parciales' => $items->where('estado', 'parcial')->count(),
+            'en_curso' => $this->pendientes($alumno)->whereNotNull('en_curso')->count(),
+            'anios' => implode(' y ', $anios),
+        ];
+    }
+
     /** Arranca un pago: comprobante "esperando pago" con las cuotas elegidas. */
     public function iniciar(User $por, Alumno $alumno, array $cuotaIds, string $medio): ComprobanteCuotaAlumno
     {

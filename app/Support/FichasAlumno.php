@@ -18,6 +18,8 @@ final class FichasAlumno
             ->where(fn ($q) => $q->where('user_id', $user->id)
                 ->when($user->persona_id, fn ($q2) => $q2->orWhere('persona_id', $user->persona_id)))
             ->with(['bloques', 'bloque', 'sede'])
+            ->orderBy('created_at')
+            ->orderBy('id')
             ->get();
     }
 

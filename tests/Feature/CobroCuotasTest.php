@@ -93,7 +93,7 @@ class CobroCuotasTest extends TestCase
         $this->assertCount(4, $detalles);
         // Docente según el porcentaje de cada sede: 40 % de 18000, 50 % de 20000, 40 % de 15000, 30 % de 16000.
         $this->assertSame([7200.0, 10000.0, 6000.0, 4800.0], $detalles->map(fn ($d) => (float) $d->abono_profesor)->all());
-        $this->actingAs($this->juan)->get('/mi-cuota/pagar')->assertSee('Estás al día');
+        $this->actingAs($this->juan)->get('/mi-cuota/pagar')->assertSee('No hay cuotas para pagar desde acá')->assertSee('4 pagas');
     }
 
     public function test_mercado_pago_registra_el_pago_solo_y_una_sola_vez(): void
@@ -187,6 +187,22 @@ class CobroCuotasTest extends TestCase
             ->assertOk()
             ->assertSee('Pedile a administración')
             ->assertDontSee('Bloque Palomar');
+    }
+
+    public function test_sin_cuotas_emitidas_lo_dice(): void
+    {
+        Cuota::query()->delete();
+        $this->actingAs($this->juan)->get('/mi-cuota/pagar')->assertOk()->assertSee('No encontramos cuotas emitidas para tus bloques');
+    }
+
+    public function test_con_dos_fichas_abre_la_que_tiene_cuotas_para_pagar(): void
+    {
+        // Ficha duplicada sin bloques, creada antes que la real.
+        $vacia = Alumno::query()->create(['persona_id' => $this->juan->persona_id, 'nombre_apellido' => 'Juan Pérez (duplicada)', 'activo' => true]);
+        Alumno::query()->whereKey($vacia->id)->update(['created_at' => now()->subYear()]);
+
+        $this->actingAs($this->juan)->get('/mi-cuota/pagar')->assertOk()->assertSee('Cuota Palomar');
+        $this->actingAs($this->juan)->get('/mi-cuota/pagar?alumno='.$vacia->id)->assertOk()->assertSee('No encontramos cuotas emitidas');
     }
 
     public function test_cancelar_libera_las_cuotas(): void
