@@ -59,6 +59,21 @@ class InterfazWebTest extends TestCase
         $this->assertSame(['docente', 'config'], collect($nav['grupos'])->pluck('clave')->all());
     }
 
+    public function test_el_docente_que_tambien_es_alumno_ve_los_dos_espacios_y_donde_pagar(): void
+    {
+        $persona = $this->persona('Profe y alumno');
+        $user = $this->usuario('Profe y alumno', $persona);
+        $palomar = $this->sede('Palomar');
+        $this->asignarDocente($persona, $this->bloque($palomar, 'Bloque que da'));
+        $this->inscribirAlumno($persona, $this->bloque($this->sede('Saavedra'), 'Bloque que cursa'));
+
+        $nav = $this->menu($user->fresh(), 'dashboard');
+        $this->assertSame(['docente', 'familia', 'config'], collect($nav['grupos'])->pluck('clave')->all());
+        $familia = collect($nav['grupos'])->firstWhere('clave', 'familia');
+        $this->assertContains('alumno.cuota', collect($familia['links'])->pluck('route')->all());
+        $this->assertSame('Hoy en clase', $nav['top'][0]['label']);
+    }
+
     public function test_el_layout_muestra_migas_campana_y_menu_de_usuario(): void
     {
         $admin = $this->admin();

@@ -146,12 +146,21 @@ class Navegacion
             ]);
         } else {
             $esAlumno = $u->isAlumno();
-            $links = array_values(array_filter($esAlumno ? $alumnoLinks : $profesorLinks));
-            $top[] = array_shift($links);
-            if ($u->isProfesor()) {
+            $esProfesor = $u->isProfesor();
+            if ($esProfesor && $esAlumno) {
+                // Docente que además cursa en un bloque: su espacio docente y su espacio de alumno.
+                $top[] = self::link('dashboard', 'Hoy en clase', 'bi-house', 'dashboard');
                 $top[] = self::link('operativo.pendientes', 'Pendientes', 'bi-lightning-charge', 'operativo.pendientes');
+                $grupos[] = self::grupo('docente', 'Docente', array_filter($profesorLinks, fn ($l) => $l && $l['route'] !== 'dashboard'));
+                $grupos[] = self::grupo('familia', 'Mi espacio (alumno)', array_filter($alumnoLinks, fn ($l) => $l && ! in_array($l['route'], ['dashboard', 'calendario.index', 'programa.index', 'programa.partituras.index'], true)), ['alumno.cuota*']);
+            } else {
+                $links = array_values(array_filter($esAlumno ? $alumnoLinks : $profesorLinks));
+                $top[] = array_shift($links);
+                if ($esProfesor) {
+                    $top[] = self::link('operativo.pendientes', 'Pendientes', 'bi-lightning-charge', 'operativo.pendientes');
+                }
+                $grupos[] = self::grupo($esAlumno ? 'familia' : 'docente', $esAlumno ? 'Familia' : 'Docente', $links);
             }
-            $grupos[] = self::grupo($esAlumno ? 'familia' : 'docente', $esAlumno ? 'Familia' : 'Docente', $links);
             $grupos[] = self::grupo('config', 'Configuración', $configEspacio);
         }
 
