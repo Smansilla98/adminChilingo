@@ -182,6 +182,29 @@ class DisenoOwnershipTest extends TestCase
         $this->assertSame('Foto show', $grupos['biblioteca']['items'][0]['label']);
     }
 
+    public function test_marca_trae_el_manual_v3_con_su_paleta_y_sus_logos(): void
+    {
+        $respuesta = $this->actingAs($this->disenador())->getJson('/disenos/api/marca')->assertOk();
+
+        $this->assertSame('Identidad v3', $respuesta->json('manual.version'));
+        $this->assertSame(['Tinta', 'Cielo', 'Atardecer', 'Tierra', 'Hueso'], array_column($respuesta->json('manual.paleta'), 'nombre'));
+        $this->assertCount(9, $respuesta->json('manual.sedes'));
+        // Las piezas del manual vigente van primero.
+        $logos = collect($respuesta->json('grupos'))->firstWhere('clave', 'logos')['items'];
+        $this->assertSame('Sello tricolor', $logos[0]['label']);
+        $this->assertStringContainsString('/images/brand/v3/sello-tricolor.png', $logos[0]['url']);
+    }
+
+    public function test_el_manual_se_ve_en_el_navegador_y_solo_con_permiso(): void
+    {
+        $this->actingAs($this->disenador())->get('/disenos/manual-de-marca')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf')
+            ->assertHeader('Content-Disposition', 'inline; filename="La Chilinga - Identidad v3.pdf"');
+
+        $this->actingAs($this->usuario('Sin permiso'))->get('/disenos/manual-de-marca')->assertForbidden();
+    }
+
     public function test_kit_de_marca_solo_lo_gestiona_administracion(): void
     {
         Storage::fake('public');

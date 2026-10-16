@@ -343,6 +343,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['permiso:disenos.manage', 'modulo:admin.disenos'])->prefix('disenos')->name('disenos.')->group(function () {
         Route::get('/', [DisenoEditorController::class, 'app'])->name('index');
         Route::get('/design/{id}', [DisenoEditorController::class, 'app'])->whereNumber('id')->name('editor');
+        Route::get('/manual-de-marca', [DisenoEditorController::class, 'manual'])->name('manual');
 
         Route::prefix('api')->name('api.')->middleware('throttle:300,1')->group(function () {
             Route::get('designs', [DisenoEditorController::class, 'index'])->name('index');

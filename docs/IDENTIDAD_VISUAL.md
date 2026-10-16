@@ -2,12 +2,42 @@
 
 Guía para diseñar piezas (redes, afiches, merch, pantallas) que se sientan **Chilinga**.
 
-> **No existe un manual de marca oficial publicado.** Una búsqueda extensa en la web
-> (octubre de 2026) no encontró ninguna fuente sobre los logos, su autoría, la paleta, la
-> tipografía, el merch ni el estilo de los flyers. Esta guía se reconstruyó a partir de los
-> logos que hay en el repo, la paleta del sistema y lo que la escuela comunica.
-> Lo **medido** sale de las imágenes; lo **a confirmar** está marcado. Ante una pieza oficial
-> nueva de la escuela, gana la pieza: actualizá esta guía.
+> **Manda el manual de marca: Identidad v3** (octubre de 2026, «raíz afro · 1995–2026»), en
+> [`resources/marca/identidad-v3.pdf`](../resources/marca/identidad-v3.pdf). Se abre desde el
+> editor de Diseño (pestaña **Marca → Manual de marca**). Lo de abajo que lo contradiga quedó
+> viejo: la sección 0 resume el manual; el resto se escribió antes, a partir de los logos del
+> repo, y sigue valiendo para la interfaz del sistema.
+
+## 0. Identidad v3 (manual vigente)
+
+**Sello.** El Chilingo sobre tinta, sin cambios, rodeado por un **borde tallado**: triángulos en
+zigzag, como en la talla en madera yoruba, con celeste, naranja y verde alternados (tricolor).
+Texto del anillo: «ESCUELA POPULAR DEL TAMBOR». Tres niveles de color: **A** puntos en color,
+**B** borde en color, **C** anillo naranja. Hay versión blanco y negro.
+
+**Paleta** (`App\Support\MarcaChilinga::PALETA`):
+
+| Nombre | Hex | Uso |
+|---|---|---|
+| Tinta | `#15110E` | Fondo |
+| Cielo | `#2BA8E0` | Escuela |
+| Atardecer | `#F26A1B` | Escuela |
+| Tierra | `#3DAE49` | Escuela |
+| Hueso | `#F5ECDD` | Caurí: el claro de la marca (no blanco puro) |
+
+**Sedes**: cada una tiene fondo, sombra del patrón y acento del sello y los horarios
+(`MarcaChilinga::SEDES`): Palomar, Saavedra, Tacheles, Banfield, Avellaneda, Sarandí, Quilmes,
+Varela y San Marcos Sierras. Las piezas de «Inscripciones abiertas» de cada sede usan esos tres
+colores, la palabra de la sede repetida de fondo y el sello en la esquina.
+
+**Aplicaciones del manual**: parche, remera (tinta y hueso, frente y espalda), camiseta cielo
+con «CHILINGA 31», redes 1:1, estandarte y afiche «31 años».
+
+**Archivos en el sistema** (`public/images/brand/v3/`): sello tricolor, sello blanco y negro,
+sello anillo naranja, logotipo claro y oscuro, Chilingo claro y oscuro. Se armaron con las
+imágenes originales del manual (anillo + Chilingo, sin redibujar); el Chilingo oscuro es el
+claro pasado a tinta. Mockups de remera tinta, remera hueso y camiseta cielo en
+`public/images/diseno/mockups/`.
 
 ---
 
@@ -152,10 +182,11 @@ compartido: pestaña **Marca** del editor (`DisenoKitAsset`).
 
 ## 11. Pendiente con la escuela
 
-- [ ] Manual de marca o piezas oficiales de referencia.
-- [ ] Logo en **vector** (SVG o PDF) y versión para fondo claro: hoy solo hay el JPEG sobre negro.
+- [x] Manual de marca o piezas oficiales de referencia: **Identidad v3** (sección 0).
+- [ ] Logo en **vector** (SVG o PDF). Ya hay versión para fondo claro (v3, PNG).
 - [ ] Familia tipográfica del logotipo.
-- [ ] Celeste exacto y si el rojo es parte de la marca.
+- [x] Celeste exacto: Cielo `#2BA8E0` (v3). El rojo no está en la paleta base; solo es el color de la sede Avellaneda.
+- [ ] Pasar los tokens de la interfaz (`--ch-*`) a la paleta v3: hoy siguen con los valores anteriores.
 - [ ] Logo histórico (anterior a los 30 años) y reglas de convivencia entre ambos.
 - [ ] Autoría del logo de los 30 años.
 - [ ] Si "nadie se queda afuera" y "queremos, podemos y debemos tocar el tambor" se adoptan

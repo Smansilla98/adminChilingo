@@ -6,6 +6,7 @@ use App\Models\BibliotecaItem;
 use App\Models\Diseno;
 use App\Models\DisenoKitAsset;
 use App\Models\DisenoPagina;
+use App\Support\MarcaChilinga;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Módulo Diseño con el editor OpenDesign (resources/opendesign, MIT).
@@ -303,17 +305,35 @@ class DisenoEditorController extends Controller
     }
 
     /** Pestaña "Marca": logos, kit de marca, mockups y fotos de la Biblioteca. */
+    /** Manual de marca vigente, para ver en el navegador. */
+    public function manual(): BinaryFileResponse
+    {
+        $this->authorize('viewAny', Diseno::class);
+        abort_unless(is_file(MarcaChilinga::manualPath()), 404);
+
+        return response()->file(MarcaChilinga::manualPath(), [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="La Chilinga - '.MarcaChilinga::VERSION.'.pdf"',
+        ]);
+    }
+
     public function marca(): JsonResponse
     {
         $this->authorize('uploadAsset', Diseno::class);
 
-        $logos = [
-            ['id' => 'logo', 'url' => asset('images/brand/logo.png'), 'label' => 'Logo ITO'],
-            ['id' => 'logo-30', 'url' => asset('images/brand/chilinga-30.png'), 'label' => 'La Chilinga 30 años'],
-        ];
-        $mockups = collect(['hoodie', 'campera', 'jersey', 'tote'])
-            ->filter(fn ($m) => is_file(public_path("images/diseno/mockups/$m.svg")))
-            ->map(fn ($m) => ['id' => "mockup-$m", 'url' => asset("images/diseno/mockups/$m.svg"), 'label' => 'Mockup '.$m])
+        // Primero las piezas del manual vigente; después los logos anteriores.
+        $logos = collect(MarcaChilinga::LOGOS)
+            ->filter(fn ($label, $archivo) => is_file(public_path("images/brand/v3/$archivo.png")))
+            ->map(fn ($label, $archivo) => ['id' => "v3-$archivo", 'url' => asset("images/brand/v3/$archivo.png"), 'label' => $label])
+            ->values()
+            ->push(['id' => 'logo-30', 'url' => asset('images/brand/chilinga-30.png'), 'label' => 'La Chilinga 30 años'])
+            ->push(['id' => 'logo', 'url' => asset('images/brand/logo.png'), 'label' => 'Logo ITO']);
+        $mockups = collect([
+            'remera-tinta.png' => 'Remera tinta', 'remera-hueso.png' => 'Remera hueso', 'camiseta-cielo.png' => 'Camiseta cielo',
+            'hoodie.svg' => 'Mockup hoodie', 'campera.svg' => 'Mockup campera', 'jersey.svg' => 'Mockup jersey', 'tote.svg' => 'Mockup tote',
+        ])
+            ->filter(fn ($label, $archivo) => is_file(public_path("images/diseno/mockups/$archivo")))
+            ->map(fn ($label, $archivo) => ['id' => 'mockup-'.pathinfo($archivo, PATHINFO_FILENAME), 'url' => asset("images/diseno/mockups/$archivo"), 'label' => $label])
             ->values();
 
         $kit = Schema::hasTable('diseno_kit_assets')
@@ -328,12 +348,20 @@ class DisenoEditorController extends Controller
             ->map(fn (BibliotecaItem $i) => ['id' => 'bib-'.$i->id, 'url' => $i->archivoUrl(), 'label' => $i->titulo ?: 'Foto'])
             ->values();
 
-        return response()->json(['grupos' => [
-            ['clave' => 'logos', 'titulo' => 'Logos', 'items' => $logos],
-            ['clave' => 'kit', 'titulo' => 'Kit de marca', 'items' => $kit],
-            ['clave' => 'mockups', 'titulo' => 'Mockups', 'items' => $mockups],
-            ['clave' => 'biblioteca', 'titulo' => 'Biblioteca', 'items' => $biblioteca],
-        ]]);
+        return response()->json([
+            'manual' => is_file(MarcaChilinga::manualPath()) ? [
+                'version' => MarcaChilinga::VERSION,
+                'url' => route('disenos.manual'),
+                'paleta' => MarcaChilinga::PALETA,
+                'sedes' => MarcaChilinga::SEDES,
+            ] : null,
+            'grupos' => [
+                ['clave' => 'logos', 'titulo' => 'Logos', 'items' => $logos],
+                ['clave' => 'kit', 'titulo' => 'Kit de marca', 'items' => $kit],
+                ['clave' => 'mockups', 'titulo' => 'Mockups', 'items' => $mockups],
+                ['clave' => 'biblioteca', 'titulo' => 'Biblioteca', 'items' => $biblioteca],
+            ],
+        ]);
     }
 
     public function kitStore(Request $request): JsonResponse
