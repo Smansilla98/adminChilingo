@@ -20,6 +20,10 @@ class ComprobanteCuotaAlumno extends Model
         'estado',
         'pago_id',
         'cargado_por_user_id',
+        'origen',
+        'referencia',
+        'mp_preference_id',
+        'mp_payment_id',
     ];
 
     protected $casts = [
@@ -47,6 +51,12 @@ class ComprobanteCuotaAlumno extends Model
         return $this->hasMany(ComprobanteCuotaAlumnoItem::class, 'comprobante_cuota_alumno_id');
     }
 
+    /** Pago iniciado desde el sistema que todavía no se hizo (o no se avisó). */
+    public function esperaPago(): bool
+    {
+        return $this->estado === 'esperando_pago';
+    }
+
     public function estaPendiente(): bool
     {
         return $this->estado === 'pendiente';
@@ -60,6 +70,7 @@ class ComprobanteCuotaAlumno extends Model
     public function etiquetaEstado(): string
     {
         return match ($this->estado) {
+            'esperando_pago' => 'Esperando el pago',
             'pendiente' => 'Pendiente de revisión',
             'pagado' => 'Pagado',
             'visto' => 'Visto',

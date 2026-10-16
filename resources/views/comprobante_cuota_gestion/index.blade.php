@@ -12,6 +12,7 @@
                 <label>Estado</label>
                 <select name="estado" class="form-select" onchange="this.form.submit()">
                     <option value="">Todos los estados</option>
+                    <option value="esperando_pago" @selected(request('estado') === 'esperando_pago')>Esperando el pago</option>
                     <option value="pendiente" @selected(request('estado') === 'pendiente')>Pendiente</option>
                     <option value="visto" @selected(request('estado') === 'visto')>Visto</option>
                     <option value="pagado" @selected(request('estado') === 'pagado')>Pagado</option>
@@ -37,6 +38,7 @@
                     $tone = match($c->estado) {
                         'pendiente' => 'warning',
                         'pagado' => 'success',
+                        'esperando_pago' => 'info',
                         default => 'neutral',
                     };
                     $bloquesTxt = $c->items->map(function ($it) {

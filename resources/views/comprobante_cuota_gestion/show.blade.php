@@ -6,7 +6,8 @@
 @section('content')
 @php
     $c = $comprobanteCuotaAlumno;
-    $tono = match ($c->estado) { 'pendiente' => 'warning', 'pagado' => 'success', default => 'neutral' };
+    $tono = match ($c->estado) { 'pendiente' => 'warning', 'pagado' => 'success', 'esperando_pago' => 'info', default => 'neutral' };
+    $origen = ['mercadopago' => 'Mercado Pago', 'transferencia' => 'Transferencia (desde el sistema)'][$c->origen ?? ''] ?? 'Comprobante enviado';
     $puedeAprobar = auth()->user()->isAdmin() && ! $c->estaPagado();
 @endphp
 <x-ito.shell-page :title="$c->alumno?->nombre_apellido ?? 'Comprobante #'.$c->id" :subtitle="'Envío #'.$c->id.($c->alumno?->dni ? ' · DNI '.$c->alumno->dni : '').($c->created_at ? ' · recibido '.$c->created_at->locale('es')->diffForHumans() : '')" :plain="true">
@@ -36,23 +37,35 @@
         <x-ito.fact label="Fecha de pago" :value="$c->fecha_pago?->format('d/m/Y')" />
         <x-ito.fact label="Sede" :value="$c->sede?->nombre" />
         <x-ito.fact label="Cuotas" :value="$c->items->count()" />
+        <x-ito.fact label="Origen" :value="$origen" />
+        @if($c->referencia)<x-ito.fact label="Referencia">{{ $c->referencia }}</x-ito.fact>@endif
+        @if($c->mp_payment_id)<x-ito.fact label="Pago de Mercado Pago" :value="$c->mp_payment_id" />@endif
     </x-ito.facts>
+
+    @if($c->esperaPago())
+        <div class="alert alert-info" role="status">
+            El alumno inició este pago {{ $c->origen === 'mercadopago' ? 'con Mercado Pago y todavía no llegó el aviso' : 'por transferencia y todavía no subió el comprobante' }}.
+            Si la plata ya entró (buscá <strong>{{ $c->referencia }}</strong> en el concepto), podés aprobarlo igual.
+        </div>
+    @endif
 
     <div class="ito-detail-grid">
         <div class="ito-detail-col">
             <x-ito.detail-section title="Cuotas incluidas" icon="bi-cash-stack" :flush="true">
                 <div class="table-responsive">
                     <table class="table align-middle mb-0" data-ito-no-cards>
-                        <thead><tr><th>Cuota</th><th>Bloque</th><th class="text-end">Monto</th></tr></thead>
+                        <thead><tr><th>Cuota</th><th>Bloque</th><th>Docente</th><th class="text-end">Monto</th><th class="text-end">Al docente</th></tr></thead>
                         <tbody>
                             @forelse($c->items as $it)
                                 <tr>
                                     <td class="fw-semibold">{{ $it->cuota?->nombre ?? '—' }}</td>
                                     <td>{{ $it->bloque?->nombre ?? '—' }} <span class="d-block small text-muted">{{ $it->bloque?->sede?->nombre }}</span></td>
+                                    <td>{{ $it->bloque?->nombreTitular() ?? '—' }}</td>
                                     <td class="text-end">$ {{ number_format($it->monto, 2, ',', '.') }}</td>
+                                    <td class="text-end text-muted">{{ $it->cuota ? '$ '.number_format(\App\Support\LiquidacionDocente::montoAbonoDocente($it->cuota), 2, ',', '.') : '—' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="3" class="ito-empty">Sin cuotas asociadas.</td></tr>
+                                <tr><td colspan="5" class="ito-empty">Sin cuotas asociadas.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

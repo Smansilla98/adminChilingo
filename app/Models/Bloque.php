@@ -91,6 +91,18 @@ class Bloque extends Model
     /**
      * Relación con sede
      */
+    /** Nombre del docente titular (pivot bloque_profesor; si no, la columna legada). */
+    public function nombreTitular(): ?string
+    {
+        $legado = $this->profesor_id ? $this->profesor : null;
+        if ($legado instanceof Profesor) {
+            return $legado->nombre;
+        }
+        $titular = $this->profesores->firstWhere('pivot.rol', 'titular') ?? $this->profesores->first();
+
+        return $titular instanceof Profesor ? $titular->nombre : null;
+    }
+
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);

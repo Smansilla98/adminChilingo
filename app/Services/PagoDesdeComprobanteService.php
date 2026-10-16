@@ -21,7 +21,7 @@ class PagoDesdeComprobanteService
      *
      * @return array{pago: Pago, omitidas: int, mensaje: string}
      */
-    public function aprobar(ComprobanteCuotaAlumno $comprobante, int $userId, bool $liquidarProfesor = true): array
+    public function aprobar(ComprobanteCuotaAlumno $comprobante, ?int $userId, bool $liquidarProfesor = true): array
     {
         if (! Schema::hasTable('pagos') || ! Schema::hasTable('pago_detalles')) {
             throw new RuntimeException('Faltan tablas de pagos. Ejecutá las migraciones.');

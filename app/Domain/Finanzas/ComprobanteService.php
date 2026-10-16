@@ -20,7 +20,7 @@ use Illuminate\Validation\ValidationException;
  */
 class ComprobanteService
 {
-    public const ESTADOS = ['pendiente' => 'Pendiente de revisión', 'visto' => 'Visto', 'pagado' => 'Pagado'];
+    public const ESTADOS = ['esperando_pago' => 'Esperando el pago', 'pendiente' => 'Pendiente de revisión', 'visto' => 'Visto', 'pagado' => 'Pagado'];
 
     public function __construct(
         private ComprobanteCuotaRegistroService $registro,

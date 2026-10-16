@@ -35,9 +35,11 @@ class ComprobanteCuotaRegistroService
         $montoTotal = 0.0;
 
         foreach ($bloqueIds as $bid) {
-            $bloque = Bloque::query()->whereKey($bid)->where('sede_id', $sedeId)->where('activo', true)->first();
+            // Un mismo comprobante puede pagar bloques de sedes distintas: lo que se valida es que
+            // el alumno esté inscripto en cada bloque (más abajo), no la sede.
+            $bloque = Bloque::query()->whereKey($bid)->where('activo', true)->first();
             if (! $bloque) {
-                throw ValidationException::withMessages(['bloque_ids' => 'Uno de los bloques no corresponde a la sede elegida.']);
+                throw ValidationException::withMessages(['bloque_ids' => 'Uno de los bloques no existe o no está activo.']);
             }
             $cuota = Cuota::resolveForBloque($bid, $año, $mes);
             if (! $cuota) {

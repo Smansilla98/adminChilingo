@@ -17,6 +17,14 @@
         </div>
     </div>
 
+    @if(config('chilinga.cobro.alias') || config('chilinga.cobro.cbu') || config('services.mercadopago.access_token'))
+        <a href="{{ route('alumno.cuota.pagar') }}" class="ito-card p-3 mb-3 d-flex align-items-center gap-3 text-decoration-none">
+            <i class="bi bi-wallet2 fs-3" aria-hidden="true"></i>
+            <span class="flex-grow-1"><strong class="d-block">¿Todavía no pagaste?</strong><span class="text-muted">Pagá todas tus cuotas juntas desde acá, por transferencia o Mercado Pago.</span></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </a>
+    @endif
+
     @if($errors->any())
         <div class="alert alert-danger" role="alert">
             <strong>Revisá esto antes de enviar:</strong>

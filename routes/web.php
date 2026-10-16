@@ -13,6 +13,7 @@ use App\Http\Controllers\BibliotecaPublicController;
 use App\Http\Controllers\BloqueController;
 use App\Http\Controllers\BloqueHorarioController;
 use App\Http\Controllers\CalendarioController;
+use App\Http\Controllers\CobroCuotaController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoGestionController;
 use App\Http\Controllers\ComprobanteCuotaAlumnoPublicController;
 use App\Http\Controllers\ComunidadAgendaController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\HubSearchController;
 use App\Http\Controllers\InventarioItemController;
 use App\Http\Controllers\InventarioPublicoController;
+use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Controllers\MiCuotaController;
 use App\Http\Controllers\NotificacionWebController;
 use App\Http\Controllers\OperativoController;
@@ -74,6 +76,9 @@ Route::get('/tambor/{codigo}', [InventarioPublicoController::class, 'show'])
     ->where('codigo', '[A-Za-z0-9._-]{2,40}')
     ->name('inventario.publico');
 
+Route::post('/webhooks/mercadopago', MercadoPagoWebhookController::class)
+    ->middleware('throttle:120,1')
+    ->name('webhooks.mercadopago');
 Route::post('/webhooks/twilio/whatsapp-status', TwilioWhatsAppStatusController::class)
     ->middleware('throttle:120,1')
     ->name('webhooks.twilio.whatsapp-status');
@@ -412,6 +417,12 @@ Route::middleware(['auth'])->group(function () {
     // Espacio docente (las mismas pantallas, acotadas a sus bloques)
     // Alumno: subir el comprobante de su cuota con su cuenta.
     Route::get('/mi-cuota', [MiCuotaController::class, 'create'])->name('alumno.cuota');
+    // Alumno: pagar desde el sistema (transferencia al alias o Mercado Pago).
+    Route::get('/mi-cuota/pagar', [CobroCuotaController::class, 'index'])->name('alumno.cuota.pagar');
+    Route::post('/mi-cuota/pagar', [CobroCuotaController::class, 'store'])->middleware('throttle:10,1')->name('alumno.cuota.pagar.store');
+    Route::get('/mi-cuota/pagos/{referencia}', [CobroCuotaController::class, 'show'])->name('alumno.cuota.pago');
+    Route::post('/mi-cuota/pagos/{referencia}/comprobante', [CobroCuotaController::class, 'comprobante'])->middleware('throttle:10,1')->name('alumno.cuota.pago.comprobante');
+    Route::post('/mi-cuota/pagos/{referencia}/cancelar', [CobroCuotaController::class, 'cancelar'])->name('alumno.cuota.pago.cancelar');
     Route::post('/mi-cuota', [MiCuotaController::class, 'store'])->middleware('throttle:10,1')->name('alumno.cuota.store');
     Route::get('/mis-bloques', [BloqueController::class, 'index'])->middleware(['permiso:bloques.view', 'modulo:profesor.mis_bloques'])->name('profesor.bloques');
     Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->middleware(['permiso:alumnos.view', 'modulo:profesor.mis_alumnos'])->name('profesor.alumnos');

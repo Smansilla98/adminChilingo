@@ -60,4 +60,11 @@ return [
         ))),
     ],
 
+    // Mercado Pago (Checkout Pro): cobro de cuotas con aviso automático. Sin token, la opción no aparece.
+    'mercadopago' => [
+        'access_token' => env('MERCADOPAGO_ACCESS_TOKEN'),
+        // Clave secreta de las notificaciones (Tus integraciones → Webhooks). Si está, se verifica la firma.
+        'webhook_secret' => env('MERCADOPAGO_WEBHOOK_SECRET'),
+    ],
+
 ];

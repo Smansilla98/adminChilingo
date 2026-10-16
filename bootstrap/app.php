@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUsuarioActivo::class);
         $middleware->validateCsrfTokens(except: [
             'webhooks/twilio/whatsapp-status',
+            'webhooks/mercadopago',
         ]);
         // Detrás de Railway/HTTPS: confiar en proxies para URL y esquema correctos
         $middleware->trustProxies(at: '*');
