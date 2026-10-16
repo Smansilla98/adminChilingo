@@ -33,6 +33,7 @@ class CobroCuotaController extends Controller
             'alumno' => $alumno,
             'pendientes' => $cobros->pendientes($alumno),
             'resumen' => $cobros->resumen($alumno),
+            'opcionesExtra' => $cobros->opcionesExtra($alumno),
             'transferencia' => $cobros->datosTransferencia(),
             'mercadoPago' => $cobros->mercadoPagoDisponible(),
             'enCurso' => ComprobanteCuotaAlumno::query()
@@ -54,7 +55,38 @@ class CobroCuotaController extends Controller
         abort_unless($alumno instanceof Alumno, 403);
 
         $pago = $cobros->iniciar($request->user(), $alumno, $datos['cuota_ids'], $datos['medio']);
-        if ($datos['medio'] === 'mercadopago') {
+
+        return $this->continuar($pago, $datos['medio'], $request, $cobros);
+    }
+
+    /** Pagar igual un bloque y un mes que no figura entre las cuotas pendientes. */
+    public function extra(Request $request, CobroCuotasService $cobros): RedirectResponse
+    {
+        $datos = $request->validate([
+            'alumno_id' => ['required', 'integer'],
+            'bloque_id' => ['required', 'integer'],
+            'mes' => ['required', 'integer', 'min:1', 'max:12'],
+            'anio' => ['required', 'integer', 'min:2000', 'max:2100'],
+            'monto' => ['required', 'numeric', 'min:1', 'max:10000000'],
+            'concepto' => ['nullable', 'string', 'max:200'],
+            'medio' => ['required', 'in:'.implode(',', CobroCuotasService::MEDIOS)],
+        ], [
+            'bloque_id.required' => 'Elegí el bloque.',
+            'monto.required' => 'Ingresá el monto a pagar.',
+            'monto.min' => 'Ingresá el monto a pagar.',
+            'medio.required' => 'Elegí cómo vas a pagar.',
+        ]);
+        $alumno = $this->fichas($request)->firstWhere('id', (int) $datos['alumno_id']);
+        abort_unless($alumno instanceof Alumno, 403);
+
+        $pago = $cobros->iniciarExtra($request->user(), $alumno, (int) $datos['bloque_id'], (int) $datos['anio'], (int) $datos['mes'], (float) $datos['monto'], $datos['medio'], $datos['concepto'] ?? null);
+
+        return $this->continuar($pago, $datos['medio'], $request, $cobros);
+    }
+
+    private function continuar(ComprobanteCuotaAlumno $pago, string $medio, Request $request, CobroCuotasService $cobros): RedirectResponse
+    {
+        if ($medio === 'mercadopago') {
             try {
                 return redirect()->away($cobros->linkMercadoPago($pago, $request->user()->email));
             } catch (RuntimeException $e) {

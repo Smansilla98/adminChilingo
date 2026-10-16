@@ -7,6 +7,7 @@ use App\Models\Bloque;
 use App\Models\ComprobanteCuotaAlumno;
 use App\Models\ComprobanteCuotaAlumnoItem;
 use App\Models\Cuota;
+use App\Models\PagoDetalle;
 use App\Models\Sede;
 use App\Models\User;
 use App\Services\PagoDesdeComprobanteService;
@@ -139,8 +140,86 @@ class CobroCuotasService
         ];
     }
 
-    /** Arranca un pago: comprobante "esperando pago" con las cuotas elegidas. */
-    public function iniciar(User $por, Alumno $alumno, array $cuotaIds, string $medio): ComprobanteCuotaAlumno
+    /**
+     * Bloques en los que el alumno puede hacer un pago extra, con un monto sugerido: la cuota
+     * del mes si existe, si no la última cuota cargada para ese bloque o su sede.
+     *
+     * @return list<array{id: int, nombre: string, sede: string|null, profesor: string|null, monto: float|null}>
+     */
+    public function opcionesExtra(Alumno $alumno): array
+    {
+        $alumno->loadMissing(['bloques.sede', 'bloques.profesor', 'bloques.profesores', 'bloque.sede', 'bloque.profesor', 'bloque.profesores']);
+        $bloques = $alumno->bloques->keyBy('id');
+        if ($alumno->bloque && ! $bloques->has($alumno->bloque->id)) {
+            $bloques->put($alumno->bloque->id, $alumno->bloque);
+        }
+        $opciones = [];
+        foreach ($bloques as $bloque) {
+            if (! $bloque->activo) {
+                continue;
+            }
+            $cuota = Cuota::resolveForBloque((int) $bloque->id, (int) now()->year, (int) now()->month)
+                ?? Cuota::query()->where(fn ($q) => $q->where('bloque_id', $bloque->id)->orWhere('sede_id', $bloque->sede_id))
+                    ->orderByDesc('año')->orderByDesc('mes')->orderByDesc('id')->first();
+            $sede = $bloque->sede;
+            $opciones[] = [
+                'id' => (int) $bloque->id,
+                'nombre' => (string) $bloque->nombre,
+                'sede' => $sede instanceof Sede ? (string) $sede->nombre : null,
+                'profesor' => $bloque->nombreTitular(),
+                'monto' => $cuota ? (float) $cuota->monto : null,
+            ];
+        }
+
+        return $opciones;
+    }
+
+    /**
+     * Pago extra: un bloque y un mes aunque la cuota no figure (todavía no emitida, por
+     * ejemplo). Si la cuota existe y está pendiente, va contra esa cuota; si no, la línea
+     * guarda bloque y mes, y la cuota se engancha al aprobar.
+     */
+    public function iniciarExtra(User $por, Alumno $alumno, int $bloqueId, int $anio, int $mes, float $monto, string $medio, ?string $concepto = null): ComprobanteCuotaAlumno
+    {
+        $this->validarMedio($medio);
+        if (! collect($this->opcionesExtra($alumno))->contains('id', $bloqueId)) {
+            throw ValidationException::withMessages(['bloque_id' => 'Elegí uno de tus bloques.']);
+        }
+        if ($monto <= 0 || $monto > 10_000_000) {
+            throw ValidationException::withMessages(['monto' => 'Ingresá el monto a pagar.']);
+        }
+        $cuota = Cuota::resolveForBloque($bloqueId, $anio, $mes);
+        $cuota = $cuota && $cuota->aplicaAAlumno($alumno) ? $cuota : null;
+        if ($cuota && PagoDetalle::query()->where('alumno_id', $alumno->id)->where('cuota_id', $cuota->id)->exists()) {
+            throw ValidationException::withMessages(['mes' => 'La cuota de ese bloque y mes ya figura paga.']);
+        }
+
+        return DB::transaction(function () use ($por, $alumno, $bloqueId, $anio, $mes, $monto, $medio, $concepto, $cuota) {
+            $comprobante = ComprobanteCuotaAlumno::create([
+                'alumno_id' => $alumno->id,
+                'sede_id' => app(ComprobanteService::class)->sedeDelAlumno($alumno) ?: null,
+                'fecha_pago' => now()->toDateString(),
+                'monto_total' => round($monto, 2),
+                'estado' => 'esperando_pago',
+                'origen' => $medio,
+                'referencia' => $this->nuevaReferencia(),
+                'notas' => trim(sprintf('Pago extra %02d/%d (%s). %s', $mes, $anio, $medio === 'mercadopago' ? 'Mercado Pago' : 'transferencia', (string) $concepto)),
+                'cargado_por_user_id' => $por->id,
+            ]);
+            ComprobanteCuotaAlumnoItem::create([
+                'comprobante_cuota_alumno_id' => $comprobante->id,
+                'cuota_id' => $cuota?->id,
+                'bloque_id' => $bloqueId,
+                'monto' => round($monto, 2),
+                'anio' => $anio,
+                'mes' => $mes,
+            ]);
+
+            return $comprobante;
+        });
+    }
+
+    private function validarMedio(string $medio): void
     {
         if (! in_array($medio, self::MEDIOS, true)) {
             throw ValidationException::withMessages(['medio' => 'Elegí cómo vas a pagar.']);
@@ -151,6 +230,12 @@ class CobroCuotasService
         if ($medio === 'transferencia' && ! $this->datosTransferencia()) {
             throw ValidationException::withMessages(['medio' => 'Todavía no hay una cuenta cargada para transferir.']);
         }
+    }
+
+    /** Arranca un pago: comprobante "esperando pago" con las cuotas elegidas. */
+    public function iniciar(User $por, Alumno $alumno, array $cuotaIds, string $medio): ComprobanteCuotaAlumno
+    {
+        $this->validarMedio($medio);
         $elegidas = array_values(array_unique(array_map('intval', $cuotaIds)));
         $pendientes = $this->pendientes($alumno)->keyBy('cuota_id');
         $lineas = [];
@@ -202,11 +287,10 @@ class CobroCuotasService
             if (! $it instanceof ComprobanteCuotaAlumnoItem) {
                 continue;
             }
-            $cuota = $it->cuota;
             $bloque = $it->bloque;
             $alumno = $c->alumno;
             $partes = array_filter([
-                $cuota instanceof Cuota ? $cuota->nombre : 'Cuota',
+                $it->etiqueta(),
                 $bloque instanceof Bloque ? $bloque->nombre : null,
                 $alumno instanceof Alumno ? $alumno->nombre_apellido : null,
             ]);

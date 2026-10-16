@@ -420,6 +420,7 @@ Route::middleware(['auth'])->group(function () {
     // Alumno: pagar desde el sistema (transferencia al alias o Mercado Pago).
     Route::get('/mi-cuota/pagar', [CobroCuotaController::class, 'index'])->name('alumno.cuota.pagar');
     Route::post('/mi-cuota/pagar', [CobroCuotaController::class, 'store'])->middleware('throttle:10,1')->name('alumno.cuota.pagar.store');
+    Route::post('/mi-cuota/pagar/extra', [CobroCuotaController::class, 'extra'])->middleware('throttle:10,1')->name('alumno.cuota.pagar.extra');
     Route::get('/mi-cuota/pagos/{referencia}', [CobroCuotaController::class, 'show'])->name('alumno.cuota.pago');
     Route::post('/mi-cuota/pagos/{referencia}/comprobante', [CobroCuotaController::class, 'comprobante'])->middleware('throttle:10,1')->name('alumno.cuota.pago.comprobante');
     Route::post('/mi-cuota/pagos/{referencia}/cancelar', [CobroCuotaController::class, 'cancelar'])->name('alumno.cuota.pago.cancelar');

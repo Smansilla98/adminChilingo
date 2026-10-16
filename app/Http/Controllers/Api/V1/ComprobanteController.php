@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Finanzas\ComprobanteService;
 use App\Http\Controllers\Controller;
 use App\Models\Alumno;
+use App\Models\Bloque;
 use App\Models\ComprobanteCuotaAlumno;
 use App\Models\ComprobanteCuotaAlumnoItem;
 use Illuminate\Http\JsonResponse;
@@ -172,7 +173,7 @@ class ComprobanteController extends Controller
             'enviado_at' => $c->created_at?->toIso8601String(),
             'alumno' => $c->alumno ? ['id' => $c->alumno->id, 'nombre' => $c->alumno->nombre_apellido, 'persona_id' => $c->alumno->persona_id] : null,
             'sede' => $c->sede?->nombre,
-            'items' => $c->items->map(fn (ComprobanteCuotaAlumnoItem $i) => ['bloque' => $i->bloque?->nombre, 'cuota' => $i->cuota?->nombre, 'cuota_id' => $i->cuota_id, 'monto' => (float) $i->monto])->values(),
+            'items' => $this->items($c),
             'pago_id' => $c->pago_id,
             'tiene_archivo' => (bool) $c->comprobante_path,
             'acciones' => $detalle ? [
@@ -180,5 +181,25 @@ class ComprobanteController extends Controller
                 'aprobar' => ! $c->estaPagado() && $servicio->puedeAprobar($user, $c),
             ] : null,
         ];
+    }
+
+    /** @return list<array{bloque: string|null, cuota: string, cuota_id: int|null, monto: float}> */
+    private function items(ComprobanteCuotaAlumno $c): array
+    {
+        $out = [];
+        foreach ($c->items as $i) {
+            if (! $i instanceof ComprobanteCuotaAlumnoItem) {
+                continue;
+            }
+            $bloque = $i->bloque;
+            $out[] = [
+                'bloque' => $bloque instanceof Bloque ? (string) $bloque->nombre : null,
+                'cuota' => $i->etiqueta(),
+                'cuota_id' => $i->cuota_id ? (int) $i->cuota_id : null,
+                'monto' => (float) $i->monto,
+            ];
+        }
+
+        return $out;
     }
 }

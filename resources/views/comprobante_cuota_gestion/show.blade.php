@@ -58,7 +58,7 @@
                         <tbody>
                             @forelse($c->items as $it)
                                 <tr>
-                                    <td class="fw-semibold">{{ $it->cuota?->nombre ?? '—' }}</td>
+                                    <td class="fw-semibold">{{ $it->etiqueta() }}@unless($it->cuota_id)<span class="d-block small text-muted">Sin cuota emitida: se engancha al aprobar</span>@endunless</td>
                                     <td>{{ $it->bloque?->nombre ?? '—' }} <span class="d-block small text-muted">{{ $it->bloque?->sede?->nombre }}</span></td>
                                     <td>{{ $it->bloque?->nombreTitular() ?? '—' }}</td>
                                     <td class="text-end">$ {{ number_format($it->monto, 2, ',', '.') }}</td>

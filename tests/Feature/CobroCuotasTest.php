@@ -205,6 +205,52 @@ class CobroCuotasTest extends TestCase
         $this->actingAs($this->juan)->get('/mi-cuota/pagar?alumno='.$vacia->id)->assertOk()->assertSee('No encontramos cuotas emitidas');
     }
 
+    public function test_pago_extra_sin_cuota_emitida_se_engancha_al_aprobar(): void
+    {
+        $bloque = $this->cuotas[0]->bloque;
+        $mes = now()->subMonth();
+        $this->actingAs($this->juan)->post('/mi-cuota/pagar/extra', [
+            'alumno_id' => $this->alumno->id, 'bloque_id' => $bloque->id, 'mes' => $mes->month, 'anio' => $mes->year,
+            'monto' => 18000, 'medio' => 'transferencia', 'concepto' => 'Cuota del mes pasado',
+        ])->assertRedirect();
+        $pago = ComprobanteCuotaAlumno::query()->firstOrFail();
+        $this->assertSame('esperando_pago', $pago->estado);
+        $this->assertNull($pago->items->first()->cuota_id);
+        $this->actingAs($this->juan)->get(route('alumno.cuota.pago', $pago->referencia))->assertSee(sprintf('Pago extra · %02d/%d', $mes->month, $mes->year));
+
+        // Sin la cuota emitida, administración no puede aprobarlo todavía.
+        $admin = $this->admin();
+        $this->actingAs($admin)->post(route('comprobantes-cuota-alumnos.aprobar-pago', $pago->id));
+        $this->assertSame(0, PagoDetalle::query()->count());
+
+        Cuota::query()->create(['bloque_id' => $bloque->id, 'alcance' => Cuota::ALCANCE_BLOQUE, 'nombre' => 'Cuota mes pasado', 'año' => $mes->year, 'mes' => $mes->month, 'monto' => 18000, 'activo' => true]);
+        $this->actingAs($admin)->post(route('comprobantes-cuota-alumnos.aprobar-pago', $pago->id))->assertRedirect();
+
+        $detalle = PagoDetalle::query()->sole();
+        $this->assertEquals(18000, (float) $detalle->monto);
+        $this->assertEquals(7200, (float) $detalle->abono_profesor);
+        $this->assertTrue($pago->fresh()->estaPagado());
+    }
+
+    public function test_pago_extra_de_una_cuota_que_existe_va_contra_esa_cuota_y_no_si_ya_esta_paga(): void
+    {
+        $cuota = $this->cuotas[1];
+        $datos = ['alumno_id' => $this->alumno->id, 'bloque_id' => $cuota->bloque_id, 'mes' => now()->month, 'anio' => now()->year, 'monto' => 20000, 'medio' => 'transferencia'];
+        $this->actingAs($this->juan)->post('/mi-cuota/pagar/extra', $datos)->assertRedirect();
+        $this->assertSame($cuota->id, ComprobanteCuotaAlumno::query()->firstOrFail()->items->first()->cuota_id);
+
+        $this->actingAs($this->admin())->post(route('comprobantes-cuota-alumnos.aprobar-pago', ComprobanteCuotaAlumno::query()->value('id')));
+        $this->actingAs($this->juan)->post('/mi-cuota/pagar/extra', $datos)->assertSessionHasErrors('mes');
+    }
+
+    public function test_pago_extra_solo_en_bloques_propios(): void
+    {
+        $ajeno = $this->bloque($this->sede('Quilmes'), 'Bloque ajeno');
+        $this->actingAs($this->juan)->post('/mi-cuota/pagar/extra', [
+            'alumno_id' => $this->alumno->id, 'bloque_id' => $ajeno->id, 'mes' => 1, 'anio' => now()->year, 'monto' => 100, 'medio' => 'transferencia',
+        ])->assertSessionHasErrors('bloque_id');
+    }
+
     public function test_cancelar_libera_las_cuotas(): void
     {
         $this->actingAs($this->juan)->post('/mi-cuota/pagar', ['alumno_id' => $this->alumno->id, 'cuota_ids' => [$this->cuotas[0]->id], 'medio' => 'transferencia']);

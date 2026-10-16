@@ -14,11 +14,24 @@ class ComprobanteCuotaAlumnoItem extends Model
         'cuota_id',
         'bloque_id',
         'monto',
+        'anio',
+        'mes',
     ];
 
     protected $casts = [
         'monto' => 'decimal:2',
     ];
+
+    /** Nombre para mostrar: la cuota, o el bloque y el mes si es un pago extra sin cuota emitida. */
+    public function etiqueta(): string
+    {
+        $cuota = $this->cuota;
+        if ($cuota instanceof Cuota) {
+            return (string) $cuota->nombre;
+        }
+
+        return 'Pago extra'.($this->mes && $this->anio ? sprintf(' · %02d/%d', $this->mes, $this->anio) : '');
+    }
 
     public function comprobante(): BelongsTo
     {

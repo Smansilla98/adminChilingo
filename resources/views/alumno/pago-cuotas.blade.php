@@ -99,7 +99,7 @@
         @foreach($pago->items as $it)
             <div class="d-flex justify-content-between border-top py-2 gap-3">
                 <div>
-                    <div>{{ $it->cuota?->nombre ?? 'Cuota' }}</div>
+                    <div>{{ $it->etiqueta() }}</div>
                     <div class="text-muted small">{{ collect([$it->bloque?->nombre, $it->bloque?->sede?->nombre, $it->bloque?->nombreTitular() ? 'Profe: '.$it->bloque->nombreTitular() : null])->filter()->implode(' · ') }}</div>
                 </div>
                 <div class="fw-semibold text-nowrap">{{ $pesos($it->monto) }}</div>

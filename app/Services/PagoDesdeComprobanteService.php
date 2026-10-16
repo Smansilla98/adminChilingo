@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Alumno;
 use App\Models\ComprobanteCuotaAlumno;
+use App\Models\ComprobanteCuotaAlumnoItem;
 use App\Models\Cuota;
 use App\Models\Pago;
 use App\Models\PagoDetalle;
@@ -34,6 +35,7 @@ class PagoDesdeComprobanteService
         }
 
         $alumnoId = (int) $comprobante->alumno_id;
+        $this->engancharPagosExtra($comprobante);
         $lineas = [];
         $omitidas = 0;
 
@@ -153,6 +155,32 @@ class PagoDesdeComprobanteService
             'omitidas' => $omitidas,
             'mensaje' => $mensaje,
         ];
+    }
+
+    /**
+     * Pagos extra (sin cuota emitida al pagar): busca la cuota de ese bloque y mes. Si alguna
+     * todavía no existe, no aprueba nada: hay que emitirla primero para que el pago quede
+     * en su cuota y el docente cobre lo que le corresponde.
+     */
+    private function engancharPagosExtra(ComprobanteCuotaAlumno $comprobante): void
+    {
+        $faltan = [];
+        foreach ($comprobante->items as $item) {
+            if (! $item instanceof ComprobanteCuotaAlumnoItem || $item->cuota_id || ! $item->bloque_id || ! $item->anio || ! $item->mes) {
+                continue;
+            }
+            $cuota = Cuota::resolveForBloque((int) $item->bloque_id, (int) $item->anio, (int) $item->mes);
+            if (! $cuota) {
+                $faltan[] = sprintf('%s · %02d/%d', $item->bloque->nombre ?? 'bloque', $item->mes, $item->anio);
+
+                continue;
+            }
+            $item->update(['cuota_id' => $cuota->id]);
+            $item->setRelation('cuota', $cuota->loadMissing(['bloque.sede', 'sede']));
+        }
+        if ($faltan !== []) {
+            throw new RuntimeException('Falta emitir la cuota de '.implode(', ', $faltan).'. Creala en Cuotas y volvé a aprobar.');
+        }
     }
 
     private function resolverPathComprobante(ComprobanteCuotaAlumno $comprobante): ?string

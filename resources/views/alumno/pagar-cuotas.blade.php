@@ -73,7 +73,7 @@
             @if($resumen['emitidas'] === 0)
                 <div class="alert alert-warning mb-0" role="status">
                     <strong>No encontramos cuotas emitidas para tus bloques en {{ $resumen['anios'] }}.</strong>
-                    Si sabés que debés, puede que la escuela todavía no haya cargado la cuota de tu bloque o tu sede. Avisale a administración.
+                    Si sabés que debés, podés pagar igual desde «Pagá igual», acá abajo.
                 </div>
             @else
                 <div class="alert alert-success mb-0" role="status">
@@ -121,10 +121,78 @@
             <button type="submit" class="btn btn-primary btn-lg w-100 mt-2" id="pc-enviar" disabled>Continuar</button>
         @endif
     </form>
+
+    @if(count($opcionesExtra))
+        @php
+            $meses = [1 => 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            $abrirExtra = $pagables->isEmpty() || $errors->hasAny(['bloque_id', 'monto', 'mes', 'anio']);
+        @endphp
+        <details class="ito-card p-3 mt-3" @if($abrirExtra) open @endif>
+            <summary class="fw-semibold" style="cursor: pointer">¿No figura lo que querés pagar? Pagá igual</summary>
+            <p class="text-muted small mt-2">Elegí el bloque y el mes. Si la cuota todavía no está cargada, administración la engancha cuando confirme el pago.</p>
+            <form method="POST" action="{{ route('alumno.cuota.pagar.extra') }}" class="row g-3" id="px-form">
+                @csrf
+                <input type="hidden" name="alumno_id" value="{{ $alumno->id }}">
+                <div class="col-12">
+                    <label class="form-label" for="px-bloque">Bloque</label>
+                    <select id="px-bloque" name="bloque_id" class="form-select" required>
+                        @foreach($opcionesExtra as $o)
+                            <option value="{{ $o['id'] }}" data-monto="{{ $o['monto'] }}" @selected((int) old('bloque_id') === $o['id'])>
+                                {{ collect([$o['nombre'], $o['sede'], $o['profesor'] ? 'Profe: '.$o['profesor'] : null])->filter()->implode(' · ') }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-7">
+                    <label class="form-label" for="px-mes">Mes</label>
+                    <select id="px-mes" name="mes" class="form-select">
+                        @foreach($meses as $n => $nombre)<option value="{{ $n }}" @selected((int) old('mes', now()->month) === $n)>{{ $nombre }}</option>@endforeach
+                    </select>
+                </div>
+                <div class="col-5">
+                    <label class="form-label" for="px-anio">Año</label>
+                    <select id="px-anio" name="anio" class="form-select">
+                        @foreach(range(now()->year - 1, now()->year + 1) as $a)<option value="{{ $a }}" @selected((int) old('anio', now()->year) === $a)>{{ $a }}</option>@endforeach
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label" for="px-monto">Monto</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" id="px-monto" name="monto" class="form-control" min="1" step="0.01" inputmode="decimal" value="{{ old('monto') }}" required aria-describedby="px-monto-ayuda">
+                    </div>
+                    <div id="px-monto-ayuda" class="form-text">Te sugerimos el valor de la última cuota de ese bloque.</div>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label" for="px-concepto">Aclaración <span class="text-muted">(opcional)</span></label>
+                    <input type="text" id="px-concepto" name="concepto" class="form-control" maxlength="200" value="{{ old('concepto') }}" placeholder="Ej.: cuota de octubre">
+                </div>
+                <div class="col-12 d-grid gap-2">
+                    @if($mercadoPago)
+                        <label class="border rounded p-2 d-flex gap-2 align-items-center"><input class="form-check-input m-0" type="radio" name="medio" value="mercadopago" @checked(old('medio', 'mercadopago') === 'mercadopago')> Mercado Pago</label>
+                    @endif
+                    @if($transferencia)
+                        <label class="border rounded p-2 d-flex gap-2 align-items-center"><input class="form-check-input m-0" type="radio" name="medio" value="transferencia" @checked(old('medio', $mercadoPago ? null : 'transferencia') === 'transferencia')> Transferencia a {{ $transferencia['alias'] ?? 'la cuenta de la escuela' }}</label>
+                    @endif
+                </div>
+                <div class="col-12"><button type="submit" class="btn btn-primary btn-lg w-100">Continuar</button></div>
+            </form>
+        </details>
+    @endif
     @endif
 </div>
 
 <script>
+(() => {
+    const bloque = document.getElementById('px-bloque');
+    const monto = document.getElementById('px-monto');
+    if (bloque && monto) {
+        const sugerir = () => { const m = bloque.selectedOptions[0]?.dataset.monto; if (m && !monto.dataset.tocado) monto.value = Math.round(Number(m)); };
+        monto.addEventListener('input', () => { monto.dataset.tocado = '1'; });
+        bloque.addEventListener('change', sugerir);
+        if (!monto.value) sugerir();
+    }
+})();
 (() => {
     const checks = [...document.querySelectorAll('.pc-cuota:not(:disabled)')];
     const total = document.getElementById('pc-total');
