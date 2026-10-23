@@ -1,17 +1,30 @@
 import { useEffect, useRef, useState } from "preact/hooks";
+import { createPortal } from "preact/compat";
 import * as fabric from "fabric";
-import { ClipboardPaste, ExternalLink, ImageDown, ImagePlus, Replace, Wallpaper } from "lucide-preact";
+import { ClipboardPaste, ExternalLink, ImageDown, ImagePlus, PanelTop, Replace, Wallpaper, X } from "lucide-preact";
 import { subirImagen } from "../api";
 import { CONFIG } from "../config";
 import { useEditor } from "../context";
 
 /**
- * Puente con ArtCraft (https://app.getartcraft.com, app de escritorio abierta).
- * ArtCraft no se puede incrustar: corre en su app y genera con su propia cuenta.
- * Este panel lleva el diseño (o la imagen elegida) hasta ArtCraft y trae de vuelta
- * el resultado: como capa nueva, como fondo o en lugar de la imagen seleccionada.
+ * Puente con ArtCraft (https://app.getartcraft.com, proyecto abierto de Storyteller).
+ * Se puede usar dentro del admin (ventana sobre el editor) o en otra pestaña. Lo que se
+ * hace allá no vuelve solo: el navegador no deja leer otra página. Este panel lleva el
+ * diseño (o la imagen elegida) y trae el resultado: como capa nueva, como fondo o en
+ * lugar de la imagen seleccionada.
  */
 const ARTCRAFT_URL = "https://app.getartcraft.com/";
+const ARTCRAFT_EDITAR = "https://app.getartcraft.com/edit-image";
+
+/** Comprueba que la imagen subida se pueda mostrar antes de decir "listo". */
+const cargable = (url: string) =>
+  new Promise<boolean>((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
 
 type Destino = "capa" | "fondo" | "reemplazar";
 
@@ -21,6 +34,7 @@ export function ArtcraftPanel() {
   const [guardarEnKit, setGuardarEnKit] = useState(false);
   const [estado, setEstado] = useState<{ tipo: "ok" | "error" | "trabajando"; texto: string } | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
+  const [adentro, setAdentro] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const hayImagenElegida = selectedObject instanceof fabric.FabricImage;
 
@@ -41,10 +55,18 @@ export function ArtcraftPanel() {
       setEstado(null);
       return;
     }
+    if (!(await cargable(url))) {
+      setEstado({ tipo: "error", texto: "La imagen se subió pero no se puede mostrar. Probá de nuevo o avisá a administración." });
+      return;
+    }
+    let ok = true;
     if (destino === "fondo") setBackground("image", url);
-    else if (destino === "reemplazar") {
-      if (!(await replaceSelectedImage(url))) addImage(url);
-    } else addImage(url);
+    else if (destino === "reemplazar") ok = (await replaceSelectedImage(url)) || (await addImage(url));
+    else ok = await addImage(url);
+    if (!ok) {
+      setEstado({ tipo: "error", texto: "No se pudo poner la imagen en el diseño. Probá de nuevo." });
+      return;
+    }
 
     if (guardarEnKit && CONFIG.puedeGestionarKit) {
       const form = new FormData();
@@ -94,8 +116,11 @@ export function ArtcraftPanel() {
 
       <section class="flex flex-col gap-2">
         <h3 class="flex items-center gap-2 m-0 text-xs font-semibold text-zinc-800"><span class={paso}>2</span> Editalo en ArtCraft</h3>
-        <a href={ARTCRAFT_URL} target="_blank" rel="noopener" class={`${boton} no-underline !bg-zinc-900 !text-white !border-zinc-900`}>
-          <ExternalLink size={13} /> Abrir ArtCraft
+        <button class={`${boton} !bg-zinc-900 !text-white !border-zinc-900`} onClick={() => setAdentro(true)}>
+          <PanelTop size={13} /> Abrir ArtCraft acá
+        </button>
+        <a href={ARTCRAFT_URL} target="_blank" rel="noopener" class={`${boton} no-underline`}>
+          <ExternalLink size={13} /> Abrir en otra pestaña
         </a>
         <p class="m-0 text-[11px] text-zinc-500">Subí ahí la imagen que descargaste. Cuando termines, exportala o copiala.</p>
       </section>
@@ -145,6 +170,36 @@ export function ArtcraftPanel() {
           <p role="status" class={`m-0 rounded-md px-2 py-1.5 ${estado.tipo === "error" ? "bg-red-50 text-red-700" : estado.tipo === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-600"}`}>{estado.texto}</p>
         )}
       </section>
+
+      {adentro && createPortal(
+        <div class="fixed inset-0 z-[1000] flex flex-col bg-zinc-950/70 p-0 sm:p-4" role="dialog" aria-modal="true" aria-label="ArtCraft">
+          <div class="flex flex-1 flex-col overflow-hidden bg-white sm:rounded-xl shadow-2xl">
+            <div class="flex items-center gap-2 border-b border-zinc-200 px-3 py-2">
+              <strong class="text-sm text-zinc-900">ArtCraft</strong>
+              <span class="hidden text-xs text-zinc-500 md:inline">Cuando termines, descargá o copiá la imagen y soltala o pegala abajo.</span>
+              <a href={ARTCRAFT_URL} target="_blank" rel="noopener" class="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-zinc-600 no-underline hover:bg-zinc-100" title="Si no podés ingresar acá, abrilo en otra pestaña">
+                <ExternalLink size={13} /> Otra pestaña
+              </a>
+              <button class="inline-flex items-center gap-1 rounded-md border-none bg-zinc-900 px-2.5 py-1 text-xs font-semibold text-white cursor-pointer" onClick={() => setAdentro(false)}>
+                <X size={13} /> Volver al diseño
+              </button>
+            </div>
+            <iframe src={ARTCRAFT_EDITAR} title="ArtCraft" class="flex-1 w-full border-0" allow="clipboard-read; clipboard-write; fullscreen" />
+            <button
+              class={`flex items-center justify-center gap-2 border-0 border-t px-3 py-3 text-xs cursor-pointer ${arrastrando ? "bg-accent/10 text-zinc-900" : "bg-zinc-50 text-zinc-600"}`}
+              onClick={() => inputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setArrastrando(true); }}
+              onDragLeave={() => setArrastrando(false)}
+              onDrop={(e) => { e.preventDefault(); setArrastrando(false); traer(e.dataTransfer?.files?.[0]); }}
+            >
+              <ClipboardPaste size={15} />
+              <span><strong>Traer el resultado</strong> ({destino === "fondo" ? "como fondo" : destino === "reemplazar" ? "reemplazando la imagen elegida" : "como capa nueva"}): soltá la imagen acá, tocá para elegirla o hacé clic y pegala con Ctrl+V</span>
+              {estado && <span class={estado.tipo === "error" ? "text-red-700" : estado.tipo === "ok" ? "text-emerald-700" : ""}> · {estado.texto}</span>}
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
 
       <p class="m-0 text-[11px] text-zinc-500">ArtCraft es un proyecto abierto (MIT / Apache-2.0) de Storyteller. Lo que generes ahí se rige por su cuenta y sus créditos.</p>
     </div>

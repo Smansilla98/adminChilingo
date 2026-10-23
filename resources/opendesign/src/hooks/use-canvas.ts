@@ -217,10 +217,11 @@ export function useCanvasState() {
 
   // ── Images ──────────────────────────────────────────────────────────
 
+  /** Agrega una imagen centrada. Devuelve false si no se pudo cargar. */
   const addImage = useCallback(
-    async (url: string) => {
+    async (url: string): Promise<boolean> => {
       const canvas = getActiveCanvas();
-      if (!canvas) return;
+      if (!canvas) return false;
       try {
         const img = await fabric.FabricImage.fromURL(url, { crossOrigin: "anonymous" });
         const scale = Math.min(
@@ -237,8 +238,10 @@ export function useCanvasState() {
         canvas.add(img);
         canvas.setActiveObject(img);
         canvas.requestRenderAll();
+        return true;
       } catch (e) {
         console.error("Failed to load image:", e);
+        return false;
       }
     },
     [getActiveCanvas, canvasWidth, canvasHeight]
@@ -379,7 +382,12 @@ export function useCanvasState() {
       if (!canvas || !(actual instanceof fabric.FabricImage)) return false;
       const ancho = actual.getScaledWidth();
       const alto = actual.getScaledHeight();
-      await actual.setSrc(url, { crossOrigin: "anonymous" });
+      try {
+        await actual.setSrc(url, { crossOrigin: "anonymous" });
+      } catch (e) {
+        console.error("Failed to load image:", e);
+        return false;
+      }
       actual.set({ scaleX: ancho / (actual.width || 1), scaleY: alto / (actual.height || 1) });
       actual.setCoords();
       canvas.requestRenderAll();
