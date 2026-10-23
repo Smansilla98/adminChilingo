@@ -51,7 +51,8 @@ export interface EditorContextValue {
   zoomToFit: () => void;
   zoomIn: () => void;
   zoomOut: () => void;
-  exportPNG: () => void;
+  exportPNG: (nombre?: string, soloSeleccion?: boolean) => void;
+  replaceSelectedImage: (url: string) => Promise<boolean>;
   getCanvasJSON: () => string;
   getCanvasJSONForPage: (pageId: string) => string;
   getThumbnailForPage: (pageId: string) => string | null;

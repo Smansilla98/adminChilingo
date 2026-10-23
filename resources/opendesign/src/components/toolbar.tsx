@@ -183,7 +183,7 @@ export function Toolbar() {
 
         <button
           class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold border border-zinc-300 cursor-pointer transition-all bg-transparent text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-          onClick={exportPNG}
+          onClick={() => exportPNG()}
           title="Exportar PNG"
           aria-label="Exportar PNG"
         >

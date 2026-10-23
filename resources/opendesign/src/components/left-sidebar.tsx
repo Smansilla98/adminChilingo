@@ -11,18 +11,21 @@ import {
   LayoutGrid,
   Sparkles,
   Stamp,
+  WandSparkles,
 } from "lucide-preact";
 import { useEditor } from "../context";
 import { TemplateCard } from "./template-card";
 import { DesignList } from "./design-list";
 import { MarcaPanel } from "./marca-panel";
+import { ArtcraftPanel } from "./artcraft-panel";
 import { subirImagen } from "../api";
 
-type Section = "templates" | "marca" | "text" | "shapes" | "images" | "background" | "designs";
+type Section = "templates" | "marca" | "artcraft" | "text" | "shapes" | "images" | "background" | "designs";
 
 const SECTIONS: { key: Section; icon: typeof LayoutGrid; label: string }[] = [
   { key: "templates", icon: Sparkles, label: "Plantillas" },
   { key: "marca", icon: Stamp, label: "Marca" },
+  { key: "artcraft", icon: WandSparkles, label: "ArtCraft" },
   { key: "shapes", icon: Square, label: "Elementos" },
   { key: "text", icon: Type, label: "Texto" },
   { key: "images", icon: Upload, label: "Subidas" },
@@ -33,6 +36,7 @@ const SECTIONS: { key: Section; icon: typeof LayoutGrid; label: string }[] = [
 const SECTION_TITLES: Record<Section, string> = {
   templates: "Plantillas",
   marca: "Marca y biblioteca",
+  artcraft: "Editar en ArtCraft",
   shapes: "Elementos",
   text: "Texto",
   images: "Subidas",
@@ -143,6 +147,7 @@ export function LeftSidebar() {
               </div>
               <div class="flex-1 overflow-y-auto px-3 pb-3">
                 {activeSection === "marca" && <MarcaPanel onAgregar={addImage} />}
+                {activeSection === "artcraft" && <ArtcraftPanel />}
 
                 {activeSection === "templates" && (
                   <div>

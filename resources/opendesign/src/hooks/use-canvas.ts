@@ -368,12 +368,44 @@ export function useCanvasState() {
     setZoom((z) => Math.max(z / 1.2, 0.05));
   }, []);
 
+  /**
+   * Cambia la imagen seleccionada por otra (la versión editada afuera) sin moverla:
+   * conserva posición, tamaño en pantalla, rotación y orden de capas.
+   */
+  const replaceSelectedImage = useCallback(
+    async (url: string): Promise<boolean> => {
+      const canvas = getActiveCanvas();
+      const actual = canvas?.getActiveObject();
+      if (!canvas || !(actual instanceof fabric.FabricImage)) return false;
+      const ancho = actual.getScaledWidth();
+      const alto = actual.getScaledHeight();
+      await actual.setSrc(url, { crossOrigin: "anonymous" });
+      actual.set({ scaleX: ancho / (actual.width || 1), scaleY: alto / (actual.height || 1) });
+      actual.setCoords();
+      canvas.requestRenderAll();
+      canvas.fire("object:modified", { target: actual });
+      return true;
+    },
+    [getActiveCanvas]
+  );
+
   // ── Export ──────────────────────────────────────────────────────────
 
-  const exportPNG = useCallback(() => {
+  /**
+   * Descarga la página como PNG. Con `soloSeleccion`, descarga solo el elemento
+   * seleccionado (para editarlo afuera, por ejemplo en ArtCraft, y traerlo de vuelta).
+   */
+  const exportPNG = useCallback((nombre = "diseno-chilinga.png", soloSeleccion = false) => {
     const canvas = getActiveCanvas();
     if (!canvas) return;
     const activeObj = canvas.getActiveObject();
+    if (soloSeleccion && activeObj) {
+      const link = document.createElement("a");
+      link.download = nombre;
+      link.href = activeObj.toDataURL({ format: "png", multiplier: 2 });
+      link.click();
+      return;
+    }
     canvas.discardActiveObject();
     canvas.requestRenderAll();
 
@@ -384,7 +416,7 @@ export function useCanvasState() {
     });
 
     const link = document.createElement("a");
-    link.download = "diseno-chilinga.png";
+    link.download = nombre;
     link.href = dataURL;
     link.click();
 
@@ -513,6 +545,7 @@ export function useCanvasState() {
     zoomIn,
     zoomOut,
     exportPNG,
+    replaceSelectedImage,
     getThumbnailForPage,
     getCanvasJSON,
     getCanvasJSONForPage,
