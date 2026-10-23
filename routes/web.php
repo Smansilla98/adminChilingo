@@ -175,8 +175,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 | Cada ruta exige un permiso granular (`permiso:*`). El alcance (sede / bloque)
 | de cada registro lo verifican las Policies dentro de los controladores.
 */
+// Portada pública: presenta el sistema a quien no inició sesión.
+Route::get('/', fn () => auth()->check()
+    ? redirect()->route('dashboard')
+    : view('landing'))->name('home');
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/', [DashboardController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/estado-sistema', EstadoSistemaController::class)->name('estado-sistema');
     Route::post('/contexto', [ContextoController::class, 'cambiar'])->name('contexto.cambiar');
