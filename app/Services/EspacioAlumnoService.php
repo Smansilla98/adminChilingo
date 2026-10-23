@@ -99,8 +99,36 @@ class EspacioAlumnoService
         $eventos = $eventosQ->limit(4)->get();
 
         $estadoCuota = $this->estadoCuotaMes($alumno);
+        $deuda = $this->deuda($alumno);
+        if ($estadoCuota && $deuda['en_linea']) {
+            $estadoCuota['pagar_url'] = $deuda['pagar_url'];
+        }
 
-        return compact('proximaClase', 'asistencias', 'proximoPaso', 'eventos', 'estadoCuota');
+        return compact('proximaClase', 'asistencias', 'proximoPaso', 'eventos', 'estadoCuota', 'deuda');
+    }
+
+    /**
+     * Todo lo que el alumno debe hasta este mes (año actual y anterior), no solo el mes en
+     * curso: una cuota vieja sin pagar también tiene que verse. Si el pago en línea está
+     * habilitado, el link lleva a pagar; si no, a mandar el comprobante.
+     *
+     * @return array{cantidad: int, total: float, en_linea: bool, pagar_url: string}
+     */
+    public function deuda(Alumno $alumno): array
+    {
+        $cobros = app(\App\Domain\Finanzas\CobroCuotasService::class);
+        $enLinea = $cobros->datosTransferencia() !== null || $cobros->mercadoPagoDisponible();
+        $hasta = sprintf('%04d%02d', now()->year, now()->month);
+        $items = collect([now()->year - 1, now()->year])
+            ->flatMap(fn (int $anio) => app(\App\Domain\Finanzas\EstadoCuentaService::class)->paraAlumno($alumno, $anio)['items'])
+            ->filter(fn (array $i) => $i['saldo'] > 0 && sprintf('%04d%02d', $i['anio'], $i['mes'] ?? 1) <= $hasta);
+
+        return [
+            'cantidad' => $items->count(),
+            'total' => round((float) $items->sum('saldo'), 2),
+            'en_linea' => $enLinea,
+            'pagar_url' => $enLinea ? route('alumno.cuota.pagar') : route('alumno.cuota'),
+        ];
     }
 
     /**

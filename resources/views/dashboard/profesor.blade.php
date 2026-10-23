@@ -11,6 +11,7 @@
     $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
     $alumnosTotal = $bloques->sum(fn ($b) => $b->alumnos ? $b->alumnos->count() : 0);
     $faltaLista = ($pendientesAsistencia ?? collect())->isNotEmpty();
+    $hayClaseHoy = ($bloquesHoy ?? collect())->isNotEmpty();
 @endphp
 
 <div class="hub hub--docente">
@@ -41,6 +42,8 @@
                     @if($faltaLista)
                         <span class="hub-status-dot hub-status-dot--alert" aria-hidden="true"></span>
                         Falta tomarla
+                    @elseif(! $hayClaseHoy)
+                        Hoy no tenés clase
                     @else
                         <span class="hub-status-dot hub-status-dot--ok" aria-hidden="true"></span>
                         Ya está cargada

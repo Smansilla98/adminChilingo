@@ -11,6 +11,8 @@
     $saludo = $hora < 12 ? 'Buenos días' : ($hora < 19 ? 'Buenas tardes' : 'Buenas noches');
     $cuota = $estadoCuota ?? null;
     $pagarHref = $cuota['pagar_url'] ?? route('comprobante-cuota-public.create');
+    $deuda = $deuda ?? ['cantidad' => 0, 'total' => 0, 'en_linea' => false, 'pagar_url' => $pagarHref];
+    $accionPagar = $deuda['en_linea'] ? 'Pagar' : 'Enviar comprobante';
 @endphp
 
 <div class="hub hub--familia">
@@ -50,7 +52,7 @@
                     <span class="hub-module-title">{{ $cuota['label'] }}</span>
                     <span class="hub-module-desc">{{ $cuota['hint'] }}</span>
                     @if(in_array($cuota['estado'], ['pendiente', 'vencida', 'sin_cuota'], true))
-                        <span class="hub-kpi-badge {{ $cuota['estado'] === 'vencida' ? 'is-alert' : '' }}">Enviar comprobante</span>
+                        <span class="hub-kpi-badge {{ $cuota['estado'] === 'vencida' ? 'is-alert' : '' }}">{{ $accionPagar }}</span>
                     @elseif($cuota['estado'] === 'al_dia')
                         <span class="hub-kpi-badge is-ok">Al día</span>
                     @else
@@ -58,6 +60,16 @@
                     @endif
                 </span>
             </a>
+            @if($deuda['cantidad'] > 1 || ($deuda['cantidad'] === 1 && ! in_array($cuota['estado'], ['pendiente', 'vencida'], true)))
+                <a class="hub-module hub-module--alert" href="{{ $deuda['pagar_url'] }}">
+                    <span class="hub-module-icon" aria-hidden="true"><i class="bi bi-wallet2"></i></span>
+                    <span class="hub-module-body">
+                        <span class="hub-module-title">Debés {{ $deuda['cantidad'] }} {{ $deuda['cantidad'] === 1 ? 'cuota' : 'cuotas' }} en total</span>
+                        <span class="hub-module-desc">${{ number_format($deuda['total'], 0, ',', '.') }} contando meses anteriores</span>
+                        <span class="hub-kpi-badge is-alert">{{ $deuda['en_linea'] ? 'Pagar todo junto' : 'Enviar comprobante' }}</span>
+                    </span>
+                </a>
+            @endif
         </div>
     </section>
     @endif
@@ -84,11 +96,11 @@
             <h2 id="fam-hacer" class="hub-section-title"><span class="hub-section-code">Hacer</span> Accesos</h2>
         </header>
         <div class="hub-modules hub-modules--compact">
-            <a class="hub-module" href="{{ $pagarHref }}">
+            <a class="hub-module" href="{{ $deuda['en_linea'] ? $deuda['pagar_url'] : $pagarHref }}">
                 <span class="hub-module-icon"><i class="bi bi-receipt" aria-hidden="true"></i></span>
                 <span class="hub-module-body">
                     <span class="hub-module-title">Pagar cuota</span>
-                    <span class="hub-module-desc">Enviar comprobante</span>
+                    <span class="hub-module-desc">{{ $deuda['en_linea'] ? 'Transferencia, Mercado Pago o comprobante' : 'Enviar comprobante' }}</span>
                 </span>
             </a>
             <a class="hub-module" href="{{ route('programa.partituras.index') }}">
