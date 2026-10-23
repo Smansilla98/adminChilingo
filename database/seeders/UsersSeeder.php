@@ -5,91 +5,46 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
+/**
+ * Cuentas de arranque: administración y perfiles de ejemplo para probar.
+ *
+ * Solo se crean si no existen (no pisa contraseñas cambiadas). Las contraseñas no son
+ * fijas: salen de SEED_PASSWORD o, si no está, se generan al azar y se muestran una vez
+ * en la consola. En producción solo se crea la cuenta de administración.
+ */
 class UsersSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Crear usuario admin (ingreso por usuario y contraseña)
-        $admin = User::firstOrCreate(
-            ['username' => 'admin'],
-            [
-                'name' => 'Administrador',
-                'password' => Hash::make('admin123'),
-                'role' => 'admin',
-            ]
-        );
-
-        if (! $admin->hasRole('admin')) {
-            $admin->assignRole('admin');
+        $cuentas = [
+            ['admin', 'Administrador', 'admin', ['admin']],
+            ['direccion', 'Dirección', 'direccion', ['direccion']],
+            ['profesor', 'Profesor Ejemplo', 'profesor', ['profesor']],
+            ['coord.sede', 'Coordinador Sede', 'profesor', ['profesor', 'coordinador_sede']],
+            ['coord.area', 'Coordinador Área', 'profesor', ['profesor', 'coordinador_area']],
+        ];
+        if (app()->environment('production')) {
+            $cuentas = array_slice($cuentas, 0, 1);
         }
 
-        // Crear usuario profesor de ejemplo
-        $profesor = User::firstOrCreate(
-            ['username' => 'profesor'],
-            [
-                'name' => 'Profesor Ejemplo',
-                'password' => Hash::make('profesor123'),
-                'role' => 'profesor',
-            ]
-        );
-
-        if (! $profesor->hasRole('profesor')) {
-            $profesor->assignRole('profesor');
-        }
-
-        // Dirección (mismo nivel que admin)
-        $direccion = User::firstOrCreate(
-            ['username' => 'direccion'],
-            [
-                'name' => 'Dirección',
-                'email' => 'direccion@chilinga.local',
-                'password' => Hash::make('direccion123'),
-                'role' => 'direccion',
-            ]
-        );
-        if (! $direccion->hasRole('direccion')) {
-            $direccion->assignRole('direccion');
-        }
-        if (! $direccion->hasRole('admin')) {
-            // isAdmin() ya contempla direccion; opcionalmente también Spatie admin
-        }
-
-        // Coordinador de sede (perfil profesor + rol)
-        $coordSede = User::firstOrCreate(
-            ['username' => 'coord.sede'],
-            [
-                'name' => 'Coordinador Sede',
-                'email' => 'coordsede@chilinga.local',
-                'password' => Hash::make('coord123'),
-                'role' => 'profesor',
-            ]
-        );
-        if (! $coordSede->hasRole('profesor')) {
-            $coordSede->assignRole('profesor');
-        }
-        if (! $coordSede->hasRole('coordinador_sede')) {
-            $coordSede->assignRole('coordinador_sede');
-        }
-
-        // Coordinador de área
-        $coordArea = User::firstOrCreate(
-            ['username' => 'coord.area'],
-            [
-                'name' => 'Coordinador Área',
-                'email' => 'coordarea@chilinga.local',
-                'password' => Hash::make('coord123'),
-                'role' => 'profesor',
-            ]
-        );
-        if (! $coordArea->hasRole('profesor')) {
-            $coordArea->assignRole('profesor');
-        }
-        if (! $coordArea->hasRole('coordinador_area')) {
-            $coordArea->assignRole('coordinador_area');
+        foreach ($cuentas as [$username, $nombre, $rol, $roles]) {
+            if (User::query()->where('username', $username)->exists()) {
+                continue;
+            }
+            $password = (string) (env('SEED_PASSWORD') ?: Str::password(16, symbols: false));
+            $user = User::query()->create([
+                'username' => $username,
+                'name' => $nombre,
+                'email' => str_replace('.', '', $username).'@chilinga.local',
+                'password' => Hash::make($password),
+                'role' => $rol,
+            ]);
+            foreach ($roles as $r) {
+                $user->assignRole($r);
+            }
+            $this->command?->warn("Usuario «{$username}» creado con la contraseña: {$password} (cambiala al ingresar)");
         }
     }
 }

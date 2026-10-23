@@ -138,13 +138,9 @@ Se importan: **Sedes** (desde columna Sede del Formulario), **un profesor** (des
 
 ## 👤 Usuarios por Defecto
 
-**Administrador:**
-- Usuario: `admin`
-- Contraseña: `admin123`
-
-**Profesor:**
-- Usuario: `profesor`
-- Contraseña: `profesor123`
+`php artisan db:seed` crea `admin` (y en desarrollo también `direccion`, `profesor`,
+`coord.sede` y `coord.area`) si no existen. No hay contraseñas fijas: se usa `SEED_PASSWORD`
+si está definida o se genera una al azar, que se muestra una sola vez en la consola.
 
 ## 📁 Estructura del Proyecto
 

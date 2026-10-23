@@ -35,8 +35,8 @@ php artisan db:seed
 
 Esto creará:
 - Las 6 sedes (Palomar, Saavedra, Varela, Quilmes, Banfield, Tacheles)
-- Usuario admin: `admin@chilinga.com` / `admin123`
-- Usuario profesor: `profesor@chilinga.com` / `profesor123`
+- Usuario `admin` y, fuera de producción, `profesor` y otros perfiles de ejemplo. La contraseña
+  se muestra en la consola al crearlos (o se toma de `SEED_PASSWORD`).
 - Roles de permisos
 
 ### 5. Compilar Assets

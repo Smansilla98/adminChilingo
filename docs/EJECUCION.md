@@ -42,7 +42,7 @@ php artisan storage:link
 php artisan serve
 ```
 
-Abrir `http://localhost:8000`. Usuario: `admin`, contraseña: `admin123`.
+Abrir `http://localhost:8000`. Usuario: `admin`; la contraseña la muestra `php artisan db:seed` al crearlo (o usá `SEED_PASSWORD`).
 
 ## Tests
 
