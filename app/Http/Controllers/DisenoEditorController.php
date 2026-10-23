@@ -7,11 +7,11 @@ use App\Models\Diseno;
 use App\Models\DisenoKitAsset;
 use App\Models\DisenoPagina;
 use App\Support\MarcaChilinga;
+use App\Support\MediosDiseno;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -157,9 +157,7 @@ class DisenoEditorController extends Controller
     public function destroy(Diseno $diseno): JsonResponse
     {
         $this->authorize('delete', $diseno);
-        if ($diseno->preview_path) {
-            Storage::disk('public')->delete($diseno->preview_path);
-        }
+        MediosDiseno::borrar($diseno->preview_path);
         $diseno->delete();
 
         return response()->json(['ok' => true]);
@@ -299,9 +297,9 @@ class DisenoEditorController extends Controller
             'file.max' => 'La imagen supera los 10 MB.',
         ]);
         $file = $request->file('file');
-        $path = $file->storeAs('disenos/medios/'.$request->user()->id, Str::uuid().'.'.$file->extension(), 'public');
+        $path = MediosDiseno::guardarSubida($file, 'disenos/medios/'.$request->user()->id);
 
-        return response()->json(['url' => Storage::disk('public')->url($path)]);
+        return response()->json(['url' => MediosDiseno::url($path)]);
     }
 
     /** Pestaña "Marca": logos, kit de marca, mockups y fotos de la Biblioteca. */
@@ -372,7 +370,7 @@ class DisenoEditorController extends Controller
             'titulo' => 'nullable|string|max:120',
         ]);
         $file = $request->file('archivo');
-        $path = $file->storeAs('disenos/kit', Str::uuid().'.'.$file->extension(), 'public');
+        $path = MediosDiseno::guardarSubida($file, 'disenos/kit');
         $kit = DisenoKitAsset::query()->create([
             'titulo' => $data['titulo'] ?: (pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) ?: 'Recurso de marca'),
             'path' => $path,
@@ -387,7 +385,7 @@ class DisenoEditorController extends Controller
     public function kitDestroy(DisenoKitAsset $kit): JsonResponse
     {
         $this->authorize('manageKit', Diseno::class);
-        Storage::disk('public')->delete($kit->path);
+        MediosDiseno::borrar($kit->path);
         $kit->delete();
 
         return response()->json(['ok' => true]);
@@ -420,9 +418,9 @@ class DisenoEditorController extends Controller
         }
         $path = 'disenos/previews/'.$diseno->id.'.'.($m[1] === 'png' ? 'png' : 'jpg');
         if ($diseno->preview_path && $diseno->preview_path !== $path) {
-            Storage::disk('public')->delete($diseno->preview_path);
+            MediosDiseno::borrar($diseno->preview_path);
         }
-        Storage::disk('public')->put($path, $binario);
+        MediosDiseno::guardar($path, $binario);
 
         return $path;
     }

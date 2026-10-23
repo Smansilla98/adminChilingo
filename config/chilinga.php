@@ -13,6 +13,9 @@ return [
     | Transferencia: los datos que se le muestran al alumno para que pague desde su banco o
     | billetera. Sin alias ni CBU, la opción no aparece.
     */
+    // Si hay un volumen persistente para archivos (lo lee Estado del sistema).
+    'almacenamiento_persistente' => filled(env('PERSISTENT_STORAGE_PATH')),
+
     'cobro' => [
         'alias' => env('COBRO_ALIAS'),
         'cbu' => env('COBRO_CBU'),

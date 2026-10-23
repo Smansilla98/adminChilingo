@@ -3,7 +3,7 @@
 namespace App\Domain\Disenos;
 
 use App\Models\Diseno;
-use Illuminate\Support\Facades\Storage;
+use App\Support\MediosDiseno;
 
 /**
  * Vista previa PNG a partir del JSON del lienzo, para no depender del editor web.
@@ -55,7 +55,7 @@ class MiniaturaDiseno
             return null;
         }
         $path = 'disenos/previews/'.$diseno->id.'.png';
-        Storage::disk('public')->put($path, $binario);
+        MediosDiseno::guardar($path, $binario);
         $diseno->preview_path = $path;
         $diseno->save();
 

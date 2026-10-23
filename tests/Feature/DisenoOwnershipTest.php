@@ -146,7 +146,7 @@ class DisenoOwnershipTest extends TestCase
 
     public function test_subir_imagen_guarda_y_rechaza_svg(): void
     {
-        Storage::fake('public');
+        Storage::fake('comprobantes');
         $user = $this->disenador();
 
         $url = $this->actingAs($user)->post('/disenos/api/uploads', ['file' => UploadedFile::fake()->image('foto.png', 200, 200)], ['Accept' => 'application/json'])
@@ -159,14 +159,14 @@ class DisenoOwnershipTest extends TestCase
 
     public function test_miniatura_se_guarda_al_actualizar(): void
     {
-        Storage::fake('public');
+        Storage::fake('comprobantes');
         $user = $this->disenador();
         $d = $this->diseno($user);
         $png = 'data:image/png;base64,'.base64_encode(UploadedFile::fake()->image('t.png', 20, 20)->getContent());
 
         $this->actingAs($user)->putJson("/disenos/api/designs/{$d->id}", ['thumbnail_data' => $png])->assertOk();
 
-        Storage::disk('public')->assertExists("disenos/previews/{$d->id}.png");
+        Storage::disk('comprobantes')->assertExists("disenos/previews/{$d->id}.png");
         $this->assertNotNull($this->getJson("/disenos/api/designs/{$d->id}")->json('thumbnail_url'));
     }
 
@@ -180,6 +180,23 @@ class DisenoOwnershipTest extends TestCase
         $this->assertNotEmpty($grupos['logos']['items']);
         $this->assertSame('Logo sede', $grupos['kit']['items'][0]['label']);
         $this->assertSame('Foto show', $grupos['biblioteca']['items'][0]['label']);
+    }
+
+    public function test_las_imagenes_subidas_quedan_en_el_disco_persistente_con_la_misma_url(): void
+    {
+        Storage::fake('comprobantes');
+        Storage::fake('public');
+        $user = $this->disenador();
+        $url = $this->actingAs($user)->post('/disenos/api/uploads', ['file' => UploadedFile::fake()->image('foto.png', 40, 40)], ['Accept' => 'application/json'])
+            ->assertOk()->json('url');
+        $path = 'disenos/'.\Illuminate\Support\Str::after($url, '/storage/disenos/');
+        Storage::disk('comprobantes')->assertExists($path);
+        Storage::disk('public')->assertMissing($path);
+
+        // Aunque el disco del contenedor se haya borrado en el deploy, la URL sigue respondiendo.
+        $this->get(parse_url($url, PHP_URL_PATH))->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->get('/storage/disenos/medios/1/no-existe.png')->assertNotFound();
+        $this->get('/storage/disenos/../../.env')->assertNotFound();
     }
 
     public function test_marca_trae_el_manual_v3_con_su_paleta_y_sus_logos(): void
@@ -207,7 +224,7 @@ class DisenoOwnershipTest extends TestCase
 
     public function test_kit_de_marca_solo_lo_gestiona_administracion(): void
     {
-        Storage::fake('public');
+        Storage::fake('comprobantes');
         $user = $this->disenador();
         $admin = $this->admin();
         $archivo = fn () => UploadedFile::fake()->image('kit.png', 100, 100);

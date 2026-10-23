@@ -24,7 +24,7 @@ class DisenosApiTest extends TestCase
 
     public function test_desde_plantilla_edicion_de_contenido_paginas_y_baja(): void
     {
-        Storage::fake('public');
+        Storage::fake('comprobantes');
         Sanctum::actingAs($this->disenador());
 
         $plantillas = $this->getJson('/api/v1/disenos/plantillas')->assertOk()->json();

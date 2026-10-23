@@ -22,12 +22,14 @@ use App\Http\Controllers\CuotaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscografiaController;
 use App\Http\Controllers\DisenoEditorController;
+use App\Http\Controllers\EstadoSistemaController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\FacturacionMensualController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\HubSearchController;
 use App\Http\Controllers\InventarioItemController;
 use App\Http\Controllers\InventarioPublicoController;
+use App\Http\Controllers\MedioDisenoController;
 use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Controllers\MiCuotaController;
 use App\Http\Controllers\NotificacionWebController;
@@ -75,6 +77,12 @@ Route::get('/tambor/{codigo}', [InventarioPublicoController::class, 'show'])
     ->middleware('throttle:40,1')
     ->where('codigo', '[A-Za-z0-9._-]{2,40}')
     ->name('inventario.publico');
+
+// Archivos de Diseño en el disco persistente, con las URL de siempre (ver MediosDiseno).
+Route::get('/storage/disenos/{path}', MedioDisenoController::class)
+    ->where('path', '.*')
+    ->middleware('throttle:600,1')
+    ->name('disenos.medio');
 
 Route::post('/webhooks/mercadopago', MercadoPagoWebhookController::class)
     ->middleware('throttle:120,1')
@@ -170,6 +178,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/estado-sistema', EstadoSistemaController::class)->name('estado-sistema');
     Route::post('/contexto', [ContextoController::class, 'cambiar'])->name('contexto.cambiar');
 
     Route::get('/recordatorios/chat', RecordatorioChatbotController::class)->name('recordatorios.chat');

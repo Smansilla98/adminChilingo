@@ -19,6 +19,14 @@
         ->count();
 
     $atencionExtra = collect($atencionHoy ?? []);
+    $fallasConfig = $user->isAdmin() ? \App\Support\EstadoSistema::errores(request()) : 0;
+    if ($fallasConfig > 0) {
+        $atencionExtra = $atencionExtra->prepend([
+            'href' => route('estado-sistema'),
+            'title' => $fallasConfig.' '.($fallasConfig === 1 ? 'falla' : 'fallas').' de configuración del sistema',
+            'hint' => 'Estado del sistema',
+        ]);
+    }
     if ($clasesPendientesSemana > 0) {
         $atencionExtra = $atencionExtra->prepend([
             'href' => route('asistencias.index'),

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediosDiseno;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -28,7 +29,7 @@ class DisenoKitAsset extends Model
 
     public function url(): string
     {
-        return asset('storage/'.$this->path);
+        return MediosDiseno::url($this->path);
     }
 
     /**

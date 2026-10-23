@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MediosDiseno;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,7 +34,7 @@ class Diseno extends Model
 
     public function previewUrl(): ?string
     {
-        return $this->preview_path ? asset('storage/'.$this->preview_path) : null;
+        return $this->preview_path ? MediosDiseno::url($this->preview_path) : null;
     }
 
     public function paginas(): HasMany
@@ -50,7 +51,7 @@ class Diseno extends Model
             'canvas_json' => $this->canvas_json ? json_encode($this->canvas_json) : '{}',
             'width' => (int) $this->ancho,
             'height' => (int) $this->alto,
-            'thumbnail_url' => $this->preview_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->preview_path).'?v='.$this->updated_at?->timestamp : null,
+            'thumbnail_url' => $this->preview_path ? MediosDiseno::url($this->preview_path).'?v='.$this->updated_at?->timestamp : null,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
