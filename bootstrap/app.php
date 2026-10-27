@@ -91,7 +91,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Avisos de la app (idempotentes: no se duplican aunque corran de nuevo).
         $schedule->command('chilinga:avisos cuotas-vencidas')->dailyAt('11:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
+        $schedule->command('chilinga:avisos ausencias')->dailyAt('10:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos eventos')->dailyAt('18:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
+
+        // Pagos de Mercado Pago cuyo aviso no llegó: se buscan por referencia y se registran.
+        $schedule->command('chilinga:mercadopago:conciliar')->everyThirtyMinutes()->withoutOverlapping()->onOneServer();
+
+        // Backup diario de la base en el disco persistente (se guardan los últimos 14).
+        $schedule->command('chilinga:respaldo')->dailyAt('03:30')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
 
         $schedule->command('mail:resumen-admin')
             ->weekdays()

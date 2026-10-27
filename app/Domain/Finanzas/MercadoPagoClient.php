@@ -56,6 +56,23 @@ class MercadoPagoClient
     }
 
     /**
+     * Pagos de una referencia nuestra (external_reference), del más nuevo al más viejo.
+     * Sirve para conciliar cuando el aviso de Mercado Pago no llegó.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function pagosDeReferencia(string $referencia): array
+    {
+        $respuesta = $this->http()->get(self::API.'/v1/payments/search', [
+            'external_reference' => $referencia,
+            'sort' => 'date_created',
+            'criteria' => 'desc',
+        ]);
+
+        return $respuesta->successful() ? array_values((array) $respuesta->json('results', [])) : [];
+    }
+
+    /**
      * Verifica la firma del aviso (cabecera x-signature) si hay clave configurada.
      * Formato de Mercado Pago: "ts=...,v1=..." firmado sobre "id:{data.id};request-id:{x-request-id};ts:{ts};".
      */

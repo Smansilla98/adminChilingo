@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Partituras\RevisionPartituras;
 use App\Models\ProgramaRitmo;
 use App\Support\PartituraScore;
 use Illuminate\Database\Seeder;
@@ -114,7 +115,8 @@ class PartiturasEjemploSeeder extends Seeder
                 $this->command?->line("↻ {$ritmo->nombre}: {$motivo} → recargo desde el JSON ({$hash})");
             }
 
-            $medios['partitura_score'] = $score;
+            // Lo que la escuela ya validó no vuelve a aparecer como «Revisar:».
+            $medios['partitura_score'] = RevisionPartituras::aplicarValidadas($score, $ritmo->id);
             $ritmo->update(['medios' => $medios]);
 
             $resumen = PartituraScore::resumen($score);

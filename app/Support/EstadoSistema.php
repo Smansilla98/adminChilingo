@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Domain\Datos\Respaldo;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -21,7 +23,7 @@ final class EstadoSistema
     public const OK = 'ok';
 
     /**
-     * @return list<array{clave: string, titulo: string, estado: string, detalle: string, arreglo: string|null}>
+     * @return list<array{clave: string, titulo: string, estado: string, detalle: string, arreglo: string|null, descarga?: bool}>
      */
     public static function chequeos(?Request $request = null): array
     {
@@ -30,6 +32,7 @@ final class EstadoSistema
         return [
             self::dominio($request, $produccion),
             self::almacenamiento($produccion),
+            self::respaldos($produccion),
             self::mail(),
             self::cobroTransferencia(),
             self::mercadoPago(),
@@ -146,6 +149,39 @@ final class EstadoSistema
                 ! $firma => 'Copiá la clave secreta del webhook en MERCADOPAGO_WEBHOOK_SECRET.',
                 default => null,
             },
+        ];
+    }
+
+    private static function respaldos(bool $produccion): array
+    {
+        $ultimo = Respaldo::ultimo();
+        $fecha = isset($ultimo['fecha']) ? Carbon::parse($ultimo['fecha']) : null;
+        $horas = $fecha ? (int) $fecha->diffInHours(now()) : null;
+        $ok = $ultimo !== null && $ultimo['ok'];
+        $estado = match (true) {
+            $ultimo === null => $produccion ? self::ERROR : self::AVISO,
+            ! $ok => self::ERROR,
+            $horas > 36 => self::ERROR,
+            default => self::OK,
+        };
+        $copias = $ultimo !== null ? count(Respaldo::archivos()) : 0;
+
+        return [
+            'clave' => 'respaldos',
+            'titulo' => 'Backups de la base de datos',
+            'estado' => $estado,
+            'detalle' => match (true) {
+                $ultimo === null => 'Todavía no se hizo ningún backup. Se generan solos todos los días a las 3:30.',
+                ! $ok => 'El último intento falló ('.$fecha?->diffForHumans().'): '.($ultimo['error'] ?? 'error desconocido').'.',
+                $horas > 36 => 'El último backup es de '.$fecha->diffForHumans().': el automático dejó de correr.',
+                default => 'Último backup '.$fecha->diffForHumans().' ('.number_format(($ultimo['bytes'] ?? 0) / 1024 / 1024, 1, ',', '.').' MB). Se guardan los últimos '.$copias.'.',
+            },
+            'arreglo' => match (true) {
+                $estado === self::OK => null,
+                $ultimo === null => 'Esperá al primer backup nocturno o corré «php artisan chilinga:respaldo». Necesita el volumen persistente.',
+                default => 'Revisá que el volumen persistente tenga espacio y que el scheduler esté activo (SCHEDULER_ENABLED=1).',
+            },
+            'descarga' => $ok,
         ];
     }
 

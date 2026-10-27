@@ -83,8 +83,10 @@ pero no se ejecutan sin autorización explícita.
 |-----------|--------------------|------|
 | Build firmado Android/iOS y publicación | Requiere cuenta de Expo, Apple Developer y Google Play (costo y credenciales) | `npx eas-cli init` + `npm run build:prod` en `mobile/` |
 | Deploy a producción | Requiere backup previo de la base real | Checklist en `DEPLOY.md` |
-| Cambiar FKs `CASCADE` → `RESTRICT` | Cambio en caliente sobre datos reales | Protección ya activa en la app; ver `MIGRACIONES.md` |
-| fabric 7 / jsPDF 4 (avisos de seguridad) | Cambio de versión mayor en Diseño y PDFs; requiere prueba manual | Actualizar y probar el editor de Diseño y los PDFs |
+
+Resueltos en octubre 2026: FKs `CASCADE` → `RESTRICT` (migración, ver `MIGRACIONES.md`),
+fabric 7.4 en el editor de Diseño (anclaje left/top fijado en `src/fabric-defaults.ts`),
+jsPDF 4 y `npm audit` sin vulnerabilidades en la raíz y en `resources/opendesign`.
 
 ## Fase 12 — Paridad total de la app ✅
 

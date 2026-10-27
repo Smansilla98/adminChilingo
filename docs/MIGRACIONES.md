@@ -75,12 +75,17 @@ En producción estas migraciones ya figuran como ejecutadas: los cambios no las 
 | `chilinga:personas:fusionar {queda} {duplicada} [--force]` | Fusión auditada |
 | `chilinga:permisos:sync` | `config/permisos.php` → tablas de Spatie |
 | `chilinga:superadmin {usuario} [--force]` | Alta de superadministrador (puesta en marcha / recuperación) |
-| `chilinga:avisos cuotas-vencidas\|eventos` | Genera avisos (lo corre el scheduler) |
+| `chilinga:avisos cuotas-vencidas\|eventos\|ausencias` | Genera avisos (lo corre el scheduler) |
+| `chilinga:respaldo [--conservar=14]` | Backup de la base en el disco persistente (ver `DEPLOY.md`) |
+| `chilinga:mercadopago:conciliar` | Registra pagos de Mercado Pago aprobados cuyo aviso no llegó |
+
+## FKs de pagos y alumnos ✅
+
+`2026_10_27_000002_fk_pagos_y_alumnos_restrict` cambia a `RESTRICT` las FK `sedes → alumnos`,
+`alumnos → pago_detalles` y `cuotas → pago_detalles` (antes `CASCADE`). Solo en MySQL; es
+reversible (`down()` vuelve a `CASCADE`). La aplicación ya lo impedía (`EliminacionSegura`);
+ahora también la base. Conviene que el deploy que la aplique tenga un backup del día.
 
 ## Pendiente (cuando se confirme en producción)
 
-- Cambiar las FK `ON DELETE CASCADE` de `sedes → alumnos`, `alumnos → pago_detalles` y
-  `cuotas → pago_detalles` por `RESTRICT`. Hoy la protección está en la aplicación
-  (`EliminacionSegura`, con tests); cambiar FKs en caliente sobre MySQL con datos requiere
-  ventana de mantenimiento.
 - Retirar `users.modulos_access` (la matriz "Visibilidad del menú" solo oculta módulos).

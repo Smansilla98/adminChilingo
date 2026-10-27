@@ -122,6 +122,42 @@ class CobroCuotasTest extends TestCase
         $this->assertSame(2, PagoDetalle::query()->where('alumno_id', $this->alumno->id)->count());
     }
 
+    public function test_conciliacion_registra_un_pago_de_mercado_pago_cuyo_aviso_no_llego(): void
+    {
+        config(['services.mercadopago.access_token' => 'TEST-token']);
+        Http::fake([
+            'api.mercadopago.com/checkout/preferences' => Http::response(['id' => 'pref-2', 'init_point' => 'https://mp.test/pref-2']),
+            'api.mercadopago.com/v1/payments/search*' => fn () => Http::response(['results' => [
+                ['id' => 777, 'status' => 'approved', 'external_reference' => ComprobanteCuotaAlumno::query()->value('referencia')],
+            ]]),
+            'api.mercadopago.com/v1/payments/*' => fn () => Http::response(['id' => 777, 'status' => 'approved', 'external_reference' => ComprobanteCuotaAlumno::query()->value('referencia'), 'transaction_amount' => 18000, 'currency_id' => 'ARS', 'date_approved' => now()->toIso8601String()]),
+        ]);
+        $this->actingAs($this->juan)->post('/mi-cuota/pagar', ['alumno_id' => $this->alumno->id, 'cuota_ids' => [$this->cuotas[0]->id], 'medio' => 'mercadopago']);
+
+        // Recién iniciado no se toca: puede estar pagándolo en este momento.
+        $this->artisan('chilinga:mercadopago:conciliar')->expectsOutput('Revisados: 0 · registrados: 0');
+
+        $this->travel(20)->minutes();
+        $this->artisan('chilinga:mercadopago:conciliar')->expectsOutput('Revisados: 1 · registrados: 1');
+        $this->assertTrue(ComprobanteCuotaAlumno::query()->firstOrFail()->estaPagado());
+        $this->assertSame(1, PagoDetalle::query()->where('alumno_id', $this->alumno->id)->count());
+    }
+
+    public function test_al_volver_de_mercado_pago_el_pago_se_confirma_sin_esperar_el_aviso(): void
+    {
+        config(['services.mercadopago.access_token' => 'TEST-token']);
+        Http::fake([
+            'api.mercadopago.com/checkout/preferences' => Http::response(['id' => 'pref-3', 'init_point' => 'https://mp.test/pref-3']),
+            'api.mercadopago.com/v1/payments/*' => fn () => Http::response(['id' => 888, 'status' => 'approved', 'external_reference' => ComprobanteCuotaAlumno::query()->value('referencia'), 'transaction_amount' => 18000, 'currency_id' => 'ARS', 'date_approved' => now()->toIso8601String()]),
+        ]);
+        $this->actingAs($this->juan)->post('/mi-cuota/pagar', ['alumno_id' => $this->alumno->id, 'cuota_ids' => [$this->cuotas[0]->id], 'medio' => 'mercadopago']);
+        $pago = ComprobanteCuotaAlumno::query()->firstOrFail();
+
+        $this->actingAs($this->juan)->get(route('alumno.cuota.pago', ['referencia' => $pago->referencia, 'collection_status' => 'approved', 'payment_id' => '888']))->assertOk();
+
+        $this->assertTrue($pago->fresh()->estaPagado());
+    }
+
     public function test_mercado_pago_con_importe_menor_queda_para_revisar(): void
     {
         config(['services.mercadopago.access_token' => 'TEST-token']);

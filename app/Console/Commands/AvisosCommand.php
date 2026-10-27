@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class AvisosCommand extends Command
 {
-    protected $signature = 'chilinga:avisos {tipo : cuotas-vencidas|eventos}';
+    protected $signature = 'chilinga:avisos {tipo : cuotas-vencidas|eventos|ausencias}';
 
     protected $description = 'Genera avisos internos/push (idempotente: no repite avisos ya enviados).';
 
@@ -16,10 +16,11 @@ class AvisosCommand extends Command
         $n = match ($this->argument('tipo')) {
             'cuotas-vencidas' => $avisos->cuotasVencidas(),
             'eventos' => $avisos->eventosProximos(),
+            'ausencias' => $avisos->ausenciasSeguidas(),
             default => null,
         };
         if ($n === null) {
-            $this->error('Tipo desconocido. Usá cuotas-vencidas o eventos.');
+            $this->error('Tipo desconocido. Usá cuotas-vencidas, eventos o ausencias.');
 
             return self::FAILURE;
         }

@@ -11,6 +11,9 @@
     :flush="true"
 >
     <x-slot:actions>
+        <a href="{{ route('reportes.tendencias', ['mes' => $mes, 'año' => $año]) }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-graph-up-arrow"></i> Tendencias y deuda
+        </a>
         <a href="{{ route('reportes.export.excel', ['mes' => $mes, 'año' => $año]) }}" class="btn btn-sm btn-success">
             <i class="bi bi-file-earmark-excel"></i> Excel
         </a>

@@ -102,6 +102,18 @@ class CobroCuotaController extends Controller
     public function show(Request $request, string $referencia, CobroCuotasService $cobros): View
     {
         $pago = $this->pagoPropio($request, $referencia);
+
+        // Vuelve de Mercado Pago con el id del pago: se confirma ya, sin esperar el aviso.
+        $paymentId = (string) ($request->query('payment_id') ?? $request->query('collection_id') ?? '');
+        if (! $pago->pago_id && $pago->estado === 'esperando_pago' && preg_match('/^\d{1,30}$/', $paymentId)) {
+            try {
+                $cobros->procesarAvisoMercadoPago($paymentId);
+                $pago->refresh();
+            } catch (\Throwable $e) {
+                report($e); // si falla, lo resuelve el aviso o la conciliación periódica
+            }
+        }
+
         $pago->load(['items.cuota', 'items.bloque.sede', 'items.bloque.profesor', 'items.bloque.profesores', 'alumno']);
 
         return view('alumno.pago-cuotas', [

@@ -19,6 +19,8 @@
         <a href="{{ route('programa.index') }}" class="btn btn-outline-secondary">Programa</a>
         @if($esAdmin)
         <a href="{{ route('programa.gestion') }}" class="btn btn-outline-secondary"><i class="bi bi-sliders"></i> Gestionar toques</a>
+        @php $paraRevisar = app(\App\Domain\Partituras\RevisionPartituras::class)->totalPendientes(); @endphp
+        <a href="{{ route('programa.revision') }}" class="btn {{ $paraRevisar ? 'btn-warning' : 'btn-outline-secondary' }}"><i class="bi bi-patch-question"></i> Para revisar @if($paraRevisar)<span class="badge text-bg-dark ms-1">{{ $paraRevisar }}</span>@endif</a>
         <form action="{{ route('programa.partituras.importar-cuadernillo') }}" method="POST" class="d-inline"
               data-confirm="¿Asignar a cada toque su PDF del Cuadernillo de Toques? Reemplaza el archivo de partitura actual.">
             @csrf

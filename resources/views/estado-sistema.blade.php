@@ -27,6 +27,10 @@
                     @if($c['arreglo'])
                         <p class="mb-0 mt-1 small text-muted"><strong>Cómo arreglarlo:</strong> {{ $c['arreglo'] }}</p>
                     @endif
+                    @if(! empty($c['descarga']))
+                        <a href="{{ route('estado-sistema.respaldo') }}" class="btn btn-sm btn-outline-secondary mt-2"><i class="bi bi-download" aria-hidden="true"></i> Descargar el último backup</a>
+                        <p class="mb-0 mt-1 small text-muted">Contiene todos los datos de la escuela: guardalo en un lugar seguro y no lo compartas.</p>
+                    @endif
                 </div>
             </section>
         @endforeach

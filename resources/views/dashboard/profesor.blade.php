@@ -131,6 +131,37 @@
         </a>
     </div>
 
+    @if(($paraContactar ?? collect())->isNotEmpty())
+    <section class="hub-section" aria-labelledby="jornada-contactar">
+        <header class="hub-section-head">
+            <h2 class="hub-section-title" id="jornada-contactar"><span class="hub-section-code">Cuidar</span> Para contactar</h2>
+            <p class="hub-section-sub mb-0 small text-muted">Faltaron {{ \App\Domain\Asistencias\AusenciasSeguidas::MINIMO }} clases seguidas o más sin aviso. Un mensaje a tiempo ayuda a que no dejen.</p>
+        </header>
+        <ul class="ito-feed mb-0">
+            @foreach($paraContactar as $r)
+            @php
+                $tel = $r['alumno']->telefono ? ltrim(\App\Services\WhatsAppService::normalizePhone($r['alumno']->telefono), '+') : null;
+                $nombre = $r['alumno']->nombre_apellido;
+                $texto = 'Hola '.\Illuminate\Support\Str::of($nombre)->before(' ').', te extrañamos en '.$r['bloque']->nombre.'. ¿Está todo bien? Te esperamos en la próxima clase.';
+            @endphp
+            <li class="ito-feed-item d-flex flex-wrap align-items-center gap-2 justify-content-between">
+                <div>
+                    <strong>{{ $nombre }}</strong>
+                    <span class="badge text-bg-danger">{{ $r['faltas'] }} faltas seguidas</span>
+                    <div class="small text-muted">{{ $r['bloque']->nombre }} · desde el {{ $r['desde']->format('d/m') }}@if($r['ultima_presencia']) · vino por última vez el {{ $r['ultima_presencia']->format('d/m') }}@endif</div>
+                </div>
+                <div class="d-flex gap-2">
+                    @if($tel)
+                    <a class="btn btn-sm btn-success" href="https://wa.me/{{ $tel }}?text={{ rawurlencode($texto) }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp" aria-hidden="true"></i> Escribirle</a>
+                    @endif
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('profesor.alumnos.show', $r['alumno']) }}">Ver ficha</a>
+                </div>
+            </li>
+            @endforeach
+        </ul>
+    </section>
+    @endif
+
     @if(($proximosPasos ?? collect())->isNotEmpty())
     <section class="hub-section" aria-labelledby="jornada-sigue">
         <header class="hub-section-head">

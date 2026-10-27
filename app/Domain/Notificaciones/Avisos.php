@@ -2,11 +2,14 @@
 
 namespace App\Domain\Notificaciones;
 
+use App\Domain\Asistencias\AusenciasSeguidas;
 use App\Models\Alumno;
+use App\Models\Bloque;
 use App\Models\Cuota;
 use App\Models\Evento;
 use App\Models\Pago;
 use App\Models\PagoDetalle;
+use App\Models\Profesor;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -77,6 +80,41 @@ class Avisos
                     'enlace' => 'app://calendario',
                 ]);
                 $enviados += (int) (($r['interna'] ?? null) === 'enviado');
+            }
+        }
+
+        return $enviados;
+    }
+
+    /**
+     * Alumnos con varias faltas seguidas: aviso a los docentes del bloque para que los contacten.
+     * La clave incluye el inicio de la racha: si vuelve y después deja otra vez, se avisa de nuevo.
+     */
+    public function ausenciasSeguidas(): int
+    {
+        $enviados = 0;
+        $bloques = Bloque::query()->where('activo', true)->with(['profesores.user', 'profesor.user'])->get();
+        $rachas = app(AusenciasSeguidas::class)->enBloques($bloques->pluck('id'));
+
+        foreach ($rachas as $r) {
+            $bloque = $bloques->firstWhere('id', $r['bloque']->id);
+            $docentes = [];
+            if ($bloque instanceof Bloque) {
+                foreach ([$bloque->profesor, ...$bloque->profesores] as $profesor) {
+                    if ($profesor instanceof Profesor && $profesor->user instanceof User) {
+                        $docentes[$profesor->user->id] = $profesor->user;
+                    }
+                }
+            }
+            $nombre = $r['alumno']->nombre_apellido ?? 'Un alumno';
+            foreach ($docentes as $user) {
+                $res = $this->notificaciones->enviar($user, "ausencias:{$r['alumno']->id}:{$r['bloque']->id}:{$r['desde']->toDateString()}:{$user->id}", [
+                    'tipo' => 'ausencias_seguidas',
+                    'titulo' => "{$nombre} faltó {$r['faltas']} clases seguidas",
+                    'mensaje' => "En {$r['bloque']->nombre}, desde el {$r['desde']->format('d/m')}. Un mensaje a tiempo ayuda a que no deje.",
+                    'enlace' => route('profesor.alumnos.show', $r['alumno']),
+                ]);
+                $enviados += (int) (($res['interna'] ?? null) === 'enviado');
             }
         }
 

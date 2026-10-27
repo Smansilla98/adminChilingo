@@ -183,6 +183,7 @@ Route::get('/', fn () => auth()->check()
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/estado-sistema', EstadoSistemaController::class)->name('estado-sistema');
+    Route::get('/estado-sistema/respaldo', [EstadoSistemaController::class, 'respaldo'])->middleware('throttle:6,1')->name('estado-sistema.respaldo');
     Route::post('/contexto', [ContextoController::class, 'cambiar'])->name('contexto.cambiar');
 
     Route::get('/recordatorios/chat', RecordatorioChatbotController::class)->name('recordatorios.chat');
@@ -298,6 +299,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reportes/export/excel', [ReportesController::class, 'exportExcel'])->name('reportes.export.excel');
         Route::get('/reportes/export/pdf', [ReportesController::class, 'exportPdf'])->name('reportes.export.pdf');
         Route::get('/reportes/profesores', [ReportesController::class, 'profesores'])->name('reportes.profesores');
+        Route::get('/reportes/tendencias', [ReportesController::class, 'tendencias'])->name('reportes.tendencias');
     });
 
     Route::middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->prefix('villa-gesell')->name('villa-gesell.')->group(function () {
@@ -338,6 +340,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/programa/discografia/{disco}/editar', [DiscografiaController::class, 'edit'])->name('programa.discos.edit');
         Route::put('/programa/discografia/{disco}', [DiscografiaController::class, 'update'])->name('programa.discos.update');
         Route::get('/programa/gestion', [ProgramaGestionController::class, 'index'])->name('programa.gestion');
+        Route::get('/programa/revision', [\App\Http\Controllers\PartituraRevisionController::class, 'index'])->name('programa.revision');
+        Route::post('/programa/revision/{programaRitmo:id}', [\App\Http\Controllers\PartituraRevisionController::class, 'validar'])
+            ->whereNumber('programaRitmo')->middleware('throttle:60,1')->name('programa.revision.validar');
         Route::put('/programa/gestion/{programaRitmo:id}', [ProgramaGestionController::class, 'update'])
             ->whereNumber('programaRitmo')
             ->name('programa.gestion.update');

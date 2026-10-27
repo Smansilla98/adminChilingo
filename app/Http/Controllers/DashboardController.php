@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Asistencias\AusenciasSeguidas;
 use App\Models\Alumno;
 use App\Models\Asistencia;
 use App\Models\Bloque;
@@ -463,6 +464,7 @@ class DashboardController extends Controller
         $bloques = collect();
         $proximosEventos = collect();
         $comprobantesCuotaPendientes = 0;
+        $paraContactar = collect();
 
         try {
             $profesor = $user->profesor;
@@ -473,6 +475,7 @@ class DashboardController extends Controller
                     ->proximos()
                     ->limit(5)
                     ->get();
+                $paraContactar = app(AusenciasSeguidas::class)->enBloques($profesor->bloqueIdsDondeParticipa());
                 if (Schema::hasTable('comprobantes_cuota_alumnos')) {
                     $ids = $profesor->bloqueIdsDondeParticipa()->all();
                     $comprobantesCuotaPendientes = (int) ComprobanteCuotaAlumno::query()
@@ -498,7 +501,8 @@ class DashboardController extends Controller
             'pendientesAsistencia',
             'proximosPasos',
             'proximosEventos',
-            'comprobantesCuotaPendientes'
+            'comprobantesCuotaPendientes',
+            'paraContactar'
         ));
     }
 

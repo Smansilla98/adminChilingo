@@ -36,6 +36,9 @@ Además de los resúmenes existentes, el scheduler corre:
 |---------|--------|
 | `chilinga:avisos cuotas-vencidas` | todos los días 11:00 |
 | `chilinga:avisos eventos` | todos los días 18:00 (eventos del día siguiente) |
+| `chilinga:avisos ausencias` | todos los días 10:00 (alumnos con 3+ faltas seguidas sin aviso → su docente) |
+| `chilinga:respaldo` | todos los días 03:30 (backup de la base, ver abajo) |
+| `chilinga:mercadopago:conciliar` | cada 30 minutos (pagos de Mercado Pago cuyo aviso no llegó) |
 
 `start.sh` levanta `php artisan schedule:work` en segundo plano dentro del mismo contenedor:
 no hace falta un servicio Cron aparte. Con **más de una réplica**, dejarlo activo en una sola
@@ -62,6 +65,22 @@ luego el editor (`public/opendesign`). Ver `resources/opendesign/NOTICE.md`.
 ### Storage
 
 Sin cambios: comprobantes y archivos en `storage/app` (usar volumen persistente o S3 como hasta ahora).
+
+### Backups de la base
+
+`chilinga:respaldo` vuelca la base completa (estructura + datos) en SQL comprimido, sin
+`mysqldump`, en el disco persistente: `respaldos/chilinga-AAAAMMDD-HHMMSS.sql.gz`. Guarda los
+últimos 14 (`--conservar=N` para cambiarlo). **Estado del sistema** avisa si no hay backup o si
+el último tiene más de 36 h, y el administrador puede descargar el último desde ahí.
+
+El volumen de Railway es un solo disco: **descargá un backup cada tanto y guardalo fuera de
+Railway** (contiene datos personales, no lo compartas).
+
+Restaurar (en una base vacía o sobre la actual, reemplaza las tablas):
+
+```bash
+gunzip -c chilinga-AAAAMMDD-HHMMSS.sql.gz | mysql -h HOST -P PUERTO -u USUARIO -p NOMBRE_BASE
+```
 
 ## Salud
 

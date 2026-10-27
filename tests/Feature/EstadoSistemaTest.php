@@ -31,7 +31,8 @@ class EstadoSistemaTest extends TestCase
             ->assertSee('apuntan a «web-production-a4f7e.up.railway.app»', false)
             ->assertSee('APP_URL a https://admin-chilingo.test')
             ->assertSee('Railway los borra en cada deploy')
-            ->assertSee('2 problemas necesitan arreglo');
+            ->assertSee('Todavía no se hizo ningún backup')
+            ->assertSee('3 problemas necesitan arreglo');
     }
 
     public function test_el_inicio_avisa_las_fallas_de_configuracion(): void

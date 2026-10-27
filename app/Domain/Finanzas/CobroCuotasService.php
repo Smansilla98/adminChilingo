@@ -16,6 +16,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -375,6 +376,39 @@ class CobroCuotasService
 
             return $c->fresh();
         });
+    }
+
+    /**
+     * Pagos con Mercado Pago que siguen «esperando pago» aunque el alumno ya haya pagado
+     * (el aviso no llegó o falló): se buscan por referencia y se registran los aprobados.
+     *
+     * @return array{revisados: int, registrados: int}
+     */
+    public function conciliarMercadoPago(int $dias = 7): array
+    {
+        if (! $this->mercadoPago->configurado() || ! Schema::hasColumn('comprobantes_cuota_alumnos', 'mp_preference_id')) {
+            return ['revisados' => 0, 'registrados' => 0];
+        }
+
+        $colgados = ComprobanteCuotaAlumno::query()
+            ->whereNotNull('mp_preference_id')
+            ->whereNull('pago_id')
+            ->where('estado', 'esperando_pago')
+            ->whereBetween('created_at', [now()->subDays($dias), now()->subMinutes(10)])
+            ->limit(100)
+            ->get(['id', 'referencia']);
+
+        $registrados = 0;
+        foreach ($colgados as $c) {
+            $aprobado = collect($this->mercadoPago->pagosDeReferencia((string) $c->referencia))
+                ->first(fn (array $p) => ($p['status'] ?? null) === 'approved' && isset($p['id']));
+            if ($aprobado) {
+                $resultado = $this->procesarAvisoMercadoPago((string) $aprobado['id']);
+                $registrados += (int) ($resultado?->pago_id !== null);
+            }
+        }
+
+        return ['revisados' => $colgados->count(), 'registrados' => $registrados];
     }
 
     private function bloqueDeCuota(Cuota $cuota, Collection $bloques): ?Bloque
