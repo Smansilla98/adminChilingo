@@ -59,6 +59,9 @@ export interface Bloque {
   id: number;
   nombre: string;
   anio: number;
+  /** Año en que arrancó el bloque; el año del programa queda como referencia. */
+  funciona_desde?: number | null;
+  anios_funcionando?: number | null;
   sede: { id: number; nombre: string } | null;
   cantidad_alumnos?: number;
   horarios?: { dia: number; dia_nombre: string; inicio: string; fin: string }[];

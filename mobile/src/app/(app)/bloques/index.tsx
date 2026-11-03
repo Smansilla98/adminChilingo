@@ -39,7 +39,7 @@ export default function Bloques() {
             icono="groups"
             colorIcono={b.activo === false ? C.tenue : C.acento}
             titulo={b.nombre}
-            subtitulo={`${b.anio}° año${b.sede ? ` · ${b.sede.nombre}` : ''}`}
+            subtitulo={`${b.anio}° año${b.funciona_desde ? ` · desde ${b.funciona_desde}` : ''}${b.sede ? ` · ${b.sede.nombre}` : ''}`}
             detalle={b.horarios?.map((h) => `${h.dia_nombre.slice(0, 3)} ${h.inicio}`).join(' · ') || 'Sin horario'}
             derecha={<Chip texto={b.activo === false ? 'Inactivo' : `${b.cantidad_alumnos ?? 0} alumnos`} color={b.activo === false ? C.tenue : C.info} />}
             onPress={() => router.push({ pathname: '/bloques/[id]', params: { id: String(b.id) } } as never)}
