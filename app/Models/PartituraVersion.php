@@ -14,6 +14,7 @@ class PartituraVersion extends Model
 
     protected $casts = ['score' => 'array', 'numero' => 'integer'];
 
+    /** @return BelongsTo<ProgramaRitmo, $this> */
     public function toque(): BelongsTo
     {
         return $this->belongsTo(ProgramaRitmo::class, 'programa_ritmo_id');

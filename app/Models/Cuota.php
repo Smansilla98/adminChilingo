@@ -42,11 +42,13 @@ class Cuota extends Model
         'activo' => 'boolean',
     ];
 
+    /** @return BelongsTo<Bloque, $this> */
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);
     }
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
@@ -120,12 +122,15 @@ class Cuota extends Model
 
     /**
      * Alumnos asignados a esta cuota (opcional). Si está vacío, aplica según alcance (bloque / sede / general).
+     *
+     * @return BelongsToMany<Alumno, $this>
      */
     public function alumnos(): BelongsToMany
     {
         return $this->belongsToMany(Alumno::class, 'cuota_alumno')->withTimestamps();
     }
 
+    /** @return HasMany<PagoDetalle, $this> */
     public function pagoDetalles(): HasMany
     {
         return $this->hasMany(PagoDetalle::class);

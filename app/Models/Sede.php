@@ -94,6 +94,8 @@ class Sede extends Model
 
     /**
      * Profesor coordinador de esta sede (ej: Banfield)
+     *
+     * @return BelongsTo<Profesor, $this>
      */
     public function coordinador(): BelongsTo
     {
@@ -102,6 +104,8 @@ class Sede extends Model
 
     /**
      * Relación con bloques
+     *
+     * @return HasMany<Bloque, $this>
      */
     public function bloques(): HasMany
     {
@@ -110,6 +114,8 @@ class Sede extends Model
 
     /**
      * Alumnos que tienen esta sede como principal (sede_id)
+     *
+     * @return HasMany<Alumno, $this>
      */
     public function alumnos(): HasMany
     {
@@ -118,6 +124,8 @@ class Sede extends Model
 
     /**
      * Relación con eventos
+     *
+     * @return HasMany<Evento, $this>
      */
     public function eventos(): HasMany
     {
@@ -126,12 +134,15 @@ class Sede extends Model
 
     /**
      * Inventario asignado a esta sede
+     *
+     * @return HasMany<InventarioItem, $this>
      */
     public function inventarioItems(): HasMany
     {
         return $this->hasMany(InventarioItem::class);
     }
 
+    /** @return HasMany<Gasto, $this> */
     public function gastos(): HasMany
     {
         return $this->hasMany(Gasto::class);

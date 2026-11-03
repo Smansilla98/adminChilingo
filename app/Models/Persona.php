@@ -45,27 +45,35 @@ class Persona extends Model
         'fecha_nacimiento' => 'date',
     ];
 
+    /** @return HasOne<User, $this> */
     public function user(): HasOne
     {
         return $this->hasOne(User::class);
     }
 
-    /** Perfiles de alumno (normalmente uno; pueden quedar varios legacy hasta fusionarlos). */
+    /**
+     * Perfiles de alumno (normalmente uno; pueden quedar varios legacy hasta fusionarlos).
+     *
+     * @return HasMany<Alumno, $this>
+     */
     public function alumnos(): HasMany
     {
         return $this->hasMany(Alumno::class);
     }
 
+    /** @return HasOne<Profesor, $this> */
     public function profesor(): HasOne
     {
         return $this->hasOne(Profesor::class);
     }
 
+    /** @return HasMany<Profesor, $this> */
     public function profesores(): HasMany
     {
         return $this->hasMany(Profesor::class);
     }
 
+    /** @return HasMany<Asignacion, $this> */
     public function asignaciones(): HasMany
     {
         return $this->hasMany(Asignacion::class);
@@ -76,6 +84,7 @@ class Persona extends Model
         return $this->hasManyThrough(Beca::class, Alumno::class);
     }
 
+    /** @return BelongsTo<self, $this> */
     public function fusionadaEn(): BelongsTo
     {
         return $this->belongsTo(self::class, 'fusionada_en_id');

@@ -29,6 +29,7 @@ class OrdenCompraItem extends Model
         'subtotal_estimado' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<OrdenCompra, $this> */
     public function orden(): BelongsTo
     {
         return $this->belongsTo(OrdenCompra::class, 'orden_compra_id');

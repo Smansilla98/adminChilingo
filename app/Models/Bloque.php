@@ -76,6 +76,8 @@ class Bloque extends Model
 
     /**
      * Relación con profesor titular (columna legada; debe coincidir con pivot rol titular).
+     *
+     * @return BelongsTo<Profesor, $this>
      */
     public function profesor(): BelongsTo
     {
@@ -84,6 +86,8 @@ class Bloque extends Model
 
     /**
      * Profesores asignados al bloque (titular, ayudante, suplente, etc.).
+     *
+     * @return BelongsToMany<Profesor, $this>
      */
     public function profesores(): BelongsToMany
     {
@@ -137,11 +141,13 @@ class Bloque extends Model
         return $titular instanceof Profesor ? $titular->nombre : null;
     }
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
     }
 
+    /** @return HasMany<Cuota, $this> */
     public function cuotas(): HasMany
     {
         return $this->hasMany(Cuota::class);
@@ -149,6 +155,8 @@ class Bloque extends Model
 
     /**
      * Alumnos inscritos en este bloque (un alumno puede estar en varios bloques)
+     *
+     * @return BelongsToMany<Alumno, $this>
      */
     public function alumnos(): BelongsToMany
     {
@@ -159,6 +167,8 @@ class Bloque extends Model
 
     /**
      * Horarios semanales del bloque (día + hora)
+     *
+     * @return HasMany<BloqueHorario, $this>
      */
     public function horarios(): HasMany
     {
@@ -167,6 +177,8 @@ class Bloque extends Model
 
     /**
      * Shows en los que participa este bloque
+     *
+     * @return BelongsToMany<Show, $this>
      */
     public function shows(): BelongsToMany
     {
@@ -175,6 +187,8 @@ class Bloque extends Model
 
     /**
      * Relación con eventos
+     *
+     * @return HasMany<Evento, $this>
      */
     public function eventos(): HasMany
     {
@@ -183,6 +197,8 @@ class Bloque extends Model
 
     /**
      * Relación con asistencias
+     *
+     * @return HasMany<Asistencia, $this>
      */
     public function asistencias(): HasMany
     {

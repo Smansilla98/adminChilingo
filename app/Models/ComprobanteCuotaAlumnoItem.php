@@ -33,16 +33,19 @@ class ComprobanteCuotaAlumnoItem extends Model
         return 'Pago extra'.($this->mes && $this->anio ? sprintf(' · %02d/%d', $this->mes, $this->anio) : '');
     }
 
+    /** @return BelongsTo<ComprobanteCuotaAlumno, $this> */
     public function comprobante(): BelongsTo
     {
         return $this->belongsTo(ComprobanteCuotaAlumno::class, 'comprobante_cuota_alumno_id');
     }
 
+    /** @return BelongsTo<Cuota, $this> */
     public function cuota(): BelongsTo
     {
         return $this->belongsTo(Cuota::class);
     }
 
+    /** @return BelongsTo<Bloque, $this> */
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);

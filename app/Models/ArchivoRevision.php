@@ -23,11 +23,13 @@ class ArchivoRevision extends Model
 
     protected $fillable = ['archivo_foto_id', 'user_id', 'accion', 'estado_anterior', 'estado_nuevo', 'notas'];
 
+    /** @return BelongsTo<ArchivoFoto, $this> */
     public function foto(): BelongsTo
     {
         return $this->belongsTo(ArchivoFoto::class, 'archivo_foto_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

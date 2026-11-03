@@ -73,16 +73,19 @@ class WhatsappMensaje extends Model
         'failed_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<Alumno, $this> */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Cuota, $this> */
     public function cuota(): BelongsTo
     {
         return $this->belongsTo(Cuota::class);

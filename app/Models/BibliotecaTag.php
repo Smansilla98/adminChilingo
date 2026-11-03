@@ -18,12 +18,17 @@ class BibliotecaTag extends Model
         'usos' => 'integer',
     ];
 
+    /** @return BelongsToMany<BibliotecaItem, $this> */
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(BibliotecaItem::class, 'biblioteca_item_tag');
     }
 
-    /** Fotos del archivo histórico que comparten la etiqueta. */
+    /**
+     * Fotos del archivo histórico que comparten la etiqueta.
+     *
+     * @return BelongsToMany<ArchivoFoto, $this>
+     */
     public function archivoFotos(): BelongsToMany
     {
         return $this->belongsToMany(ArchivoFoto::class, 'archivo_foto_tag', 'biblioteca_tag_id', 'archivo_foto_id');

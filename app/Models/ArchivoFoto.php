@@ -104,41 +104,49 @@ class ArchivoFoto extends Model
         'derivados' => 'array',
     ];
 
+    /** @return BelongsTo<ArchivoCapitulo, $this> */
     public function capitulo(): BelongsTo
     {
         return $this->belongsTo(ArchivoCapitulo::class, 'capitulo_id');
     }
 
+    /** @return BelongsTo<ArchivoAcontecimiento, $this> */
     public function acontecimiento(): BelongsTo
     {
         return $this->belongsTo(ArchivoAcontecimiento::class, 'acontecimiento_id');
     }
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function aportante(): BelongsTo
     {
         return $this->belongsTo(User::class, 'aportada_por');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function revisor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'revisada_por');
     }
 
+    /** @return BelongsToMany<BibliotecaTag, $this> */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(BibliotecaTag::class, 'archivo_foto_tag', 'archivo_foto_id', 'biblioteca_tag_id');
     }
 
+    /** @return HasMany<ArchivoFotoPersona, $this> */
     public function personas(): HasMany
     {
         return $this->hasMany(ArchivoFotoPersona::class, 'archivo_foto_id')->orderBy('orden')->orderBy('id');
     }
 
+    /** @return HasMany<ArchivoRevision, $this> */
     public function revisiones(): HasMany
     {
         return $this->hasMany(ArchivoRevision::class, 'archivo_foto_id')->latest('id');

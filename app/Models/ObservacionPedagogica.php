@@ -45,16 +45,19 @@ class ObservacionPedagogica extends Model
         'visible_alumno' => 'boolean',
     ];
 
+    /** @return BelongsTo<Alumno, $this> */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function autor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** @return BelongsTo<Bloque, $this> */
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);

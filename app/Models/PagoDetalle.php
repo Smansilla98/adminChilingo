@@ -45,16 +45,19 @@ class PagoDetalle extends Model
         });
     }
 
+    /** @return BelongsTo<Pago, $this> */
     public function pago(): BelongsTo
     {
         return $this->belongsTo(Pago::class);
     }
 
+    /** @return BelongsTo<Alumno, $this> */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
     }
 
+    /** @return BelongsTo<Cuota, $this> */
     public function cuota(): BelongsTo
     {
         return $this->belongsTo(Cuota::class);

@@ -47,6 +47,7 @@ class Alumno extends Model
         return $this->belongsTo(Persona::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -76,6 +77,8 @@ class Alumno extends Model
 
     /**
      * Relación con sede
+     *
+     * @return BelongsTo<Sede, $this>
      */
     public function sede(): BelongsTo
     {
@@ -84,12 +87,15 @@ class Alumno extends Model
 
     /**
      * Relación con asistencias
+     *
+     * @return HasMany<Asistencia, $this>
      */
     public function asistencias(): HasMany
     {
         return $this->hasMany(Asistencia::class);
     }
 
+    /** @return HasMany<InventarioItem, $this> */
     public function inventarioItems(): HasMany
     {
         return $this->hasMany(InventarioItem::class);
@@ -107,6 +113,7 @@ class Alumno extends Model
         return Carbon::parse($this->fecha_nacimiento)->age;
     }
 
+    /** @return HasMany<ObservacionPedagogica, $this> */
     public function observacionesPedagogicas(): HasMany
     {
         return $this->hasMany(ObservacionPedagogica::class)->latest('fecha')->latest('id');
@@ -120,11 +127,13 @@ class Alumno extends Model
         return $this->asistencias()->where('bloque_id', $bloqueId);
     }
 
+    /** @return HasMany<Beca, $this> */
     public function becas(): HasMany
     {
         return $this->hasMany(Beca::class);
     }
 
+    /** @return HasMany<PagoDetalle, $this> */
     public function pagosDetalle(): HasMany
     {
         return $this->hasMany(PagoDetalle::class);

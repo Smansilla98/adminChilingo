@@ -25,64 +25,16 @@ parameters:
 			path: app/Console/Commands/MailResumenAdminCommand.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SuperadminCommand.php
-
-		-
 			message: '#^Offset ''errores'' on array\{ok\: bool, enviados\: int, errores\: int, mensaje\: string, detalles\: array\<int, array\<string, mixed\>\>\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Console/Commands/WhatsAppResumenAdminCommand.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Acceso/GestionAsignaciones.php
-
-		-
 			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Domain/Acceso/PresentadorAcceso.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Acceso/ResolvedorAcceso.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Domain/Acceso/ResolvedorAcceso.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Domain/Acceso/ResolvedorAcceso.php
-
-		-
-			message: '#^Parameter \#1 \$user of method App\\Domain\\Acceso\\ResolvedorAcceso\:\:rolesLegacy\(\) expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Acceso/ResolvedorAcceso.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Acceso/UsuarioService.php
-
-		-
-			message: '#^Method App\\Domain\\Agenda\\BloqueService\:\:agregarHorario\(\) should return App\\Models\\BloqueHorario but returns Illuminate\\Database\\Eloquent\\Model\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Domain/Agenda/BloqueService.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:cronologico\(\)\.$#'
@@ -97,12 +49,6 @@ parameters:
 			path: app/Domain/Archivo/ArchivoConsultas.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:publicadas\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Domain/Archivo/ArchivoConsultas.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\<\*, \*, \*\>\:\:publicados\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -111,12 +57,6 @@ parameters:
 		-
 			message: '#^Method App\\Domain\\Archivo\\ArchivoConsultas\:\:personasPublicas\(\) should return Illuminate\\Support\\Collection\<int, array\{clave\: string, nombre\: string, fotos\: int\}\> but returns Illuminate\\Support\\Collection\<int, array\{clave\: string, persona_id\: int\<0, max\>\|null, nombre\: non\-empty\-string, fotos\: int\<0, max\>\}\>\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Domain/Archivo/ArchivoConsultas.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:each\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed, Closure\(App\\Models\\ArchivoAcontecimiento\)\: Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Domain/Archivo/ArchivoConsultas.php
 
@@ -139,118 +79,10 @@ parameters:
 			path: app/Domain/Archivo/ArchivoService.php
 
 		-
-			message: '#^Parameter \#1 \$destino of method App\\Domain\\Notificaciones\\NotificacionService\:\:enviar\(\) expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Archivo/ArchivoService.php
-
-		-
 			message: '#^Strict comparison using \=\=\= between bool and null will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Domain/Archivo/ArchivoService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$accion\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$notas\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$publicado\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$titulo\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:esPublica\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:etiqueta\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:url\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Parameter \#1 \$a of static method App\\Domain\\Archivo\\PresentadorArchivo\:\:acontecimiento\(\) expects App\\Models\\ArchivoAcontecimiento, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{nombre\: string, detalle\: string\|null, clave\: string\|null\}, Closure\(App\\Models\\ArchivoFotoPersona\)\: array\{nombre\: string, detalle\: string\|null, clave\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{persona_id\: int\<0, max\>\|null, nombre\: string, detalle\: string\|null\}, Closure\(App\\Models\\ArchivoFotoPersona\)\: array\{persona_id\: int\<0, max\>\|null, nombre\: string, detalle\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Archivo/PresentadorArchivo.php
-
-		-
-			message: '#^Parameter \#1 \$f of static method App\\Domain\\Archivo\\PresentadorArchivo\:\:foto\(\) expects App\\Models\\ArchivoFoto, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 3
-			path: app/Domain/Archivo/PresentadorArchivo.php
 
 		-
 			message: '#^Call to function is_array\(\) with array\<string, string\|null\> will always evaluate to true\.$#'
@@ -259,50 +91,20 @@ parameters:
 			path: app/Domain/Asistencias/AsistenciaService.php
 
 		-
-			message: '#^Parameter \#1 \$alumno of method App\\Models\\User\:\:puedeGestionarAlumno\(\) expects App\\Models\\Alumno, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Asistencias/SeguimientoService.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Domain/Compras/CompraService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$horarios\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Domain/Compras/PlanComprasService.php
-
-		-
-			message: '#^Method App\\Domain\\Finanzas\\BecaService\:\:otorgar\(\) should return App\\Models\\Beca but returns Illuminate\\Database\\Eloquent\\Model\.$#'
-			identifier: return.type
+			message: '#^Instanceof between App\\Models\\ComprobanteCuotaAlumnoItem and App\\Models\\ComprobanteCuotaAlumnoItem will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
 			count: 1
-			path: app/Domain/Finanzas/BecaService.php
+			path: app/Domain/Finanzas/CobroCuotasService.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Alumno\:\:\$persona_id\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Domain/Finanzas/ComprobanteService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bloque\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Finanzas/ComprobanteService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bloque_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Finanzas/ComprobanteService.php
-
-		-
-			message: '#^Parameter \#2 \$alumno of method App\\Domain\\Acceso\\PermisosEfectivos\:\:puedeSobreAlumno\(\) expects App\\Models\\Alumno, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Domain/Finanzas/ComprobanteService.php
 
@@ -319,74 +121,14 @@ parameters:
 			path: app/Domain/Finanzas/EstadoCuentaService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Finanzas/EstadoCuentaService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Finanzas/EstadoCuentaService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:descuentoSobre\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Domain/Finanzas/EstadoCuentaService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:etiqueta\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Domain/Finanzas/EstadoCuentaService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, etiqueta\: string, tipo\: string, estado\: string, desde\: string, hasta\: string\|null, motivo\: string\|null\}, Closure\(App\\Models\\Beca\)\: array\{id\: int\<0, max\>, etiqueta\: string, tipo\: string, estado\: string, desde\: string, hasta\: string\|null, motivo\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Finanzas/EstadoCuentaService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:first\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Beca\)\: bool given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Finanzas/EstadoCuentaService.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>total" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Domain/Finanzas/EstadoCuentaService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Domain/Finanzas/RegistroPagoService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Finanzas/RegistroPagoService.php
-
-		-
 			message: '#^Method App\\Domain\\Finanzas\\RegistroPagoService\:\:cuotasParaCobrar\(\) should return Illuminate\\Support\\Collection\<int, array\<string, mixed\>\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int\<0, max\>, monto\: float, label\: non\-falsy\-string, nombre\: string, anio\: int\<0, max\>, mes\: int\<0, max\>\|null, alcance\: string, bloque_id\: int\<0, max\>\|null, \.\.\.\}\>\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Domain/Finanzas/RegistroPagoService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Alumno\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Domain/Finanzas/RegistroPagoService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Cuota\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
 			count: 1
 			path: app/Domain/Finanzas/RegistroPagoService.php
 
@@ -403,40 +145,10 @@ parameters:
 			path: app/Domain/Notificaciones/Avisos.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Notificaciones/Avisos.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Domain/Notificaciones/Avisos.php
-
-		-
-			message: '#^Parameter \#1 \$alumno of method App\\Domain\\Notificaciones\\Avisos\:\:cuentaDe\(\) expects App\\Models\\Alumno, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Notificaciones/Avisos.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
 			path: app/Domain/Notificaciones/Avisos.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Notificaciones/NotificacionService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$telefono\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Notificaciones/NotificacionService.php
 
 		-
 			message: '#^Offset ''success'' on array\{success\: bool, sid\?\: string, status\?\: string, accepted_by_provider\?\: bool, delivered_to_recipient\?\: bool, error\?\: string\} on left side of \?\? always exists and is not nullable\.$#'
@@ -451,40 +163,10 @@ parameters:
 			path: app/Domain/Personas/AlumnoService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Personas/AlumnoService.php
-
-		-
-			message: '#^Parameter \#1 \$conservar of method App\\Domain\\Personas\\PersonaService\:\:fusionar\(\) expects App\\Models\\Persona, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Personas/AlumnoService.php
-
-		-
-			message: '#^Parameter \#2 \$duplicada of method App\\Domain\\Personas\\PersonaService\:\:fusionar\(\) expects App\\Models\\Persona, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Personas/AlumnoService.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>persona_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Domain/Personas/BackfillPersonas.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Personas/FichaPersona.php
-
-		-
-			message: '#^Parameter \#1 \$alumno of method App\\Domain\\Finanzas\\EstadoCuentaService\:\:paraAlumno\(\) expects App\\Models\\Alumno, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Domain/Personas/FichaPersona.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Alumno\:\:\$persona_id\.$#'
@@ -511,30 +193,6 @@ parameters:
 			path: app/Domain/Personas/PersonaService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dni\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Personas/PersonaService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Personas/PersonaService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fecha_nacimiento\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Personas/PersonaService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$telefono\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Domain/Personas/PersonaService.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$persona_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -544,18 +202,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$user_id\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Domain/Personas/ProfesorService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Personas/ProfesorService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Domain/Personas/ProfesorService.php
 
 		-
@@ -583,20 +229,8 @@ parameters:
 			path: app/Domain/Reportes/ReportesService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$alumnos\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Reportes/ReportesService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Domain/Reportes/ReportesService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$profesor_id\.$#'
-			identifier: property.notFound
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
 			count: 1
 			path: app/Domain/Reportes/ReportesService.php
 
@@ -619,20 +253,14 @@ parameters:
 			path: app/Domain/Reportes/ReportesService.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Bloque\)\: bool given\.$#'
-			identifier: argument.type
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:filter\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Domain/Reportes/ReportesService.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(array\<mixed\>\|Illuminate\\Support\\Collection\<int\|string, mixed\>\), Closure\(App\\Models\\Bloque\)\: Illuminate\\Support\\Collection\<int\|string, mixed\> given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Domain/Reportes/ReportesService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:filter\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Alumno\>\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Domain/Reportes/ReportesService.php
 
@@ -649,10 +277,10 @@ parameters:
 			path: app/Domain/Reportes/ReportesService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Bloque\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Domain/VillaGesell/VillaGesellAdmin.php
+			path: app/Domain/Reportes/ReportesService.php
 
 		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
@@ -668,12 +296,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AccesosController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/AccesosController.php
@@ -709,12 +331,6 @@ parameters:
 			path: app/Http/Controllers/AccesosController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fecha_pago\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AlumnoController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\AlumnoController\:\:alumnoPerteneceABloquesDelProfesor\(\) is unused\.$#'
 			identifier: method.unused
 			count: 1
@@ -739,57 +355,9 @@ parameters:
 			path: app/Http/Controllers/AparienciaController.php
 
 		-
-			message: '#^Parameter \#1 \$persona of method App\\Domain\\Acceso\\GestionAsignaciones\:\:asignar\(\) expects App\\Models\\Persona, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/AccesosController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dia_semana\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AgendaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hora_fin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AgendaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hora_inicio\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AgendaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AgendaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/AgendaController.php
-
-		-
-			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/AgendaController.php
-
-		-
-			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/AgendaController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 2
+			count: 4
 			path: app/Http/Controllers/Api/V1/AgendaController.php
 
 		-
@@ -805,40 +373,10 @@ parameters:
 			path: app/Http/Controllers/Api/V1/AlumnoController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/AlumnoController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Http/Controllers/Api/V1/AlumnoController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:publicados\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ArchivoController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\<\*, \*, \*\>\:\:publicadas\(\)\.$#'
 			identifier: method.notFound
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Api/V1/ArchivoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$estado\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ArchivoGestionController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$titulo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ArchivoGestionController.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:publicadas\(\)\.$#'
@@ -847,46 +385,10 @@ parameters:
 			path: app/Http/Controllers/Api/V1/ArchivoGestionController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/ArchivoGestionController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\ArchivoAcontecimiento\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/ArchivoGestionController.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: non\-empty\-array\<string, mixed\>, Closure\(App\\Models\\ArchivoFoto\)\: non\-empty\-array\<string, mixed\> given\.$#'
 			identifier: argument.type
 			count: 2
 			path: app/Http/Controllers/Api/V1/ArchivoGestionController.php
-
-		-
-			message: '#^Parameter \#1 \$f of static method App\\Domain\\Archivo\\PresentadorArchivo\:\:foto\(\) expects App\\Models\\ArchivoFoto, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/ArchivoGestionController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AuditoriaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AuditoriaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AuditoriaController.php
 
 		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
@@ -907,31 +409,7 @@ parameters:
 			path: app/Http/Controllers/Api/V1/AuthController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/BecaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/BecaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/BecaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_apellido\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/BecaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$persona_id\.$#'
+			message: '#^Access to an undefined property App\\Models\\Alumno\:\:\$persona_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/BecaController.php
@@ -941,30 +419,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/BecaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/BibliotecaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_completo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/BibliotecaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/BibliotecaController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/BibliotecaController.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>nombre_completo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -973,76 +427,22 @@ parameters:
 			path: app/Http/Controllers/Api/V1/BibliotecaController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fecha\.$#'
+			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$pivot\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/BloqueController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/BloqueController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/BloqueController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/BloqueController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$titulo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/BloqueController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Http/Controllers/Api/V1/BloqueController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, dia\: int\<0, max\>, dia_nombre\: ''Domingo''\|''Jueves''\|''Lunes''\|''Martes''\|''Miércoles''\|''Sábado''\|''Viernes''\|null, inicio\: non\-falsy\-string, fin\: non\-falsy\-string\}, Closure\(App\\Models\\BloqueHorario\)\: array\{id\: int\<0, max\>, dia\: int\<0, max\>, dia_nombre\: ''Domingo''\|''Jueves''\|''Lunes''\|''Martes''\|''Miércoles''\|''Sábado''\|''Viernes''\|null, inicio\: non\-falsy\-string, fin\: non\-falsy\-string\} given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/BloqueController.php
 
 		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 2
+			count: 3
 			path: app/Http/Controllers/Api/V1/BloqueController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			message: '#^Access to an undefined property App\\Models\\Alumno\:\:\$persona_id\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/CompraController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/CompraController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/CompraController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, tipo\: string\|null, familia\: string\|null, descripcion\: string, marca\: string\|null, modelo\: string\|null, medida\: string\|null, cantidad\: float, unidad\: string\|null, precio_estimado\: float\|null, subtotal_estimado\: float\}, Closure\(App\\Models\\OrdenCompraItem\)\: array\{id\: int\<0, max\>, tipo\: string\|null, familia\: string\|null, descripcion\: string, marca\: string\|null, modelo\: string\|null, medida\: string\|null, cantidad\: float, unidad\: string\|null, precio_estimado\: float\|null, subtotal_estimado\: float\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/CompraController.php
+			count: 2
+			path: app/Http/Controllers/Api/V1/ComprobanteController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Alumno\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Alumno\>\:\:\$persona_id\.$#'
@@ -1051,32 +451,8 @@ parameters:
 			path: app/Http/Controllers/Api/V1/ComprobanteController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ComprobanteController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ComprobanteController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_apellido\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ComprobanteController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$persona_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/ComprobanteController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
+			message: '#^Instanceof between App\\Models\\ComprobanteCuotaAlumnoItem and App\\Models\\ComprobanteCuotaAlumnoItem will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
 			count: 1
 			path: app/Http/Controllers/Api/V1/ComprobanteController.php
 
@@ -1099,44 +475,8 @@ parameters:
 			path: app/Http/Controllers/Api/V1/ComprobanteController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$anulado_at\.$#'
+			message: '#^Access to an undefined property App\\Models\\Alumno\:\:\$persona_id\.$#'
 			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/CuotaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fecha_pago\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/CuotaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/CuotaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/CuotaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_apellido\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/CuotaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$persona_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/CuotaController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Api/V1/CuotaController.php
 
@@ -1147,104 +487,14 @@ parameters:
 			path: app/Http/Controllers/Api/V1/CuotaController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/CuotaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/EventoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/EventoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/EventoController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/EventoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/FacturacionController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/FacturacionController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/GastoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/GastoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/GastoController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/GastoController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hora_inicio\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/InicioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/InicioController.php
-
-		-
-			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/InicioController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/InicioController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:sortBy\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/InicioController.php
-
-		-
-			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/InicioController.php
 
@@ -1255,85 +505,19 @@ parameters:
 			path: app/Http/Controllers/Api/V1/InicioController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$apellido\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/MeController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/MeController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/MeController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_completo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/MeController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$telefono\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/MeController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>nombre_completo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/MeController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Alumno\:\:\$persona_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/PagoController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$profesor\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$anulado_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fecha_pago\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$monto\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_apellido\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$persona_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/PagoController.php
@@ -1345,25 +529,13 @@ parameters:
 			path: app/Http/Controllers/Api/V1/PagoController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PagoDetalle\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Api/V1/PagoController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, alumno_id\: int\<0, max\>, alumno\: mixed, persona_id\: mixed, cuota_id\: int\<0, max\>, cuota\: mixed, cuota_monto\: float\|null, monto\: float, abono_profesor\: float\|null, abono_nota\: string\|null\}, Closure\(App\\Models\\PagoDetalle\)\: array\{id\: int\<0, max\>, alumno_id\: int\<0, max\>, alumno\: mixed, persona_id\: mixed, cuota_id\: int\<0, max\>, cuota\: mixed, cuota_monto\: float\|null, monto\: float, abono_profesor\: float\|null, abono_nota\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, pago_id\: int\<0, max\>, fecha\: mixed, alumno\: mixed, cuota\: mixed, monto\: float, abono_profesor\: float\|null, anulado\: bool\}, Closure\(App\\Models\\PagoDetalle\)\: array\{id\: int\<0, max\>, pago_id\: int\<0, max\>, fecha\: mixed, alumno\: mixed, cuota\: mixed, monto\: float, abono_profesor\: float\|null, anulado\: bool\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, pago_id\: int\<0, max\>, fecha\: string\|null, alumno\: string\|null, cuota\: string\|null, monto\: float, abono_profesor\: float\|null, anulado\: bool\}, Closure\(App\\Models\\PagoDetalle\)\: array\{id\: int\<0, max\>, pago_id\: int\<0, max\>, fecha\: string\|null, alumno\: string\|null, cuota\: string\|null, monto\: float, abono_profesor\: float\|null, anulado\: bool\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/PagoController.php
@@ -1375,92 +547,20 @@ parameters:
 			path: app/Http/Controllers/Api/V1/PartituraController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$activo\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bloques\.$#'
+			message: '#^Access to an undefined property App\\Models\\Bloque\:\:\$pivot\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/PersonaController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_completo\.$#'
+			message: '#^Access to an undefined property App\\Models\\Sede\:\:\$pivot\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/PersonaController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sedesConRol\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ultimo_acceso_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, activo\: bool, instrumento\: string, sede\: array\{id\: mixed, nombre\: mixed\}\|null, bloques\: Illuminate\\Support\\Collection\<int, array\{id\: int\<0, max\>, nombre\: string, sede\: mixed\}\>, estado_cuenta\: array\<string, mixed\>\|null, puede_ver\: bool, puede_gestionar_becas\: bool\}, Closure\(App\\Models\\Alumno\)\: array\{id\: int\<0, max\>, activo\: bool, instrumento\: string, sede\: array\{id\: mixed, nombre\: mixed\}\|null, bloques\: Illuminate\\Support\\Collection\<int, array\{id\: int\<0, max\>, nombre\: string, sede\: mixed\}\>, estado_cuenta\: array\<string, mixed\>\|null, puede_ver\: bool, puede_gestionar_becas\: bool\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Asistencia\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Evento\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\InventarioItem\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\Alumno\)\: bool given\.$#'
-			identifier: argument.type
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: app/Http/Controllers/Api/V1/PersonaController.php
 
@@ -1473,7 +573,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Bloque\:\:\$pivot\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Api/V1/ProfesorController.php
 
 		-
@@ -1489,68 +589,20 @@ parameters:
 			path: app/Http/Controllers/Api/V1/ProfesorController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$activo\.$#'
+			message: '#^Access to an undefined property App\\Models\\Sede\:\:\$pivot\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fecha\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$titulo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 5
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, nombre\: string, sede\: mixed, rol\: mixed, cantidad_alumnos\: int\}, Closure\(App\\Models\\Bloque\)\: array\{id\: int\<0, max\>, nombre\: string, sede\: mixed, rol\: mixed, cantidad_alumnos\: int\} given\.$#'
-			identifier: argument.type
-			count: 1
+			count: 6
 			path: app/Http/Controllers/Api/V1/ProfesorController.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Profesor\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfesorController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/ProfesorController.php
 
@@ -1567,40 +619,10 @@ parameters:
 			path: app/Http/Controllers/Api/V1/RecordatorioController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/SedeController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/SedeController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/SedeController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/SeguimientoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/SeguimientoController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ObservacionPedagogica\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/SeguimientoController.php
 
 		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
@@ -1609,52 +631,10 @@ parameters:
 			path: app/Http/Controllers/Api/V1/SeguimientoController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/ShowController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/ShowController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, nombre\: string, sede\: mixed, profesor\: mixed\}, Closure\(App\\Models\\Bloque\)\: array\{id\: int\<0, max\>, nombre\: string, sede\: mixed, profesor\: mixed\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/ShowController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/ShowController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$asignaciones\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/UsuarioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/UsuarioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/UsuarioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_completo\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/UsuarioController.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\<\*, \*, \*\>\:\:vigentes\(\)\.$#'
@@ -1666,12 +646,6 @@ parameters:
 			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 2
-			path: app/Http/Controllers/Api/V1/UsuarioController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
 			path: app/Http/Controllers/Api/V1/UsuarioController.php
 
 		-
@@ -1687,50 +661,8 @@ parameters:
 			path: app/Http/Controllers/Api/V1/UsuarioController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			message: '#^Access to an undefined property App\\Models\\Alumno\:\:\$persona_id\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/VillaGesellController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/Api/V1/VillaGesellController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_apellido\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/VillaGesellController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$persona_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/VillaGesellController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/VillaGesellController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Alumno\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/VillaGesellController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Bloque\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/VillaGesellController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<string, mixed\>, Closure\(App\\Models\\VillaGesellTocada\)\: array\<string, mixed\> given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/VillaGesellController.php
 
@@ -1753,57 +685,9 @@ parameters:
 			path: app/Http/Controllers/Archivo/GestionController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fotos\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:publicadas\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:esPublica\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:imagenUrl\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:publicadas\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:publicados\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\<\*, \*, \*\>\:\:publicadas\(\)\.$#'
 			identifier: method.notFound
-			count: 3
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
-			message: '#^Parameter \#1 \$f of static method App\\Domain\\Archivo\\PresentadorArchivo\:\:foto\(\) expects App\\Models\\ArchivoFoto, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
-			message: '#^Parameter \#3 \$imagen of method App\\Http\\Controllers\\Archivo\\PublicoController\:\:seo\(\) expects App\\Models\\ArchivoFoto\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 2
+			count: 4
 			path: app/Http/Controllers/Archivo/PublicoController.php
 
 		-
@@ -1811,18 +695,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/BibliotecaPublicController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/BibliotecaPublicController.php
 
 		-
 			message: '#^Constant App\\Http\\Controllers\\BibliotecaPublicController\:\:ARCHIVO_EXTENSIONES is unused\.$#'
@@ -1837,55 +709,13 @@ parameters:
 			path: app/Http/Controllers/BibliotecaPublicController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\BibliotecaItem\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/BibliotecaPublicController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dia_semana\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/CalendarioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hora_fin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/CalendarioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hora_inicio\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/CalendarioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/CalendarioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
+			message: '#^Instanceof between Carbon\\Carbon and Carbon\\Carbon will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 2
 			path: app/Http/Controllers/CalendarioController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$alumno\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ComprobanteCuotaAlumnoPublicController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ComprobanteCuotaAlumnoPublicController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/ComprobanteCuotaAlumnoPublicController.php
@@ -1929,60 +759,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$profesor\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$profesor\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\DashboardController\:\:alumnosObjetivoCuota\(\) should return Illuminate\\Support\\Collection\<int, App\\Models\\Alumno\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\BloqueHorario\|null\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Alumno\)\: bool given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:sortBy\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/DashboardController.php
 
@@ -2039,42 +815,6 @@ parameters:
 			identifier: nullCoalesce.variable
 			count: 1
 			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:paginas\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/DisenoEditorController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:paraEditor\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/DisenoEditorController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:paraEditor\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/DisenoEditorController.php
-
-		-
-			message: '#^Parameter \#1 \$diseno of method App\\Domain\\Disenos\\MiniaturaDiseno\:\:guardar\(\) expects App\\Models\\Diseno, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/DisenoEditorController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/HubSearchController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_apellido\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/HubSearchController.php
 
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
@@ -2137,18 +877,6 @@ parameters:
 			path: app/Http/Controllers/UsuarioController.php
 
 		-
-			message: '#^Parameter \#1 \$persona of method App\\Domain\\Acceso\\GestionAsignaciones\:\:asignar\(\) expects App\\Models\\Persona, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/UsuarioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/VillaGesellInscriptoController.php
-
-		-
 			message: '#^Call to function method_exists\(\) with App\\Models\\User and ''tieneAccesoModulo'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -2179,18 +907,6 @@ parameters:
 			path: app/Http/Resources/V1/AlumnoResource.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/AlumnoResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/AlumnoResource.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -2203,130 +919,16 @@ parameters:
 			path: app/Http/Resources/V1/BloqueResource.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dia_semana\.$#'
-			identifier: property.notFound
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 2
 			path: app/Http/Resources/V1/BloqueResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hora_fin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/BloqueResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hora_inicio\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/BloqueResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/BloqueResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/BloqueResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Resources/V1/EventoResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Resources/V1/EventoResource.php
 
 		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Resources/V1/EventoResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Resources/V1/InventarioItemResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/InventarioItemResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Resources/V1/InventarioItemResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_apellido\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/InventarioItemResource.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Resources/V1/InventarioItemResource.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, tipo\: string, tipo_nombre\: string, nota\: string\|null, sede\: mixed, autor\: mixed, fecha\: string\|null\}, Closure\(App\\Models\\InventarioMovimiento\)\: array\{id\: int\<0, max\>, tipo\: string, tipo_nombre\: string, nota\: string\|null, sede\: mixed, autor\: mixed, fecha\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Resources/V1/InventarioItemResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$alumno\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/PagoResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$alumno_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/PagoResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cuota\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/PagoResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cuota_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/PagoResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$monto\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/PagoResource.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/V1/PagoResource.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Resources/V1/PagoResource.php
 
 		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
@@ -2365,18 +967,6 @@ parameters:
 			path: app/Models/ArchivoCapitulo.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/ArchivoFoto.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$titulo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/ArchivoFoto.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:datosAuditables\(\)\.$#'
 			identifier: method.notFound
 			count: 4
@@ -2387,18 +977,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/ArchivoFoto.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre_completo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/ArchivoFotoPersona.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Models/Asignacion.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:datosAuditables\(\)\.$#'
@@ -2417,12 +995,6 @@ parameters:
 			identifier: method.notFound
 			count: 4
 			path: app/Models/Beca.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/BibliotecaItem.php
 
 		-
 			message: '#^Offset 1 on array\{list\<string\>, list\<non\-falsy\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
@@ -2453,12 +1025,6 @@ parameters:
 			identifier: method.notFound
 			count: 4
 			path: app/Models/Gasto.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/InventarioItem.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:datosAuditables\(\)\.$#'
@@ -2497,27 +1063,9 @@ parameters:
 			path: app/Models/Profesor.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Profesor.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:assignRole\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Models/Profesor.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:datosAuditables\(\)\.$#'
 			identifier: method.notFound
 			count: 4
-			path: app/Models/Profesor.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hasRole\(\)\.$#'
-			identifier: method.notFound
-			count: 1
 			path: app/Models/Profesor.php
 
 		-
@@ -2629,18 +1177,6 @@ parameters:
 			path: app/Policies/AlumnoPolicy.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:bloqueIdsDondeParticipa\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Policies/PersonaPolicy.php
-
-		-
-			message: '#^Parameter \#2 \$alumno of method App\\Domain\\Acceso\\PermisosEfectivos\:\:puedeSobreAlumno\(\) expects App\\Models\\Alumno, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Policies/PersonaPolicy.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$persona_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2651,24 +1187,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Policies/ProfesorPolicy.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/ShowPolicy.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/ShowPolicy.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/AmbitoSedeService.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>sede_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -2719,44 +1237,32 @@ parameters:
 			path: app/Services/BibliotecaShareMiniatura.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dia_semana\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/EspacioAlumnoService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hora_inicio\.$#'
-			identifier: property.notFound
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
 			count: 2
 			path: app/Services/EspacioAlumnoService.php
 
 		-
-			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\. Use \-\> instead\.$#'
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
 			path: app/Services/EspacioAlumnoService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cuota\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/PagoDesdeComprobanteService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cuota_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/PagoDesdeComprobanteService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$monto\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/PagoDesdeComprobanteService.php
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\BloqueHorario\>\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/EspacioAlumnoService.php
 
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Services/PagoDesdeComprobanteService.php
+
+		-
+			message: '#^Instanceof between App\\Models\\ComprobanteCuotaAlumnoItem and App\\Models\\ComprobanteCuotaAlumnoItem will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
 			count: 1
 			path: app/Services/PagoDesdeComprobanteService.php
 
@@ -2799,18 +1305,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$profesor\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Services/RecordatorioChatbotService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nombre\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/RecordatorioChatbotService.php
-
-		-
-			message: '#^Method App\\Services\\RecordatorioChatbotService\:\:alumnosObjetivoCuota\(\) should return Illuminate\\Support\\Collection\<int, App\\Models\\Alumno\> but returns Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\.$#'
-			identifier: return.type
 			count: 1
 			path: app/Services/RecordatorioChatbotService.php
 
@@ -2879,12 +1373,6 @@ parameters:
 			identifier: deadCode.unreachable
 			count: 1
 			path: app/Support/AparienciaTema.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sede\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Support/LiquidacionDocente.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>sede" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'

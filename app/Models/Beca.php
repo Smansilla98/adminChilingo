@@ -36,21 +36,25 @@ class Beca extends Model
         'fecha_fin' => 'date',
     ];
 
+    /** @return BelongsTo<Alumno, $this> */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
     }
 
+    /** @return BelongsTo<Bloque, $this> */
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);
     }
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function otorgadaPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'otorgada_por');

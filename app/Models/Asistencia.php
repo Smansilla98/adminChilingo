@@ -71,11 +71,13 @@ class Asistencia extends Model
         });
     }
 
+    /** @return BelongsTo<Alumno, $this> */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
     }
 
+    /** @return BelongsTo<Bloque, $this> */
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);

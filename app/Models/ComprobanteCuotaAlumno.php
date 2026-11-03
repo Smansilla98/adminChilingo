@@ -31,21 +31,25 @@ class ComprobanteCuotaAlumno extends Model
         'monto_total' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<Alumno, $this> */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
     }
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
     }
 
+    /** @return BelongsTo<Pago, $this> */
     public function pago(): BelongsTo
     {
         return $this->belongsTo(Pago::class);
     }
 
+    /** @return HasMany<ComprobanteCuotaAlumnoItem, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(ComprobanteCuotaAlumnoItem::class, 'comprobante_cuota_alumno_id');

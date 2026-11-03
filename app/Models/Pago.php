@@ -25,6 +25,7 @@ class Pago extends Model
         'monto_total' => 'decimal:2',
     ];
 
+    /** @return HasMany<PagoDetalle, $this> */
     public function detalles(): HasMany
     {
         return $this->hasMany(PagoDetalle::class)->withoutGlobalScope('pago_vigente');
@@ -37,6 +38,7 @@ class Pago extends Model
             ->withTimestamps();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function anuladoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'anulado_por');
@@ -53,6 +55,7 @@ class Pago extends Model
         return $query->whereNull($this->qualifyColumn('anulado_at'));
     }
 
+    /** @return BelongsTo<User, $this> */
     public function registradoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'registrado_por');

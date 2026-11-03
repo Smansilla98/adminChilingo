@@ -27,6 +27,7 @@ class BloqueHorario extends Model
         7 => 'Domingo',
     ];
 
+    /** @return BelongsTo<Bloque, $this> */
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);

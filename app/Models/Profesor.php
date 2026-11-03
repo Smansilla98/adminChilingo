@@ -29,6 +29,8 @@ class Profesor extends Model
 
     /**
      * Persona (identidad única) a la que pertenece este perfil.
+     *
+     * @return BelongsTo<Persona, $this>
      */
     public function persona(): BelongsTo
     {
@@ -55,6 +57,8 @@ class Profesor extends Model
 
     /**
      * Usuario asociado (un profesor puede ser también alumno en otro bloque)
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -63,6 +67,8 @@ class Profesor extends Model
 
     /**
      * Bloques en los que participa, con rol en el pivot (titular, ayudante, etc.).
+     *
+     * @return BelongsToMany<Bloque, $this>
      */
     public function bloques(): BelongsToMany
     {
@@ -73,6 +79,8 @@ class Profesor extends Model
 
     /**
      * Roles en sedes (profesor, encargado, coordinador).
+     *
+     * @return BelongsToMany<Sede, $this>
      */
     public function sedesConRol(): BelongsToMany
     {
@@ -164,6 +172,8 @@ class Profesor extends Model
 
     /**
      * Sede de la que es coordinador (si aplica)
+     *
+     * @return HasOne<Sede, $this>
      */
     public function sedeCoordinada(): HasOne
     {
@@ -172,6 +182,8 @@ class Profesor extends Model
 
     /**
      * Áreas que coordina: género, costa, tambores (coordinador de área)
+     *
+     * @return HasMany<CoordinadorArea, $this>
      */
     public function coordinadorAreas(): HasMany
     {
@@ -180,6 +192,8 @@ class Profesor extends Model
 
     /**
      * Relación con eventos
+     *
+     * @return HasMany<Evento, $this>
      */
     public function eventos(): HasMany
     {

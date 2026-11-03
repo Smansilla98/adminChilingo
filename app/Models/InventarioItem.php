@@ -85,16 +85,19 @@ class InventarioItem extends Model
         'reparado_en' => 'date',
     ];
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
     }
 
+    /** @return BelongsTo<Alumno, $this> */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);
     }
 
+    /** @return HasMany<InventarioMovimiento, $this> */
     public function movimientos(): HasMany
     {
         return $this->hasMany(InventarioMovimiento::class)->orderByDesc('id');

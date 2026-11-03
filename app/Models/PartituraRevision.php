@@ -16,11 +16,13 @@ class PartituraRevision extends Model
         'validado_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<ProgramaRitmo, $this> */
     public function programaRitmo(): BelongsTo
     {
         return $this->belongsTo(ProgramaRitmo::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function validador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'validado_por');

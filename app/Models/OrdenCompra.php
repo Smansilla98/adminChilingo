@@ -41,16 +41,19 @@ class OrdenCompra extends Model
         'total_estimado' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<OrdenCompraItem, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(OrdenCompraItem::class);

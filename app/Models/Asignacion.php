@@ -41,31 +41,37 @@ class Asignacion extends Model
         'activo' => 'boolean',
     ];
 
+    /** @return BelongsTo<Persona, $this> */
     public function persona(): BelongsTo
     {
         return $this->belongsTo(Persona::class);
     }
 
+    /** @return BelongsTo<Role, $this> */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
+    /** @return BelongsTo<Permission, $this> */
     public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class);
     }
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
     }
 
+    /** @return BelongsTo<Bloque, $this> */
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'creado_por');

@@ -14,6 +14,7 @@ class CoordinadorArea extends Model
 
     protected $fillable = ['profesor_id', 'area'];
 
+    /** @return BelongsTo<Profesor, $this> */
     public function profesor(): BelongsTo
     {
         return $this->belongsTo(Profesor::class);

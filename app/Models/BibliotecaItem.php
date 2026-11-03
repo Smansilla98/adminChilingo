@@ -64,11 +64,13 @@ class BibliotecaItem extends Model
         return self::instrumentosOpciones()[$clave] ?? $clave;
     }
 
+    /** @return BelongsToMany<BibliotecaTag, $this> */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(BibliotecaTag::class, 'biblioteca_item_tag');
     }
 
+    /** @return BelongsTo<ProgramaRitmo, $this> */
     public function toque(): BelongsTo
     {
         return $this->belongsTo(ProgramaRitmo::class, 'programa_ritmo_id');

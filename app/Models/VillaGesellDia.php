@@ -15,6 +15,7 @@ class VillaGesellDia extends Model
         'fecha' => 'date',
     ];
 
+    /** @return HasMany<VillaGesellTocada, $this> */
     public function tocadas(): HasMany
     {
         return $this->hasMany(VillaGesellTocada::class, 'dia_id')->orderBy('orden')->orderBy('hora');

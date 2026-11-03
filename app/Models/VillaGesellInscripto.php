@@ -73,6 +73,7 @@ class VillaGesellInscripto extends Model
         'fecha_hasta' => 'date',
     ];
 
+    /** @return BelongsTo<Alumno, $this> */
     public function alumno(): BelongsTo
     {
         return $this->belongsTo(Alumno::class);

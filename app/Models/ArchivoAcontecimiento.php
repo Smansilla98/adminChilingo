@@ -44,36 +44,43 @@ class ArchivoAcontecimiento extends Model
         'longitud' => 'float',
     ];
 
+    /** @return BelongsTo<ArchivoCapitulo, $this> */
     public function capitulo(): BelongsTo
     {
         return $this->belongsTo(ArchivoCapitulo::class, 'capitulo_id');
     }
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
     }
 
+    /** @return BelongsTo<Evento, $this> */
     public function evento(): BelongsTo
     {
         return $this->belongsTo(Evento::class);
     }
 
+    /** @return BelongsTo<Show, $this> */
     public function show(): BelongsTo
     {
         return $this->belongsTo(Show::class);
     }
 
+    /** @return BelongsTo<ArchivoFoto, $this> */
     public function portada(): BelongsTo
     {
         return $this->belongsTo(ArchivoFoto::class, 'portada_foto_id');
     }
 
+    /** @return HasMany<ArchivoFoto, $this> */
     public function fotos(): HasMany
     {
         return $this->hasMany(ArchivoFoto::class, 'acontecimiento_id')->orderBy('orden')->orderBy('id');
     }
 
+    /** @return BelongsToMany<self, $this> */
     public function relacionados(): BelongsToMany
     {
         return $this->belongsToMany(self::class, 'archivo_acontecimiento_relacion', 'acontecimiento_id', 'relacionado_id');

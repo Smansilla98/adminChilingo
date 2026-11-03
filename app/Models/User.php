@@ -66,11 +66,13 @@ class User extends Authenticatable
         ];
     }
 
+    /** @return BelongsTo<Persona, $this> */
     public function persona(): BelongsTo
     {
         return $this->belongsTo(Persona::class);
     }
 
+    /** @return HasMany<Dispositivo, $this> */
     public function dispositivos(): HasMany
     {
         return $this->hasMany(Dispositivo::class);

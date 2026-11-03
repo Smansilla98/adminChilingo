@@ -30,6 +30,8 @@ class Evento extends Model
 
     /**
      * Relación con sede
+     *
+     * @return BelongsTo<Sede, $this>
      */
     public function sede(): BelongsTo
     {
@@ -38,6 +40,8 @@ class Evento extends Model
 
     /**
      * Relación con profesor
+     *
+     * @return BelongsTo<Profesor, $this>
      */
     public function profesor(): BelongsTo
     {
@@ -46,6 +50,8 @@ class Evento extends Model
 
     /**
      * Relación con bloque
+     *
+     * @return BelongsTo<Bloque, $this>
      */
     public function bloque(): BelongsTo
     {
@@ -54,6 +60,8 @@ class Evento extends Model
 
     /**
      * Relación con usuario creador
+     *
+     * @return BelongsTo<User, $this>
      */
     public function creador(): BelongsTo
     {

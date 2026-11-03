@@ -30,6 +30,7 @@ class FacturacionMensual extends Model
         'monto_previsto' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<Sede, $this> */
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);

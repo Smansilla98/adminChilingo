@@ -18,6 +18,7 @@ class VillaGesellTocada extends Model
         'notas',
     ];
 
+    /** @return BelongsTo<VillaGesellDia, $this> */
     public function dia(): BelongsTo
     {
         return $this->belongsTo(VillaGesellDia::class, 'dia_id');

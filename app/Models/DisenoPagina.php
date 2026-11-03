@@ -13,6 +13,7 @@ class DisenoPagina extends Model
 
     protected $casts = ['orden' => 'integer'];
 
+    /** @return BelongsTo<Diseno, $this> */
     public function diseno(): BelongsTo
     {
         return $this->belongsTo(Diseno::class);

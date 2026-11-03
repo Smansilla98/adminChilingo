@@ -15,11 +15,13 @@ class ArchivoFotoPersona extends Model
 
     protected $fillable = ['archivo_foto_id', 'persona_id', 'nombre', 'detalle', 'orden'];
 
+    /** @return BelongsTo<ArchivoFoto, $this> */
     public function foto(): BelongsTo
     {
         return $this->belongsTo(ArchivoFoto::class, 'archivo_foto_id');
     }
 
+    /** @return BelongsTo<Persona, $this> */
     public function persona(): BelongsTo
     {
         return $this->belongsTo(Persona::class);

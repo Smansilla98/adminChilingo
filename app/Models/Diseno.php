@@ -27,6 +27,7 @@ class Diseno extends Model
         'alto' => 'integer',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -37,6 +38,7 @@ class Diseno extends Model
         return $this->preview_path ? MediosDiseno::url($this->preview_path) : null;
     }
 
+    /** @return HasMany<DisenoPagina, $this> */
     public function paginas(): HasMany
     {
         return $this->hasMany(DisenoPagina::class)->orderBy('orden')->orderBy('id');

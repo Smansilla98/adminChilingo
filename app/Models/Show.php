@@ -24,6 +24,7 @@ class Show extends Model
         'convocatoria_abierta' => 'boolean',
     ];
 
+    /** @return BelongsToMany<Bloque, $this> */
     public function bloques(): BelongsToMany
     {
         return $this->belongsToMany(Bloque::class, 'show_bloque')->withTimestamps();

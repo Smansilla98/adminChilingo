@@ -38,16 +38,19 @@ class ArchivoCapitulo extends Model
         'publicado_at' => 'datetime',
     ];
 
+    /** @return HasMany<ArchivoAcontecimiento, $this> */
     public function acontecimientos(): HasMany
     {
         return $this->hasMany(ArchivoAcontecimiento::class, 'capitulo_id')->orderBy('orden')->orderBy('fecha')->orderBy('anio');
     }
 
+    /** @return HasMany<ArchivoFoto, $this> */
     public function fotos(): HasMany
     {
         return $this->hasMany(ArchivoFoto::class, 'capitulo_id');
     }
 
+    /** @return BelongsTo<ArchivoFoto, $this> */
     public function portada(): BelongsTo
     {
         return $this->belongsTo(ArchivoFoto::class, 'portada_foto_id');
