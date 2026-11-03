@@ -27,7 +27,10 @@ class EliminacionSegura
             $modelo instanceof Sede => $this->dependenciasSede($modelo),
             $modelo instanceof Bloque => $this->dependenciasBloque($modelo),
             $modelo instanceof Alumno => $this->dependenciasAlumno($modelo),
-            $modelo instanceof Cuota => $this->contar(['pago_detalles' => ['cuota_id', $modelo->id, 'pagos registrados']]),
+            $modelo instanceof Cuota => $this->contar([
+                'pago_detalles' => ['cuota_id', $modelo->id, 'pagos registrados'],
+                'comprobante_cuota_alumno_items' => ['cuota_id', $modelo->id, 'comprobantes de pago'],
+            ]),
             $modelo instanceof Profesor => $this->contar(['bloque_profesor' => ['profesor_id', $modelo->id, 'bloques asignados']]),
             default => [],
         };
@@ -59,6 +62,7 @@ class EliminacionSegura
             'asistencias' => ['bloque_id', $bloque->id, 'asistencias'],
             'alumno_bloque' => ['bloque_id', $bloque->id, 'alumnos inscriptos'],
             'comprobante_cuota_alumno_items' => ['bloque_id', $bloque->id, 'comprobantes de pago'],
+            'show_bloque' => ['bloque_id', $bloque->id, 'shows'],
         ]);
     }
 
@@ -69,6 +73,9 @@ class EliminacionSegura
             'pago_detalles' => ['alumno_id', $alumno->id, 'pagos'],
             'asistencias' => ['alumno_id', $alumno->id, 'asistencias'],
             'comprobantes_cuota_alumnos' => ['alumno_id', $alumno->id, 'comprobantes'],
+            'becas' => ['alumno_id', $alumno->id, 'becas'],
+            'observaciones_pedagogicas' => ['alumno_id', $alumno->id, 'observaciones pedagógicas'],
+            'villa_gesell_inscriptos' => ['alumno_id', $alumno->id, 'inscripciones a Villa Gesell'],
         ]);
     }
 

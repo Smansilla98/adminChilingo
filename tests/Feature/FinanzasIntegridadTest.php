@@ -39,6 +39,24 @@ class FinanzasIntegridadTest extends TestCase
         $this->assertDatabaseHas('pago_detalles', ['cuota_id' => $cuota->id]);
     }
 
+    public function test_no_se_borra_un_alumno_con_beca_ni_un_bloque_que_toco_en_shows(): void
+    {
+        $admin = $this->admin();
+        $bloque = $this->bloque($this->sede('Quilmes'));
+        $alumno = $this->inscribirAlumno($this->persona('Ana'), $bloque);
+        Beca::query()->create(['alumno_id' => $alumno->id, 'tipo' => 'total', 'fecha_inicio' => now()->toDateString(), 'estado' => 'activa']);
+
+        $this->actingAs($admin)->delete(route('alumnos.destroy', $alumno))->assertSessionHasErrors('eliminar');
+        $this->assertDatabaseHas('alumnos', ['id' => $alumno->id]);
+        $this->assertDatabaseHas('becas', ['alumno_id' => $alumno->id]);
+
+        $bloqueSolo = $this->bloque($this->sede('Varela'), 'Bloque de shows');
+        $show = \App\Models\Show::query()->create(['titulo' => 'Aniversario', 'fecha' => now()->toDateString()]);
+        $show->bloques()->attach($bloqueSolo->id);
+        $this->actingAs($admin)->delete(route('bloques.destroy', $bloqueSolo))->assertSessionHasErrors('eliminar');
+        $this->assertDatabaseHas('bloques', ['id' => $bloqueSolo->id]);
+    }
+
     public function test_anular_pago_lo_excluye_de_saldos_y_queda_auditado(): void
     {
         $tesorero = $this->usuario('Tesorera');
