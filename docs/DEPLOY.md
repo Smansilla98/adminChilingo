@@ -62,6 +62,14 @@ El editor del módulo Diseño es [OpenDesign](https://github.com/clawnify/OpenDe
 integrado en `resources/opendesign` con backend Laravel. `npm run build` compila el panel y
 luego el editor (`public/opendesign`). Ver `resources/opendesign/NOTICE.md`.
 
+El editor se instala con `npm ci`, que exige que `resources/opendesign/package-lock.json` coincida con
+el npm de la imagen (Node 20 → npm 10). Si se cambia una dependencia, regenerá el lock con esa versión,
+no con el npm local:
+
+```bash
+docker run --rm -v "$PWD/resources/opendesign:/w" -w /w node:20 npm install --package-lock-only
+```
+
 ### Storage
 
 Sin cambios: comprobantes y archivos en `storage/app` (usar volumen persistente o S3 como hasta ahora).
