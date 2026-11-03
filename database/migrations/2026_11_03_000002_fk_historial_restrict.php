@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 return new class extends Migration
 {
@@ -64,6 +65,16 @@ return new class extends Migration
                 );
                 if ($actual === null || strtoupper((string) $actual->regla) === $def[$regla]) {
                     continue; // no existe o ya tiene la regla buscada
+                }
+                // Volver a crear la clave valida todas las filas: con huérfanos fallaría después de
+                // haberla borrado y la tabla quedaría sin clave. En ese caso se deja como está.
+                $huerfanos = DB::table($tabla)->whereNotNull($columna)
+                    ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from($def[0])->whereColumn("{$def[0]}.id", "{$tabla}.{$columna}"))
+                    ->count();
+                if ($huerfanos > 0) {
+                    Log::warning("FK {$tabla}.{$columna}: {$huerfanos} filas sin {$def[0]}; queda con ON DELETE ".strtoupper((string) $actual->regla).'.');
+
+                    continue;
                 }
                 $nombre = str_replace('`', '', (string) $actual->nombre);
                 $quitar[] = "DROP FOREIGN KEY `{$nombre}`";
