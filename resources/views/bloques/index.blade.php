@@ -14,6 +14,7 @@
             <tr>
                 <th>Nombre</th>
                 <th>Año</th>
+                <th>Antigüedad</th>
                 <th>A quien corresponde</th>
                 <th>Tambores</th>
                 <th>Cupo</th>
@@ -25,7 +26,18 @@
             @forelse($bloques as $bloque)
                 <tr>
                     <td class="fw-semibold">{{ $bloque->nombre }}</td>
-                    <td class="ito-mono">{{ $bloque->año }}</td>
+                    <td class="ito-mono">{{ $bloque->año }}°
+                        @if(($sugerido = $bloque->anioSugeridoPorAntiguedad()) && $sugerido > $bloque->año)
+                            <div class="small text-muted" title="Según los años que lleva funcionando">por antigüedad: {{ $sugerido }}°{{ $sugerido === 6 ? ' o más' : '' }}</div>
+                        @endif
+                    </td>
+                    <td>
+                        @if($bloque->funciona_desde)
+                            <span class="ito-mono">{{ $bloque->aniosFuncionando() }}</span> <span class="text-muted small">años · desde {{ $bloque->funciona_desde }}</span>
+                        @else
+                            <span class="text-muted">—</span>
+                        @endif
+                    </td>
                     <td>{{ $bloque->corresponde_a ?? ($bloque->profesor->nombre ?? '—') }}</td>
                     <td>{{ ($bloque->tambores && count($bloque->tambores) > 0) ? implode(', ', $bloque->tambores) : '—' }}</td>
                     <td class="ito-mono">{{ $bloque->cantidad_max_alumnos }}</td>
@@ -45,7 +57,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="ito-empty">No hay bloques</td></tr>
+                <tr><td colspan="8" class="ito-empty">No hay bloques</td></tr>
             @endforelse
         </tbody>
     </table>

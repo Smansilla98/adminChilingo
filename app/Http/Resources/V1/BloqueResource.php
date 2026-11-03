@@ -16,6 +16,8 @@ class BloqueResource extends JsonResource
             'id' => $this->id,
             'nombre' => $this->nombre,
             'anio' => (int) $this->año,
+            'funciona_desde' => $this->funciona_desde,
+            'anios_funcionando' => $this->aniosFuncionando(),
             'sede' => $this->whenLoaded('sede', fn () => $this->sede ? ['id' => $this->sede->id, 'nombre' => $this->sede->nombre] : null),
             'activo' => (bool) $this->activo,
             'cantidad_alumnos' => $this->whenCounted('alumnos'),

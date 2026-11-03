@@ -25,6 +25,7 @@ class Bloque extends Model
     protected $fillable = [
         'nombre',
         'año',
+        'funciona_desde',
         'profesor_id',
         'corresponde_a',
         'sede_id',
@@ -36,9 +37,42 @@ class Bloque extends Model
     protected $casts = [
         'activo' => 'boolean',
         'año' => 'integer',
+        'funciona_desde' => 'integer',
         'cantidad_max_alumnos' => 'integer',
         'tambores' => 'array',
     ];
+
+    /** Años que lleva funcionando (null si no se cargó desde cuándo). */
+    public function aniosFuncionando(): ?int
+    {
+        return $this->funciona_desde ? max(0, (int) now()->year - $this->funciona_desde) : null;
+    }
+
+    /**
+     * Año del programa que corresponde por antigüedad: el primer año de vida es 1°,
+     * y desde el sexto en adelante queda en 6° (el programa no sigue más allá).
+     */
+    public function anioSugeridoPorAntiguedad(): ?int
+    {
+        $anios = $this->aniosFuncionando();
+
+        return $anios === null ? null : min(6, $anios + 1);
+    }
+
+    /** Texto corto para listados: «desde 2009 · 17 años». */
+    public function antiguedadTexto(): ?string
+    {
+        $anios = $this->aniosFuncionando();
+        if ($anios === null) {
+            return null;
+        }
+
+        return 'desde '.$this->funciona_desde.' · '.match (true) {
+            $anios === 0 => 'primer año',
+            $anios === 1 => '1 año',
+            default => $anios.' años',
+        };
+    }
 
     /**
      * Relación con profesor titular (columna legada; debe coincidir con pivot rol titular).

@@ -18,6 +18,7 @@ class BloqueService
         return [
             'nombre' => 'required|string|max:255',
             'año' => 'required|integer|min:1|max:6',
+            'funciona_desde' => 'nullable|integer|min:1995|max:'.now()->year,
             'profesor_id' => 'nullable|exists:profesores,id',
             'corresponde_a' => 'nullable|string|max:255',
             'sede_id' => 'required|exists:sedes,id',

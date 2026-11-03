@@ -11,10 +11,18 @@
             @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-6 col-md-3">
-            <label for="año" class="form-label">Año</label>
+            <label for="año" class="form-label">Año del programa</label>
             <input type="number" class="form-control @error('año') is-invalid @enderror" id="año" name="año" value="{{ old('año', $bloque?->año ?? 1) }}" min="1" max="6" required>
-            <div class="form-text">Del 1 al 6.</div>
+            <div class="form-text">Referencia del 1° al 6°.</div>
             @error('año')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-6 col-md-3">
+            <label for="funciona_desde" class="form-label">Funciona desde</label>
+            <input type="number" class="form-control @error('funciona_desde') is-invalid @enderror" id="funciona_desde" name="funciona_desde"
+                   value="{{ old('funciona_desde', $bloque?->funciona_desde) }}" min="1995" max="{{ now()->year }}" placeholder="Ej.: {{ now()->year - 10 }}"
+                   aria-describedby="funcionaDesdeAyuda">
+            <div class="form-text" id="funcionaDesdeAyuda" data-anio-actual="{{ now()->year }}">Año en que arrancó el bloque.</div>
+            @error('funciona_desde')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-6 col-md-3">
             <label for="cantidad_max_alumnos" class="form-label">Cupo máximo</label>
@@ -74,3 +82,24 @@
         </div>
     </div>
 </x-ito.form-section>
+
+@push('scripts')
+<script>
+// Antigüedad del bloque y año del programa que le correspondería, como referencia.
+(function () {
+    const desde = document.getElementById('funciona_desde');
+    const ayuda = document.getElementById('funcionaDesdeAyuda');
+    if (!desde || !ayuda) return;
+    const actual = parseInt(ayuda.dataset.anioActual, 10);
+    const pintar = function () {
+        const v = parseInt(desde.value, 10);
+        if (!v || v < 1995 || v > actual) { ayuda.textContent = 'Año en que arrancó el bloque.'; return; }
+        const anios = actual - v;
+        const sugerido = Math.min(6, anios + 1);
+        ayuda.textContent = (anios === 0 ? 'Primer año' : anios + (anios === 1 ? ' año' : ' años')) + ' funcionando · por antigüedad: ' + sugerido + '°' + (sugerido === 6 ? ' o más' : '');
+    };
+    desde.addEventListener('input', pintar);
+    pintar();
+})();
+</script>
+@endpush

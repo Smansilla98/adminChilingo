@@ -14,7 +14,7 @@
         'eventos' => 'Eventos',
     ];
 @endphp
-<x-ito.shell-page :title="$bloque->nombre" :subtitle="collect([$bloque->sede?->nombre, $bloque->año ? $bloque->año.'° año' : null, $bloque->corresponde_a])->filter()->join(' · ')" :plain="true">
+<x-ito.shell-page :title="$bloque->nombre" :subtitle="collect([$bloque->sede?->nombre, $bloque->año ? $bloque->año.'° año' : null, $bloque->antiguedadTexto(), $bloque->corresponde_a])->filter()->join(' · ')" :plain="true">
     <x-slot:actions>
         <x-ito.status :tone="$bloque->activo ? 'success' : 'neutral'" :label="$bloque->activo ? 'Activo' : 'Inactivo'" />
         <a href="{{ route('bloques.index') }}" class="btn btn-outline-secondary">Volver</a>
