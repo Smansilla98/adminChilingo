@@ -5,14 +5,17 @@ import { View } from 'react-native';
 import { ItemLista } from '@/components/lista';
 import { Boton, Cargando, Chip, ErrorVista, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Vacio } from '@/components/ui';
 import { COLOR_COMPROBANTE, type Comprobante } from '@/features/comprobantes/tipos';
+import { ComoPagar } from '@/features/finanzas/ComoPagar';
 import { EstadoCuentaVista } from '@/features/finanzas/EstadoCuentaVista';
+import { ResumenDeuda } from '@/features/finanzas/ResumenDeuda';
 import { api } from '@/lib/api';
-import { useMiEstadoCuenta } from '@/lib/queries';
+import { useMiCobro, useMiEstadoCuenta } from '@/lib/queries';
 import { E, moneda } from '@/lib/theme';
 
-/** Espacio del alumno: saldo, cuotas, becas, envío de comprobantes y su estado. */
+/** Espacio del alumno: cuánto y qué debe, cómo pagar (alias, Mercado Pago), cuotas, becas y comprobantes. */
 export default function MiCuenta() {
   const q = useMiEstadoCuenta();
+  const cobro = useMiCobro();
   const enviados = useQuery({ queryKey: ['mi', 'comprobantes'], queryFn: () => api<{ data: Comprobante[] }>('mi/comprobantes').then((r) => r.data) });
 
   if (q.isPending && !q.data) return <Cargando />;
@@ -24,6 +27,8 @@ export default function MiCuenta() {
       <Stack.Screen options={{ title: 'Mi cuenta' }} />
       {q.data.map((cuenta) => (
         <View key={cuenta.alumno_id} style={{ gap: E.m }}>
+          <ResumenDeuda cuenta={cuenta} />
+          {cuenta.totales.saldo > 0 && cobro.data && <ComoPagar cobro={cobro.data} alumnoId={cuenta.alumno_id} saldo={cuenta.totales.saldo} />}
           {cuenta.totales.saldo > 0 && (
             <Boton titulo="Enviar comprobante de pago" icono="upload-file" grande onPress={() => router.push({ pathname: '/comprobantes/enviar', params: { alumno_id: String(cuenta.alumno_id) } } as never)} />
           )}

@@ -6,7 +6,8 @@ import { api } from '@/lib/api';
 import { useAvisos } from '@/lib/queries';
 import { C } from '@/lib/theme';
 
-const DESTINOS: Record<string, string> = { 'app://cuotas': '/cuotas', 'app://calendario': '/agenda' };
+// Los avisos de cuotas son para el alumno: van a su cuenta (los viejos usaban app://cuotas).
+const DESTINOS: Record<string, string> = { 'app://cuotas': '/mi-cuenta', 'app://mi-cuenta': '/mi-cuenta', 'app://calendario': '/agenda' };
 
 /** Enlace del aviso → pantalla de la app (los del archivo apuntan a la web: se traducen). */
 function destinoDe(enlace: string | null): string | undefined {

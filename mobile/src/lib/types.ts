@@ -151,3 +151,38 @@ export interface Paginado<T> {
   data: T[];
   meta?: { current_page: number; last_page: number; total: number };
 }
+
+/** Datos para pagar (Configuración → Avisos y cobro; lo vacío viene de COBRO_* del servidor). */
+export interface DatosTransferencia {
+  alias?: string;
+  cbu?: string;
+  titular?: string;
+  cuit?: string;
+  banco?: string;
+}
+
+export interface CobroDisponible {
+  transferencia: DatosTransferencia | null;
+  mercado_pago: boolean;
+}
+
+/** Configuración de un aviso automático (GET/PUT config/avisos). */
+export interface AvisoConfig {
+  nombre: string;
+  descripcion: string;
+  para: string;
+  activo: boolean;
+  canales: string[];
+  titulo: string;
+  mensaje: string;
+  dias?: number;
+}
+
+export interface ConfigAvisos {
+  avisos: Record<string, AvisoConfig>;
+  canales: Record<string, string>;
+  variables: Record<string, string>;
+  cobro: DatosTransferencia;
+  cobro_efectivo: DatosTransferencia;
+  mercado_pago: boolean;
+}

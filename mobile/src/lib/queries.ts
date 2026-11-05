@@ -5,6 +5,7 @@ import { encolarAsistencia } from './offline';
 import type {
   Aviso,
   Bloque,
+  CobroDisponible,
   EstadoCuenta,
   Inicio,
   InventarioItem,
@@ -45,8 +46,15 @@ export function useGuardarAsistencia(bloqueId: number, fecha: string) {
   });
 }
 
+/** Una sola consulta a mi/estado-cuenta; cada hook toma su parte. */
+const miEstadoCuenta = () => api<{ cuentas: EstadoCuenta[]; cobro?: CobroDisponible }>('mi/estado-cuenta');
+
 export const useMiEstadoCuenta = () =>
-  useQuery({ queryKey: ['mi', 'estado-cuenta'], queryFn: () => api<{ cuentas: EstadoCuenta[] }>('mi/estado-cuenta').then((r) => r.cuentas) });
+  useQuery({ queryKey: ['mi', 'estado-cuenta'], queryFn: miEstadoCuenta, select: (r) => r.cuentas });
+
+/** Datos para pagar (alias, CBU…) y si hay Mercado Pago: vienen con el estado de cuenta. */
+export const useMiCobro = () =>
+  useQuery({ queryKey: ['mi', 'estado-cuenta'], queryFn: miEstadoCuenta, select: (r) => r.cobro ?? { transferencia: null, mercado_pago: false } });
 
 export const useCalendario = (desde: string, hasta: string) =>
   useQuery({

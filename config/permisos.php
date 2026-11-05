@@ -332,5 +332,6 @@ return [
         'archivo_gestion' => ['etiqueta' => 'Gestión del archivo', 'icono' => 'collections', 'permisos' => ['archivo.view', 'archivo.manage', 'archivo.moderate']],
         'biblioteca' => ['etiqueta' => 'Biblioteca', 'icono' => 'local_library', 'permisos' => []],
         'notificaciones' => ['etiqueta' => 'Avisos', 'icono' => 'notifications', 'permisos' => []],
+        'avisos_config' => ['etiqueta' => 'Avisos y cobro', 'icono' => 'notifications_active', 'permisos' => ['notificaciones.send']],
     ],
 ];
