@@ -90,6 +90,9 @@ return Application::configure(basePath: dirname(__DIR__))
             ->onOneServer();
 
         // Avisos de la app (idempotentes: no se duplican aunque corran de nuevo).
+        // Cuota nueva: cada 15 minutos (no hay cola; así no frena la pantalla al crear la cuota).
+        $schedule->command('chilinga:avisos cuotas-nuevas')->everyFifteenMinutes()->withoutOverlapping()->onOneServer();
+        $schedule->command('chilinga:avisos cuotas-por-vencer')->dailyAt('11:05')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos cuotas-vencidas')->dailyAt('11:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos ausencias')->dailyAt('10:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos eventos')->dailyAt('18:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();

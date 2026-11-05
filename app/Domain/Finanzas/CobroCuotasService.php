@@ -42,10 +42,17 @@ class CobroCuotasService
         private MercadoPagoClient $mercadoPago,
     ) {}
 
-    /** Datos de la cuenta a la que se transfiere (config chilinga.cobro). */
+    /** Campos de los datos para pagar (Configuración → Avisos y cobro). */
+    public const CAMPOS_TRANSFERENCIA = ['alias', 'cbu', 'titular', 'cuit', 'banco'];
+
+    /**
+     * Datos de la cuenta a la que se transfiere: lo cargado en Configuración y, para lo que no
+     * esté cargado, las variables COBRO_* del entorno (config chilinga.cobro).
+     */
     public function datosTransferencia(): ?array
     {
-        $datos = array_filter(config('chilinga.cobro', []), fn ($v) => filled($v));
+        $cargados = array_intersect_key(\App\Models\Ajuste::leer('cobro'), array_flip(self::CAMPOS_TRANSFERENCIA));
+        $datos = array_filter(array_merge(config('chilinga.cobro', []), array_filter($cargados, fn ($v) => filled($v))), fn ($v) => filled($v));
 
         return isset($datos['alias']) || isset($datos['cbu']) ? $datos : null;
     }

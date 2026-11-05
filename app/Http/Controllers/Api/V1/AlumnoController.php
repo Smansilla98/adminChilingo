@@ -170,7 +170,7 @@ class AlumnoController extends Controller
     }
 
     /** Estado de cuenta de la persona logueada (todas sus fichas de alumno). */
-    public function miEstadoCuenta(Request $request, EstadoCuentaService $cuentas): JsonResponse
+    public function miEstadoCuenta(Request $request, EstadoCuentaService $cuentas, \App\Domain\Finanzas\CobroCuotasService $cobros): JsonResponse
     {
         $user = $request->user();
         $alumnos = Alumno::query()
@@ -179,6 +179,8 @@ class AlumnoController extends Controller
 
         return response()->json([
             'cuentas' => $alumnos->map(fn (Alumno $a) => $cuentas->paraAlumno($a, $request->integer('anio') ?: null))->values(),
+            // Para pagar: alias/CBU (copiar o compartir desde la app) y si hay Mercado Pago.
+            'cobro' => ['transferencia' => $cobros->datosTransferencia(), 'mercado_pago' => $cobros->mercadoPagoDisponible()],
         ]);
     }
 }

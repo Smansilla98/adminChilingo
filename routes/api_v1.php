@@ -130,6 +130,11 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::delete('seguimiento/{observacion}', [SeguimientoController::class, 'destroy'])->whereNumber('observacion')->middleware('permiso:seguimiento.create')->name('seguimiento.destroy');
     Route::get('alumnos/{alumno}/estado-cuenta', [AlumnoController::class, 'estadoCuenta'])->name('alumnos.estado-cuenta');
     Route::get('mi/estado-cuenta', [AlumnoController::class, 'miEstadoCuenta'])->name('mi.estado-cuenta');
+    Route::get('mi/cobro', [\App\Http\Controllers\Api\V1\CobroController::class, 'show'])->name('mi.cobro');
+    Route::post('mi/cobro/mercadopago', [\App\Http\Controllers\Api\V1\CobroController::class, 'mercadoPago'])->middleware('throttle:10,1')->name('mi.cobro.mercadopago');
+    Route::get('config/avisos', [\App\Http\Controllers\Api\V1\ConfigAvisosController::class, 'show'])->middleware('permiso:notificaciones.send')->name('config.avisos');
+    Route::put('config/avisos', [\App\Http\Controllers\Api\V1\ConfigAvisosController::class, 'update'])->middleware('permiso:notificaciones.send')->name('config.avisos.update');
+    Route::post('config/avisos/enviar-cuotas-nuevas', [\App\Http\Controllers\Api\V1\ConfigAvisosController::class, 'enviarCuotasNuevas'])->middleware(['permiso:notificaciones.send', 'throttle:4,1'])->name('config.avisos.enviar');
 
     // Cuotas
     Route::get('cuotas/catalogo', [CuotaController::class, 'catalogo'])->name('cuotas.catalogo');

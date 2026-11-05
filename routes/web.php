@@ -183,6 +183,12 @@ Route::get('/', fn () => auth()->check()
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/estado-sistema', EstadoSistemaController::class)->name('estado-sistema');
+    Route::middleware('permiso:notificaciones.send')->prefix('configuracion/avisos')->name('configuracion.avisos.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ConfigAvisosController::class, 'edit'])->name('edit');
+        Route::put('/', [\App\Http\Controllers\ConfigAvisosController::class, 'update'])->name('update');
+        Route::post('/enviar-cuotas-nuevas', [\App\Http\Controllers\ConfigAvisosController::class, 'enviarCuotasNuevas'])->middleware('throttle:4,1')->name('enviar');
+        Route::post('/probar', [\App\Http\Controllers\ConfigAvisosController::class, 'probar'])->middleware('throttle:10,1')->name('probar');
+    });
     Route::get('/estado-sistema/respaldo', [EstadoSistemaController::class, 'respaldo'])->middleware('throttle:6,1')->name('estado-sistema.respaldo');
     Route::post('/contexto', [ContextoController::class, 'cambiar'])->name('contexto.cambiar');
 
