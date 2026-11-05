@@ -41,3 +41,7 @@ example
 # generated native folders
 /ios
 /android
+
+# Firebase (push Android): se carga en EAS como variable de archivo GOOGLE_SERVICES_JSON
+google-services.json
+GoogleService-Info.plist

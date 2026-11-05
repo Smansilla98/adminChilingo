@@ -12,6 +12,15 @@ const BASE_ID = 'org.lachilinga.ito';
 const sufijo = VARIANT === 'production' ? '' : `.${VARIANT === 'development' ? 'dev' : 'staging'}`;
 const nombre = VARIANT === 'production' ? 'ITO' : `ITO (${VARIANT === 'development' ? 'dev' : 'staging'})`;
 
+/**
+ * Firebase (FCM) es obligatorio para que las notificaciones push lleguen a Android.
+ * En EAS se sube como variable de tipo archivo GOOGLE_SERVICES_JSON; en local, mobile/google-services.json
+ * (ignorado por git). Sin él la app funciona igual, pero Android no recibe push.
+ */
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- app.config corre en Node; el proyecto no tipa los módulos de Node
+const { existsSync } = require('fs') as { existsSync: (ruta: string) => boolean };
+const googleServices = process.env.GOOGLE_SERVICES_JSON ?? (existsSync('./google-services.json') ? './google-services.json' : undefined);
+
 const config: ExpoConfig = {
   name: nombre,
   // Slug técnico del proyecto EAS existente; no es el nombre visible de la app.
@@ -31,6 +40,7 @@ const config: ExpoConfig = {
   },
   android: {
     package: BASE_ID + sufijo,
+    ...(googleServices ? { googleServicesFile: googleServices } : {}),
     adaptiveIcon: {
       backgroundColor: '#000000',
       foregroundImage: './assets/images/android-icon-foreground.png',

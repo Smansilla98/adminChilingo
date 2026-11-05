@@ -2,6 +2,7 @@
 
 namespace App\Domain\Notificaciones;
 
+use App\Models\Alumno;
 use App\Models\Dispositivo;
 use App\Models\User;
 use App\Notifications\AvisoNotification;
@@ -21,6 +22,29 @@ use Illuminate\Support\Facades\Mail;
 class NotificacionService
 {
     public const CANALES = ['interna', 'push', 'mail', 'whatsapp'];
+
+    /** Debe coincidir con CANAL_ANDROID de mobile/src/lib/push.ts. */
+    public const CANAL_ANDROID = 'avisos';
+
+    /**
+     * Para la configuración: si el servidor manda push y cuántos alumnos activos tienen la app con
+     * las notificaciones activadas (un celular registrado).
+     *
+     * @return array{habilitado: bool, alumnos_con_app: int, celulares: int}
+     */
+    public static function estadoPush(): array
+    {
+        $cuentasDeAlumnos = User::query()->where('activo', true)->where(fn ($q) => $q
+            ->whereIn('id', Alumno::query()->where('activo', true)->whereNotNull('user_id')->select('user_id'))
+            ->orWhereIn('persona_id', Alumno::query()->where('activo', true)->whereNotNull('persona_id')->select('persona_id')))
+            ->select('id');
+
+        return [
+            'habilitado' => (bool) config('services.expo.push_habilitado'),
+            'alumnos_con_app' => Dispositivo::query()->whereIn('user_id', $cuentasDeAlumnos)->distinct()->count('user_id'),
+            'celulares' => Dispositivo::query()->count(),
+        ];
+    }
 
     public function __construct(private readonly WhatsAppService $whatsapp) {}
 
@@ -108,6 +132,9 @@ class NotificacionService
             'body' => $contenido['mensaje'],
             'data' => ['tipo' => $contenido['tipo'], 'enlace' => $contenido['enlace'] ?? null],
             'sound' => 'default',
+            // Canal de alta importancia que crea la app (aparece arriba con sonido) y entrega inmediata.
+            'channelId' => self::CANAL_ANDROID,
+            'priority' => 'high',
         ], $tokens);
 
         $req = Http::timeout(10)->acceptJson();

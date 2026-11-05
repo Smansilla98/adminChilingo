@@ -11,7 +11,7 @@ import { BannerSinConexion, ToastProvider } from '@/components/feedback';
 import { ApiError } from '@/lib/api';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { useSincronizacionAutomatica } from '@/lib/offline';
-import { registrarPush } from '@/lib/push';
+import { registrarPush, useNotificacionesPush } from '@/lib/push';
 import { C } from '@/lib/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -62,6 +62,7 @@ function Navegacion() {
   useEffect(() => {
     if (autenticado) void registrarPush();
   }, [autenticado]);
+  useNotificacionesPush(listo && autenticado);
 
   if (!listo) return null;
 

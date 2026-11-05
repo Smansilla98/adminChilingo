@@ -70,6 +70,12 @@ function Formulario({ d, refrescando, onRefrescar }: { d: ConfigAvisos; refresca
 
       <Subtitulo>Avisos automáticos</Subtitulo>
       <Tenue>Variables: {Object.keys(d.variables).join(' ')}</Tenue>
+      {d.push &&
+        (d.push.habilitado ? (
+          <Aviso tono="info" texto={`Notificaciones en el celular activas: hoy las reciben ${d.push.alumnos_con_app} ${d.push.alumnos_con_app === 1 ? 'alumno' : 'alumnos'} (los que instalaron la app y aceptaron notificaciones).`} />
+        ) : (
+          <Aviso tono="alerta" texto="Las notificaciones en el celular están apagadas en el servidor (EXPO_PUSH_ENABLED). Los avisos llegan solo por los otros canales." />
+        ))}
       {Object.entries(avisos).map(([tipo, a]) => (
         <Tarjeta key={tipo} acento={a.activo ? C.exito : undefined}>
           <Fila style={{ justifyContent: 'space-between' }}>

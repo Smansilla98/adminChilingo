@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Finanzas\CobroCuotasService;
 use App\Domain\Notificaciones\Avisos;
 use App\Domain\Notificaciones\ConfigAvisos;
+use App\Domain\Notificaciones\NotificacionService;
 use App\Http\Controllers\ConfigAvisosController as Web;
 use App\Http\Controllers\Controller;
 use App\Models\Ajuste;
@@ -23,6 +24,7 @@ class ConfigAvisosController extends Controller
             'cobro' => Ajuste::leer('cobro'),
             'cobro_efectivo' => $cobros->datosTransferencia() ?? (object) [],
             'mercado_pago' => $cobros->mercadoPagoDisponible(),
+            'push' => NotificacionService::estadoPush(),
         ]);
     }
 

@@ -185,4 +185,6 @@ export interface ConfigAvisos {
   cobro: DatosTransferencia;
   cobro_efectivo: DatosTransferencia;
   mercado_pago: boolean;
+  /** Notificaciones en el celular: si el servidor las manda y cuántos alumnos tienen la app con push. */
+  push?: { habilitado: boolean; alumnos_con_app: number; celulares: number };
 }

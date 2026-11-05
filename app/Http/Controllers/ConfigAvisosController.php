@@ -25,6 +25,7 @@ class ConfigAvisosController extends Controller
             'cobro' => Ajuste::leer('cobro'),
             'cobroEfectivo' => $cobros->datosTransferencia() ?? [],
             'mercadoPago' => $cobros->mercadoPagoDisponible(),
+            'push' => NotificacionService::estadoPush(),
         ]);
     }
 

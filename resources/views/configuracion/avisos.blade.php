@@ -25,6 +25,17 @@
         </x-ito.form-section>
 
         <x-ito.form-section title="Avisos automáticos" icon="bi-bell" help="Cada aviso se manda una sola vez por alumno y cuota. Variables: {{ collect($variables)->keys()->implode(' ') }}">
+            @if($push['habilitado'])
+                <div class="alert alert-light border small mb-3">
+                    <i class="bi bi-phone me-1" aria-hidden="true"></i>
+                    Las notificaciones en el celular están activas: hoy las reciben <strong>{{ $push['alumnos_con_app'] }}</strong> {{ $push['alumnos_con_app'] === 1 ? 'alumno' : 'alumnos' }} (los que instalaron la app y aceptaron notificaciones).
+                </div>
+            @else
+                <div class="alert alert-warning small mb-3">
+                    <i class="bi bi-phone me-1" aria-hidden="true"></i>
+                    Las notificaciones en el celular están apagadas en el servidor (<code>EXPO_PUSH_ENABLED=false</code>). Los avisos con ese canal llegan solo por los demás.
+                </div>
+            @endif
             @foreach($avisos as $tipo => $a)
                 <fieldset class="border rounded p-3 mb-3">
                     <legend class="float-none w-auto px-2 fs-6 mb-0">{{ $a['nombre'] }} <span class="text-muted small">· {{ $a['para'] }}</span></legend>

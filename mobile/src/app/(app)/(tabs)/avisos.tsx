@@ -3,19 +3,10 @@ import { router } from 'expo-router';
 
 import { Boton, Cargando, ErrorVista, Pantalla, Tarjeta, Tenue, Texto, Vacio } from '@/components/ui';
 import { api } from '@/lib/api';
+import { destinoDe } from '@/lib/destinos';
+import { ActivarPush } from '@/features/avisos/ActivarPush';
 import { useAvisos } from '@/lib/queries';
 import { C } from '@/lib/theme';
-
-// Los avisos de cuotas son para el alumno: van a su cuenta (los viejos usaban app://cuotas).
-const DESTINOS: Record<string, string> = { 'app://cuotas': '/mi-cuenta', 'app://mi-cuenta': '/mi-cuenta', 'app://calendario': '/agenda' };
-
-/** Enlace del aviso → pantalla de la app (los del archivo apuntan a la web: se traducen). */
-function destinoDe(enlace: string | null): string | undefined {
-  if (!enlace) return undefined;
-  const aporte = enlace.match(/\/archivo\/mis-aportes\/(\d+)/);
-  if (aporte) return `/archivo/aportes/${aporte[1]}`;
-  return DESTINOS[enlace];
-}
 
 export default function Avisos() {
   const q = useAvisos();
@@ -30,6 +21,7 @@ export default function Avisos() {
 
   return (
     <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
+      <ActivarPush />
       {(q.data?.no_leidas ?? 0) > 0 && <Boton titulo="Marcar todo como leído" variante="secundario" icono="done-all" onPress={() => leer.mutate(null)} />}
       {q.data?.data.length === 0 && <Vacio icono="notifications-none" texto="No tenés avisos." />}
       {q.data?.data.map((a) => (

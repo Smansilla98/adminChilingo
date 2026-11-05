@@ -6,7 +6,10 @@ use App\Domain\Notificaciones\ConfigAvisos;
 use App\Models\Ajuste;
 use App\Models\Beca;
 use App\Models\Cuota;
+use App\Models\Dispositivo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\Escenarios;
 use Tests\TestCase;
@@ -107,5 +110,34 @@ class AvisosCuotasTest extends TestCase
         $this->putJson('/api/v1/config/avisos', ['avisos' => ['pago_registrado' => ['activo' => true, 'canales' => ['interna', 'push']]]])
             ->assertOk()->assertJsonPath('avisos.pago_registrado.canales', ['interna', 'push'])
             ->assertJsonPath('avisos.cuota_nueva.activo', true); // lo que no se manda queda como estaba
+    }
+
+    public function test_la_cuota_nueva_llega_como_push_al_celular_del_alumno(): void
+    {
+        config(['services.expo.push_habilitado' => true]);
+        Http::fake(['exp.host/*' => Http::response(['data' => [['status' => 'ok']]])]);
+        $alumna = $this->usuario('Alumna');
+        $this->inscribirAlumno($alumna->persona, $this->bloque($this->sede('Palomar')));
+        Dispositivo::query()->create(['user_id' => $alumna->id, 'token' => 'ExponentPushToken[alumna]', 'plataforma' => 'android']);
+        $this->cuota(['fecha_vencimiento' => now()->addDays(10)]);
+
+        $this->artisan('chilinga:avisos', ['tipo' => 'cuotas-nuevas'])->assertSuccessful();
+
+        Http::assertSent(function (Request $r) {
+            $m = $r->data()[0] ?? [];
+
+            return ($m['to'] ?? null) === 'ExponentPushToken[alumna]'
+                && $m['title'] === 'Nueva cuota: Noviembre'
+                && str_contains($m['body'], '$20.000')
+                && $m['data']['enlace'] === 'app://mi-cuenta'
+                && $m['channelId'] === 'avisos'
+                && $m['priority'] === 'high';
+        });
+        $this->assertDatabaseHas('notificacion_envios', ['user_id' => $alumna->id, 'canal' => 'push']);
+
+        // El admin ve cuántos alumnos reciben las notificaciones en el celular.
+        $this->actingAs($this->admin())->get(route('configuracion.avisos.edit'))->assertOk()->assertSeeText('hoy las reciben 1 alumno', false);
+        Sanctum::actingAs($this->admin());
+        $this->getJson('/api/v1/config/avisos')->assertOk()->assertJsonPath('push.habilitado', true)->assertJsonPath('push.alumnos_con_app', 1);
     }
 }

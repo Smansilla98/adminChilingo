@@ -44,7 +44,8 @@ return [
     */
     // Push de la app móvil (Expo Push Service). Desactivado por defecto: no genera tráfico externo.
     'expo' => [
-        'push_habilitado' => filter_var(env('EXPO_PUSH_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+        // Encendido por defecto: solo reciben los celulares que instalaron la app y aceptaron notificaciones.
+        'push_habilitado' => filter_var(env('EXPO_PUSH_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
         'access_token' => env('EXPO_ACCESS_TOKEN'),
         'url' => env('EXPO_PUSH_URL', 'https://exp.host/--/api/v2/push/send'),
     ],
