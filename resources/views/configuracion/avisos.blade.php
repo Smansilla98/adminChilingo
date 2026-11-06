@@ -29,6 +29,7 @@
                 <div class="alert alert-light border small mb-3">
                     <i class="bi bi-phone me-1" aria-hidden="true"></i>
                     Las notificaciones en el celular están activas: hoy las reciben <strong>{{ $push['alumnos_con_app'] }}</strong> {{ $push['alumnos_con_app'] === 1 ? 'alumno' : 'alumnos' }} (los que instalaron la app y aceptaron notificaciones).
+                    <br>Tu celular: {!! $push['mio'] ? '<strong>registrado</strong> — «Mandarme una prueba» te llega al teléfono.' : '<strong>todavía no registrado</strong> — entrá a la app con tu usuario y, en Avisos, tocá «Activar notificaciones».' !!}
                 </div>
             @else
                 <div class="alert alert-warning small mb-3">

@@ -136,7 +136,7 @@ class AvisosCuotasTest extends TestCase
         $this->assertDatabaseHas('notificacion_envios', ['user_id' => $alumna->id, 'canal' => 'push']);
 
         // El admin ve cuántos alumnos reciben las notificaciones en el celular.
-        $this->actingAs($this->admin())->get(route('configuracion.avisos.edit'))->assertOk()->assertSeeText('hoy las reciben 1 alumno', false);
+        $this->actingAs($this->admin())->get(route('configuracion.avisos.edit'))->assertOk()->assertSeeText('hoy las reciben 1 alumno', false)->assertSeeText('Tu celular: todavía no registrado', false);
         Sanctum::actingAs($this->admin());
         $this->getJson('/api/v1/config/avisos')->assertOk()->assertJsonPath('push.habilitado', true)->assertJsonPath('push.alumnos_con_app', 1);
     }
