@@ -53,6 +53,8 @@ export interface Persona extends PersonaResumen {
     inscribir_alumno: boolean;
     sumar_docente: boolean;
     crear_cuenta: boolean;
+    /** Crear la cuenta del alumno o darle una contraseña provisoria nueva. */
+    dar_acceso_app?: boolean;
     ver_cuenta: boolean;
     gestionar_becas: boolean;
     ver_auditoria: boolean;

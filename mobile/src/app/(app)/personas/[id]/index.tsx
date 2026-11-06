@@ -9,6 +9,7 @@ import { ItemLista } from '@/components/lista';
 import { Acciones, Aviso, Boton, Cargando, Chip, Dato, Encabezado, ErrorVista, Fila, Pantalla, Segmentos, Subtitulo, Tarjeta, Tenue, Texto } from '@/components/ui';
 import { HistorialAuditoria } from '@/features/auditoria/HistorialAuditoria';
 import { EstadoCuentaVista } from '@/features/finanzas/EstadoCuentaVista';
+import { DarAccesoApp } from '@/features/personas/DarAccesoApp';
 import { EditarBeca } from '@/features/personas/EditarBeca';
 import type { Beca, Persona, PersonaResumen } from '@/features/personas/tipos';
 import { api, qs } from '@/lib/api';
@@ -73,6 +74,7 @@ export default function FichaPersona() {
         {a.ver_cuenta && p.cuenta && <Boton titulo="Cuenta y permisos" icono="admin-panel-settings" variante="secundario" onPress={() => ir('/usuarios/[id]', { id: p.cuenta!.id })} />}
         {a.fusionar && <Boton titulo="Fusionar duplicada" icono="merge-type" variante="secundario" onPress={() => setFusionando(true)} />}
       </Acciones>
+      {a.dar_acceso_app && <DarAccesoApp personaId={p.id} tieneCuenta={!!p.cuenta} />}
 
       <Segmentos opciones={pestanas} valor={pestana} onChange={setPestana} />
 

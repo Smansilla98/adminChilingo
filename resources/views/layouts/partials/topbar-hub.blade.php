@@ -263,6 +263,7 @@
                     </button>
                 </li>
                 <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ route('mi-clave.edit') }}"><i class="bi bi-key" aria-hidden="true"></i> Cambiar mi contraseña</a></li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}" class="m-0">
                         @csrf

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Personas\AccesoAlumnoService;
 use App\Domain\Personas\FichaPersona;
 use App\Domain\Personas\PersonaService;
 use App\Http\Requests\PersonaRequest;
@@ -74,7 +75,17 @@ class PersonaController extends Controller
             'persona' => $persona,
             'tiposBeca' => Beca::TIPOS,
             'puedeFusionar' => $user->can('merge', Persona::class),
+            'puedeDarAccesoApp' => app(AccesoAlumnoService::class)->puedeDarAcceso($user, $persona),
         ]);
+    }
+
+    /** Acceso a la app para un alumno: la contraseña provisoria se muestra una sola vez. */
+    public function darAccesoApp(Request $request, Persona $persona, AccesoAlumnoService $acceso): RedirectResponse
+    {
+        $this->authorize('view', $persona);
+        $r = $acceso->darAcceso($persona, $request->user());
+
+        return back()->with('acceso_app', $r);
     }
 
     public function edit(Persona $persona): View

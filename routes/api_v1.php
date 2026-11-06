@@ -40,6 +40,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login');
+// Un alumno ya cargado crea su cuenta desde la app (DNI + fecha de nacimiento) y queda adentro.
+Route::post('auth/registro', [AuthController::class, 'registro'])->middleware('throttle:6,1')->name('auth.registro');
 Route::get('salud', fn () => response()->json(['ok' => true, 'version' => 'v1', 'hora' => now()->toIso8601String()]))->name('salud');
 
 // Archivo histórico: lectura del material publicado, sin cuenta (docs/ARCHIVO_HISTORICO.md).
@@ -55,9 +57,10 @@ Route::prefix('archivo')->name('archivo.')->middleware('throttle:90,1')->group(f
     Route::get('personas', [ArchivoController::class, 'personas'])->name('personas');
 });
 
-Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function () {
+Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(function () {
     Route::post('auth/refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
     Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    Route::post('auth/clave', [AuthController::class, 'cambiarClave'])->middleware('throttle:10,1')->name('auth.clave');
 
     Route::get('me', MeController::class)->name('me');
     Route::get('inicio', InicioController::class)->name('inicio');
@@ -89,6 +92,7 @@ Route::middleware(['auth:sanctum', 'activo', 'throttle:api'])->group(function ()
     Route::get('personas', [PersonaController::class, 'index'])->name('personas.index');
     Route::post('personas', [PersonaController::class, 'store'])->middleware('permiso:personas.create')->name('personas.store');
     Route::get('personas/{persona}', [PersonaController::class, 'show'])->name('personas.show');
+    Route::post('personas/{persona}/acceso-app', [PersonaController::class, 'darAccesoApp'])->middleware('throttle:20,1')->name('personas.acceso-app');
     Route::put('personas/{persona}', [PersonaController::class, 'update'])->middleware('permiso:personas.update')->name('personas.update');
     Route::post('personas/{persona}/fusionar', [PersonaController::class, 'fusionar'])->middleware('permiso:personas.merge')->name('personas.fusionar');
     Route::post('personas/{persona}/becas', [BecaController::class, 'store'])->middleware('permiso:becas.manage')->name('becas.store');

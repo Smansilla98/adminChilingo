@@ -46,6 +46,8 @@ class MeController extends Controller
             'alcances' => $acceso->toArray()['permisos'],
             'modulos' => $modulos,
             'superadmin' => $acceso->esSuperadmin(),
+            // Entró con una contraseña provisoria: la app le pide elegir la suya antes de seguir.
+            'debe_cambiar_clave' => (bool) $user->debe_cambiar_clave,
             'catalogo_version' => md5(json_encode(CatalogoPermisos::todos())),
         ]);
     }

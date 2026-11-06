@@ -71,6 +71,7 @@ export default function Perfil() {
 
       <Subtitulo>Más</Subtitulo>
       <Boton titulo="Qué puede cada perfil" icono="badge" variante="secundario" onPress={() => router.push('/roles' as never)} />
+      <Boton titulo="Cambiar mi contraseña" icono="key" variante="secundario" onPress={() => router.push('/cambiar-clave' as never)} />
       <Boton titulo="Cerrar sesión" icono="logout" variante="peligro" onPress={confirmarSalida} />
       {VARIANTE !== 'production' && <Tenue>Entorno: {VARIANTE}</Tenue>}
     </Pantalla>

@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -55,7 +56,7 @@ export default function Login() {
           <View style={s.form}>
             <TextInput
               style={s.input}
-              placeholder="Usuario o email"
+              placeholder="Usuario, DNI o email"
               placeholderTextColor={C.tenue}
               autoCapitalize="none"
               autoCorrect={false}
@@ -66,7 +67,7 @@ export default function Login() {
               returnKeyType="next"
               blurOnSubmit={false}
               onSubmitEditing={() => claveRef.current?.focus()}
-              accessibilityLabel="Usuario o email"
+              accessibilityLabel="Usuario, DNI o email"
             />
             <View style={s.claveFila}>
               <TextInput
@@ -97,6 +98,9 @@ export default function Login() {
             </View>
             {error && <Aviso texto={error} tono="peligro" />}
             <Boton titulo="Ingresar" onPress={() => void enviar()} cargando={enviando} grande />
+            <Tenue style={s.centroTexto}>Los alumnos entran con su DNI.</Tenue>
+            <Boton titulo="Soy alumno y no tengo cuenta" icono="person-add" variante="secundario" onPress={() => router.push('/registro' as never)} />
+            <Tenue style={s.centroTexto}>¿Te olvidaste la contraseña? Pedile a tu profe o a administración una provisoria.</Tenue>
           </View>
           {VARIANTE !== 'production' && <Tenue style={s.centroTexto}>Entorno: {VARIANTE}</Tenue>}
           <Text style={s.credito}>desarrollado por Santi Mansilla - 2026</Text>

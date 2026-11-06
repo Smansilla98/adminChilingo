@@ -40,6 +40,8 @@ export interface Me {
   alcances?: Record<string, { global: boolean; sedes: number[]; bloques: number[] }>;
   modulos: Modulo[];
   superadmin: boolean;
+  /** Entró con una contraseña provisoria: tiene que elegir la suya antes de seguir. */
+  debe_cambiar_clave?: boolean;
 }
 
 export interface Tarjeta {

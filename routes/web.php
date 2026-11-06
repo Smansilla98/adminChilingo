@@ -182,6 +182,8 @@ Route::get('/', fn () => auth()->check()
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/mi-clave', [\App\Http\Controllers\MiClaveController::class, 'edit'])->name('mi-clave.edit');
+    Route::put('/mi-clave', [\App\Http\Controllers\MiClaveController::class, 'update'])->middleware('throttle:10,1')->name('mi-clave.update');
     Route::get('/estado-sistema', EstadoSistemaController::class)->name('estado-sistema');
     Route::middleware('permiso:notificaciones.send')->prefix('configuracion/avisos')->name('configuracion.avisos.')->group(function () {
         Route::get('/', [\App\Http\Controllers\ConfigAvisosController::class, 'edit'])->name('edit');
@@ -238,6 +240,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/personas/crear', [PersonaController::class, 'create'])->middleware('permiso:personas.create')->name('personas.create');
     Route::post('/personas', [PersonaController::class, 'store'])->middleware('permiso:personas.create')->name('personas.store');
     Route::get('/personas/{persona}', [PersonaController::class, 'show'])->name('personas.show');
+    Route::post('/personas/{persona}/acceso-app', [PersonaController::class, 'darAccesoApp'])->middleware('throttle:20,1')->name('personas.acceso-app');
     Route::get('/personas/{persona}/editar', [PersonaController::class, 'edit'])->middleware('permiso:personas.update')->name('personas.edit');
     Route::put('/personas/{persona}', [PersonaController::class, 'update'])->middleware('permiso:personas.update')->name('personas.update');
     Route::post('/personas/{persona}/fusionar', [PersonaController::class, 'fusionar'])->middleware('permiso:personas.merge')->name('personas.fusionar');

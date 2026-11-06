@@ -120,6 +120,22 @@
                         @else
                             <p class="text-muted mb-0">No tiene cuenta. Puede ser alumno o docente sin entrar al sistema.</p>
                         @endif
+                        @if(session('acceso_app'))
+                            @php $acc = session('acceso_app'); @endphp
+                            <div class="alert alert-success mt-3 mb-0" role="status">
+                                <strong>{{ $acc['nueva'] ? 'Cuenta creada.' : 'Contraseña provisoria nueva.' }}</strong> Pasale estos datos (se muestran una sola vez):
+                                <div class="mt-2">Usuario: <strong class="ito-mono">{{ $acc['usuario'] }}</strong><br>Contraseña provisoria: <strong class="ito-mono fs-5">{{ $acc['clave'] }}</strong></div>
+                                <div class="small mt-2">La primera vez que entre a la app (o a la web) va a tener que elegir su propia contraseña.</div>
+                            </div>
+                        @endif
+                        @if($puedeDarAccesoApp ?? false)
+                            <form method="POST" action="{{ route('personas.acceso-app', $persona) }}" class="mt-3"
+                                  data-confirm="{{ $persona->user ? 'Se le va a dar una contraseña provisoria nueva y se cerrarán sus sesiones abiertas. ¿Continuar?' : 'Se va a crear su cuenta para entrar a la app con una contraseña provisoria. ¿Continuar?' }}">
+                                @csrf
+                                <button class="btn btn-outline-primary btn-sm"><i class="bi bi-phone" aria-hidden="true"></i> {{ $persona->user ? 'Nueva contraseña provisoria' : 'Dar acceso a la app' }}</button>
+                                <div class="form-text">Usuario: su DNI. Contraseña: 6 números que le pasás vos; la cambia al entrar.</div>
+                            </form>
+                        @endif
                     </x-ito.detail-section>
 
                     <x-ito.detail-section title="Próximos eventos" icon="bi-calendar-event">

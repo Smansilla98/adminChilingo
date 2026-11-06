@@ -28,14 +28,7 @@ class RegistroAlumnoController extends Controller
             'fecha_nacimiento' => ['required', 'date', 'before:today'],
             'email' => ['nullable', 'email', 'max:255'],
             'password' => ['required', 'confirmed', Password::min(6)],
-        ], [
-            'dni.required' => 'Escribí tu DNI.',
-            'fecha_nacimiento.required' => 'Elegí tu fecha de nacimiento.',
-            'fecha_nacimiento.before' => 'La fecha de nacimiento tiene que ser anterior a hoy.',
-            'password.required' => 'Elegí una contraseña.',
-            'password.min' => 'La contraseña tiene que tener al menos 6 letras o números.',
-            'password.confirmed' => 'Las dos contraseñas no coinciden. Escribilas de nuevo.',
-        ]);
+        ], RegistroAlumnoService::mensajes());
 
         $user = $registro->registrar($datos);
 

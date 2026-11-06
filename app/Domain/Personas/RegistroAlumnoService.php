@@ -65,7 +65,7 @@ class RegistroAlumnoService
             $user = User::query()->create([
                 'persona_id' => $persona->id,
                 'name' => $persona->nombre_completo ?: $alumno->nombre_apellido,
-                'username' => $this->usuarioLibre($dni),
+                'username' => self::usuarioLibre($dni),
                 'email' => $email !== '' ? $email : $dni.'@'.self::DOMINIO_SIN_CORREO,
                 'telefono' => $persona->telefono ?? $alumno->telefono,
                 'password' => Hash::make($datos['password']),
@@ -100,7 +100,7 @@ class RegistroAlumnoService
             });
     }
 
-    private function usuarioLibre(string $dni): string
+    public static function usuarioLibre(string $dni): string
     {
         $usuario = $dni;
         $n = 2;
@@ -109,6 +109,19 @@ class RegistroAlumnoService
         }
 
         return $usuario;
+    }
+
+    /** @return array<string, string> mensajes de validación del formulario de registro (web y app) */
+    public static function mensajes(): array
+    {
+        return [
+            'dni.required' => 'Escribí tu DNI.',
+            'fecha_nacimiento.required' => 'Elegí tu fecha de nacimiento.',
+            'fecha_nacimiento.before' => 'La fecha de nacimiento tiene que ser anterior a hoy.',
+            'password.required' => 'Elegí una contraseña.',
+            'password.min' => 'La contraseña tiene que tener al menos 6 letras o números.',
+            'password.confirmed' => 'Las dos contraseñas no coinciden. Escribilas de nuevo.',
+        ];
     }
 
     public static function soloNumeros(string $valor): string

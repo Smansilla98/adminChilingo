@@ -61,6 +61,7 @@ class User extends Authenticatable
             'ultimo_acceso_at' => 'datetime',
             'password' => 'hashed',
             'activo' => 'boolean',
+            'debe_cambiar_clave' => 'boolean',
             'modulos_access' => 'array',
             'apariencia_json' => 'array',
         ];

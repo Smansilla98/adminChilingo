@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Personas\AccesoAlumnoService;
 use App\Domain\Personas\FichaPersona;
 use App\Domain\Personas\PersonaService;
 use App\Http\Controllers\Controller;
@@ -149,11 +150,20 @@ class PersonaController extends Controller
                 'inscribir_alumno' => $alumnos->isEmpty() && $acceso->puede('alumnos.create'),
                 'sumar_docente' => ! $profesor && $acceso->puede('profesores.create'),
                 'crear_cuenta' => ! $persona->user && $acceso->puede('usuarios.create'),
+                'dar_acceso_app' => app(AccesoAlumnoService::class)->puedeDarAcceso($quien, $persona),
                 'ver_cuenta' => $persona->user !== null && $quien->can('view', $persona->user),
                 'gestionar_becas' => $alumnos->contains(fn (Alumno $a) => $quien->can('gestionarBecas', $a)),
                 'ver_auditoria' => $acceso->puede('auditoria.view'),
             ],
             'tipos_beca' => Beca::TIPOS,
         ];
+    }
+
+    /** Acceso a la app para un alumno: crea la cuenta o le da una contraseña provisoria nueva. */
+    public function darAccesoApp(Request $request, Persona $persona, AccesoAlumnoService $acceso): JsonResponse
+    {
+        $this->authorize('view', $persona);
+
+        return response()->json($acceso->darAcceso($persona, $request->user()));
     }
 }

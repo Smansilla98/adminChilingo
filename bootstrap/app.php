@@ -21,11 +21,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'modulo' => \App\Http\Middleware\CheckModuloAccess::class,
             'permiso' => \App\Http\Middleware\CheckPermiso::class,
             'activo' => \App\Http\Middleware\EnsureUsuarioActivo::class,
+            'clave' => \App\Http\Middleware\EnsureClaveCambiada::class,
             'material' => \App\Http\Middleware\AccesoMaterialToque::class,
         ]);
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         // Web: sesión. API: se aplica después de auth:sanctum (routes/api_v1.php).
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUsuarioActivo::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnsureClaveCambiada::class);
         $middleware->validateCsrfTokens(except: [
             'webhooks/twilio/whatsapp-status',
             'webhooks/mercadopago',

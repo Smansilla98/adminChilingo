@@ -70,6 +70,7 @@ function Navegacion() {
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.fondo } }}>
       <Stack.Protected guard={!autenticado}>
         <Stack.Screen name="login" />
+        <Stack.Screen name="registro" />
       </Stack.Protected>
       {/* Todo lo que está en (app) requiere sesión: las pantallas nuevas quedan protegidas solas. */}
       <Stack.Protected guard={autenticado}>

@@ -23,11 +23,21 @@ interface Token {
   expira: string | null;
 }
 
+export interface DatosRegistro {
+  dni: string;
+  fecha_nacimiento: string;
+  email?: string;
+  password: string;
+  password_confirmation: string;
+}
+
 interface AuthState {
   listo: boolean;
   autenticado: boolean;
   contexto: string | null;
   ingresar: (usuario: string, clave: string) => Promise<void>;
+  /** Un alumno ya cargado crea su cuenta (DNI + fecha de nacimiento) y queda adentro. */
+  registrarse: (datos: DatosRegistro) => Promise<void>;
   salir: () => Promise<void>;
   elegirContexto: (clave: string | null) => Promise<void>;
 }
@@ -86,6 +96,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [guardar],
   );
 
+  const registrarse = useCallback(
+    async (datos: DatosRegistro) => {
+      await guardar(await api<Token>('auth/registro', { method: 'POST', body: { ...datos, dni: datos.dni.trim(), dispositivo: `${Platform.OS} app` } }));
+    },
+    [guardar],
+  );
+
   const salir = useCallback(async () => {
     try {
       await api('auth/logout', { method: 'POST' });
@@ -107,8 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const valor = useMemo<AuthState>(
-    () => ({ listo, autenticado: !!token, contexto, ingresar, salir, elegirContexto }),
-    [listo, token, contexto, ingresar, salir, elegirContexto],
+    () => ({ listo, autenticado: !!token, contexto, ingresar, registrarse, salir, elegirContexto }),
+    [listo, token, contexto, ingresar, registrarse, salir, elegirContexto],
   );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;
