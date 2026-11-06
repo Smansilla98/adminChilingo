@@ -96,6 +96,8 @@ export interface ItemCuenta {
   pagado: number;
   saldo: number;
   estado: 'pagada' | 'becada' | 'parcial' | 'vencida' | 'pendiente';
+  /** Fecha (YYYY-MM-DD) del último pago de la cuota. */
+  pagado_el?: string | null;
 }
 
 export interface EstadoCuenta {
@@ -176,6 +178,12 @@ export interface AvisoConfig {
   titulo: string;
   mensaje: string;
   dias?: number;
+  /** Recordatorio de pasar lista: minutos después de empezar la clase. */
+  minutos?: number;
+  /** Cómo se llama el plazo (días o minutos) de este aviso. */
+  plazo_etiqueta?: string;
+  /** Variables que sirven en este aviso. */
+  variables?: string[];
 }
 
 export interface ConfigAvisos {

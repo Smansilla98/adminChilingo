@@ -5,6 +5,7 @@ namespace App\Domain\Finanzas;
 use App\Models\Alumno;
 use App\Models\Beca;
 use App\Models\Cuota;
+use App\Models\Pago;
 use App\Models\PagoDetalle;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -44,6 +45,8 @@ class EstadoCuentaService
             ->groupBy('cuota_id')
             ->get()
             ->keyBy('cuota_id');
+        // Fecha del último pago de cada cuota (para que el alumno vea cuándo pagó).
+        $fechasPago = Pago::query()->whereIn('id', $pagado->pluck('ultimo_pago_id')->filter()->all() ?: [0])->pluck('fecha_pago', 'id');
         $becas = $alumno->becas()->where('estado', '!=', 'finalizada')->orderByDesc('fecha_inicio')->get();
 
         $hoy = Carbon::today();
@@ -87,7 +90,8 @@ class EstadoCuentaService
                 'pagado' => $montoPagado,
                 'saldo' => $saldo,
                 'estado' => $estado,
-                'ultimo_pago_id' => $pagado->get($cuota->id)?->ultimo_pago_id,
+                'ultimo_pago_id' => $ultimoPagoId = $pagado->get($cuota->id)?->ultimo_pago_id,
+                'pagado_el' => ($f = $fechasPago->get($ultimoPagoId)) ? Carbon::parse($f)->toDateString() : null,
             ];
 
             $totales['bruto'] += $bruto;

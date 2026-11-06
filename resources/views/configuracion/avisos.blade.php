@@ -24,7 +24,7 @@
             </p>
         </x-ito.form-section>
 
-        <x-ito.form-section title="Avisos automáticos" icon="bi-bell" help="Cada aviso se manda una sola vez por alumno y cuota. Variables: {{ collect($variables)->keys()->implode(' ') }}">
+        <x-ito.form-section title="Avisos automáticos" icon="bi-bell" help="Cada aviso se manda una sola vez por persona (por cuota, clase o evento). Debajo de cada mensaje están las variables que podés usar.">
             @if($push['habilitado'])
                 <div class="alert alert-light border small mb-3">
                     <i class="bi bi-phone me-1" aria-hidden="true"></i>
@@ -55,20 +55,23 @@
                             </div>
                         @endforeach
                     </div>
+                    @php($plazo = collect(\App\Domain\Notificaciones\ConfigAvisos::PLAZOS)->keys()->first(fn ($campo) => isset($a[$campo])))
                     <div class="row g-2">
-                        <div class="{{ isset($a['dias']) ? 'col-md-9' : 'col-12' }}">
+                        <div class="{{ $plazo ? 'col-md-9' : 'col-12' }}">
                             <label class="form-label small" for="tit_{{ $tipo }}">Título</label>
                             <input class="form-control" id="tit_{{ $tipo }}" name="avisos[{{ $tipo }}][titulo]" value="{{ old("avisos.$tipo.titulo", $a['titulo']) }}" maxlength="120">
                         </div>
-                        @isset($a['dias'])
+                        @if($plazo)
+                            @php([$min, $max] = \App\Domain\Notificaciones\ConfigAvisos::PLAZOS[$plazo])
                             <div class="col-md-3">
-                                <label class="form-label small" for="dias_{{ $tipo }}">{{ $tipo === 'cuota_vencida' ? 'Revisar vencidas de los últimos' : 'Días antes' }}</label>
-                                <input type="number" class="form-control" id="dias_{{ $tipo }}" name="avisos[{{ $tipo }}][dias]" min="1" max="60" value="{{ old("avisos.$tipo.dias", $a['dias']) }}">
+                                <label class="form-label small" for="{{ $plazo }}_{{ $tipo }}">{{ $a['plazo_etiqueta'] ?? ($tipo === 'cuota_vencida' ? 'Revisar vencidas de los últimos (días)' : 'Días antes') }}</label>
+                                <input type="number" class="form-control" id="{{ $plazo }}_{{ $tipo }}" name="avisos[{{ $tipo }}][{{ $plazo }}]" min="{{ $min }}" max="{{ $max }}" value="{{ old("avisos.$tipo.$plazo", $a[$plazo]) }}">
                             </div>
-                        @endisset
+                        @endif
                         <div class="col-12">
                             <label class="form-label small" for="msg_{{ $tipo }}">Mensaje</label>
                             <textarea class="form-control" id="msg_{{ $tipo }}" name="avisos[{{ $tipo }}][mensaje]" rows="2" maxlength="600">{{ old("avisos.$tipo.mensaje", $a['mensaje']) }}</textarea>
+                            @if(! empty($a['variables']))<div class="form-text">Variables: {{ implode(' ', $a['variables']) }}</div>@endif
                         </div>
                     </div>
                     <button type="submit" form="probar_{{ $tipo }}" class="btn btn-link btn-sm px-0 mt-1"><i class="bi bi-send" aria-hidden="true"></i> Mandarme una prueba</button>

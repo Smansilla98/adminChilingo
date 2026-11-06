@@ -53,14 +53,22 @@ class ConfigAvisosController extends Controller
         $config = ConfigAvisos::de($tipo);
         $r = $notificaciones->enviar($request->user(), "prueba:{$tipo}:".now()->timestamp, [
             'tipo' => $tipo,
-            ...ConfigAvisos::texto($tipo, ['alumno' => $request->user()->name, 'cuota' => 'Cuota de ejemplo', 'monto' => '$25.000',
-                'vencimiento' => now()->addDays(5)->format('d/m'), 'dias' => '5', 'alias' => app(CobroCuotasService::class)->datosTransferencia()['alias'] ?? 'tu.alias']),
-            'enlace' => 'app://mi-cuenta',
+            ...ConfigAvisos::texto($tipo, self::variablesDePrueba($request->user()->name)),
+            'enlace' => str_starts_with($tipo, 'cuota') || $tipo === 'pago_registrado' ? 'app://mi-cuenta' : ($tipo === 'pasar_lista' ? null : 'app://calendario'),
         ], $config['canales']);
 
         $partes = collect($r)->map(fn ($estado, $canal) => (self::CANALES[$canal] ?? $canal).': '.$estado)->implode(' · ');
 
         return back()->with('success', 'Prueba enviada. '.$partes);
+    }
+
+    /** @return array<string, string> datos de ejemplo para «Mandarme una prueba» (sirven para cualquier aviso) */
+    public static function variablesDePrueba(string $nombre): array
+    {
+        return ['alumno' => $nombre, 'cuota' => 'Cuota de ejemplo', 'monto' => '$25.000',
+            'vencimiento' => now()->addDays(5)->format('d/m'), 'dias' => '5', 'alias' => app(CobroCuotasService::class)->datosTransferencia()['alias'] ?? 'tu.alias',
+            'bloque' => 'Bloque de ejemplo', 'hora' => '18:00', 'evento' => 'Marcha de ejemplo', 'fecha' => 'sáb '.now()->addDays(3)->format('d/m'),
+            'lugar' => 'Plaza de Mayo', 'descripcion' => 'Nos juntamos media hora antes con los tambores.'];
     }
 
     /** @return array<string, mixed> */
@@ -74,6 +82,7 @@ class ConfigAvisosController extends Controller
             'avisos.*.titulo' => ['nullable', 'string', 'max:120'],
             'avisos.*.mensaje' => ['nullable', 'string', 'max:600'],
             'avisos.*.dias' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'avisos.*.minutos' => ['nullable', 'integer', 'min:5', 'max:240'],
             'cobro' => ['nullable', 'array'],
             'cobro.alias' => ['nullable', 'string', 'max:60'],
             'cobro.cbu' => ['nullable', 'string', 'max:30'],

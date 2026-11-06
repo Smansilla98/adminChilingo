@@ -23,6 +23,7 @@ class EventoService
         'aniversario' => 'Aniversario',
         'fiesta' => 'Fiesta',
         'rifa' => 'Rifa',
+        'convocatoria' => 'Convocatoria (marcha, movilización)',
         'otro' => 'Otro',
     ];
 

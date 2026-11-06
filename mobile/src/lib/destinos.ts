@@ -6,5 +6,8 @@ export function destinoDe(enlace: unknown): string | undefined {
   if (typeof enlace !== 'string' || !enlace) return undefined;
   const aporte = enlace.match(/\/archivo\/mis-aportes\/(\d+)/);
   if (aporte) return `/archivo/aportes/${aporte[1]}`;
+  // Recordatorio de pasar lista: abre la planilla de ese bloque.
+  const lista = enlace.match(/^app:\/\/asistencia\/(\d+)$/);
+  if (lista) return `/asistencia/${lista[1]}`;
   return DESTINOS[enlace];
 }

@@ -6,7 +6,9 @@ use App\Domain\Asistencias\AusenciasSeguidas;
 use App\Domain\Finanzas\CobroCuotasService;
 use App\Domain\Finanzas\EstadoCuentaService;
 use App\Models\Alumno;
+use App\Models\Asistencia;
 use App\Models\Bloque;
+use App\Models\BloqueHorario;
 use App\Models\Cuota;
 use App\Models\Evento;
 use App\Models\Pago;
@@ -148,23 +150,136 @@ class Avisos
         return '$'.number_format($monto, 0, ',', '.');
     }
 
-    /** Eventos de mañana: aviso a quienes participan (alumnos y docentes del alcance del evento). */
+    /**
+     * Recordatorio de evento: los eventos y convocatorias de los próximos días configurados,
+     * a quienes participan. Un aviso por evento y persona.
+     */
     public function eventosProximos(): int
     {
+        $config = ConfigAvisos::de('evento_proximo');
+        if (! $config['activo'] || $config['canales'] === []) {
+            return 0;
+        }
+        $eventos = Evento::query()->with(['sede', 'bloque.sede'])
+            ->whereBetween('fecha', [now()->addDay()->toDateString(), now()->addDays((int) $config['dias'])->toDateString()])->get();
+
+        return $this->avisarEventos($eventos, 'evento_proximo', 'evento', $config['canales']);
+    }
+
+    /**
+     * Eventos y convocatorias recién cargados (corre seguido desde el scheduler): los eventos de
+     * un bloque o sede avisan a su gente; las convocatorias, a todo su ámbito (toda la escuela si no tienen).
+     */
+    public function eventosNuevos(int $diasAtras = 2): int
+    {
+        $recientes = Evento::query()->with(['sede', 'bloque.sede'])->where('created_at', '>=', now()->subDays($diasAtras))
+            ->whereDate('fecha', '>=', now()->toDateString())->get();
+        [$convocatorias, $eventos] = $recientes->partition(fn (Evento $e) => $e->tipo_evento === 'convocatoria');
+
         $enviados = 0;
-        foreach (Evento::query()->whereDate('fecha', now()->addDay()->toDateString())->get() as $evento) {
-            foreach ($this->destinatariosDe($evento) as $user) {
-                $r = $this->notificaciones->enviar($user, "evento:{$evento->id}:{$user->id}", [
-                    'tipo' => 'evento_proximo',
-                    'titulo' => 'Mañana: '.$evento->titulo,
-                    'mensaje' => trim(($evento->hora_inicio ? $evento->hora_inicio->format('H:i').' · ' : '').($evento->sede?->nombre ?? 'La Chilinga')),
-                    'enlace' => 'app://calendario',
-                ]);
-                $enviados += (int) (($r['interna'] ?? null) === 'enviado');
+        foreach (['convocatoria' => $convocatorias, 'evento_nuevo' => $eventos] as $tipo => $lista) {
+            $config = ConfigAvisos::de($tipo);
+            if ($config['activo'] && $config['canales'] !== []) {
+                $enviados += $this->avisarEventos($lista, $tipo, $tipo, $config['canales']);
             }
         }
 
         return $enviados;
+    }
+
+    /**
+     * @param  Collection<int, Evento>  $eventos
+     * @param  list<string>  $canales
+     */
+    private function avisarEventos(Collection $eventos, string $tipo, string $prefijoClave, array $canales): int
+    {
+        $enviados = 0;
+        foreach ($eventos as $evento) {
+            $dias = max(0, (int) now()->startOfDay()->diffInDays($evento->fecha, false));
+            $texto = ConfigAvisos::texto($tipo, self::variablesEvento($evento) + ['dias' => (string) $dias]);
+            foreach ($this->destinatariosDe($evento) as $user) {
+                $r = $this->notificaciones->enviar($user, "{$prefijoClave}:{$evento->id}:{$user->id}", [
+                    'tipo' => $tipo,
+                    ...$texto,
+                    'enlace' => 'app://calendario',
+                    'datos' => ['evento_id' => $evento->id],
+                ], $canales);
+                $enviados += (int) in_array('enviado', $r, true);
+            }
+        }
+
+        return $enviados;
+    }
+
+    /** @return array<string, string> */
+    public static function variablesEvento(Evento $evento): array
+    {
+        $dias = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+
+        return [
+            'evento' => (string) $evento->titulo,
+            'fecha' => $dias[$evento->fecha->dayOfWeek].' '.$evento->fecha->format('d/m'),
+            'hora' => $evento->hora_inicio ? $evento->hora_inicio->format('H:i') : '',
+            'lugar' => $evento->sede->nombre ?? $evento->bloque->sede->nombre ?? '',
+            'descripcion' => trim((string) $evento->descripcion),
+        ];
+    }
+
+    /**
+     * Clases que empezaron hace los minutos configurados y todavía no tienen asistencia:
+     * recordatorio a sus docentes, una vez por clase. No avisa de clases que terminaron hace horas.
+     */
+    public function pasarLista(): int
+    {
+        $config = ConfigAvisos::de('pasar_lista');
+        if (! $config['activo'] || $config['canales'] === []) {
+            return 0;
+        }
+        $ahora = now();
+        $hoy = $ahora->copy()->startOfDay();
+        $horarios = BloqueHorario::query()->where('dia_semana', $ahora->dayOfWeekIso)
+            ->whereHas('bloque', fn ($q) => $q->where('activo', true))
+            ->with(['bloque.profesor.user', 'bloque.profesores.user', 'bloque.sede'])->get();
+
+        $enviados = 0;
+        foreach ($horarios as $h) {
+            $bloque = $h->bloque;
+            $inicio = $hoy->copy()->setTimeFrom($h->hora_inicio);
+            $fin = $hoy->copy()->setTimeFrom($h->hora_fin);
+            if ($ahora->lt($inicio->copy()->addMinutes((int) $config['minutos'])) || $ahora->gt($fin->copy()->addHours(3))) {
+                continue;
+            }
+            if (Asistencia::query()->where('bloque_id', $bloque->id)->whereDate('fecha', $hoy->toDateString())->exists()) {
+                continue;
+            }
+            $texto = ConfigAvisos::texto('pasar_lista', [
+                'bloque' => $bloque->nombre, 'hora' => $inicio->format('H:i'), 'lugar' => $bloque->sede?->nombre,
+            ]);
+            foreach ($this->docentesDe($bloque) as $user) {
+                $r = $this->notificaciones->enviar($user, "pasar_lista:{$h->id}:{$hoy->toDateString()}:{$user->id}", [
+                    'tipo' => 'pasar_lista',
+                    ...$texto,
+                    'enlace' => "app://asistencia/{$bloque->id}",
+                    'datos' => ['bloque_id' => $bloque->id],
+                ], $config['canales']);
+                $enviados += (int) in_array('enviado', $r, true);
+            }
+        }
+
+        return $enviados;
+    }
+
+    /** @return array<int, User> docentes con cuenta (titular y los del equipo), sin repetir */
+    private function docentesDe(Bloque $bloque): array
+    {
+        $docentes = [];
+        foreach ([$bloque->profesor, ...$bloque->profesores] as $profesor) {
+            if ($profesor instanceof Profesor && $profesor->user instanceof User && $profesor->user->activo) {
+                $docentes[$profesor->user->id] = $profesor->user;
+            }
+        }
+
+        return $docentes;
     }
 
     /**
@@ -179,14 +294,7 @@ class Avisos
 
         foreach ($rachas as $r) {
             $bloque = $bloques->firstWhere('id', $r['bloque']->id);
-            $docentes = [];
-            if ($bloque instanceof Bloque) {
-                foreach ([$bloque->profesor, ...$bloque->profesores] as $profesor) {
-                    if ($profesor instanceof Profesor && $profesor->user instanceof User) {
-                        $docentes[$profesor->user->id] = $profesor->user;
-                    }
-                }
-            }
+            $docentes = $bloque instanceof Bloque ? $this->docentesDe($bloque) : [];
             $nombre = $r['alumno']->nombre_apellido ?? 'Un alumno';
             foreach ($docentes as $user) {
                 $res = $this->notificaciones->enviar($user, "ausencias:{$r['alumno']->id}:{$r['bloque']->id}:{$r['desde']->toDateString()}:{$user->id}", [
@@ -202,20 +310,41 @@ class Avisos
         return $enviados;
     }
 
-    /** @return Collection<int, User> */
+    /**
+     * Quienes participan de un evento: alumnos y docentes de su bloque o de su sede. Un evento de
+     * toda la escuela no avisa a nadie (se ve en la agenda), salvo que sea una convocatoria: esa va a todos.
+     *
+     * @return Collection<int, User>
+     */
     private function destinatariosDe(Evento $evento): Collection
     {
+        if (! $evento->bloque_id && ! $evento->sede_id) {
+            return $evento->tipo_evento === 'convocatoria'
+                ? User::query()->where('activo', true)->get()
+                : collect();
+        }
         $alumnos = Alumno::query()->where('activo', true);
+        $bloques = Bloque::query()->where('activo', true)->with(['profesor.user', 'profesores.user']);
         if ($evento->bloque_id) {
             $alumnos->where(fn ($q) => $q->where('bloque_id', $evento->bloque_id)->orWhereHas('bloques', fn ($b) => $b->where('bloques.id', $evento->bloque_id)));
-        } elseif ($evento->sede_id) {
-            $alumnos->where(fn ($q) => $q->where('sede_id', $evento->sede_id)->orWhereHas('bloques', fn ($b) => $b->where('bloques.sede_id', $evento->sede_id)));
+            $bloques->whereKey($evento->bloque_id);
         } else {
-            return collect(); // eventos generales: se ven en el calendario, sin aviso masivo
+            $alumnos->where(fn ($q) => $q->where('sede_id', $evento->sede_id)->orWhereHas('bloques', fn ($b) => $b->where('bloques.sede_id', $evento->sede_id)));
+            $bloques->where('sede_id', $evento->sede_id);
         }
         $personaIds = $alumnos->pluck('persona_id')->filter()->unique()->all();
+        $userIds = $alumnos->clone()->whereNotNull('user_id')->pluck('user_id')->all();
+        $usuarios = User::query()->where('activo', true)
+            ->where(fn ($q) => $q->whereIn('persona_id', $personaIds ?: [0])->orWhereIn('id', $userIds ?: [0]))->get()->keyBy('id');
 
-        return User::query()->whereIn('persona_id', $personaIds ?: [0])->where('activo', true)->get();
+        foreach ($bloques->get() as $bloque) {
+            $usuarios = $usuarios->union($this->docentesDe($bloque));
+        }
+        if ($evento->profesor_id && ($profe = Profesor::query()->with('user')->find($evento->profesor_id)) && $profe->user?->activo) {
+            $usuarios->put($profe->user->id, $profe->user);
+        }
+
+        return $usuarios->values();
     }
 
     private function cuentaDe(Alumno $alumno): ?User

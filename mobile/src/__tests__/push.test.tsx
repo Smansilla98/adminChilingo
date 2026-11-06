@@ -109,3 +109,7 @@ it('con permiso pero sin poder registrarse, muestra el motivo y deja reintentar'
   await waitFor(() => expect(llamadas.find((l) => l.ruta === 'dispositivos')).toBeTruthy());
   await waitFor(() => expect(screen.queryByText('No se pudieron activar las notificaciones')).toBeNull());
 });
+
+it('el recordatorio de pasar lista abre la planilla del bloque', () => {
+  expect(destinoDe('app://asistencia/12')).toBe('/asistencia/12');
+});

@@ -125,7 +125,7 @@ function TarjetaInicio({ tarjeta }: { tarjeta: TarjetaApi }) {
     case 'mi_espacio': {
       const cuota = d.cuota;
       return (
-        <Tarjeta acento={C.info} onPress={() => router.push('/mi-cuenta' as never)}>
+        <Tarjeta acento={C.info} onPress={() => router.push('/mi-actividad' as never)}>
           <Fila><Icon name="school" size={22} color={C.info} /><Texto style={s.cabecera}>Mi cursada</Texto></Fila>
           <Texto>{(d.bloques ?? []).map((b: any) => b.nombre).join(' · ') || 'Sin bloque asignado'}</Texto>
           {d.sede && <Tenue>{d.sede}</Tenue>}
@@ -135,6 +135,11 @@ function TarjetaInicio({ tarjeta }: { tarjeta: TarjetaApi }) {
             </Tenue>
           )}
           {cuota && <Chip texto={`${cuota.label} · ${cuota.periodo}`} color={TONO_CUOTA[cuota.estado] ?? C.tenue} fondo={C.superficie2} />}
+          <Fila style={{ flexWrap: 'wrap' }}>
+            <View style={{ flex: 1 }}><Boton titulo="Mi actividad" icono="checklist" onPress={() => router.push('/mi-actividad' as never)} /></View>
+            <View style={{ flex: 1 }}><Boton titulo="Pagar" icono="payments" variante="secundario" onPress={() => router.push('/mi-cuenta' as never)} /></View>
+          </Fila>
+          <Tenue>Cuotas pendientes y pagadas, y el material de estudio de tu año.</Tenue>
         </Tarjeta>
       );
     }

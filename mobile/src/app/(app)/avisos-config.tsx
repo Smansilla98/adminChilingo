@@ -16,7 +16,7 @@ const CAMPOS_COBRO: { clave: keyof DatosTransferencia; etiqueta: string }[] = [
   { clave: 'cuit', etiqueta: 'CUIT' },
 ];
 
-/** Admin: qué avisos automáticos reciben los alumnos, por qué canales y con qué texto, y los datos para pagar. */
+/** Admin: qué avisos automáticos reciben alumnos y docentes, por qué canales y con qué texto, y los datos para pagar. */
 export default function AvisosConfig() {
   const q = useQuery({ queryKey: ['config', 'avisos'], queryFn: () => api<ConfigAvisos>('config/avisos') });
 
@@ -69,7 +69,7 @@ function Formulario({ d, refrescando, onRefrescar }: { d: ConfigAvisos; refresca
       </Tarjeta>
 
       <Subtitulo>Avisos automáticos</Subtitulo>
-      <Tenue>Variables: {Object.keys(d.variables).join(' ')}</Tenue>
+      <Tenue>Cada aviso le llega una sola vez a cada persona. En cada uno figuran las variables que podés usar en el texto.</Tenue>
       {d.push &&
         (d.push.habilitado ? (
           <Aviso tono="info" texto={`Notificaciones en el celular activas: hoy las reciben ${d.push.alumnos_con_app} ${d.push.alumnos_con_app === 1 ? 'alumno' : 'alumnos'} (los que instalaron la app y aceptaron notificaciones).`} />
@@ -99,13 +99,16 @@ function Formulario({ d, refrescando, onRefrescar }: { d: ConfigAvisos; refresca
           <Tenue>Mensaje</Tenue>
           <TextInput value={a.mensaje} onChangeText={(v) => cambiar(tipo, { mensaje: v })} maxLength={600} multiline accessibilityLabel={`Mensaje de ${a.nombre}`}
             style={{ borderWidth: 1, borderColor: C.borde, borderRadius: 10, padding: E.s, minHeight: 70, color: C.texto }} />
-          {a.dias !== undefined && (
-            <Fila style={{ gap: E.s }}>
-              <Tenue>{tipo === 'cuota_vencida' ? 'Revisar vencidas de los últimos' : 'Días antes'}</Tenue>
-              <TextInput value={String(a.dias)} onChangeText={(v) => cambiar(tipo, { dias: Number(v.replace(/\D/g, '')) || 1 })} keyboardType="number-pad" accessibilityLabel={`Días de ${a.nombre}`}
-                style={{ borderWidth: 1, borderColor: C.borde, borderRadius: 10, padding: E.s, width: 70, color: C.texto }} />
-              <Chip texto="días" />
-            </Fila>
+          {a.variables && a.variables.length > 0 && <Tenue>Variables: {a.variables.join(' ')}</Tenue>}
+          {(['dias', 'minutos'] as const).map((campo) =>
+            a[campo] === undefined ? null : (
+              <Fila key={campo} style={{ gap: E.s, flexWrap: 'wrap' }}>
+                <Tenue>{a.plazo_etiqueta ?? (tipo === 'cuota_vencida' ? 'Revisar vencidas de los últimos' : 'Días antes')}</Tenue>
+                <TextInput value={String(a[campo])} onChangeText={(v) => cambiar(tipo, { [campo]: Number(v.replace(/\D/g, '')) || 1 })} keyboardType="number-pad" accessibilityLabel={`${campo === 'dias' ? 'Días' : 'Minutos'} de ${a.nombre}`}
+                  style={{ borderWidth: 1, borderColor: C.borde, borderRadius: 10, padding: E.s, width: 70, color: C.texto }} />
+                <Chip texto={campo === 'dias' ? 'días' : 'minutos'} />
+              </Fila>
+            ),
           )}
         </Tarjeta>
       ))}

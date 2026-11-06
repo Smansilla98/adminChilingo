@@ -12,15 +12,28 @@ class ConfigAvisos
 {
     public const CLAVE = 'avisos';
 
-    /** Variables que se pueden usar en los textos. */
+    /** Variables que se pueden usar en los textos (cada aviso dice cuáles le sirven). */
     public const VARIABLES = [
         '{alumno}' => 'Nombre del alumno',
         '{cuota}' => 'Nombre de la cuota',
         '{monto}' => 'Monto a pagar (con beca aplicada)',
         '{vencimiento}' => 'Fecha de vencimiento',
-        '{dias}' => 'Días que faltan para el vencimiento',
+        '{dias}' => 'Días que faltan',
         '{alias}' => 'Alias para transferir',
+        '{bloque}' => 'Nombre del bloque',
+        '{hora}' => 'Hora de la clase o del evento',
+        '{evento}' => 'Título del evento o la convocatoria',
+        '{fecha}' => 'Fecha del evento (ej. sáb 24/03)',
+        '{lugar}' => 'Sede o lugar',
+        '{descripcion}' => 'Descripción del evento',
     ];
+
+    private const VARS_CUOTA = ['{alumno}', '{cuota}', '{monto}', '{vencimiento}', '{dias}', '{alias}'];
+
+    private const VARS_EVENTO = ['{evento}', '{fecha}', '{hora}', '{lugar}', '{descripcion}', '{dias}'];
+
+    /** Plazos numéricos que puede tener un aviso: [mínimo, máximo]. */
+    public const PLAZOS = ['dias' => [1, 60], 'minutos' => [5, 240]];
 
     /**
      * @return array<string, array{nombre: string, descripcion: string, para: string, activo: bool, canales: list<string>, titulo: string, mensaje: string, dias?: int}>
@@ -31,6 +44,7 @@ class ConfigAvisos
             'cuota_nueva' => [
                 'nombre' => 'Cuota nueva para pagar',
                 'descripcion' => 'Cuando se carga una cuota que le corresponde al alumno (se revisa cada 15 minutos).',
+                'variables' => self::VARS_CUOTA,
                 'para' => 'Alumnos',
                 'activo' => true,
                 'canales' => ['interna', 'push'],
@@ -40,6 +54,7 @@ class ConfigAvisos
             'cuota_por_vencer' => [
                 'nombre' => 'Cuota por vencer',
                 'descripcion' => 'Unos días antes del vencimiento, a quien todavía no la pagó.',
+                'variables' => self::VARS_CUOTA,
                 'para' => 'Alumnos',
                 'activo' => true,
                 'canales' => ['interna', 'push'],
@@ -50,6 +65,7 @@ class ConfigAvisos
             'cuota_vencida' => [
                 'nombre' => 'Cuota vencida',
                 'descripcion' => 'Al día siguiente del vencimiento, si sigue sin pagar (se revisan los vencimientos de los últimos días).',
+                'variables' => self::VARS_CUOTA,
                 'para' => 'Alumnos',
                 'activo' => true,
                 'canales' => ['interna', 'push'],
@@ -60,11 +76,55 @@ class ConfigAvisos
             'pago_registrado' => [
                 'nombre' => 'Pago registrado',
                 'descripcion' => 'Cuando administración registra un pago del alumno.',
+                'variables' => self::VARS_CUOTA,
                 'para' => 'Alumnos',
                 'activo' => true,
                 'canales' => ['interna', 'push'],
                 'titulo' => 'Pago registrado',
                 'mensaje' => 'Registramos tu pago de {cuota} por {monto}.',
+            ],
+            'pasar_lista' => [
+                'nombre' => 'Recordatorio para pasar lista',
+                'descripcion' => 'Si la clase empezó hace un rato y todavía no tiene asistencia cargada, se le recuerda a sus docentes (una vez por clase).',
+                'variables' => ['{bloque}', '{hora}', '{lugar}'],
+                'para' => 'Docentes',
+                'activo' => true,
+                'canales' => ['interna', 'push'],
+                'titulo' => 'Pasá lista: {bloque}',
+                'mensaje' => 'La clase de las {hora} todavía no tiene la asistencia cargada. Tocá para tomarla.',
+                'minutos' => 30,
+                'plazo_etiqueta' => 'Minutos después de empezar la clase',
+            ],
+            'evento_nuevo' => [
+                'nombre' => 'Evento nuevo',
+                'descripcion' => 'Cuando se carga un evento de un bloque o de una sede: a sus alumnos y docentes (los eventos de toda la escuela solo se ven en la agenda).',
+                'variables' => self::VARS_EVENTO,
+                'para' => 'Alumnos y docentes',
+                'activo' => true,
+                'canales' => ['interna', 'push'],
+                'titulo' => 'Nuevo evento: {evento}',
+                'mensaje' => '{fecha} {hora} · {lugar}. {descripcion}',
+            ],
+            'evento_proximo' => [
+                'nombre' => 'Recordatorio de evento',
+                'descripcion' => 'Unos días antes de cada evento y convocatoria, a quienes participan.',
+                'variables' => self::VARS_EVENTO,
+                'para' => 'Alumnos y docentes',
+                'activo' => true,
+                'canales' => ['interna', 'push'],
+                'titulo' => 'Se viene: {evento}',
+                'mensaje' => '{fecha} {hora} · {lugar}. ¡Te esperamos!',
+                'dias' => 1,
+            ],
+            'convocatoria' => [
+                'nombre' => 'Convocatoria',
+                'descripcion' => 'Al cargar un evento de tipo «Convocatoria» (una marcha, una movilización, una asamblea): a todo el ámbito elegido; si es de toda la escuela, a todas las personas con cuenta.',
+                'variables' => self::VARS_EVENTO,
+                'para' => 'Toda la escuela o el ámbito elegido',
+                'activo' => true,
+                'canales' => ['interna', 'push'],
+                'titulo' => 'Convocatoria: {evento}',
+                'mensaje' => '{fecha} {hora} · {lugar}. {descripcion}',
             ],
         ];
     }
@@ -76,7 +136,7 @@ class ConfigAvisos
         $out = [];
         foreach (self::defaults() as $tipo => $def) {
             $g = (array) ($guardado[$tipo] ?? []);
-            $out[$tipo] = array_merge($def, array_intersect_key($g, array_flip(['activo', 'canales', 'titulo', 'mensaje', 'dias'])));
+            $out[$tipo] = array_merge($def, array_intersect_key($g, array_intersect_key($def, array_flip(['activo', 'canales', 'titulo', 'mensaje', 'dias', 'minutos']))));
             $out[$tipo]['activo'] = (bool) $out[$tipo]['activo'];
             $out[$tipo]['canales'] = array_values(array_intersect((array) $out[$tipo]['canales'], NotificacionService::CANALES));
         }
@@ -103,7 +163,12 @@ class ConfigAvisos
         foreach ($vars as $k => $v) {
             $reemplazos['{'.$k.'}'] = (string) ($v ?? '');
         }
-        $render = fn (string $t) => trim(preg_replace('/\{[a-z_]+\}/', '', strtr($t, $reemplazos)) ?? $t);
+        // Una variable vacía desaparece sin dejar espacios dobles, un «·» colgado ni un espacio antes del punto.
+        $render = fn (string $t) => trim((string) preg_replace(
+            ['/\{[a-z_]+\}/', '/ {2,}/u', '/\s*·\s*(?=[.,]|$)/u', '/^\s*·\s*/u', '/\s+([.,])/u', '/^[\s.,]+/u'],
+            ['', ' ', '', '', '$1', ''],
+            strtr($t, $reemplazos),
+        ));
 
         return ['titulo' => $render((string) $c['titulo']), 'mensaje' => $render((string) $c['mensaje'])];
     }
@@ -127,7 +192,12 @@ class ConfigAvisos
                     : $a['canales'],
                 'titulo' => mb_substr(trim((string) ($d['titulo'] ?? $a['titulo'])), 0, 120) ?: $def['titulo'],
                 'mensaje' => mb_substr(trim((string) ($d['mensaje'] ?? $a['mensaje'])), 0, 600) ?: $def['mensaje'],
-            ] + (isset($def['dias']) ? ['dias' => max(1, min(60, (int) ($d['dias'] ?? $a['dias'])))] : []);
+            ];
+            foreach (self::PLAZOS as $campo => [$min, $max]) {
+                if (isset($def[$campo])) {
+                    $limpio[$tipo][$campo] = max($min, min($max, (int) ($d[$campo] ?? $a[$campo])));
+                }
+            }
         }
         Ajuste::guardar(self::CLAVE, $limpio, $por);
     }

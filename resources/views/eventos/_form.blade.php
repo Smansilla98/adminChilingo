@@ -51,7 +51,7 @@
     </div>
 </x-ito.form-section>
 
-<x-ito.form-section title="Dónde y con quién" icon="bi-geo-alt" help="Opcional. Si elegís sede, se avisa a las familias de esa sede el día anterior.">
+<x-ito.form-section title="Dónde y con quién" icon="bi-geo-alt" help="Opcional. Si elegís bloque o sede, a sus alumnos y docentes les llega el aviso del evento al celular y un recordatorio antes. Una «Convocatoria» sin sede ni bloque le llega a toda la escuela.">
     <div class="row g-3">
         <div class="col-md-4">
             <label class="form-label" for="evento-sede">Sede</label>
