@@ -23,6 +23,10 @@ Notifications.setNotificationHandler({
 
 export const pushDisponible = () => Platform.OS !== 'web' && Device.isDevice;
 
+/** Por qué falló el último intento de registrar el celular (se muestra en Avisos para poder diagnosticarlo). */
+let ultimoError: string | null = null;
+export const errorRegistroPush = () => ultimoError;
+
 /** 'granted' | 'denied' | 'undetermined', y si todavía se puede preguntar (si no, hay que ir a Ajustes). */
 export async function permisoPush(): Promise<{ estado: Notifications.PermissionStatus; sePuedePreguntar: boolean }> {
   const p = await Notifications.getPermissionsAsync();
@@ -36,6 +40,8 @@ export async function permisoPush(): Promise<{ estado: Notifications.PermissionS
  */
 export async function registrarPush(): Promise<string | null> {
   if (!pushDisponible()) return null;
+  ultimoError = null;
+  let paso = 'crear el canal de avisos';
   try {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync(CANAL_ANDROID, {
@@ -45,17 +51,27 @@ export async function registrarPush(): Promise<string | null> {
         lightColor: '#f26422',
       });
     }
+    paso = 'pedir el permiso';
     let { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted') status = (await Notifications.requestPermissionsAsync()).status;
-    if (status !== 'granted') return null;
+    if (status !== 'granted') {
+      ultimoError = 'El celular no dio permiso para mostrar notificaciones.';
+      return null;
+    }
 
     const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
-    if (!projectId) return null;
+    if (!projectId) {
+      ultimoError = 'La app no tiene el projectId de EAS.';
+      return null;
+    }
+    paso = 'obtener el token de Expo/Firebase';
     const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    paso = 'guardar el celular en el servidor';
     await api('dispositivos', { method: 'POST', body: { token, plataforma: Platform.OS, nombre: Device.modelName ?? undefined } });
     return token;
   } catch (e) {
-    // Sin FCM configurado en Android, getExpoPushTokenAsync falla: se ve en los logs del build de desarrollo.
+    // Sin FCM configurado en Android, getExpoPushTokenAsync falla.
+    ultimoError = `Falló al ${paso}: ${e instanceof Error ? e.message : String(e)}`;
     if (__DEV__) console.warn('No se pudo registrar el push', e);
     return null;
   }

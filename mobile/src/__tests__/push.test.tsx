@@ -95,3 +95,17 @@ it('si las bloqueó, lleva a los ajustes del celular', async () => {
   await fireEvent.press(await screen.findByText('Abrir ajustes del celular'));
   expect(ajustes).toHaveBeenCalled();
 });
+
+it('con permiso pero sin poder registrarse, muestra el motivo y deja reintentar', async () => {
+  const llamadas = simularApi({ 'POST dispositivos': { ok: true } });
+  (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted', canAskAgain: true });
+  (Notifications.getExpoPushTokenAsync as jest.Mock).mockRejectedValueOnce(new Error('FIS_AUTH_ERROR'));
+  await renderizar(<ActivarPush />);
+
+  expect(await screen.findByText('No se pudieron activar las notificaciones')).toBeTruthy();
+  expect(screen.getByText(/obtener el token de Expo\/Firebase: FIS_AUTH_ERROR/)).toBeTruthy();
+
+  await fireEvent.press(screen.getByText('Reintentar'));
+  await waitFor(() => expect(llamadas.find((l) => l.ruta === 'dispositivos')).toBeTruthy());
+  await waitFor(() => expect(screen.queryByText('No se pudieron activar las notificaciones')).toBeNull());
+});
