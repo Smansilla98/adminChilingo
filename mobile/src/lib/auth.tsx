@@ -4,10 +4,15 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 import { Platform } from 'react-native';
 
 import { api, configurarSesion } from './api';
+import { vaciarCache } from './cache';
+import { cerrarCola, establecerUsuarioCola } from './offline';
+import { olvidarTokenPush, tokenPushGuardado } from './token-push';
+import type { Me } from './types';
 
 const CLAVE_TOKEN = 'ito.token';
 const CLAVE_EXPIRA = 'ito.token_expira';
 const CLAVE_CONTEXTO = 'ito.contexto';
+const CLAVE_USUARIO = 'ito.usuario_id';
 const RENOVAR_SI_QUEDAN_DIAS = 7;
 
 // SecureStore no existe en web (solo para desarrollo): se usa memoria.
@@ -17,6 +22,16 @@ const almacen = {
   set: (k: string, v: string) => (Platform.OS === 'web' ? Promise.resolve(void memoria.set(k, v)) : SecureStore.setItemAsync(k, v)),
   del: (k: string) => (Platform.OS === 'web' ? Promise.resolve(void memoria.delete(k)) : SecureStore.deleteItemAsync(k)),
 };
+
+/** Cuenta de la última sesión (para separar la caché y la cola offline por persona). */
+export async function leerUsuarioGuardado(): Promise<number | null> {
+  try {
+    const v = Number(await almacen.get(CLAVE_USUARIO));
+    return Number.isInteger(v) && v > 0 ? v : null;
+  } catch {
+    return null;
+  }
+}
 
 interface Token {
   token: string;
@@ -57,21 +72,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(t.token);
   }, []);
 
+  /** Pregunta quién es la cuenta y separa la cola offline por persona. Sin red no rompe nada. */
+  const conocerUsuario = useCallback(async () => {
+    try {
+      const me = await api<Me>('me');
+      queryClient.setQueryData(['me'], me);
+      await almacen.set(CLAVE_USUARIO, String(me.usuario.id));
+      await establecerUsuarioCola(me.usuario.id);
+    } catch {
+      // Se vuelve a intentar en la próxima apertura.
+    }
+  }, [queryClient]);
+
   const limpiar = useCallback(async () => {
-    await Promise.all([almacen.del(CLAVE_TOKEN), almacen.del(CLAVE_EXPIRA)]);
+    await Promise.all([almacen.del(CLAVE_TOKEN), almacen.del(CLAVE_EXPIRA), almacen.del(CLAVE_USUARIO)]);
     configurarSesion({ token: null });
     setToken(null);
-    queryClient.clear();
+    await cerrarCola();
+    await vaciarCache(queryClient);
   }, [queryClient]);
 
   // Al abrir: recuperar token, renovarlo si está por vencer.
   useEffect(() => {
     (async () => {
-      const [t, expira, ctx] = await Promise.all([almacen.get(CLAVE_TOKEN), almacen.get(CLAVE_EXPIRA), almacen.get(CLAVE_CONTEXTO)]);
+      const [t, expira, ctx, usuarioId] = await Promise.all([almacen.get(CLAVE_TOKEN), almacen.get(CLAVE_EXPIRA), almacen.get(CLAVE_CONTEXTO), leerUsuarioGuardado()]);
       configurarSesion({ token: t, contexto: ctx, onNoAutorizado: () => void limpiar() });
       setContexto(ctx);
       if (t) {
         setToken(t);
+        if (usuarioId) await establecerUsuarioCola(usuarioId);
+        else void conocerUsuario();
         const dias = expira ? (new Date(expira).getTime() - Date.now()) / 86_400_000 : Infinity;
         if (dias < RENOVAR_SI_QUEDAN_DIAS) {
           try {
@@ -83,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setListo(true);
     })();
-  }, [guardar, limpiar]);
+  }, [guardar, limpiar, conocerUsuario]);
 
   const ingresar = useCallback(
     async (usuario: string, clave: string) => {
@@ -92,23 +122,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: { username: usuario.trim(), password: clave, dispositivo: `${Platform.OS} app` },
       });
       await guardar(t);
+      await conocerUsuario();
     },
-    [guardar],
+    [guardar, conocerUsuario],
   );
 
   const registrarse = useCallback(
     async (datos: DatosRegistro) => {
       await guardar(await api<Token>('auth/registro', { method: 'POST', body: { ...datos, dni: datos.dni.trim(), dispositivo: `${Platform.OS} app` } }));
+      await conocerUsuario();
     },
-    [guardar],
+    [guardar, conocerUsuario],
   );
 
   const salir = useCallback(async () => {
+    // Con el token de push el servidor desvincula este celular: deja de recibir los avisos de la cuenta.
+    const pushToken = await tokenPushGuardado();
     try {
-      await api('auth/logout', { method: 'POST' });
+      await api('auth/logout', { method: 'POST', body: pushToken ? { push_token: pushToken } : undefined });
     } catch {
-      // Igual se borra la sesión local.
+      // Igual se borra la sesión local; se intenta al menos quitar el dispositivo.
+      if (pushToken) await api('dispositivos', { method: 'DELETE', body: { token: pushToken } }).catch(() => undefined);
     }
+    await olvidarTokenPush();
     await limpiar();
   }, [limpiar]);
 
@@ -118,7 +154,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       else await almacen.del(CLAVE_CONTEXTO);
       configurarSesion({ contexto: clave });
       setContexto(clave);
-      await queryClient.invalidateQueries({ queryKey: ['inicio'] });
+      // El contexto viaja en cada pedido: todo lo cacheado puede cambiar.
+      await queryClient.invalidateQueries();
     },
     [queryClient],
   );

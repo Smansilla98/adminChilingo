@@ -22,12 +22,14 @@ class AsistenciaController extends Controller
         $fecha = $request->date('fecha')?->toDateString() ?? now()->toDateString();
 
         $registradas = Asistencia::query()->where('bloque_id', $bloque->id)->whereDate('fecha', $fecha)
-            ->get(['alumno_id', 'tipo_asistencia', 'registrado_por', 'updated_at'])->keyBy('alumno_id');
+            ->get(['id', 'alumno_id', 'tipo_asistencia', 'registrado_por', 'updated_at'])->keyBy('alumno_id');
 
         $alumnos = $asistencias->alumnosDelBloque($bloque)->map(fn ($a) => [
             'alumno_id' => $a->id,
             'nombre' => $a->nombre_apellido,
             'tipo' => $registradas->get($a->id)?->tipo_asistencia,
+            // Para borrar una marca cargada por error (DELETE asistencias/{id}).
+            'asistencia_id' => $registradas->get($a->id)?->id,
         ])->values();
 
         return response()->json([

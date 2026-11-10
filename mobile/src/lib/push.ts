@@ -8,6 +8,7 @@ import { Platform } from 'react-native';
 
 import { api } from './api';
 import { destinoDe } from './destinos';
+import { guardarTokenPush } from './token-push';
 
 /** Canal de Android de los avisos: importancia alta para que aparezca arriba con sonido. El backend manda channelId 'avisos'. */
 export const CANAL_ANDROID = 'avisos';
@@ -68,6 +69,7 @@ export async function registrarPush(): Promise<string | null> {
     const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     paso = 'guardar el celular en el servidor';
     await api('dispositivos', { method: 'POST', body: { token, plataforma: Platform.OS, nombre: Device.modelName ?? undefined } });
+    await guardarTokenPush(token);
     return token;
   } catch (e) {
     // Sin FCM configurado en Android, getExpoPushTokenAsync falla.

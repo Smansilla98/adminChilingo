@@ -83,7 +83,7 @@ export interface Planilla {
   tomada: boolean;
   puede_editar: boolean;
   tipos: Record<TipoAsistencia, string>;
-  alumnos: { alumno_id: number; nombre: string; tipo: TipoAsistencia | null }[];
+  alumnos: { alumno_id: number; nombre: string; tipo: TipoAsistencia | null; asistencia_id?: number | null }[];
 }
 
 export interface ItemCuenta {

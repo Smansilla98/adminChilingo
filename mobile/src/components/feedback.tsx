@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useConexion } from '@/lib/offline';
 import { C, E, TOQUE } from '@/lib/theme';
@@ -162,14 +162,26 @@ export function Hoja({ visible, titulo, children, onCerrar }: { visible: boolean
 
 /* ───────────── Banner sin conexión ───────────── */
 
-export function BannerSinConexion() {
+/**
+ * Banner arriba de todo cuando no hay red. El banner ya ocupa la zona de la barra de estado,
+ * así que las pantallas de adentro reciben el margen superior en 0 (si no, se sumaba dos veces).
+ */
+export function BannerSinConexion({ children }: { children?: ReactNode }) {
   const online = useConexion();
   const insets = useSafeAreaInsets();
-  if (online) return null;
+  // El árbol es siempre el mismo (solo cambia el valor del contexto): así no se reinicia la navegación al perder señal.
+  const valor = useMemo(() => (online ? insets : { ...insets, top: 0 }), [online, insets]);
   return (
-    <View style={[s.offline, { paddingTop: insets.top + 2 }]} accessibilityLiveRegion="polite">
-      <Icon name="cloud-off" size={16} color={C.texto} />
-      <Text style={{ color: C.texto, fontWeight: '700', fontSize: 13 }}>Sin conexión · mostramos lo último guardado</Text>
+    <View style={{ flex: 1 }}>
+      {!online && (
+        <View style={[s.offline, { paddingTop: insets.top + 2 }]} accessibilityLiveRegion="polite">
+          <Icon name="cloud-off" size={16} color={C.texto} />
+          <Text style={{ color: C.texto, fontWeight: '700', fontSize: 13 }}>Sin conexión · mostramos lo último guardado</Text>
+        </View>
+      )}
+      <SafeAreaInsetsContext.Provider value={valor}>
+        <View style={{ flex: 1 }}>{children}</View>
+      </SafeAreaInsetsContext.Provider>
     </View>
   );
 }

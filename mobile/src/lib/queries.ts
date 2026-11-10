@@ -34,11 +34,11 @@ export const usePlanilla = (bloqueId: number, fecha: string) =>
  * Guarda la asistencia. Si no hay red, queda en la cola local y se envía sola al volver
  * la conexión (idempotente por client_uuid).
  */
-export function useGuardarAsistencia(bloqueId: number, fecha: string) {
+export function useGuardarAsistencia(bloqueId: number, fecha: string, bloque?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (registros: Record<number, TipoAsistencia>) =>
-      encolarAsistencia({ bloqueId, fecha, registros: Object.entries(registros).map(([id, tipo]) => ({ alumno_id: Number(id), tipo })) }),
+      encolarAsistencia({ bloqueId, bloque, fecha, registros: Object.entries(registros).map(([id, tipo]) => ({ alumno_id: Number(id), tipo })) }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['planilla', bloqueId, fecha] });
       void qc.invalidateQueries({ queryKey: ['inicio'] });
