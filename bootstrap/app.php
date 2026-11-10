@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'activo' => \App\Http\Middleware\EnsureUsuarioActivo::class,
             'clave' => \App\Http\Middleware\EnsureClaveCambiada::class,
             'material' => \App\Http\Middleware\AccesoMaterialToque::class,
+            'edicion.programa' => \App\Http\Middleware\EdicionProgramaMiddleware::class,
         ]);
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         // Web: sesión. API: se aplica después de auth:sanctum (routes/api_v1.php).
