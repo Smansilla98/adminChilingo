@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Schema;
 class PartiturasBootstrapCommand extends Command
 {
     protected $signature = 'partituras:bootstrap
-                            {--force : Recargar partituras v4 aunque ya existan}';
+                            {--force : Recargar partituras v4 aunque ya existan}
+                            {--pisar-ediciones : Recargar también los toques editados por la escuela (guarda lo actual como versión antes)}';
 
     protected $description = 'Carga toques y partituras v4 solo si faltan (usado por start.sh)';
 
@@ -31,7 +32,7 @@ class PartiturasBootstrapCommand extends Command
 
         $seeder = new PartiturasEjemploSeeder;
         $seeder->setCommand($this);
-        $seeder->cargar(! (bool) $this->option('force'));
+        $seeder->cargar(! (bool) $this->option('force'), (bool) $this->option('pisar-ediciones'));
 
         return self::SUCCESS;
     }

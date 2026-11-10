@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Domain\Partituras\RevisionPartituras;
+use App\Models\PartituraVersion;
 use App\Models\ProgramaRitmo;
+use App\Services\PartituraHistorialService;
 use App\Support\PartituraScore;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
@@ -19,6 +21,10 @@ use Illuminate\Support\Facades\Schema;
  * si lo guardado en la base salió de una versión vieja del JSON. Para eso cada
  * score guardado lleva el sello `fuente = {origen, hash}` con el hash del archivo
  * del repo: si el hash cambió, la base quedó vieja y se recarga.
+ *
+ * Nunca pisa lo que la escuela editó: si un toque ya tiene versiones publicadas
+ * desde el editor (partitura_versiones), se deja como está y solo se avisa. Para
+ * forzarlo igual: --pisar-ediciones (antes guarda lo actual como versión restaurable).
  */
 class PartiturasEjemploSeeder extends Seeder
 {
@@ -29,13 +35,13 @@ class PartiturasEjemploSeeder extends Seeder
             FILTER_VALIDATE_BOOLEAN
         );
 
-        $this->cargar($soloFaltantes);
+        $this->cargar($soloFaltantes, filter_var(getenv('PARTITURAS_PISAR_EDICIONES') ?: '0', FILTER_VALIDATE_BOOLEAN));
     }
 
     /**
      * @return array{ok: int, skip: int, fail: int}
      */
-    public function cargar(bool $soloFaltantes = false): array
+    public function cargar(bool $soloFaltantes = false, bool $pisarEdiciones = false): array
     {
         $vacio = ['ok' => 0, 'skip' => 0, 'fail' => 0];
 
@@ -113,6 +119,19 @@ class PartiturasEjemploSeeder extends Seeder
             if ($soloFaltantes && PartituraScore::tieneGolpes($actual)) {
                 $motivo = $hashActual === '' ? 'sin sello de fuente' : "sello viejo {$hashActual}";
                 $this->command?->line("↻ {$ritmo->nombre}: {$motivo} → recargo desde el JSON ({$hash})");
+            }
+
+            $ediciones = Schema::hasTable('partitura_versiones')
+                ? PartituraVersion::query()->where('programa_ritmo_id', $ritmo->id)->count()
+                : 0;
+            if ($ediciones > 0 && ! $pisarEdiciones) {
+                $this->command?->line("· {$ritmo->nombre}: tiene {$ediciones} versión(es) editadas por la escuela, no se pisa");
+                $skip++;
+
+                continue;
+            }
+            if ($ediciones > 0 && is_array($actual)) {
+                app(PartituraHistorialService::class)->registrarVersion($ritmo, $actual, 'Respaldo antes de recargar', 'Guardada automáticamente antes de recargar desde el repositorio');
             }
 
             // Lo que la escuela ya validó no vuelve a aparecer como «Revisar:».

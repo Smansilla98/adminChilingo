@@ -96,8 +96,9 @@ if [ "${RUN_SEED:-0}" = "1" ]; then
 fi
 
 # Partituras v4: regenerar JSON desde los .py y cargar/actualizar en la DB.
-# --force por defecto: los JSON del repo son la fuente de verdad (figuras del
-# cuadernillo). Para no pisar ediciones hechas en el editor: PARTITURAS_BOOTSTRAP_FORCE=0
+# Incremental por defecto: carga lo que falta o cambió en el repo (hash). Los toques
+# editados por la escuela (con versiones en el editor) nunca se pisan.
+# PARTITURAS_BOOTSTRAP_FORCE=1 recarga todo lo no editado aunque el hash coincida.
 PARTITURAS_PY="database/data/partituras-v4/generar.py"
 if [ -f "$PARTITURAS_PY" ]; then
     echo "=== Partituras v4 (Python + seeders) ==="
@@ -107,7 +108,7 @@ if [ -f "$PARTITURAS_PY" ]; then
         echo "⚠️  python3 no está instalado; se usan los JSON ya generados."
     fi
     PARTITURAS_BOOTSTRAP_ARGS="--no-interaction"
-    if [ "${PARTITURAS_BOOTSTRAP_FORCE:-1}" != "0" ]; then
+    if [ "${PARTITURAS_BOOTSTRAP_FORCE:-0}" = "1" ]; then
         PARTITURAS_BOOTSTRAP_ARGS="$PARTITURAS_BOOTSTRAP_ARGS --force"
         echo "(partituras:bootstrap --force: recarga desde JSON v4)"
     else
