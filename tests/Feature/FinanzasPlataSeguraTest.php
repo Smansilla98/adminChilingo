@@ -77,4 +77,35 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->assertContains($r->status(), [403, 422]);
         $this->assertSame('24000.00', (string) $pago->fresh()->monto_total);
     }
+
+    public function test_borrar_un_alumno_o_una_cuota_con_pagos_no_borra_la_plata(): void
+    {
+        $bloque = $this->bloque($this->sede('Palomar'));
+        $ana = $this->inscribirAlumno($this->persona('Ana'), $bloque);
+        $cuota = $this->cuota();
+        $pago = Pago::query()->create(['fecha_pago' => now(), 'monto_total' => 24000]);
+        $pago->detalles()->create(['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 24000]);
+        $comprobante = \App\Models\ComprobanteCuotaAlumno::query()->create([
+            'alumno_id' => $ana->id, 'fecha_pago' => now()->toDateString(), 'monto_total' => 24000, 'estado' => 'pendiente',
+        ]);
+        \App\Models\ComprobanteCuotaAlumnoItem::query()->create([
+            'comprobante_cuota_alumno_id' => $comprobante->id, 'cuota_id' => $cuota->id, 'bloque_id' => $bloque->id, 'monto' => 24000,
+        ]);
+
+        // Por la aplicación: mensaje claro.
+        $this->actingAs($this->admin())->delete(route('alumnos.destroy', $ana))->assertSessionHasErrors('eliminar');
+
+        // Aunque alguien se saltee la aplicación, la base no arrastra los pagos.
+        foreach ([fn () => $ana->delete(), fn () => $cuota->delete(), fn () => $bloque->delete()] as $borrar) {
+            try {
+                \Illuminate\Support\Facades\DB::transaction($borrar);
+                $this->fail('La base debió rechazar el borrado.');
+            } catch (\Illuminate\Database\QueryException) {
+                // esperado
+            }
+        }
+        $this->assertDatabaseHas('pago_detalles', ['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 24000]);
+        $this->assertDatabaseHas('comprobante_cuota_alumno_items', ['cuota_id' => $cuota->id]);
+        $this->assertDatabaseHas('alumnos', ['id' => $ana->id]);
+    }
 }
