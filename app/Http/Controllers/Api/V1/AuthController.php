@@ -10,7 +10,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -54,11 +53,7 @@ class AuthController extends Controller
     /** Registro de un alumno ya cargado por la escuela (DNI + fecha de nacimiento); devuelve la sesión. */
     public function registro(Request $request, RegistroAlumnoService $registro): JsonResponse
     {
-        $datos = $request->validate([
-            'dni' => ['required', 'string', 'max:20'],
-            'fecha_nacimiento' => ['required', 'date', 'before:today'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'password' => ['required', 'confirmed', Password::min(6)],
+        $datos = $request->validate(RegistroAlumnoService::reglas() + [
             'dispositivo' => ['nullable', 'string', 'max:120'],
         ], RegistroAlumnoService::mensajes());
 

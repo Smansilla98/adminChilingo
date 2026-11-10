@@ -24,6 +24,7 @@ La infraestructura en Railway **no cambia** (mismo `Dockerfile`, mismo `start.sh
 | `SANCTUM_TOKEN_MINUTOS` | `43200` (30 días) | vencimiento de los tokens de la app |
 | `PROGRAMA_EDICION_PUBLICA` | `false` | `false`: editar toques y partituras exige el permiso `partituras.edit` (profesores, coordinación, dirección) y el autor queda con el nombre de la cuenta; `true`: cualquier cuenta edita (comportamiento histórico) |
 | `ACTIVAR_FORMULARIO_PUBLICO_COMPROBANTES` | `true` | formulario sin cuenta `/pagar-cuota/comprobante` (busca por DNI y muestra solo iniciales, con trampa para robots y límite de 5 búsquedas por minuto). Con `false` queda cerrado y manda a entrar con la cuenta (la app y la web ya cubren el flujo) |
+| `REGISTRO_REQUIERE_CODIGO` | `false` | valor inicial: el registro de alumnos pide el código de alta que genera la escuela desde la ficha. Se cambia sin redeploy en Configuración > Cuentas de alumnos |
 | `EXPO_PUSH_ENABLED` | `false` | envío de push a la app vía Expo |
 | `EXPO_ACCESS_TOKEN` | — | opcional, si el proyecto de Expo exige token para push |
 | `SCHEDULER_ENABLED` | `1` | scheduler dentro del contenedor (`0` en réplicas adicionales) |

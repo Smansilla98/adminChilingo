@@ -108,7 +108,7 @@ class AccesoAlumnoService
     {
         return [
             'actual' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:6', 'max:255', 'confirmed'],
+            'password' => ['required', 'string', 'min:'.\App\Domain\Acceso\AjustesCuentas::CLAVE_MINIMA, 'max:255', 'confirmed'],
         ];
     }
 
@@ -118,7 +118,7 @@ class AccesoAlumnoService
         return [
             'actual.required' => 'Escribí tu contraseña actual (o la provisoria que te dieron).',
             'password.required' => 'Elegí una contraseña nueva.',
-            'password.min' => 'La contraseña tiene que tener al menos 6 letras o números.',
+            'password.min' => 'La contraseña tiene que tener al menos 8 letras o números.',
             'password.confirmed' => 'Las dos contraseñas nuevas no coinciden.',
         ];
     }

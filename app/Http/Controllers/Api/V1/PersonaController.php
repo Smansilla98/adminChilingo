@@ -151,6 +151,7 @@ class PersonaController extends Controller
                 'sumar_docente' => ! $profesor && $acceso->puede('profesores.create'),
                 'crear_cuenta' => ! $persona->user && $acceso->puede('usuarios.create'),
                 'dar_acceso_app' => app(AccesoAlumnoService::class)->puedeDarAcceso($quien, $persona),
+                'codigo_alta' => app(\App\Domain\Personas\CodigoAltaService::class)->puedeGenerar($quien, $persona),
                 'ver_cuenta' => $persona->user !== null && $quien->can('view', $persona->user),
                 'gestionar_becas' => $alumnos->contains(fn (Alumno $a) => $quien->can('gestionarBecas', $a)),
                 'ver_auditoria' => $acceso->puede('auditoria.view'),

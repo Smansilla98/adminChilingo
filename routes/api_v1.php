@@ -359,4 +359,11 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
             Route::delete('eventos/{acontecimiento}', [ArchivoGestionController::class, 'eliminarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.destroy');
         });
     });
+    // === Equipo C: cuentas, preinscripción, legajo y ciclo lectivo (con sesión) ===
+    Route::post('personas/{persona}/codigo-alta', [\App\Http\Controllers\Api\V1\CuentasController::class, 'codigoAlta'])->middleware('throttle:20,1')->name('personas.codigo-alta');
+    Route::middleware('permiso:usuarios.permissions')->group(function () {
+        Route::get('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'ajustes'])->name('configuracion.cuentas');
+        Route::put('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'guardarAjustes'])->name('configuracion.cuentas.update');
+    });
+    // === Fin Equipo C (con sesión) ===
 });

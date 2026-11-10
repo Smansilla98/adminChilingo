@@ -18,6 +18,12 @@ return [
     'formulario_publico_comprobantes' => filter_var(env('ACTIVAR_FORMULARIO_PUBLICO_COMPROBANTES', true), FILTER_VALIDATE_BOOLEAN),
 
     /*
+    | Registro de alumnos desde la app o la web: además de DNI y fecha de nacimiento, pedir
+    | el código de alta que genera la escuela. Valor inicial: se cambia en Configuración > Cuentas.
+    */
+    'registro_requiere_codigo' => filter_var(env('REGISTRO_REQUIERE_CODIGO', false), FILTER_VALIDATE_BOOLEAN),
+
+    /*
     | Cobro de cuotas desde el sistema (CobroCuotasService).
     | Transferencia: los datos que se le muestran al alumno para que pague desde su banco o
     | billetera. Sin alias ni CBU, la opción no aparece.

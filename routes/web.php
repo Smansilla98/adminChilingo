@@ -459,4 +459,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware('permiso:asistencias.create')->name('profesor.asistencias.store');
     Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware('permiso:asistencias.view')->name('profesor.asistencias.matrix');
     Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware('permiso:asistencias.create|asistencias.update')->name('profesor.asistencias.matrix.update');
+    // === Equipo C: cuentas, preinscripción, legajo y ciclo lectivo (con sesión) ===
+    Route::post('/personas/{persona}/codigo-alta', [\App\Http\Controllers\CuentasAlumnosController::class, 'codigoAlta'])->middleware('throttle:20,1')->name('personas.codigo-alta');
+    Route::middleware('permiso:usuarios.permissions')->prefix('configuracion/cuentas')->name('configuracion.cuentas.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'ajustes'])->name('edit');
+        Route::put('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'guardarAjustes'])->name('update');
+    });
+    // === Fin Equipo C (con sesión) ===
 });

@@ -29,6 +29,7 @@ export interface DatosRegistro {
   email?: string;
   password: string;
   password_confirmation: string;
+  codigo?: string;
 }
 
 interface AuthState {
