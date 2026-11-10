@@ -39,6 +39,8 @@ export default function MiActividad() {
         <Tenue>{pendientes.length} {pendientes.length === 1 ? 'cuota pendiente' : 'cuotas pendientes'} · {pagadas.length} {pagadas.length === 1 ? 'pagada' : 'pagadas'}</Tenue>
       </Tarjeta>
 
+      <Boton titulo="Mi progreso en los toques" icono="trending-up" variante="secundario" onPress={() => router.push('/mi-progreso' as never)} />
+
       <FiltrosChips<Seccion>
         todos={false}
         valor={seccion}

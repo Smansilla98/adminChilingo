@@ -333,5 +333,7 @@ return [
         'biblioteca' => ['etiqueta' => 'Biblioteca', 'icono' => 'local_library', 'permisos' => []],
         'notificaciones' => ['etiqueta' => 'Avisos', 'icono' => 'notifications', 'permisos' => []],
         'avisos_config' => ['etiqueta' => 'Avisos y cobro', 'icono' => 'notifications_active', 'permisos' => ['notificaciones.send']],
+        // Equipo G
+        'progreso' => ['etiqueta' => 'Progreso por toque', 'icono' => 'trending_up', 'permisos' => ['seguimiento.view']],
     ],
 ];
