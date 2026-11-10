@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Partituras\TranscriptorClient;
 use App\Models\BibliotecaItem;
 use App\Models\ProgramaRitmo;
 use App\Services\PartituraHistorialService;
@@ -58,6 +59,10 @@ class PartituraController extends Controller
             'refTipo' => $refTipo,
             'refNombre' => $refNombre,
             'esNueva' => $esNueva,
+            'transcriptor' => auth()->check() ? [
+                'habilitado' => app(TranscriptorClient::class)->habilitado(),
+                'mensaje' => app(TranscriptorClient::class)->motivoApagado(),
+            ] : null,
         ]);
     }
 

@@ -36,6 +36,11 @@ function montar() {
             borradorUrl: el.dataset.borradorUrl || null,
             versionesUrl: el.dataset.versionesUrl || null,
             borrador: leerJson(el, 'data-borrador'),
+            audioBase: el.dataset.audioBase || null,
+            audioSubirUrl: el.dataset.audioSubirUrl || null,
+            transcribir: el.dataset.transcribirUrl
+                ? { url: el.dataset.transcribirUrl, habilitado: el.dataset.transcribirHabilitado === '1', mensaje: el.dataset.transcribirMensaje || '' }
+                : null,
         });
         window.partituraEditor = editor;
     });
@@ -47,6 +52,9 @@ function montar() {
             score: leerJson(el, 'data-score'),
             instrumento: el.dataset.instrumento || null,
             controles: el.dataset.controles !== '0',
+            audioBase: el.dataset.audioBase || null,
+            exportarMidi: el.dataset.exportarMidi || null,
+            exportarXml: el.dataset.exportarXml || null,
         });
     });
 }
