@@ -461,4 +461,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware(['permiso:asistencias.create', 'modulo:profesor.asistencia'])->name('profesor.asistencias.store');
     Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware(['permiso:asistencias.view', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix');
     Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware(['permiso:asistencias.create|asistencias.update', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix.update');
+
+    // === Equipo F: Comunidad (difusión, shows y ensayos, préstamos) ===
+    Route::middleware('permiso:difusion.send')->prefix('difusion')->name('difusion.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\DifusionController::class, 'index'])->name('index');
+        Route::get('/crear', [\App\Http\Controllers\DifusionController::class, 'create'])->name('create');
+        Route::post('/vista-previa', [\App\Http\Controllers\DifusionController::class, 'vistaPrevia'])->middleware('throttle:60,1')->name('vista-previa');
+        Route::post('/', [\App\Http\Controllers\DifusionController::class, 'store'])->middleware('throttle:20,1')->name('store');
+        Route::get('/{difusion}', [\App\Http\Controllers\DifusionController::class, 'show'])->whereNumber('difusion')->name('show');
+        Route::post('/{difusion}/cancelar', [\App\Http\Controllers\DifusionController::class, 'cancelar'])->whereNumber('difusion')->name('cancelar');
+    });
+    // === Fin Equipo F ===
 });

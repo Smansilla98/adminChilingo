@@ -23,4 +23,13 @@ return [
         'cuit' => env('COBRO_CUIT'),
         'banco' => env('COBRO_BANCO'),
     ],
+
+    /*
+    | Mensajes a grupos (difusión). WhatsApp tiene costo por mensaje: desde esta cantidad
+    | de destinatarios con teléfono se pide confirmar, y nunca se mandan más que el máximo.
+    */
+    'difusion' => [
+        'whatsapp_confirmar_desde' => (int) env('DIFUSION_WHATSAPP_CONFIRMAR', 25),
+        'whatsapp_maximo' => (int) env('DIFUSION_WHATSAPP_MAXIMO', 300),
+    ],
 ];

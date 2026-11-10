@@ -359,4 +359,15 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
             Route::delete('eventos/{acontecimiento}', [ArchivoGestionController::class, 'eliminarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.destroy');
         });
     });
+
+    // === Equipo F: Comunidad (difusión, shows y ensayos, préstamos) ===
+    Route::middleware('permiso:difusion.send')->prefix('difusiones')->name('difusiones.')->group(function () {
+        Route::get('catalogo', [\App\Http\Controllers\Api\V1\DifusionController::class, 'catalogo'])->name('catalogo');
+        Route::get('/', [\App\Http\Controllers\Api\V1\DifusionController::class, 'index'])->name('index');
+        Route::post('vista-previa', [\App\Http\Controllers\Api\V1\DifusionController::class, 'vistaPrevia'])->middleware('throttle:60,1')->name('vista-previa');
+        Route::post('/', [\App\Http\Controllers\Api\V1\DifusionController::class, 'store'])->middleware('throttle:20,1')->name('store');
+        Route::get('{difusion}', [\App\Http\Controllers\Api\V1\DifusionController::class, 'show'])->whereNumber('difusion')->name('show');
+        Route::post('{difusion}/cancelar', [\App\Http\Controllers\Api\V1\DifusionController::class, 'cancelar'])->whereNumber('difusion')->name('cancelar');
+    });
+    // === Fin Equipo F ===
 });

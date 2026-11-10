@@ -14,6 +14,8 @@ class InventarioMovimiento extends Model
         'reparacion' => 'Reparación',
         'evento' => 'Salió a evento / show',
         'retorno' => 'Retorno',
+        'prestamo' => 'Préstamo a alumno',
+        'devolucion' => 'Devolución de préstamo',
     ];
 
     protected $fillable = [

@@ -100,6 +100,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('chilinga:avisos eventos')->dailyAt('18:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos eventos-nuevos')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos pasar-lista')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
+        // Equipo F: mensajes a grupos programados.
+        $schedule->command('chilinga:difusiones')->everyMinute()->withoutOverlapping()->onOneServer();
 
         // Pagos de Mercado Pago cuyo aviso no llegó: se buscan por referencia y se registran.
         $schedule->command('chilinga:mercadopago:conciliar')->everyThirtyMinutes()->withoutOverlapping()->onOneServer();
