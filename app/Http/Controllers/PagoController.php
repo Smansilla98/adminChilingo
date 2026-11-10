@@ -165,12 +165,6 @@ class PagoController extends Controller
 
     public function store(Request $request, RegistroPagoService $servicio)
     {
-        if (! $servicio->tablasDisponibles()) {
-            return back()->withErrors([
-                'general' => 'Faltan tablas requeridas para registrar pagos. Ejecutá migraciones y reintentá.',
-            ])->withInput();
-        }
-
         $this->normalizarAbono($request);
         $validated = $request->validate($servicio->reglas(false));
         $pago = $servicio->registrar($validated, $request->user(), $request->file('comprobante'));
@@ -181,12 +175,6 @@ class PagoController extends Controller
     public function update(Request $request, Pago $pago, RegistroPagoService $servicio)
     {
         $this->authorize('update', $pago);
-        if (! $servicio->tablasDisponibles()) {
-            return back()->withErrors([
-                'general' => 'Faltan tablas requeridas para actualizar pagos. Ejecutá migraciones y reintentá.',
-            ])->withInput();
-        }
-
         $this->normalizarAbono($request);
         $validated = $request->validate($servicio->reglas(true));
         $servicio->actualizar($pago, $validated, $request->user(), $request->file('comprobante'), $request->boolean('quitar_comprobante'));
