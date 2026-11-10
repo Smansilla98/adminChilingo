@@ -14,12 +14,49 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Formulario público (sin cuenta) para mandar el comprobante de una cuota. Se puede
+ * apagar con ACTIVAR_FORMULARIO_PUBLICO_COMPROBANTES=false: la app y la web con
+ * cuenta ya cubren el mismo flujo. La búsqueda por DNI nunca muestra el nombre
+ * completo (solo iniciales enmascaradas) y tiene trampa para robots y límite de uso.
+ */
 class ComprobanteCuotaAlumnoPublicController extends Controller
 {
+    /** Campo oculto que una persona deja vacío; los robots lo completan. */
+    public const HONEYPOT = 'sitio_web';
+
+    public static function activo(): bool
+    {
+        return (bool) config('chilinga.formulario_publico_comprobantes', true);
+    }
+
+    /** "Juan Pérez" → "J*** P***". */
+    public static function enmascarar(string $nombre): string
+    {
+        $partes = preg_split('/\s+/u', trim($nombre), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        return implode(' ', array_map(fn (string $p) => mb_strtoupper(mb_substr($p, 0, 1)).'***', $partes));
+    }
+
+    private function asegurarActivo(): void
+    {
+        if (! self::activo()) {
+            abort(404);
+        }
+    }
+
+    private function esRobot(Request $request): bool
+    {
+        return filled($request->input(self::HONEYPOT));
+    }
+
     public function create(Request $request)
     {
         if (! Schema::hasTable('comprobantes_cuota_alumnos')) {
             abort(503, 'Función no disponible: ejecutá migraciones.');
+        }
+        if (! self::activo()) {
+            return response()->view('comprobante_cuota_public.cerrado', [], 404);
         }
 
         $sedes = Sede::query()
@@ -47,6 +84,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
 
     public function apiPeriodos(Request $request): JsonResponse
     {
+        $this->asegurarActivo();
         $request->validate(['sede_id' => 'required|exists:sedes,id']);
 
         if (\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance')) {
@@ -99,6 +137,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
 
     public function apiBloques(Request $request): JsonResponse
     {
+        $this->asegurarActivo();
         $request->validate([
             'sede_id' => 'required|exists:sedes,id',
             'año' => 'required|integer|min:2000|max:2100',
@@ -131,6 +170,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
 
     public function apiAlumnos(Request $request): JsonResponse
     {
+        $this->asegurarActivo();
         $request->validate([
             'sede_id' => 'required|exists:sedes,id',
             'año' => 'required|integer|min:2000|max:2100',
@@ -144,6 +184,15 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         $año = $request->integer('año');
         $mes = $request->integer('mes');
         $sedeId = $request->integer('sede_id');
+
+        // Robot: misma respuesta que "no encontrado", sin consultar el padrón.
+        if ($this->esRobot($request)) {
+            return response()->json([
+                'alumnos' => [],
+                'puede_multibloque' => count($bloqueIds) > 1,
+                'nota_multibloque' => 'No encontramos un alumno activo con ese DNI en los bloques elegidos (o la cuota ya figura paga).',
+            ]);
+        }
 
         $bloques = Bloque::query()
             ->whereIn('id', $bloqueIds)
@@ -213,7 +262,8 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             return true;
         })->values()->map(fn (Alumno $a) => [
             'id' => $a->id,
-            'nombre_apellido' => $a->nombre_apellido,
+            // Sin cuenta no se revela el nombre: solo las iniciales para confirmar.
+            'nombre_apellido' => self::enmascarar((string) $a->nombre_apellido),
             'lookup_token' => PagoCuotaToken::emitir((int) $a->id, $sedeId),
         ]);
 
@@ -228,6 +278,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
 
     public function apiOtrosBloquesAlumno(Request $request): JsonResponse
     {
+        $this->asegurarActivo();
         $request->validate([
             'alumno_id' => 'required|exists:alumnos,id',
             'lookup_token' => 'required|string',
@@ -287,6 +338,10 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
     {
         if (! Schema::hasTable('comprobantes_cuota_alumnos')) {
             abort(503, 'Función no disponible: ejecutá migraciones.');
+        }
+        $this->asegurarActivo();
+        if ($this->esRobot($request)) {
+            throw ValidationException::withMessages(['comprobante' => 'No pudimos recibir el comprobante. Probá de nuevo.']);
         }
 
         $validated = $request->validate([

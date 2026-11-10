@@ -7,6 +7,11 @@
 @section('content')
 <form id="form-comprobante" action="{{ route('comprobante-cuota-public.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
+    {{-- Trampa para robots: las personas no ven este campo y lo dejan vacío. --}}
+    <div class="d-none" aria-hidden="true">
+        <label for="sitio_web">No completar</label>
+        <input type="text" name="sitio_web" id="sitio_web" value="" tabindex="-1" autocomplete="off">
+    </div>
     <div class="mb-3">
         <label class="form-label" for="sede_id">Sede</label>
         <select name="sede_id" id="sede_id" class="form-select" required>
@@ -38,7 +43,8 @@
         <div id="hint-alumnos" class="form-text" role="status"></div>
     </div>
     <div class="mb-3" id="wrap-alumno">
-        <label class="form-label" for="alumno_id">Confirmá el nombre</label>
+        <label class="form-label" for="alumno_id">Confirmá las iniciales</label>
+        <div class="form-text mb-1">Por privacidad mostramos solo las iniciales. Con tu cuenta (app o web) lo mandás sin buscar.</div>
         <select name="alumno_id" id="alumno_id" class="form-select" required disabled>
             <option value="">Buscá con el DNI</option>
         </select>
@@ -177,9 +183,10 @@
             u.searchParams.set('año', año.value);
             u.searchParams.set('mes', mes.value);
             u.searchParams.set('dni', dni.value);
+            u.searchParams.set('sitio_web', document.getElementById('sitio_web')?.value || '');
             selected.forEach(id => u.searchParams.append('bloque_ids[]', id));
             const data = await getJson(u.toString());
-            alumno.innerHTML = '<option value="">Confirmá el nombre</option>';
+            alumno.innerHTML = '<option value="">Confirmá las iniciales</option>';
             (data.alumnos || []).forEach(a => {
                 const opt = document.createElement('option');
                 opt.value = a.id;
@@ -192,7 +199,7 @@
                 alumno.value = data.alumnos[0].id;
                 alumno.dispatchEvent(new Event('change'));
             }
-            hintAlumnos.textContent = data.nota_multibloque || ((data.alumnos || []).length ? 'Confirmá que es la persona correcta.' : '');
+            hintAlumnos.textContent = data.nota_multibloque || ((data.alumnos || []).length ? 'Confirmá que las iniciales son las del alumno.' : '');
         } catch (e) {
             hintAlumnos.textContent = e.message || 'No se pudo buscar.';
         }
