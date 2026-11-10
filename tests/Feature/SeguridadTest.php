@@ -42,7 +42,8 @@ class SeguridadTest extends TestCase
         $toque = ProgramaRitmo::query()->firstOrFail();
         $payload = ['editor_nombre' => 'Visitante', 'score' => ['title' => 'x']];
 
-        config(['chilinga.edicion_publica_programa' => false]);
+        // Cerrada por defecto.
+        $this->assertFalse(config('chilinga.edicion_publica_programa'));
         $this->postJson(route('programa.toque.editor.guardar', $toque), $payload)->assertUnauthorized();
         $this->actingAs($this->usuario('Visitante'))->postJson(route('programa.toque.editor.guardar', $toque), $payload)->assertForbidden();
 

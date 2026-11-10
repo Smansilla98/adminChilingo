@@ -65,10 +65,10 @@ use Illuminate\Support\Facades\Route;
 // Carga pública de comprobante de cuota (sin sesión)
 Route::prefix('pagar-cuota')->middleware('throttle:20,1')->group(function () {
     Route::get('/comprobante', [ComprobanteCuotaAlumnoPublicController::class, 'create'])->name('comprobante-cuota-public.create');
-    Route::post('/comprobante', [ComprobanteCuotaAlumnoPublicController::class, 'store'])->name('comprobante-cuota-public.store');
+    Route::post('/comprobante', [ComprobanteCuotaAlumnoPublicController::class, 'store'])->middleware('throttle:6,1')->name('comprobante-cuota-public.store');
     Route::get('/api/periodos', [ComprobanteCuotaAlumnoPublicController::class, 'apiPeriodos'])->name('comprobante-cuota-public.api.periodos');
     Route::get('/api/bloques', [ComprobanteCuotaAlumnoPublicController::class, 'apiBloques'])->name('comprobante-cuota-public.api.bloques');
-    Route::get('/api/alumnos', [ComprobanteCuotaAlumnoPublicController::class, 'apiAlumnos'])->middleware('throttle:8,1')->name('comprobante-cuota-public.api.alumnos');
+    Route::get('/api/alumnos', [ComprobanteCuotaAlumnoPublicController::class, 'apiAlumnos'])->middleware('throttle:comprobante-publico-dni')->name('comprobante-cuota-public.api.alumnos');
     Route::get('/api/alumno-otros-bloques', [ComprobanteCuotaAlumnoPublicController::class, 'apiOtrosBloquesAlumno'])->middleware('throttle:12,1')->name('comprobante-cuota-public.api.alumno-otros-bloques');
 });
 
@@ -137,22 +137,22 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
         Route::get('/toque/{programaRitmo:slug}/parte/{instrumento}', [PartituraController::class, 'parte'])->name('programa.toque.parte');
         Route::get('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'editor'])->name('programa.toque.editor');
         Route::post('/toque/{programaRitmo:slug}/editor', [PartituraController::class, 'guardar'])
-            ->middleware('throttle:20,1')
+            ->middleware(['throttle:20,1', 'edicion.programa'])
             ->name('programa.toque.editor.guardar');
         Route::post('/toque/{programaRitmo:slug}/editor/borrador', [PartituraController::class, 'guardarBorrador'])
-            ->middleware('throttle:60,1')
+            ->middleware(['throttle:60,1', 'edicion.programa'])
             ->name('programa.toque.editor.borrador');
         Route::delete('/toque/{programaRitmo:slug}/editor/borrador', [PartituraController::class, 'descartarBorrador'])
-            ->middleware('throttle:20,1')
+            ->middleware(['throttle:20,1', 'edicion.programa'])
             ->name('programa.toque.editor.borrador.descartar');
         Route::get('/toque/{programaRitmo:slug}/editor/versiones', [PartituraController::class, 'versiones'])->name('programa.toque.editor.versiones');
         Route::get('/toque/{programaRitmo:slug}/editor/versiones/{numero}', [PartituraController::class, 'version'])->whereNumber('numero')->name('programa.toque.editor.version');
         Route::post('/toque/{programaRitmo:slug}/editor/referencia', [PartituraController::class, 'subirReferencia'])
-            ->middleware('throttle:10,1')
+            ->middleware(['throttle:10,1', 'edicion.programa'])
             ->name('programa.toque.editor.referencia');
-        Route::get('/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->name('programa.toque.edit');
+        Route::get('/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->middleware('edicion.programa')->name('programa.toque.edit');
         Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])
-            ->middleware('throttle:20,1')
+            ->middleware(['throttle:20,1', 'edicion.programa'])
             ->name('programa.toque.update');
     });
 });
