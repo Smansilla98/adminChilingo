@@ -313,16 +313,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Acceso a un módulo del menú: requiere el permiso correspondiente y que el módulo
-     * no esté ocultado explícitamente en la matriz de visibilidad (users.modulos_access).
+     * Acceso a un módulo del menú: lo decide el permiso equivalente. La matriz vieja de
+     * visibilidad (users.modulos_access) ya no se lee: se retiró junto con /accesos.
      */
     public function tieneAccesoModulo(string $clave): bool
     {
-        $map = is_array($this->modulos_access) ? $this->modulos_access : [];
-        if (! $this->isAdmin() && array_key_exists($clave, $map) && ! (bool) $map[$clave]) {
-            return false;
-        }
-
         $permiso = self::PERMISO_POR_MODULO[$clave] ?? null;
         if ($permiso === null) {
             return array_key_exists($clave, self::PERMISO_POR_MODULO);

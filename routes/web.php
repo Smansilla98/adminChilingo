@@ -330,11 +330,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('gastos', VillaGesellGastoController::class)->except(['show'])->parameters(['gastos' => 'gasto']);
     });
 
-    // Visibilidad de módulos del menú (matriz heredada) y alta rápida de cuentas
-    Route::middleware('permiso:usuarios.permissions')->group(function () {
-        Route::get('/accesos', [AccesosController::class, 'index'])->name('accesos.index');
-        Route::post('/accesos', [AccesosController::class, 'update'])->name('accesos.update');
-    });
+    // La matriz vieja de visibilidad se retiró: los accesos se ven y editan en Usuarios.
+    Route::get('/accesos', fn () => redirect()->route('usuarios.index'))->middleware('permiso:usuarios.view')->name('accesos.index');
+    // Alta rápida de cuentas (formulario heredado)
     Route::get('/accesos/crear', fn () => redirect()->route('usuarios.create'))->middleware('permiso:usuarios.create')->name('accesos.create');
     Route::post('/accesos/crear', [AccesosController::class, 'store'])->middleware('permiso:usuarios.create')->name('accesos.store');
 
@@ -452,13 +450,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/mi-cuota/pagos/{referencia}/comprobante', [CobroCuotaController::class, 'comprobante'])->middleware('throttle:10,1')->name('alumno.cuota.pago.comprobante');
     Route::post('/mi-cuota/pagos/{referencia}/cancelar', [CobroCuotaController::class, 'cancelar'])->name('alumno.cuota.pago.cancelar');
     Route::post('/mi-cuota', [MiCuotaController::class, 'store'])->middleware('throttle:10,1')->name('alumno.cuota.store');
-    Route::get('/mis-bloques', [BloqueController::class, 'index'])->middleware(['permiso:bloques.view', 'modulo:profesor.mis_bloques'])->name('profesor.bloques');
-    Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->middleware(['permiso:alumnos.view', 'modulo:profesor.mis_alumnos'])->name('profesor.alumnos');
-    Route::get('/profesor/alumnos/{alumno}', [AlumnoController::class, 'show'])->middleware(['permiso:alumnos.view', 'modulo:profesor.mis_alumnos'])->name('profesor.alumnos.show');
-    Route::get('/profesor/pagos-cuotas', [ProfesorPagoCuotaController::class, 'index'])->middleware(['permiso:pagos.view', 'modulo:profesor.pagos_cuotas'])->name('profesor.pagos-cuotas.index');
-    Route::get('/mis-eventos', [EventoController::class, 'index'])->middleware(['permiso:eventos.view', 'modulo:profesor.mis_eventos'])->name('profesor.eventos');
-    Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->middleware(['permiso:asistencias.create', 'modulo:profesor.asistencia'])->name('profesor.asistencias.create');
-    Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware(['permiso:asistencias.create', 'modulo:profesor.asistencia'])->name('profesor.asistencias.store');
-    Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware(['permiso:asistencias.view', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix');
-    Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware(['permiso:asistencias.create|asistencias.update', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix.update');
+    Route::get('/mis-bloques', [BloqueController::class, 'index'])->middleware('permiso:bloques.view')->name('profesor.bloques');
+    Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->middleware('permiso:alumnos.view')->name('profesor.alumnos');
+    Route::get('/profesor/alumnos/{alumno}', [AlumnoController::class, 'show'])->middleware('permiso:alumnos.view')->name('profesor.alumnos.show');
+    Route::get('/profesor/pagos-cuotas', [ProfesorPagoCuotaController::class, 'index'])->middleware('permiso:pagos.view')->name('profesor.pagos-cuotas.index');
+    Route::get('/mis-eventos', [EventoController::class, 'index'])->middleware('permiso:eventos.view')->name('profesor.eventos');
+    Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->middleware('permiso:asistencias.create')->name('profesor.asistencias.create');
+    Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware('permiso:asistencias.create')->name('profesor.asistencias.store');
+    Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware('permiso:asistencias.view')->name('profesor.asistencias.matrix');
+    Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware('permiso:asistencias.create|asistencias.update')->name('profesor.asistencias.matrix.update');
 });

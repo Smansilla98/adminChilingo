@@ -141,7 +141,6 @@ class Navegacion
                 $u->isAdmin() ? self::link('estado-sistema', 'Estado del sistema', 'bi-heart-pulse', 'estado-sistema') : null,
                 $u->can('notificaciones.send') ? self::link('configuracion.avisos.edit', 'Avisos y cobro', 'bi-bell', 'configuracion.avisos.*') : null,
                 $u->can('auditoria.view') ? self::link('auditoria.index', 'Auditoría', 'bi-clock-history', 'auditoria.*') : null,
-                $u->can('usuarios.permissions') ? self::link('accesos.index', 'Visibilidad del menú', 'bi-eye', 'accesos.*') : null,
                 self::link('apariencia.edit', 'Apariencia', 'bi-palette2', 'apariencia.*'),
                 $mod('ayuda') ? self::link('roles', 'Perfiles y roles', 'bi-person-badge', 'roles') : null,
                 $mod('ayuda') ? self::link('ayuda', 'Ayuda', 'bi-question-circle', 'ayuda') : null,
