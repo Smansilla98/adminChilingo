@@ -45,6 +45,7 @@ class Navegacion
             $mod('profesor.mis_bloques') ? self::link('profesor.bloques', 'Mis bloques', 'bi-collection', 'profesor.bloques*') : null,
             $mod('profesor.asistencia') ? self::link('profesor.asistencias.matrix', 'Planilla del mes', 'bi-grid-3x3', 'profesor.asistencias.matrix*') : null,
             $mod('profesor.mis_alumnos') ? self::link('profesor.alumnos', 'Mis alumnos', 'bi-people', 'profesor.alumnos*') : null,
+            $u->can('seguimiento.view') ? self::link('progreso.index', 'Progreso por toque', 'bi-graph-up-arrow', 'progreso.*') : null,
             $mod('profesor.pagos_cuotas') ? self::link('profesor.pagos-cuotas.index', 'Pagos de cuotas', 'bi-cash-stack', 'profesor.pagos-cuotas.*') : null,
             $mod('comprobantes') ? self::link('comprobantes-cuota-alumnos.create', 'Cargar comprobante', 'bi-upload', 'comprobantes-cuota-alumnos.create') : null,
             $mod('comprobantes') ? self::link('comprobantes-cuota-alumnos.index', 'Comprobantes', 'bi-receipt', 'comprobantes-cuota-alumnos.*') : null,
@@ -98,6 +99,7 @@ class Navegacion
                 $mod('admin.sedes') ? self::link('sedes.index', 'Sedes', 'bi-geo-alt', 'sedes.*') : null,
                 $mod('admin.bloques') ? self::link('bloques.index', 'Bloques', 'bi-collection', 'bloques.*') : null,
                 $mod('admin.asistencias') ? self::link('asistencias.index', 'Asistencias', 'bi-check2-square', 'asistencias.*') : null,
+                $u->can('seguimiento.view') ? self::link('progreso.index', 'Progreso por toque', 'bi-graph-up-arrow', 'progreso.*') : null,
             ]);
             $grupos[] = self::grupo('actividades', 'Actividades', [
                 $mod('admin.eventos') ? self::link('eventos.index', 'Eventos', 'bi-calendar-event', 'eventos.*') : null,

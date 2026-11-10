@@ -359,4 +359,19 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
             Route::delete('eventos/{acontecimiento}', [ArchivoGestionController::class, 'eliminarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.destroy');
         });
     });
+
+    // === Equipo G: progreso por toque, liquidación docente y tablero de dirección ===
+    Route::get('mi/progreso', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'mio'])->name('mi.progreso');
+    Route::middleware('permiso:seguimiento.view')->prefix('progreso')->name('progreso.')->group(function () {
+        Route::get('bloques', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'bloques'])->name('bloques');
+        Route::get('bloques/{bloque}', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'bloque'])->whereNumber('bloque')->name('bloque');
+        Route::get('alumnos/{alumno}', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'alumno'])->whereNumber('alumno')->name('alumno');
+        Route::get('reporte', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'reporte'])->name('reporte');
+        Route::middleware('permiso:seguimiento.create')->group(function () {
+            Route::post('bloques/{bloque}/estado', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'estado'])->whereNumber('bloque')->name('estado');
+            Route::post('evaluaciones', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'evaluacion'])->name('evaluaciones');
+            Route::post('promociones/{promocion}/confirmar', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'confirmar'])->whereNumber('promocion')->name('promociones.confirmar');
+            Route::post('promociones/{promocion}/descartar', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'descartar'])->whereNumber('promocion')->name('promociones.descartar');
+        });
+    });
 });

@@ -461,4 +461,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware(['permiso:asistencias.create', 'modulo:profesor.asistencia'])->name('profesor.asistencias.store');
     Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware(['permiso:asistencias.view', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix');
     Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware(['permiso:asistencias.create|asistencias.update', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix.update');
+
+    // === Equipo G: progreso por toque, liquidación docente y tablero de dirección ===
+    Route::middleware('permiso:seguimiento.view')->prefix('progreso')->name('progreso.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProgresoController::class, 'index'])->name('index');
+        Route::get('/reporte', [\App\Http\Controllers\ProgresoController::class, 'reporte'])->name('reporte');
+        Route::get('/bloques/{bloque}', [\App\Http\Controllers\ProgresoController::class, 'bloque'])->name('bloque');
+        Route::get('/alumnos/{alumno}', [\App\Http\Controllers\ProgresoController::class, 'alumno'])->name('alumno');
+        Route::middleware('permiso:seguimiento.create')->group(function () {
+            Route::post('/bloques/{bloque}', [\App\Http\Controllers\ProgresoController::class, 'guardar'])->name('bloque.guardar');
+            Route::post('/evaluaciones', [\App\Http\Controllers\ProgresoController::class, 'evaluacion'])->name('evaluaciones.store');
+            Route::post('/promociones/{promocion}/confirmar', [\App\Http\Controllers\ProgresoController::class, 'confirmar'])->name('promociones.confirmar');
+            Route::post('/promociones/{promocion}/descartar', [\App\Http\Controllers\ProgresoController::class, 'descartar'])->name('promociones.descartar');
+        });
+    });
 });
