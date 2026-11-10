@@ -14,6 +14,10 @@ use Throwable;
  * Se guarda en el disco persistente (`comprobantes`, el volumen de Railway) bajo
  * `respaldos/`, junto a `respaldos/ultimo.json` con el resultado del último intento,
  * que lee la pantalla Estado del sistema.
+ *
+ * Si están RESPALDO_DISCO_EXTERNO y RESPALDO_CLAVE (config/operacion.php), además sube una
+ * copia cifrada (`.sql.gz.enc`, ver CifradoRespaldo) a ese disco (S3 / Cloudflare R2) y
+ * conserva las últimas RESPALDO_EXTERNO_CONSERVAR. Sin clave nunca sube nada sin cifrar.
  */
 class Respaldo
 {
@@ -24,7 +28,7 @@ class Respaldo
     private const FILAS_POR_INSERT = 200;
 
     /**
-     * @return array{archivo: string, bytes: int, tablas: int, filas: int, segundos: float}
+     * @return array{archivo: string, bytes: int, tablas: int, filas: int, segundos: float, externo: array{ok: bool, archivo?: string, error?: string}|null}
      */
     public function generar(int $conservar = 14): array
     {
@@ -52,12 +56,16 @@ class Respaldo
             fclose($stream);
         }
         $bytes = (int) filesize($temporal);
-        @unlink($temporal);
 
         if (! $guardado) {
+            @unlink($temporal);
             $this->marcar(['ok' => false, 'error' => 'No se pudo escribir en el disco persistente.']);
             throw new RuntimeException('No se pudo escribir el backup en el disco persistente.');
         }
+
+        // La copia externa nunca hace fallar el backup local: su resultado queda en la marca.
+        $externo = self::externoConfigurado() ? $this->subirExterno($temporal, basename($archivo)) : null;
+        @unlink($temporal);
 
         $this->podar($conservar);
         $resultado = [
@@ -66,14 +74,66 @@ class Respaldo
             'tablas' => $tablas,
             'filas' => $filas,
             'segundos' => round(microtime(true) - $inicio, 1),
+            'externo' => $externo,
         ];
         $this->marcar(['ok' => true] + $resultado);
 
         return $resultado;
     }
 
+    /** Hay disco externo y clave: cada backup sube también una copia cifrada. */
+    public static function externoConfigurado(): bool
+    {
+        return filled(config('operacion.respaldo.disco_externo')) && filled(config('operacion.respaldo.clave'));
+    }
+
+    /** @return list<string> copias cifradas en el disco externo, de la más nueva a la más vieja */
+    public static function archivosExternos(): array
+    {
+        $disco = Storage::disk((string) config('operacion.respaldo.disco_externo'));
+        $lista = array_filter(
+            $disco->files((string) config('operacion.respaldo.carpeta_externa', self::CARPETA)),
+            fn (string $f) => str_ends_with($f, '.sql.gz.enc'),
+        );
+        rsort($lista);
+
+        return $lista;
+    }
+
     /**
-     * @return array{ok: bool, fecha: string, archivo?: string, bytes?: int, error?: string}|null
+     * @return array{ok: bool, archivo?: string, error?: string}
+     */
+    private function subirExterno(string $temporal, string $nombre): array
+    {
+        $cifrado = $temporal.'.enc';
+        try {
+            CifradoRespaldo::cifrar($temporal, $cifrado, (string) config('operacion.respaldo.clave'));
+            $destino = trim((string) config('operacion.respaldo.carpeta_externa', self::CARPETA), '/').'/'.$nombre.'.enc';
+            $disco = Storage::disk((string) config('operacion.respaldo.disco_externo'));
+            $stream = fopen($cifrado, 'rb');
+            $ok = $disco->writeStream($destino, $stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+            if (! $ok) {
+                throw new RuntimeException('el disco externo rechazó el archivo');
+            }
+            foreach (array_slice(self::archivosExternos(), max(1, (int) config('operacion.respaldo.conservar_externo', 30))) as $viejo) {
+                $disco->delete($viejo);
+            }
+
+            return ['ok' => true, 'archivo' => $destino];
+        } catch (Throwable $e) {
+            report($e);
+
+            return ['ok' => false, 'error' => 'No se pudo subir la copia externa: '.$e->getMessage()];
+        } finally {
+            @unlink($cifrado);
+        }
+    }
+
+    /**
+     * @return array{ok: bool, fecha: string, archivo?: string, bytes?: int, error?: string, externo?: array{ok: bool, archivo?: string, error?: string}|null}|null
      */
     public static function ultimo(): ?array
     {
