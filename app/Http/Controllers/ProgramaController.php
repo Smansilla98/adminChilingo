@@ -8,6 +8,7 @@ use App\Models\ProgramaSeccion;
 use App\Services\PartiturasCuadernilloImporter;
 use App\Services\ProgramaRitmoMediosService;
 use App\Support\AccesoMaterial;
+use App\Support\ArchivoSeguro;
 use App\Support\ProgramaRitmoMedios;
 use App\Support\ProgramaRitmoSlug;
 use Database\Seeders\ProgramaRitmosSeeder;
@@ -298,13 +299,7 @@ class ProgramaController extends Controller
             abort(404);
         }
 
-        if ($request->boolean('inline')) {
-            return Storage::disk('comprobantes')->response($path, $nombre, [
-                'Content-Disposition' => 'inline; filename="'.addslashes($nombre).'"',
-            ]);
-        }
-
-        return Storage::disk('comprobantes')->download($path, $nombre);
+        return ArchivoSeguro::responder('comprobantes', $path, $nombre, $request->boolean('inline'));
     }
 
     public function updateToque(Request $request, ProgramaRitmo $programaRitmo)
@@ -340,13 +335,13 @@ class ProgramaController extends Controller
             'cortes' => 'nullable|array',
             'cortes.*.titulo' => 'nullable|string|max:255',
             'cortes.*.url' => 'nullable|string|max:500',
-            'cortes.*.archivo' => 'nullable|file|max:102400|extensions:pdf,jpg,jpeg,png,webp,gif,mp4,webm,mov',
+            'cortes.*.archivo' => ['nullable', 'file', 'max:102400', 'extensions:pdf,jpg,jpeg,png,webp,gif,mp4,webm,mov', ArchivoSeguro::regla()],
             'recursos' => 'nullable|array',
             'recursos.*.tipo' => 'nullable|string|max:32',
             'recursos.*.titulo' => 'nullable|string|max:255',
             'recursos.*.url' => 'nullable|string|max:500',
             'recursos.*.contenido' => 'nullable|string|max:20000',
-            'recursos.*.archivo' => 'nullable|file|max:102400|extensions:jpg,jpeg,png,webp,gif,mp4,webm,mov,pdf',
+            'recursos.*.archivo' => ['nullable', 'file', 'max:102400', 'extensions:jpg,jpeg,png,webp,gif,mp4,webm,mov,pdf', ArchivoSeguro::regla()],
         ], [
             'editor_nombre.required' => 'Indicá tu nombre para dejar registro de la edición.',
             'cortes.*.archivo.extensions' => 'El corte tiene que ser imagen, video o PDF.',

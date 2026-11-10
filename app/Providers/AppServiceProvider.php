@@ -89,11 +89,17 @@ class AppServiceProvider extends ServiceProvider
     private function registrarLimitesDeUso(): void
     {
         RateLimiter::for('login', function (Request $request) {
-            $usuario = mb_strtolower((string) $request->input('username'));
+            // Misma normalización que el login: «30.123.456», «30123456 » y «30-123-456» son la misma cuenta.
+            $usuario = mb_strtolower(trim((string) $request->input('username')));
+            if (preg_match('/^[\d.\s-]+$/', $usuario)) {
+                $usuario = (string) preg_replace('/\D+/', '', $usuario);
+            }
 
             return [
                 Limit::perMinute(5)->by('login:'.$usuario.'|'.$request->ip()),
                 Limit::perMinute(20)->by('login-ip:'.$request->ip()),
+                // Tope por cuenta aunque cambie la IP: las claves provisorias son de 6 números.
+                Limit::perHour(30)->by('login-cuenta:'.$usuario),
             ];
         });
 

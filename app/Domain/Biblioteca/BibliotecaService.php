@@ -5,6 +5,7 @@ namespace App\Domain\Biblioteca;
 use App\Models\BibliotecaItem;
 use App\Models\BibliotecaTag;
 use App\Models\ProgramaRitmo;
+use App\Support\ArchivoSeguro;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +32,7 @@ class BibliotecaService
             'autor_nombre' => 'nullable|string|max:120',
             'hashtags' => 'nullable|string|max:400',
             'url' => 'nullable|url|max:500',
-            'archivo' => 'nullable|file|max:'.self::ARCHIVO_MAX_KB.'|extensions:'.self::ARCHIVO_EXTENSIONES,
+            'archivo' => ['nullable', 'file', 'max:'.self::ARCHIVO_MAX_KB, 'extensions:'.self::ARCHIVO_EXTENSIONES, ArchivoSeguro::regla()],
             'instrumento' => ['nullable', 'string', Rule::in(array_keys(BibliotecaItem::instrumentosOpciones()))],
         ];
         if (Schema::hasColumn('biblioteca_items', 'programa_ritmo_id')) {
@@ -71,13 +72,7 @@ class BibliotecaService
             if ($ext === '' && $archivo->guessExtension()) {
                 $ext = strtolower((string) $archivo->guessExtension());
             }
-            $mime = $archivo->getMimeType() ?: $archivo->getClientMimeType();
-            if (($mime === 'application/octet-stream' || ! $mime) && $ext === 'png') {
-                $mime = 'image/png';
-            }
-            if (($mime === 'application/octet-stream' || ! $mime) && in_array($ext, ['mp4', 'm4v', 'mov'], true)) {
-                $mime = $ext === 'mov' ? 'video/quicktime' : 'video/mp4';
-            }
+            $mime = ArchivoSeguro::TIPOS[$ext] ?? 'application/octet-stream';
             $nombreOriginal = $archivo->getClientOriginalName();
             $bytes = $archivo->getSize();
             $filename = (string) Str::uuid().($ext !== '' ? '.'.$ext : '');

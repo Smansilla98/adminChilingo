@@ -7,6 +7,7 @@ use App\Models\BibliotecaItem;
 use App\Models\BibliotecaTag;
 use App\Models\ProgramaRitmo;
 use App\Services\BibliotecaShareMiniatura;
+use App\Support\ArchivoSeguro;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -193,30 +194,8 @@ class BibliotecaPublicController extends Controller
         }
 
         $nombre = $bibliotecaItem->nombre_original ?: ('material-'.$bibliotecaItem->id);
-        $mime = $bibliotecaItem->mime;
-        if (! $mime) {
-            $ext = strtolower(pathinfo($bibliotecaItem->path, PATHINFO_EXTENSION));
-            $mime = match ($ext) {
-                'png' => 'image/png',
-                'jpg', 'jpeg' => 'image/jpeg',
-                'webp' => 'image/webp',
-                'gif' => 'image/gif',
-                'mp4', 'm4v' => 'video/mp4',
-                'webm' => 'video/webm',
-                'pdf' => 'application/pdf',
-                default => null,
-            };
-        }
 
-        $headers = [
-            'Content-Disposition' => 'inline; filename="'.addslashes($nombre).'"',
-            'Cache-Control' => 'public, max-age=86400',
-        ];
-        if ($mime) {
-            $headers['Content-Type'] = $mime;
-        }
-
-        return Storage::disk('comprobantes')->response($bibliotecaItem->path, $nombre, $headers);
+        return ArchivoSeguro::responder('comprobantes', $bibliotecaItem->path, $nombre, true, ['Cache-Control' => 'public, max-age=86400']);
     }
 
     /**

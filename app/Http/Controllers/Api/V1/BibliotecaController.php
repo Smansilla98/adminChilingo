@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BibliotecaItem;
 use App\Models\BibliotecaTag;
 use App\Models\ProgramaRitmo;
+use App\Support\ArchivoSeguro;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -72,7 +73,7 @@ class BibliotecaController extends Controller
         abort_unless($item->path && Storage::disk('comprobantes')->exists($item->path), 404, 'El archivo ya no está disponible.');
         $nombre = $item->nombre_original ?: 'material-'.$item->id;
 
-        return Storage::disk('comprobantes')->response($item->path, $nombre, array_filter(['Content-Type' => $item->mime, 'Content-Disposition' => 'inline; filename="'.addslashes($nombre).'"']));
+        return ArchivoSeguro::responder('comprobantes', $item->path, $nombre);
     }
 
     public function store(Request $request, BibliotecaService $servicio): JsonResponse

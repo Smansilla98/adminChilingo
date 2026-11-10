@@ -7,6 +7,7 @@ use App\Models\ProgramaRitmo;
 use App\Services\PartituraHistorialService;
 use App\Services\ProgramaRitmoMediosService;
 use App\Support\AccesoMaterial;
+use App\Support\ArchivoSeguro;
 use App\Support\PartituraMuestras;
 use App\Support\PartituraScore;
 use App\Support\ProgramaRitmoMedios;
@@ -158,16 +159,18 @@ class PartituraController extends Controller
     }
 
     /** Versiones publicadas de la partitura (más nueva primero). */
-    public function versiones(string $slug, PartituraHistorialService $historial): JsonResponse
+    public function versiones(Request $request, string $slug, PartituraHistorialService $historial): JsonResponse
     {
-        $toque = ProgramaRitmo::query()->where('slug', $slug)->firstOrFail();
+        abort_unless($request->user()->acceso()->puede('partituras.view'), 403);
+        $toque = $this->visible($request, $slug);
 
         return response()->json(['data' => $historial->listar($toque)]);
     }
 
-    public function version(string $slug, int $numero, PartituraHistorialService $historial): JsonResponse
+    public function version(Request $request, string $slug, int $numero, PartituraHistorialService $historial): JsonResponse
     {
-        $toque = ProgramaRitmo::query()->where('slug', $slug)->firstOrFail();
+        abort_unless($request->user()->acceso()->puede('partituras.view'), 403);
+        $toque = $this->visible($request, $slug);
         $v = $historial->version($toque, $numero);
         abort_unless($v, 404);
 
@@ -245,9 +248,7 @@ class PartituraController extends Controller
             ? $partitura['nombre']
             : 'partitura-'.$toque->slug;
 
-        return Storage::disk('comprobantes')->response($path, $nombre, [
-            'Content-Disposition' => 'inline; filename="'.addslashes($nombre).'"',
-        ]);
+        return ArchivoSeguro::responder('comprobantes', $path, $nombre);
     }
 
     /** Quien administra ve también los toques ocultos. El resto, solo los publicados. */
