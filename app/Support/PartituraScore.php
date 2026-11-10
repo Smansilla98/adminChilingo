@@ -7,7 +7,8 @@ namespace App\Support;
  *
  * Espejo de resources/js/partitura/model.js. Unidad: ticks, TPQ = 48.
  * v5 suma campos opcionales sobre v4 (se lee cualquiera de los dos, nada se pierde):
- * golpe `fantasma`, `vel` por nota, `pan`/`pitch` por instrumento y `sena` por compás.
+ * golpe `fantasma`, `vel` por nota, `pan`/`pitch` por instrumento, `sena` por compás y
+ * `audio_ref` (grabación de referencia sincronizada por pulsos).
  */
 class PartituraScore
 {
@@ -343,8 +344,65 @@ class PartituraScore
         if ($source !== null) {
             $out['source'] = $source;
         }
+        $audioRef = self::normalizarAudioRef($raw['audio_ref'] ?? null);
+        if ($audioRef !== null) {
+            $out['audio_ref'] = $audioRef;
+        }
 
         return $out;
+    }
+
+    /** Carpeta del disco de archivos donde van las grabaciones de referencia. */
+    public const AUDIO_CARPETA = 'partituras/audio';
+
+    /** Tope de pulsos marcados en una grabación (unos 25 minutos a 200 BPM). */
+    public const AUDIO_MAX_BEATS = 5000;
+
+    /**
+     * Grabación de referencia sincronizada con la partitura (estilo Klangio).
+     * `path` es un archivo propio (solo dentro de partituras/audio/), `url` un enlace https externo.
+     * La posición musical sale de `beats` (segundo de cada pulso) o, si no hay, de offset + tempo_origen.
+     *
+     * @return array{path: ?string, url: ?string, nombre: ?string, offset_seg: float, beats: list<float>, tempo_origen: ?int}|null
+     */
+    public static function normalizarAudioRef(mixed $raw): ?array
+    {
+        if (! is_array($raw)) {
+            return null;
+        }
+        $path = trim((string) ($raw['path'] ?? ''));
+        $pathValido = $path !== ''
+            && ! str_contains($path, '..')
+            && preg_match('#^'.preg_quote(self::AUDIO_CARPETA, '#').'/[A-Za-z0-9._\-]+\.(mp3|wav|m4a|ogg)$#', $path) === 1;
+        $url = trim((string) ($raw['url'] ?? ''));
+        $urlValida = $url !== '' && mb_strlen($url) <= 500 && preg_match('#^https://#i', $url) === 1 && filter_var($url, FILTER_VALIDATE_URL) !== false;
+        if (! $pathValido && ! $urlValida) {
+            return null;
+        }
+        $beats = [];
+        $previo = -1.0;
+        foreach (is_array($raw['beats'] ?? null) ? array_slice($raw['beats'], 0, self::AUDIO_MAX_BEATS) : [] as $b) {
+            if (! is_numeric($b)) {
+                continue;
+            }
+            $t = round((float) $b, 3);
+            if ($t < 0 || $t > 7200 || $t <= $previo) {
+                continue;
+            }
+            $beats[] = $t;
+            $previo = $t;
+        }
+        $tempo = isset($raw['tempo_origen']) && is_numeric($raw['tempo_origen']) ? (int) round((float) $raw['tempo_origen']) : null;
+        $nombre = mb_substr(trim((string) ($raw['nombre'] ?? '')), 0, 120);
+
+        return [
+            'path' => $pathValido ? $path : null,
+            'url' => $pathValido ? null : $url,
+            'nombre' => $nombre !== '' ? $nombre : null,
+            'offset_seg' => round(max(0, min(600, (float) ($raw['offset_seg'] ?? 0))), 3),
+            'beats' => $beats,
+            'tempo_origen' => $tempo !== null && $tempo >= 30 && $tempo <= 260 ? $tempo : null,
+        ];
     }
 
     /**

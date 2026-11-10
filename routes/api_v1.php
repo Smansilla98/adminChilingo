@@ -294,6 +294,13 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::put('partituras/{slug}', [PartituraController::class, 'update'])->middleware('permiso:partituras.admin')->name('partituras.update');
     Route::delete('partituras/{slug}', [PartituraController::class, 'destroy'])->middleware('permiso:partituras.admin')->name('partituras.destroy');
     Route::get('partituras/{slug}', [PartituraController::class, 'show'])->name('partituras.show');
+    // === Equipo E: grabación de referencia, exportación y transcripción ===
+    Route::get('partituras-transcriptor', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'estado'])->name('partituras.transcriptor');
+    Route::get('partituras/{slug}/exportar/{formato}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'exportar'])->whereIn('formato', ['midi', 'musicxml'])->name('partituras.exportar');
+    Route::get('partituras/{slug}/audio/{archivo}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'audio'])->where('archivo', '[0-9]+-[a-z0-9]{16}\.(mp3|wav|m4a|ogg)')->name('partituras.audio');
+    Route::post('partituras/{slug}/audio', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'subirAudio'])->middleware(['permiso:partituras.admin', 'throttle:20,1'])->name('partituras.audio.subir');
+    Route::post('partituras/{slug}/transcripciones', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'transcribir'])->middleware(['permiso:partituras.admin', 'throttle:20,1'])->name('partituras.transcribir');
+    Route::get('partituras/{slug}/transcripciones/{id}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'transcripcion'])->whereNumber('id')->middleware('permiso:partituras.admin')->name('partituras.transcripcion');
 
     Route::get('recordatorios/chat', [RecordatorioController::class, 'chat'])->name('recordatorios.chat');
     Route::post('recordatorios/whatsapp', [RecordatorioController::class, 'whatsapp'])->middleware('permiso:notificaciones.send')->name('recordatorios.whatsapp');

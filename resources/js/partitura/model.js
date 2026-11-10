@@ -440,8 +440,47 @@ export function normalizarPartitura(raw) {
     if (fuente) out.fuente = fuente;
     const source = normalizarSourcePdf(raw.source);
     if (source) out.source = source;
+    // Grabación de referencia sincronizada (espejo de PartituraScore::normalizarAudioRef).
+    const audioRef = normalizarAudioRef(raw.audio_ref);
+    if (audioRef) out.audio_ref = audioRef;
 
     return out;
+}
+
+export const AUDIO_CARPETA = 'partituras/audio';
+export const AUDIO_MAX_BEATS = 5000;
+
+/** @param {unknown} raw */
+export function normalizarAudioRef(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const path = String(raw.path || '').trim();
+    const pathValido = !!path && !path.includes('..')
+        && new RegExp(`^${AUDIO_CARPETA}/[A-Za-z0-9._\\-]+\\.(mp3|wav|m4a|ogg)$`).test(path);
+    const url = String(raw.url || '').trim();
+    let urlValida = false;
+    if (url && url.length <= 500 && /^https:\/\//i.test(url)) {
+        try { new URL(url); urlValida = true; } catch { urlValida = false; }
+    }
+    if (!pathValido && !urlValida) return null;
+    const beats = [];
+    let previo = -1;
+    (Array.isArray(raw.beats) ? raw.beats.slice(0, AUDIO_MAX_BEATS) : []).forEach((b) => {
+        const t = Math.round(Number(b) * 1000) / 1000;
+        if (!Number.isFinite(t) || t < 0 || t > 7200 || t <= previo) return;
+        beats.push(t);
+        previo = t;
+    });
+    const tempo = Math.round(Number(raw.tempo_origen));
+    const nombre = String(raw.nombre || '').trim().slice(0, 120);
+    const offset = Number(raw.offset_seg);
+    return {
+        path: pathValido ? path : null,
+        url: pathValido ? null : url,
+        nombre: nombre || null,
+        offset_seg: Math.round(Math.min(600, Math.max(0, Number.isFinite(offset) ? offset : 0)) * 1000) / 1000,
+        beats,
+        tempo_origen: Number.isFinite(tempo) && tempo >= 30 && tempo <= 260 ? tempo : null,
+    };
 }
 
 const SENAS_IDS = ['entrada', 'corte', 'llamada', 'cambio', 'otra'];
