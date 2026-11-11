@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Acceso\DispositivosPush;
 use App\Domain\Personas\AccesoAlumnoService;
 use App\Domain\Personas\RegistroAlumnoService;
 use App\Http\Controllers\Controller;
@@ -80,6 +81,10 @@ class AuthController extends Controller
         $user = $request->user();
         $actual = $user->currentAccessToken();
         $nuevo = $this->emitir($user, $actual?->name ?? 'app');
+        $nuevoId = $user->tokens()->latest('id')->value('id');
+        if (is_numeric($actual->getKey()) && $nuevoId) {
+            app(DispositivosPush::class)->rotarSesion((int) $actual->getKey(), (int) $nuevoId);
+        }
         $actual?->delete();
 
         return response()->json($nuevo);
@@ -87,10 +92,10 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()?->delete();
-        if ($request->filled('push_token')) {
-            $request->user()->dispositivos()->where('token', $request->input('push_token'))->delete();
-        }
+        $sesion = $request->user()->currentAccessToken();
+        // El celular deja de recibir avisos de esta cuenta.
+        app(DispositivosPush::class)->cerrarSesion($request->user(), $sesion, $request->input('push_token'));
+        $sesion?->delete();
 
         return response()->json(['ok' => true]);
     }

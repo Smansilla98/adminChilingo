@@ -100,6 +100,7 @@ class AccesoAlumnoService
 
         $user->forceFill(['password' => Hash::make($nueva), 'debe_cambiar_clave' => false])->save();
         $user->tokens()->when($tokenActualId, fn ($q) => $q->whereKeyNot($tokenActualId))->delete();
+        app(\App\Domain\Acceso\DispositivosPush::class)->limpiarHuerfanos($user);
         Auditoria::registrar('acceso.cambio_clave', $user, null, []);
     }
 

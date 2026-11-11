@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Dispositivo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -50,10 +49,7 @@ class NotificacionController extends Controller
             'plataforma' => 'nullable|in:android,ios',
             'nombre' => 'nullable|string|max:120',
         ]);
-        Dispositivo::query()->updateOrCreate(
-            ['token' => $data['token']],
-            ['user_id' => $request->user()->id, 'plataforma' => $data['plataforma'] ?? null, 'nombre' => $data['nombre'] ?? null, 'ultimo_uso_at' => now()]
-        );
+        app(\App\Domain\Acceso\DispositivosPush::class)->registrar($request->user(), $request->user()->currentAccessToken(), $data);
 
         return response()->json(['ok' => true]);
     }
