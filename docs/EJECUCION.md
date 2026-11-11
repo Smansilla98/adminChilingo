@@ -62,21 +62,25 @@ bash scripts/test.sh
 
 El **Dockerfile** no ejecuta migraciones (no hay DB en build). Al **iniciar el contenedor**, `start.sh` hace todo:
 
-1. Espera a que MySQL esté disponible (30 intentos × 2 s).
-2. Limpia caché (config, route, view) sin tocar DB.
-3. Ejecuta `php artisan migrate --force --no-interaction` (todas las pendientes).
-4. Corre otra vez, de forma explícita, las migraciones `2026_08_19_*` (cuaderno pedagógico, `cargado_por_user_id`, índices). Son idempotentes.
-5. Muestra `php artisan migrate:status`.
-6. Opcional: si `RUN_SEED=1`, ejecuta `php artisan db:seed --force`.
-7. Regenera JSON de partituras v4 (`generar.py`) y `php artisan partituras:bootstrap` (incremental; con `--force` si `PARTITURAS_BOOTSTRAP_FORCE=1`. Nunca pisa toques editados por la escuela salvo `--pisar-ediciones`).
-8. Regenera el kit de percusión (`scripts/build-chilinga-kit.py`; hace falta `ffmpeg`). `PERC_KIT_REBUILD=0` lo saltea.
-9. Crea `storage`/enlaces y arranca `php artisan serve`.
+1. Espera a que MySQL esté disponible (30 intentos × 2 s; si no responde, sale con error).
+2. `php artisan optimize`: cachea config, rutas, vistas y eventos con las variables reales.
+3. Ejecuta `php artisan migrate --force --no-interaction`. **Si falla, el contenedor termina con error**
+   y Railway mantiene el deploy anterior.
+4. Sincroniza permisos (`chilinga:permisos:sync`) y corre el diagnóstico de datos.
+5. Opcional: si `RUN_SEED=1`, ejecuta `php artisan db:seed --force`.
+6. Regenera JSON de partituras v4 (`generar.py`) y `php artisan partituras:bootstrap` (incremental; con `--force` si `PARTITURAS_BOOTSTRAP_FORCE=1`. Nunca pisa toques editados por la escuela salvo `--pisar-ediciones`).
+7. Regenera el kit de percusión (`scripts/build-chilinga-kit.py`; hace falta `ffmpeg`). `PERC_KIT_REBUILD=0` lo saltea.
+8. Crea el enlace de `storage`, lanza el scheduler en segundo plano si `SCHEDULER_EN_WEB=1` y arranca
+   **FrankenPHP** en `PORT` (default 8080).
+
+Con `start.sh scheduler` o `start.sh worker` (o `PROCESO=...`) el mismo contenedor corre solo el
+scheduler o la cola. Ver [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md).
 
 Build y ejecución:
 
 ```bash
 docker build -t chilinga-admin .
-docker run --rm -p 8000:8000 \
+docker run --rm -p 8080:8080 \
   -e APP_KEY=base64:TU_CLAVE \
   -e DB_HOST=host.docker.internal \
   -e DB_DATABASE=chilinga_admin \
@@ -93,7 +97,7 @@ docker run ... -e RUN_SEED=1 chilinga-admin
 
 ## 4. Ejecución en Railway
 
-El proyecto incluye `railway.toml`: Railway usa el **Dockerfile** y al desplegar ejecuta **start.sh** (espera DB, migraciones, luego servidor).
+El proyecto incluye `railway.toml`: Railway usa el **Dockerfile** y al desplegar ejecuta **start.sh** (espera DB, migraciones, luego servidor). Servicios scheduler/worker, volumen, R2 y Sentry: **[DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md)**.
 
 1. Conectar el repo; Railway detectará el Dockerfile (o usar `railway.toml`).
 2. Añadir el servicio **MySQL** (plugin o imagen) y vincularlo al proyecto.
