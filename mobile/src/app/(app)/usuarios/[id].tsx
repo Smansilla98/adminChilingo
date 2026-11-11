@@ -26,6 +26,10 @@ export default function FichaUsuario() {
     exito: (r) => ((r as { data: Usuario }).data.activo ? 'Cuenta activada' : 'Cuenta desactivada. Se cerraron sus sesiones'),
     invalidar,
   });
+  const cerrarSesion = useOperacion((sesion: number | null) => api(sesion ? `usuarios/${id}/sesiones/${sesion}` : `usuarios/${id}/sesiones`, { method: 'DELETE' }), {
+    exito: (r) => ((r as { cerradas: number }).cerradas === 1 ? 'Sesión cerrada' : 'Sesiones cerradas'),
+    invalidar,
+  });
   const quitar = useOperacion((asignacionId: number) => api(`usuarios/${id}/asignaciones/${asignacionId}`, { method: 'DELETE' }), { exito: 'Asignación quitada', invalidar: [...invalidar, 'me'] });
 
   if (q.isPending) return <Cargando />;
@@ -87,9 +91,23 @@ export default function FichaUsuario() {
           {lista.map((p) => <Tenue key={p.permiso}>{p.etiqueta} · {p.alcance}{p.via.length ? ` (${p.via.join(', ')})` : ''}</Tenue>)}
         </Tarjeta>
       ))}
-      {pestana === 'dispositivos' && (u.dispositivos.length === 0 ? <Tenue>No tiene sesiones abiertas en la app.</Tenue> : u.dispositivos.map((d) => (
-        <ItemLista key={d.id} icono="smartphone" titulo={d.nombre} subtitulo={`Último uso: ${fecha(d.ultimo_uso)}`} detalle={`Desde ${fecha(d.desde)}${d.vence ? ` · vence ${fecha(d.vence)}` : ''}`} />
-      )))}
+      {pestana === 'dispositivos' && (u.dispositivos.length === 0 ? <Tenue>No tiene sesiones abiertas en la app.</Tenue> : (
+        <>
+          {u.dispositivos.map((d) => (
+            <ItemLista key={d.id} icono="smartphone" titulo={d.nombre} subtitulo={`Último uso: ${fecha(d.ultimo_uso)}`} detalle={`Desde ${fecha(d.desde)}${d.vence ? ` · vence ${fecha(d.vence)}` : ''}`}
+              derecha={a.activar ? (
+                <Pressable accessibilityRole="button" accessibilityLabel={`Cerrar la sesión ${d.nombre}`} hitSlop={10}
+                  onPress={async () => { if (await confirmar({ titulo: '¿Cerrar esta sesión?', mensaje: `${d.nombre}. Tendrá que volver a ingresar en ese celular. Queda registrado en auditoría.`, accion: 'Cerrar sesión' })) cerrarSesion.mutate(d.id); }}>
+                  <Icon name="logout" size={24} color={C.peligro} />
+                </Pressable>
+              ) : undefined} />
+          ))}
+          {a.activar && (
+            <Boton titulo="Cerrar todas las sesiones de la app" icono="phonelink-erase" variante="peligro" cargando={cerrarSesion.isPending}
+              onPress={async () => { if (await confirmar({ titulo: `¿Cerrar todas las sesiones de ${u.nombre}?`, mensaje: 'Se cierra la app en todos sus celulares y dejan de llegarle los avisos hasta que vuelva a ingresar. Queda registrado en auditoría.', accion: 'Cerrar todas' })) cerrarSesion.mutate(null); }} />
+          )}
+        </>
+      ))}
 
       <NuevaAsignacion usuarioId={u.id} visible={asignando} onCerrar={() => setAsignando(false)} />
       <Hoja visible={editando} titulo="Datos de la cuenta" onCerrar={() => setEditando(false)}>

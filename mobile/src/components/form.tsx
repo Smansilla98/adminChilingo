@@ -495,7 +495,7 @@ const s = StyleSheet.create({
   interruptor: { flexDirection: 'row', alignItems: 'center', gap: E.m, minHeight: TOQUE },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: E.s },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 999, borderWidth: 1, borderColor: C.borde, backgroundColor: C.fondo, paddingHorizontal: E.l, minHeight: 44 },
-  chipActivo: { backgroundColor: C.acento, borderColor: C.acento },
+  chipActivo: { backgroundColor: C.acentoBoton, borderColor: C.acentoBoton },
   chipTexto: { color: C.texto, fontWeight: '600' },
   opcionLista: { flexDirection: 'row', alignItems: 'center', gap: E.m, padding: E.m, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: C.borde, marginBottom: E.s, backgroundColor: C.fondo },
   barra: { height: 8, borderRadius: 4, backgroundColor: C.superficie2, overflow: 'hidden' },

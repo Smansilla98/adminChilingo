@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
 import { Alert, View } from 'react-native';
 
+import { confirmar } from '@/components/feedback';
 import { Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Titulo } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { VARIANTE } from '@/lib/config';
+import { formatearFecha } from '@/lib/formato';
 import { descartar, sincronizar, useColaAsistencia } from '@/lib/offline';
 import { useMe } from '@/lib/queries';
 import { C, E } from '@/lib/theme';
@@ -17,11 +19,28 @@ export default function Perfil() {
   if (me.isError && !me.data) return <ErrorVista error={me.error} onReintentar={() => me.refetch()} />;
   const d = me.data!;
 
-  const confirmarSalida = () =>
-    Alert.alert('Cerrar sesión', cola.length > 0 ? `Tenés ${cola.length} planilla(s) sin enviar. Si salís se pierden.` : '¿Querés salir?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Salir', style: 'destructive', onPress: () => void salir() },
-    ]);
+  const pendientes = cola.filter((e) => !e.fallida).length;
+  const fallidas = cola.length - pendientes;
+
+  const confirmarSalida = () => {
+    if (cola.length === 0) {
+      Alert.alert('Cerrar sesión', '¿Querés salir?', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Salir', style: 'destructive', onPress: () => void salir() },
+      ]);
+      return;
+    }
+    Alert.alert(
+      'Cerrar sesión',
+      `Tenés ${cola.length} planilla${cola.length === 1 ? '' : 's'} de asistencia sin enviar. ` +
+        'Quedan guardadas en este teléfono y se envían cuando vuelvas a ingresar con tu cuenta. Si podés, envialas antes de salir.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Enviar ahora', onPress: () => void sincronizar({ forzar: true }) },
+        { text: 'Salir igual', style: 'destructive', onPress: () => void salir() },
+      ],
+    );
+  };
 
   return (
     <Pantalla refrescando={me.isRefetching} onRefrescar={() => me.refetch()}>
@@ -57,15 +76,25 @@ export default function Perfil() {
 
       {cola.length > 0 && (
         <>
-          <Subtitulo>Pendiente de envío</Subtitulo>
+          <Subtitulo>Asistencia sin enviar</Subtitulo>
+          {pendientes > 0 && <Tenue>{pendientes} planilla{pendientes === 1 ? '' : 's'} esperando conexión: se envían solas.</Tenue>}
+          {fallidas > 0 && <Aviso tono="peligro" texto={`${fallidas} planilla${fallidas === 1 ? '' : 's'} no se pudo enviar. Revisá el motivo: podés reintentar o descartarla.`} />}
           {cola.map((e) => (
-            <Tarjeta key={e.uuid} acento={e.error ? C.peligro : C.alerta}>
-              <Texto>Asistencia del {e.fecha} · {e.registros.length} alumnos</Texto>
-              {e.error && <Aviso tono="peligro" texto={e.error} />}
-              {e.error && <Boton titulo="Descartar" variante="peligro" onPress={() => void descartar(e.uuid)} />}
+            <Tarjeta key={e.uuid} acento={e.fallida ? C.peligro : C.alerta}>
+              <Texto style={{ fontWeight: '700' }}>{e.bloque ? `${e.bloque} · ` : ''}{formatearFecha(e.fecha)}</Texto>
+              <Tenue>{e.registros.length} alumnos · {e.fallida ? 'No se pudo enviar' : 'Esperando conexión'}</Tenue>
+              {e.error && <Aviso tono={e.fallida ? 'peligro' : 'alerta'} texto={`Detalle: ${e.error}${e.intentos ? ` (intentos: ${e.intentos})` : ''}`} />}
+              {e.fallida && (
+                <Fila>
+                  <View style={{ flex: 1 }}><Boton titulo="Ver planilla" variante="secundario" onPress={() => router.push({ pathname: '/asistencia/[bloque]', params: { bloque: String(e.bloqueId), fecha: e.fecha } } as never)} /></View>
+                  <View style={{ flex: 1 }}><Boton titulo="Descartar" variante="peligro" onPress={async () => {
+                    if (await confirmar({ titulo: '¿Descartar esta planilla?', mensaje: 'Las marcas de asistencia que no se enviaron se pierden.', accion: 'Descartar' })) void descartar(e.uuid);
+                  }} /></View>
+                </Fila>
+              )}
             </Tarjeta>
           ))}
-          <Boton titulo="Reintentar envío" icono="sync" variante="secundario" onPress={() => void sincronizar()} />
+          <Boton titulo="Reintentar envío" icono="sync" variante="secundario" onPress={() => void sincronizar({ forzar: true })} />
         </>
       )}
 
