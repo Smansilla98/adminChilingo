@@ -7,6 +7,7 @@ import { instrumentoPorId } from './instruments.js';
 import { renderScore } from './renderer.js';
 import { MotorAudio } from './audio.js';
 import { exportarPDF, exportarPNG } from './exporters.js';
+import { PanelGrabacion } from './grabacion.js';
 
 export class VisorPartitura {
     /**
@@ -19,6 +20,9 @@ export class VisorPartitura {
         this.instrumento = opts.instrumento || null;
         this.controles = opts.controles !== false;
         this.zoom = opts.zoom || 1;
+        this.audioBase = opts.audioBase || null;
+        this.exportarMidi = opts.exportarMidi || null;
+        this.exportarXml = opts.exportarXml || null;
         this.audio = new MotorAudio();
         this.audio.onClock = (pos) => this.playhead(pos);
         this.audio.onStop = () => this.finTransporte();
@@ -47,11 +51,24 @@ export class VisorPartitura {
                         <button class="pt-btn" data-a="pdf">PDF</button>
                         <button class="pt-btn" data-a="png">PNG</button>
                         <button class="pt-btn" data-a="print" title="Imprimir">⎙</button>
+                        ${this.exportarMidi ? `<a class="pt-btn" href="${esc(this.exportarMidi)}" title="Descargar MIDI">MIDI</a>` : ''}
+                        ${this.exportarXml ? `<a class="pt-btn" href="${esc(this.exportarXml)}" title="Descargar MusicXML (MuseScore)">MusicXML</a>` : ''}
                     </div>`
                     : ''}
             </div>
+            ${this.score.audio_ref && this.audioBase && this.controles ? '<section class="pt-grab-host" data-zone="grabacion"></section>' : ''}
             <div class="pt-page" data-zone="page"><div class="pt-canvas" data-zone="canvas"></div></div>
         `;
+        const hostGrab = this.root.querySelector('[data-zone="grabacion"]');
+        if (hostGrab) {
+            this.grabacion = new PanelGrabacion(hostGrab, {
+                score: () => this.score,
+                motor: this.audio,
+                audioBase: this.audioBase,
+                onPos: (pos) => this.playhead(pos),
+                onFin: () => this.finTransporte(),
+            });
+        }
         this.canvas = this.root.querySelector('[data-zone="canvas"]');
         this.page = this.root.querySelector('[data-zone="page"]');
         this.root.addEventListener('click', (e) => this.onClick(e));

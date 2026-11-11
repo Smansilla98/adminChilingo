@@ -155,6 +155,22 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
         Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])
             ->middleware(['throttle:20,1', 'edicion.programa'])
             ->name('programa.toque.update');
+        // === Equipo E: grabación de referencia, exportación y transcripción ===
+        Route::get('/toque/{programaRitmo:slug}/audio/{archivo}', [\App\Http\Controllers\PartituraGrabacionController::class, 'audio'])
+            ->where('archivo', '[0-9]+-[a-z0-9]{16}\.(mp3|wav|m4a|ogg)')
+            ->name('programa.toque.audio');
+        Route::get('/toque/{programaRitmo:slug}/exportar/{formato}', [\App\Http\Controllers\PartituraGrabacionController::class, 'exportar'])
+            ->whereIn('formato', ['midi', 'musicxml'])
+            ->name('programa.toque.exportar');
+        Route::post('/toque/{programaRitmo:slug}/editor/audio', [\App\Http\Controllers\PartituraGrabacionController::class, 'subirAudio'])
+            ->middleware('throttle:20,1')
+            ->name('programa.toque.editor.audio');
+        Route::post('/toque/{programaRitmo:slug}/editor/transcripciones', [\App\Http\Controllers\PartituraGrabacionController::class, 'transcribir'])
+            ->middleware('throttle:20,1')
+            ->name('programa.toque.editor.transcribir');
+        Route::get('/toque/{programaRitmo:slug}/editor/transcripciones/{transcripcion}', [\App\Http\Controllers\PartituraGrabacionController::class, 'transcripcion'])
+            ->whereNumber('transcripcion')
+            ->name('programa.toque.editor.transcripcion');
     });
 });
 
