@@ -49,6 +49,11 @@ class PagoController extends Controller
                 if ($request->filled('hasta')) {
                     $query->where('fecha_pago', '<=', $request->hasta);
                 }
+                match ($request->input('estado')) {
+                    'vigentes' => $query->whereNull('anulado_at'),
+                    'anulados' => $query->whereNotNull('anulado_at'),
+                    default => null,
+                };
                 $pagos = $query->orderBy('fecha_pago', 'desc')->paginate(20);
             } catch (QueryException $e) {
                 // mantener paginador vacío

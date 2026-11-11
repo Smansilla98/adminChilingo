@@ -258,11 +258,34 @@ class VillaGesellController extends Controller
         return response()->json(['data' => $this->gasto($gasto->fresh(), $this->gira->config()->cantidadDias())], $gasto->wasRecentlyCreated ? 201 : 200);
     }
 
-    public function eliminarGasto(VillaGesellGasto $gasto): JsonResponse
+    public function eliminarGasto(Request $request, VillaGesellGasto $gasto, \App\Domain\Finanzas\Papelera $papelera): JsonResponse
     {
-        $gasto->delete();
+        $motivo = $request->validate(['motivo' => 'nullable|string|max:500'])['motivo'] ?? null;
+        $papelera->eliminar($gasto, $request->user(), $motivo);
 
         return response()->json(['ok' => true]);
+    }
+
+    /** Gastos de la gira en la papelera (con quién y por qué) y restaurar. */
+    public function papeleraGastos(): JsonResponse
+    {
+        $dias = $this->gira->config()->cantidadDias();
+
+        return response()->json([
+            'data' => VillaGesellGasto::query()->onlyTrashed()->with('eliminadoPor:id,name')->orderByDesc('deleted_at')->get()
+                ->map(fn (VillaGesellGasto $g) => $this->gasto($g, $dias) + [
+                    'eliminado_at' => $g->deleted_at?->toIso8601String(),
+                    'eliminado_por' => $g->eliminadoPor?->name,
+                    'motivo_eliminacion' => $g->motivo_eliminacion,
+                ])->values(),
+        ]);
+    }
+
+    public function restaurarGasto(VillaGesellGasto $gasto, \App\Domain\Finanzas\Papelera $papelera): JsonResponse
+    {
+        $papelera->restaurar($gasto);
+
+        return response()->json(['data' => $this->gasto($gasto->fresh(), $this->gira->config()->cantidadDias())]);
     }
 
     public function insumos(): JsonResponse

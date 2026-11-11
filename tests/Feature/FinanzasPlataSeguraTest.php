@@ -78,6 +78,44 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->assertSame('24000.00', (string) $pago->fresh()->monto_total);
     }
 
+    public function test_gasto_va_a_la_papelera_con_motivo_y_se_restaura(): void
+    {
+        $admin = $this->admin();
+        $gasto = \App\Models\Gasto::query()->create(['fecha' => now()->toDateString(), 'tipo' => 'insumo', 'monto' => 5000, 'descripcion' => 'Parches']);
+        Sanctum::actingAs($admin);
+
+        $this->deleteJson("/api/v1/gastos/{$gasto->id}", ['motivo' => 'Cargado dos veces'])->assertOk();
+        $this->assertSoftDeleted('gastos', ['id' => $gasto->id, 'eliminado_por' => $admin->id, 'motivo_eliminacion' => 'Cargado dos veces']);
+        $this->assertSame(0, (int) $this->getJson('/api/v1/gastos')->json('meta.total'));
+        $this->assertSame(0.0, (float) $this->getJson('/api/v1/gastos')->json('total_monto'));
+        $this->getJson('/api/v1/gastos?papelera=1')->assertOk()->assertJsonPath('data.0.motivo_eliminacion', 'Cargado dos veces');
+
+        $this->postJson("/api/v1/gastos/{$gasto->id}/restaurar")->assertOk()->assertJsonPath('data.eliminado', false);
+        $this->assertNotSoftDeleted('gastos', ['id' => $gasto->id]);
+
+        // Web: papelera y restaurar.
+        $this->actingAs($admin)->delete(route('gastos.destroy', $gasto), ['motivo' => 'Error'])->assertRedirect(route('gastos.index'));
+        $this->actingAs($admin)->get(route('gastos.index', ['papelera' => 1]))->assertOk()->assertSee('Restaurar');
+        $this->actingAs($admin)->post(route('gastos.restaurar', $gasto->id))->assertRedirect(route('gastos.index'));
+        $this->assertNotSoftDeleted('gastos', ['id' => $gasto->id]);
+    }
+
+    public function test_gasto_de_la_gira_va_a_la_papelera(): void
+    {
+        $admin = $this->admin();
+        $gasto = \App\Models\VillaGesellGasto::query()->create(['tipo' => 'nafta', 'concepto' => 'Ida', 'monto' => 1000, 'modo' => 'total']);
+
+        $this->actingAs($admin)->delete(route('villa-gesell.gastos.destroy', $gasto), ['motivo' => 'Duplicado'])->assertRedirect();
+        $this->assertSoftDeleted('villa_gesell_gastos', ['id' => $gasto->id, 'motivo_eliminacion' => 'Duplicado']);
+        $this->assertDatabaseHas('auditoria', ['entidad_tipo' => 'VillaGesellGasto', 'entidad_id' => $gasto->id, 'accion' => 'deleted']);
+        $this->actingAs($admin)->get(route('villa-gesell.gastos.index', ['papelera' => 1]))->assertOk()->assertSee('Duplicado');
+
+        Sanctum::actingAs($admin);
+        $this->getJson('/api/v1/villa-gesell/gastos/papelera')->assertOk()->assertJsonPath('data.0.id', $gasto->id);
+        $this->postJson("/api/v1/villa-gesell/gastos/{$gasto->id}/restaurar")->assertOk();
+        $this->assertNotSoftDeleted('villa_gesell_gastos', ['id' => $gasto->id]);
+    }
+
     public function test_borrar_un_alumno_o_una_cuota_con_pagos_no_borra_la_plata(): void
     {
         $bloque = $this->bloque($this->sede('Palomar'));

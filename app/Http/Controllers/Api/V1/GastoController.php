@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Finanzas\GastoService;
+use App\Domain\Finanzas\Papelera;
 use App\Http\Controllers\Controller;
 use App\Models\Bloque;
 use App\Models\Gasto;
@@ -21,7 +22,10 @@ class GastoController extends Controller
     public function index(Request $request, AmbitoSedeService $ambito): JsonResponse
     {
         $this->authorize('viewAny', Gasto::class);
-        $query = Gasto::query()->with(['sede:id,nombre', 'bloque:id,nombre', 'creador:id,name'])->orderByDesc('fecha')->orderByDesc('id');
+        $query = Gasto::query()->with(['sede:id,nombre', 'bloque:id,nombre', 'creador:id,name', 'eliminadoPor:id,name'])->orderByDesc('fecha')->orderByDesc('id');
+        if ($request->boolean('papelera')) {
+            $query->onlyTrashed();
+        }
         $filtro = $ambito->idsPara($request->user(), 'gastos.view');
         if ($filtro !== null) {
             $ambito->aplicarGastos($query, $filtro);
@@ -74,12 +78,22 @@ class GastoController extends Controller
         return response()->json(['data' => $this->gasto($request, $gasto->fresh(['sede', 'bloque', 'creador']), true)]);
     }
 
-    public function destroy(Gasto $gasto): JsonResponse
+    /** Va a la papelera (con quién y por qué); se puede restaurar. */
+    public function destroy(Request $request, Gasto $gasto, Papelera $papelera): JsonResponse
     {
         $this->authorize('delete', $gasto);
-        $gasto->delete();
+        $motivo = $request->validate(['motivo' => 'nullable|string|max:500'])['motivo'] ?? null;
+        $papelera->eliminar($gasto, $request->user(), $motivo);
 
         return response()->json(['ok' => true]);
+    }
+
+    public function restaurar(Request $request, Gasto $gasto, Papelera $papelera): JsonResponse
+    {
+        $this->authorize('delete', $gasto);
+        $papelera->restaurar($gasto);
+
+        return response()->json(['data' => $this->gasto($request, $gasto->fresh(['sede', 'bloque', 'creador']), true)]);
     }
 
     public function decidir(Request $request, Gasto $gasto, GastoService $gastos): JsonResponse
@@ -133,6 +147,10 @@ class GastoController extends Controller
             'sede' => $g->sede ? ['id' => $g->sede->id, 'nombre' => $g->sede->nombre] : null,
             'bloque' => $g->bloque ? ['id' => $g->bloque->id, 'nombre' => $g->bloque->nombre] : null,
             'creado_por' => $g->creador?->name,
+            'eliminado' => $g->trashed(),
+            'eliminado_at' => $g->deleted_at?->toIso8601String(),
+            'eliminado_por' => $g->trashed() ? $g->eliminadoPor?->name : null,
+            'motivo_eliminacion' => $g->trashed() ? $g->motivo_eliminacion : null,
             'aprobado_at' => $detalle ? $g->aprobado_at?->toIso8601String() : null,
             'aprobado_por' => $detalle && $g->aprobado_por ? \App\Models\User::query()->whereKey($g->aprobado_por)->value('name') : null,
             'acciones' => $detalle ? [

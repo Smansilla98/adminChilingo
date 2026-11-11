@@ -359,4 +359,11 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
             Route::delete('eventos/{acontecimiento}', [ArchivoGestionController::class, 'eliminarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.destroy');
         });
     });
+    // === Equipo B: Finanzas ===
+    Route::post('gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->whereNumber('gasto')->middleware('permiso:gastos.delete')->name('gastos.restaurar');
+    Route::middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->prefix('villa-gesell')->name('villa-gesell.')->group(function () {
+        Route::get('gastos/papelera', [VillaGesellController::class, 'papeleraGastos'])->name('gastos.papelera');
+        Route::post('gastos/{gasto}/restaurar', [VillaGesellController::class, 'restaurarGasto'])->withTrashed()->whereNumber('gasto')->name('gastos.restaurar');
+    });
+    // === Fin Equipo B ===
 });

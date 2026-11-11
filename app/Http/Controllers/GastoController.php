@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Finanzas\GastoService;
+use App\Domain\Finanzas\Papelera;
 use App\Models\Bloque;
 use App\Models\Gasto;
 use App\Models\Sede;
@@ -21,7 +22,10 @@ class GastoController extends Controller
 
         if (Schema::hasTable('gastos')) {
             try {
-                $query = Gasto::with(['sede', 'bloque', 'creador'])->orderByDesc('fecha')->orderByDesc('id');
+                $query = Gasto::with(['sede', 'bloque', 'creador', 'eliminadoPor'])->orderByDesc('fecha')->orderByDesc('id');
+                if ($request->boolean('papelera')) {
+                    $query->onlyTrashed();
+                }
                 if ($filtroSedes !== null) {
                     $ambito->aplicarGastos($query, $filtroSedes);
                 }
@@ -136,12 +140,21 @@ class GastoController extends Controller
         return redirect()->route('gastos.index')->with('success', 'Gasto actualizado.');
     }
 
-    public function destroy(Gasto $gasto)
+    public function destroy(Request $request, Gasto $gasto, Papelera $papelera)
     {
         $this->authorize('delete', $gasto);
-        $gasto->delete();
+        $motivo = $request->validate(['motivo' => 'nullable|string|max:500'])['motivo'] ?? null;
+        $papelera->eliminar($gasto, $request->user(), $motivo);
 
-        return redirect()->route('gastos.index')->with('success', 'Gasto eliminado.');
+        return redirect()->route('gastos.index')->with('success', 'Gasto enviado a la papelera. Lo podés restaurar desde ahí.');
+    }
+
+    public function restaurar(Gasto $gasto, Papelera $papelera)
+    {
+        $this->authorize('delete', $gasto);
+        $papelera->restaurar($gasto);
+
+        return redirect()->route('gastos.index')->with('success', 'Gasto restaurado.');
     }
 
     public function aprobar(Request $request, Gasto $gasto, GastoService $gastos)
