@@ -100,7 +100,8 @@ export default function Login() {
             <Boton titulo="Ingresar" onPress={() => void enviar()} cargando={enviando} grande />
             <Tenue style={s.centroTexto}>Los alumnos entran con su DNI.</Tenue>
             <Boton titulo="Soy alumno y no tengo cuenta" icono="person-add" variante="secundario" onPress={() => router.push('/registro' as never)} />
-            <Tenue style={s.centroTexto}>¿Te olvidaste la contraseña? Pedile a tu profe o a administración una provisoria.</Tenue>
+            <Boton titulo="Olvidé mi contraseña" icono="lock-reset" variante="secundario" onPress={() => router.push('/recuperar' as never)} />
+            <Tenue style={s.centroTexto}>Si no podés recuperarla, pedile a tu profe o a administración una provisoria.</Tenue>
           </View>
           {VARIANTE !== 'production' && <Tenue style={s.centroTexto}>Entorno: {VARIANTE}</Tenue>}
           <Text style={s.credito}>desarrollado por Santi Mansilla - 2026</Text>
