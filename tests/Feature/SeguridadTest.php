@@ -137,4 +137,17 @@ class SeguridadTest extends TestCase
         $this->getJson("/api/v1/partituras/{$toque->slug}/versiones")->assertForbidden();
         $this->getJson("/api/v1/partituras/{$toque->slug}/versiones/1")->assertForbidden();
     }
+
+    public function test_en_produccion_el_aviso_de_mercado_pago_sin_secreto_se_rechaza(): void
+    {
+        config(['services.mercadopago' => ['access_token' => 'TEST-token', 'webhook_secret' => null]]);
+        \Illuminate\Support\Facades\Http::fake();
+        \Illuminate\Support\Facades\Log::spy();
+        $this->app->instance('env', 'production');
+        $this->app['env'] = 'production';
+
+        $this->postJson('/webhooks/mercadopago', ['type' => 'payment', 'data' => ['id' => '7']])->assertStatus(401);
+        \Illuminate\Support\Facades\Http::assertNothingSent();
+        \Illuminate\Support\Facades\Log::shouldHaveReceived('error')->withArgs(fn ($m) => str_contains($m, 'MERCADOPAGO_WEBHOOK_SECRET'));
+    }
 }
