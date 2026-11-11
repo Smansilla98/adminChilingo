@@ -1,0 +1,10 @@
+# Railway · servicio WORKER (php artisan queue:work). Mismo Dockerfile, sin HTTP ni healthcheck.
+# En el servicio: Settings → Config-as-code → Railway config file = /railway.worker.toml
+# ALWAYS: queue:work sale solo cada hora (--max-time=3600) y Railway lo vuelve a levantar.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "/var/www/html/start.sh worker"
+restartPolicyType = "ALWAYS"

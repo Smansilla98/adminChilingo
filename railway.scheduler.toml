@@ -1,0 +1,10 @@
+# Railway · servicio SCHEDULER (php artisan schedule:work). Mismo Dockerfile, sin HTTP ni healthcheck.
+# En el servicio: Settings → Config-as-code → Railway config file = /railway.scheduler.toml
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "/var/www/html/start.sh scheduler"
+restartPolicyType = "ALWAYS"
+numReplicas = 1
