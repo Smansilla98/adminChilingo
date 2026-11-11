@@ -265,4 +265,35 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->actingAs($admin)->post(route('gastos.store'), $datos + ['comprobante' => \Illuminate\Http\UploadedFile::fake()->create('virus.exe', 5)])
             ->assertSessionHasErrors('comprobante');
     }
+
+    /**
+     * Dos registros simultáneos del mismo alumno y cuota: el control de duplicados corre
+     * después de bloquear la cuota (SELECT ... FOR UPDATE), así que el segundo espera al primero
+     * y ve su pago ya confirmado. Se verifica el orden de las consultas (MySQL; SQLite no tiene
+     * bloqueos de fila, la prueba se omite allí).
+     */
+    public function test_registro_simultaneo_bloquea_la_cuota_antes_de_revisar_duplicados(): void
+    {
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'mysql') {
+            $this->markTestSkipped('El bloqueo de fila solo aplica en MySQL.');
+        }
+        $ana = $this->inscribirAlumno($this->persona('Ana'), $this->bloque($this->sede('Palomar')));
+        $cuota = $this->cuota();
+        $sql = [];
+        \Illuminate\Support\Facades\DB::listen(function ($q) use (&$sql) {
+            $sql[] = $q->sql;
+        });
+
+        app(\App\Domain\Finanzas\RegistroPagoService::class)->registrar([
+            'fecha_pago' => now()->toDateString(),
+            'monto_total' => 24000,
+            'lineas' => [['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 24000]],
+        ], $this->tesorero());
+
+        $bloqueo = collect($sql)->search(fn ($q) => str_contains($q, 'for update') && str_contains($q, '`cuotas`'));
+        $duplicados = collect($sql)->search(fn ($q) => str_contains($q, '`pago_detalles`') && ! str_starts_with($q, 'insert'));
+        $this->assertNotFalse($bloqueo, 'la cuota debe bloquearse con FOR UPDATE');
+        $this->assertNotFalse($duplicados);
+        $this->assertLessThan($duplicados, $bloqueo, 'el bloqueo va antes que la revisión de duplicados');
+    }
 }
