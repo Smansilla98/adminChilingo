@@ -12,9 +12,9 @@
         @can('create', \App\Models\Cuota::class)
             <a href="{{ route('cuotas.lote.create') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-range"></i> Por lote</a>
         @endcan
-        @can('update', \App\Models\Cuota::class)
+        @if(auth()->user()->acceso()->puede('cuotas.update'))
             <a href="{{ route('configuracion.reglas-cobro.edit') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-sliders"></i> Reglas de cobro</a>
-        @endcan
+        @endif
     </x-slot:actions>
 
     <x-slot:toolbar>
