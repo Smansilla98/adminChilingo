@@ -238,4 +238,31 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->assertSame(0.0, $pagada['recargo']);
         $this->assertSame('pagada', $pagada['estado']);
     }
+
+    public function test_gasto_adjunta_comprobante_y_lo_reemplaza(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('comprobantes');
+        $admin = $this->admin();
+        $datos = ['fecha' => now()->toDateString(), 'tipo' => 'insumo', 'monto' => 800, 'descripcion' => 'Cuerdas'];
+
+        $this->actingAs($admin)->post(route('gastos.store'), $datos + ['comprobante' => \Illuminate\Http\UploadedFile::fake()->create('ticket.pdf', 20, 'application/pdf')])
+            ->assertRedirect(route('gastos.index'));
+        $gasto = \App\Models\Gasto::query()->sole();
+        $primero = $gasto->comprobante_path;
+        $this->assertNotNull($primero);
+        \Illuminate\Support\Facades\Storage::disk('comprobantes')->assertExists($primero);
+
+        $this->actingAs($admin)->get(route('gastos.comprobante', $gasto))->assertOk();
+        $this->actingAs($admin)->get(route('gastos.show', $gasto))->assertSee('Ver comprobante adjunto');
+
+        $this->actingAs($admin)->put(route('gastos.update', $gasto), $datos + ['comprobante' => \Illuminate\Http\UploadedFile::fake()->image('foto.jpg')])
+            ->assertRedirect(route('gastos.index'));
+        $nuevo = $gasto->fresh()->comprobante_path;
+        $this->assertNotSame($primero, $nuevo);
+        \Illuminate\Support\Facades\Storage::disk('comprobantes')->assertMissing($primero);
+        \Illuminate\Support\Facades\Storage::disk('comprobantes')->assertExists($nuevo);
+
+        $this->actingAs($admin)->post(route('gastos.store'), $datos + ['comprobante' => \Illuminate\Http\UploadedFile::fake()->create('virus.exe', 5)])
+            ->assertSessionHasErrors('comprobante');
+    }
 }

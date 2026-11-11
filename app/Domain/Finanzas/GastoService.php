@@ -4,6 +4,9 @@ namespace App\Domain\Finanzas;
 
 use App\Models\Gasto;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -60,6 +63,21 @@ class GastoService
         $gasto->update($datos);
 
         return $gasto;
+    }
+
+    /**
+     * Guarda el comprobante (factura o ticket) del gasto. Reemplaza el anterior y lo borra.
+     */
+    public function adjuntarComprobante(Gasto $gasto, UploadedFile $archivo): void
+    {
+        $ext = strtolower((string) ($archivo->getClientOriginalExtension() ?: $archivo->guessExtension()));
+        $ext = in_array($ext, ['pdf', 'jpg', 'jpeg', 'png'], true) ? $ext : 'pdf';
+        $anterior = $gasto->comprobante_path;
+        $path = $archivo->storeAs('gastos', (string) Str::uuid().'.'.$ext, 'comprobantes');
+        $gasto->forceFill(['comprobante_path' => $path])->save();
+        if ($anterior) {
+            Storage::disk('comprobantes')->delete($anterior);
+        }
     }
 
     /** Aprobar o rechazar (queda quién y cuándo). */

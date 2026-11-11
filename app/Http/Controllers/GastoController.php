@@ -11,6 +11,7 @@ use App\Services\AmbitoSedeService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class GastoController extends Controller
 {
@@ -96,7 +97,11 @@ class GastoController extends Controller
 
     public function store(Request $request, GastoService $gastos)
     {
-        $gasto = $gastos->registrar($request->validate($gastos->reglas()), $request->user());
+        $datos = $request->validate($gastos->reglas() + $this->reglaComprobante());
+        $gasto = $gastos->registrar(array_diff_key($datos, ['comprobante' => 1]), $request->user());
+        if ($request->hasFile('comprobante')) {
+            $gastos->adjuntarComprobante($gasto, $request->file('comprobante'));
+        }
 
         return redirect()->route('gastos.index')->with('success', $gasto->estado === 'aprobado' ? 'Gasto registrado.' : 'Gasto registrado. Queda pendiente de aprobación.');
     }
@@ -135,7 +140,11 @@ class GastoController extends Controller
     public function update(Request $request, Gasto $gasto, GastoService $gastos)
     {
         $this->authorize('update', $gasto);
-        $gastos->actualizar($gasto, $request->validate($gastos->reglas()), $request->user());
+        $datos = $request->validate($gastos->reglas() + $this->reglaComprobante());
+        $gastos->actualizar($gasto, array_diff_key($datos, ['comprobante' => 1]), $request->user());
+        if ($request->hasFile('comprobante')) {
+            $gastos->adjuntarComprobante($gasto, $request->file('comprobante'));
+        }
 
         return redirect()->route('gastos.index')->with('success', 'Gasto actualizado.');
     }
@@ -155,6 +164,23 @@ class GastoController extends Controller
         $papelera->restaurar($gasto);
 
         return redirect()->route('gastos.index')->with('success', 'Gasto restaurado.');
+    }
+
+    /** Comprobante adjunto del gasto (factura o ticket). */
+    public function comprobante(Gasto $gasto)
+    {
+        $this->authorize('view', $gasto);
+        abort_if($gasto->comprobante_path === null, 404);
+        abort_unless(Storage::disk('comprobantes')->exists($gasto->comprobante_path), 404, 'El archivo ya no está disponible.');
+        $ext = strtolower((string) pathinfo($gasto->comprobante_path, PATHINFO_EXTENSION)) ?: 'pdf';
+
+        return Storage::disk('comprobantes')->response($gasto->comprobante_path, 'comprobante-gasto-'.$gasto->id.'.'.$ext);
+    }
+
+    /** @return array<string, mixed> */
+    private function reglaComprobante(): array
+    {
+        return ['comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240'];
     }
 
     public function aprobar(Request $request, Gasto $gasto, GastoService $gastos)

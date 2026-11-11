@@ -428,6 +428,7 @@ Route::middleware(['auth'])->group(function () {
         ->middlewareFor(['edit', 'update'], 'permiso:gastos.update')
         ->middlewareFor('destroy', 'permiso:gastos.delete');
     Route::post('/gastos/{gasto}/aprobar', [GastoController::class, 'aprobar'])->middleware('permiso:gastos.approve')->name('gastos.aprobar');
+    Route::get('/gastos/{gasto}/comprobante', [GastoController::class, 'comprobante'])->middleware('permiso:gastos.view')->name('gastos.comprobante');
 
     // Inventario y compras
     Route::resource('inventarios', InventarioItemController::class)

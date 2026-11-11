@@ -24,6 +24,10 @@
         <x-ito.fact label="Proveedor" :value="$gasto->proveedor" />
     </x-ito.facts>
 
+    @if($gasto->comprobante_path)
+        <p class="mb-3"><a href="{{ route('gastos.comprobante', $gasto) }}" target="_blank" rel="noopener"><i class="bi bi-paperclip" aria-hidden="true"></i> Ver comprobante adjunto</a></p>
+    @endif
+
     @if($gasto->notas || $gasto->creador)
         <x-ito.detail-section title="Notas" icon="bi-journal-text">
             <p class="mb-0" style="white-space: pre-line">{{ $gasto->notas ?: 'Sin notas.' }}</p>
