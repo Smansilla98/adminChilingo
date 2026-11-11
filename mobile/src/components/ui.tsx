@@ -61,7 +61,7 @@ export function Boton({ titulo, onPress, icono, variante = 'primario', cargando,
   deshabilitado?: boolean;
   grande?: boolean;
 }) {
-  const fondo = variante === 'primario' ? C.acento : variante === 'peligro' ? C.peligro : C.superficie2;
+  const fondo = variante === 'primario' ? C.acentoBoton : variante === 'peligro' ? C.peligro : C.superficie2;
   return (
     <Pressable
       onPress={onPress}
@@ -162,7 +162,7 @@ export function Segmentos<V extends string>({ opciones, valor, onChange }: { opc
             onPress={() => onChange(o.valor)}
             accessibilityRole="tab"
             accessibilityState={{ selected: activo }}
-            style={[s.segmento, activo && { backgroundColor: C.acento, borderColor: C.acento }]}>
+            style={[s.segmento, activo && { backgroundColor: C.acentoBoton, borderColor: C.acentoBoton }]}>
             <Text style={[s.segmentoTexto, activo && { color: C.texto }]}>{o.etiqueta}{o.cantidad !== undefined ? ` · ${o.cantidad}` : ''}</Text>
           </Pressable>
         );

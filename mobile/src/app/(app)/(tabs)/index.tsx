@@ -99,7 +99,7 @@ function ChipContexto({ etiqueta, activo, onPress }: { etiqueta: string; activo:
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: activo }}
-      style={[s.ctx, activo && { backgroundColor: C.acento, borderColor: C.acento }]}>
+      style={[s.ctx, activo && { backgroundColor: C.acentoBoton, borderColor: C.acentoBoton }]}>
       <Text style={{ color: C.texto, fontWeight: '700' }}>{etiqueta}</Text>
     </Pressable>
   );
