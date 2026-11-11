@@ -298,9 +298,9 @@ Route::middleware(['auth'])->group(function () {
         ->middlewareFor('create', 'permiso:asistencias.create')
         ->middlewareFor(['edit', 'update'], 'permiso:asistencias.update')
         ->middlewareFor('destroy', 'permiso:asistencias.delete');
-    Route::get('/asistencias/bloque/{bloque}', function (Bloque $bloque) {
-        return redirect()->route('asistencias.create', ['bloque_id' => $bloque->id]);
-    })->middleware('permiso:asistencias.create')->name('asistencias.bloque');
+    // Redirección sin closure (route:cache en producción): /asistencias/bloque/{id} → alta con bloque_id.
+    Route::redirect('/asistencias/bloque/{bloque}', '/asistencias/create?bloque_id={bloque}')
+        ->middleware('permiso:asistencias.create')->name('asistencias.bloque');
 
     // Reportes
     Route::middleware('permiso:reportes.view')->group(function () {

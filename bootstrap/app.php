@@ -37,6 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Sentry: solo reporta si SENTRY_LARAVEL_DSN está seteado (sin datos personales, ver config/sentry.php).
+        \Sentry\Laravel\Integration::handles($exceptions);
+
         $exceptions->render(function (PostTooLargeException $e, $request) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -106,7 +109,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('chilinga:mercadopago:conciliar')->everyThirtyMinutes()->withoutOverlapping()->onOneServer();
 
         // Backup diario de la base en el disco persistente (se guardan los últimos 14).
-        $schedule->command('chilinga:respaldo')->dailyAt('03:30')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
+        // Con RESPALDO_DISCO_EXTERNO + RESPALDO_CLAVE sube además una copia cifrada (S3/R2). Si sale bien, avisa a HEARTBEAT_URL_RESPALDO.
+        $schedule->command('chilinga:respaldo')->dailyAt('03:30')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer()
+            ->pingOnSuccessIf(filled(config('operacion.heartbeat.respaldo')), (string) config('operacion.heartbeat.respaldo'));
+
+        // Latido del scheduler: si HEARTBEAT_URL_SCHEDULER deja de recibir pings, el scheduler está caído.
+        if (filled(config('operacion.heartbeat.scheduler'))) {
+            $schedule->call(fn () => null)->name('latido-scheduler')
+                ->cron('*/'.max(1, min(59, (int) config('operacion.heartbeat.scheduler_minutos', 10))).' * * * *')
+                ->pingOnSuccess((string) config('operacion.heartbeat.scheduler'));
+        }
 
         $schedule->command('mail:resumen-admin')
             ->weekdays()
