@@ -55,6 +55,16 @@
                     </div>
 
                     <div class="auth-field">
+                        <label class="auth-field-label" for="codigo">Código de alta @unless($requiereCodigo ?? false)<span class="auth-foot-muted">(si te dieron uno)</span>@endunless</label>
+                        <div class="auth-infield @error('codigo') is-invalid @enderror">
+                            <span class="auth-infield__icon" aria-hidden="true"><i class="bi bi-key"></i></span>
+                            <input type="text" class="auth-infield__input" id="codigo" name="codigo" value="{{ old('codigo') }}" maxlength="12"
+                                   autocomplete="off" autocapitalize="characters" spellcheck="false" @if($requiereCodigo ?? false) required @endif aria-describedby="codigo-ayuda">
+                        </div>
+                        <p class="auth-field-help" id="codigo-ayuda">6 letras o números que te pasa tu profe o administración. Vence a los 7 días.</p>
+                    </div>
+
+                    <div class="auth-field">
                         <label class="auth-field-label" for="email">Tu correo <span class="auth-foot-muted">(opcional)</span></label>
                         <div class="auth-infield @error('email') is-invalid @enderror">
                             <span class="auth-infield__icon" aria-hidden="true"><i class="bi bi-envelope"></i></span>
@@ -66,12 +76,12 @@
                         <label class="auth-field-label" for="password">Elegí una contraseña</label>
                         <div class="auth-infield @error('password') is-invalid @enderror">
                             <span class="auth-infield__icon" aria-hidden="true"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="auth-infield__input" id="password" name="password" required minlength="6" autocomplete="new-password" aria-describedby="pass-ayuda">
+                            <input type="password" class="auth-infield__input" id="password" name="password" required minlength="8" autocomplete="new-password" aria-describedby="pass-ayuda">
                             <button type="button" class="auth-infield__toggle" id="togglePassword" aria-label="Mostrar contraseña" aria-pressed="false">
                                 <i class="bi bi-eye" aria-hidden="true"></i>
                             </button>
                         </div>
-                        <p class="auth-field-help" id="pass-ayuda">Al menos 6 letras o números. Anotala en un lugar seguro.</p>
+                        <p class="auth-field-help" id="pass-ayuda">Al menos 8 letras o números. No uses tu DNI. Anotala en un lugar seguro.</p>
                     </div>
 
                     <div class="auth-field">

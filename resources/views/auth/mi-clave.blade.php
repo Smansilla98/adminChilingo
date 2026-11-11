@@ -18,9 +18,9 @@
             </div>
             <div class="mb-3">
                 <label class="form-label" for="password">Contraseña nueva</label>
-                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" autocomplete="new-password" minlength="6" required>
+                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" autocomplete="new-password" minlength="8" required>
                 @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                <div class="form-text">Al menos 6 letras o números.</div>
+                <div class="form-text">Al menos 8 letras o números.</div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="password_confirmation">Repetila</label>

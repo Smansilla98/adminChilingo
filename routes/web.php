@@ -46,6 +46,7 @@ use App\Http\Controllers\ProgramaGestionController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioMailController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
+use App\Http\Controllers\RecuperarClaveController;
 use App\Http\Controllers\RegistroAlumnoController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\SedeController;
@@ -167,6 +168,13 @@ Route::post('/registro', [RegistroAlumnoController::class, 'store'])->middleware
 Route::get('/register', fn () => redirect()->route('registro.alumno'))->name('register');
 Route::post('/register', fn () => abort(404));
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// === Equipo C: recuperar contraseña (sin sesión) ===
+Route::get('/olvide-mi-clave', [RecuperarClaveController::class, 'create'])->name('recuperar.create');
+Route::post('/olvide-mi-clave', [RecuperarClaveController::class, 'store'])->middleware('throttle:recuperar-clave')->name('recuperar.store');
+Route::get('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmarCreate'])->name('recuperar.confirmar');
+Route::post('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmar'])->middleware('throttle:recuperar-clave')->name('recuperar.confirmar.store');
+// === Fin Equipo C: recuperar contraseña ===
 
 /*
 |--------------------------------------------------------------------------
@@ -330,11 +338,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('gastos', VillaGesellGastoController::class)->except(['show'])->parameters(['gastos' => 'gasto']);
     });
 
-    // Visibilidad de módulos del menú (matriz heredada) y alta rápida de cuentas
-    Route::middleware('permiso:usuarios.permissions')->group(function () {
-        Route::get('/accesos', [AccesosController::class, 'index'])->name('accesos.index');
-        Route::post('/accesos', [AccesosController::class, 'update'])->name('accesos.update');
-    });
+    // La matriz vieja de visibilidad se retiró: los accesos se ven y editan en Usuarios.
+    Route::get('/accesos', fn () => redirect()->route('usuarios.index'))->middleware('permiso:usuarios.view')->name('accesos.index');
+    // Alta rápida de cuentas (formulario heredado)
     Route::get('/accesos/crear', fn () => redirect()->route('usuarios.create'))->middleware('permiso:usuarios.create')->name('accesos.create');
     Route::post('/accesos/crear', [AccesosController::class, 'store'])->middleware('permiso:usuarios.create')->name('accesos.store');
 
@@ -453,15 +459,22 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/mi-cuota/pagos/{referencia}/comprobante', [CobroCuotaController::class, 'comprobante'])->middleware('throttle:10,1')->name('alumno.cuota.pago.comprobante');
     Route::post('/mi-cuota/pagos/{referencia}/cancelar', [CobroCuotaController::class, 'cancelar'])->name('alumno.cuota.pago.cancelar');
     Route::post('/mi-cuota', [MiCuotaController::class, 'store'])->middleware('throttle:10,1')->name('alumno.cuota.store');
-    Route::get('/mis-bloques', [BloqueController::class, 'index'])->middleware(['permiso:bloques.view', 'modulo:profesor.mis_bloques'])->name('profesor.bloques');
-    Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->middleware(['permiso:alumnos.view', 'modulo:profesor.mis_alumnos'])->name('profesor.alumnos');
-    Route::get('/profesor/alumnos/{alumno}', [AlumnoController::class, 'show'])->middleware(['permiso:alumnos.view', 'modulo:profesor.mis_alumnos'])->name('profesor.alumnos.show');
-    Route::get('/profesor/pagos-cuotas', [ProfesorPagoCuotaController::class, 'index'])->middleware(['permiso:pagos.view', 'modulo:profesor.pagos_cuotas'])->name('profesor.pagos-cuotas.index');
-    Route::get('/mis-eventos', [EventoController::class, 'index'])->middleware(['permiso:eventos.view', 'modulo:profesor.mis_eventos'])->name('profesor.eventos');
-    Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->middleware(['permiso:asistencias.create', 'modulo:profesor.asistencia'])->name('profesor.asistencias.create');
-    Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware(['permiso:asistencias.create', 'modulo:profesor.asistencia'])->name('profesor.asistencias.store');
-    Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware(['permiso:asistencias.view', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix');
-    Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware(['permiso:asistencias.create|asistencias.update', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix.update');
+    Route::get('/mis-bloques', [BloqueController::class, 'index'])->middleware('permiso:bloques.view')->name('profesor.bloques');
+    Route::get('/mis-alumnos', [AlumnoController::class, 'index'])->middleware('permiso:alumnos.view')->name('profesor.alumnos');
+    Route::get('/profesor/alumnos/{alumno}', [AlumnoController::class, 'show'])->middleware('permiso:alumnos.view')->name('profesor.alumnos.show');
+    Route::get('/profesor/pagos-cuotas', [ProfesorPagoCuotaController::class, 'index'])->middleware('permiso:pagos.view')->name('profesor.pagos-cuotas.index');
+    Route::get('/mis-eventos', [EventoController::class, 'index'])->middleware('permiso:eventos.view')->name('profesor.eventos');
+    Route::get('/profesor/asistencias/crear', [AsistenciaController::class, 'create'])->middleware('permiso:asistencias.create')->name('profesor.asistencias.create');
+    Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware('permiso:asistencias.create')->name('profesor.asistencias.store');
+    Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware('permiso:asistencias.view')->name('profesor.asistencias.matrix');
+    Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware('permiso:asistencias.create|asistencias.update')->name('profesor.asistencias.matrix.update');
+    // === Equipo C: cuentas, preinscripción, legajo y ciclo lectivo (con sesión) ===
+    Route::post('/personas/{persona}/codigo-alta', [\App\Http\Controllers\CuentasAlumnosController::class, 'codigoAlta'])->middleware('throttle:20,1')->name('personas.codigo-alta');
+    Route::middleware('permiso:usuarios.permissions')->prefix('configuracion/cuentas')->name('configuracion.cuentas.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'ajustes'])->name('edit');
+        Route::put('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'guardarAjustes'])->name('update');
+    });
+    // === Fin Equipo C (con sesión) ===
     // === Equipo B: Finanzas ===
     Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');
     Route::post('/villa-gesell/gastos/{gasto}/restaurar', [VillaGesellGastoController::class, 'restaurar'])->withTrashed()->middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->name('villa-gesell.gastos.restaurar');

@@ -42,6 +42,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login');
 // Un alumno ya cargado crea su cuenta desde la app (DNI + fecha de nacimiento) y queda adentro.
 Route::post('auth/registro', [AuthController::class, 'registro'])->middleware('throttle:6,1')->name('auth.registro');
+// === Equipo C: recuperar contraseña (sin sesión) ===
+Route::post('auth/recuperar', [AuthController::class, 'recuperar'])->middleware('throttle:recuperar-clave')->name('auth.recuperar');
+Route::post('auth/recuperar/confirmar', [AuthController::class, 'recuperarConfirmar'])->middleware('throttle:recuperar-clave')->name('auth.recuperar.confirmar');
+// === Fin Equipo C: recuperar contraseña ===
 Route::get('salud', fn () => response()->json(['ok' => true, 'version' => 'v1', 'hora' => now()->toIso8601String()]))->name('salud');
 
 // Archivo histórico: lectura del material publicado, sin cuenta (docs/ARCHIVO_HISTORICO.md).
@@ -359,6 +363,13 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
             Route::delete('eventos/{acontecimiento}', [ArchivoGestionController::class, 'eliminarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.destroy');
         });
     });
+    // === Equipo C: cuentas, preinscripción, legajo y ciclo lectivo (con sesión) ===
+    Route::post('personas/{persona}/codigo-alta', [\App\Http\Controllers\Api\V1\CuentasController::class, 'codigoAlta'])->middleware('throttle:20,1')->name('personas.codigo-alta');
+    Route::middleware('permiso:usuarios.permissions')->group(function () {
+        Route::get('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'ajustes'])->name('configuracion.cuentas');
+        Route::put('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'guardarAjustes'])->name('configuracion.cuentas.update');
+    });
+    // === Fin Equipo C (con sesión) ===
     // === Equipo D: app móvil ===
     // Asistencia propia del alumno (porcentaje por bloque y mes, últimas clases y horario semanal).
     Route::get('mi/asistencia', \App\Http\Controllers\Api\V1\MiAsistenciaController::class)->name('mi.asistencia');

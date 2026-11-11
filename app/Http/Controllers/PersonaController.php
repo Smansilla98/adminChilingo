@@ -76,6 +76,7 @@ class PersonaController extends Controller
             'tiposBeca' => Beca::TIPOS,
             'puedeFusionar' => $user->can('merge', Persona::class),
             'puedeDarAccesoApp' => app(AccesoAlumnoService::class)->puedeDarAcceso($user, $persona),
+            'puedeCodigoAlta' => app(\App\Domain\Personas\CodigoAltaService::class)->puedeGenerar($user, $persona),
         ]);
     }
 

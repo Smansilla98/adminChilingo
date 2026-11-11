@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Acceso\DispositivosPush;
 use App\Domain\Personas\AccesoAlumnoService;
 use App\Domain\Personas\RegistroAlumnoService;
 use App\Http\Controllers\Controller;
@@ -10,7 +11,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -54,11 +54,7 @@ class AuthController extends Controller
     /** Registro de un alumno ya cargado por la escuela (DNI + fecha de nacimiento); devuelve la sesión. */
     public function registro(Request $request, RegistroAlumnoService $registro): JsonResponse
     {
-        $datos = $request->validate([
-            'dni' => ['required', 'string', 'max:20'],
-            'fecha_nacimiento' => ['required', 'date', 'before:today'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'password' => ['required', 'confirmed', Password::min(6)],
+        $datos = $request->validate(RegistroAlumnoService::reglas() + [
             'dispositivo' => ['nullable', 'string', 'max:120'],
         ], RegistroAlumnoService::mensajes());
 
@@ -79,12 +75,38 @@ class AuthController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /** «Olvidé mi contraseña»: manda un código al correo o al WhatsApp. Responde igual exista o no la cuenta. */
+    public function recuperar(Request $request, \App\Domain\Acceso\RecuperacionClaveService $recuperacion): JsonResponse
+    {
+        $datos = $request->validate(['usuario' => ['required', 'string', 'max:255']]);
+        $recuperacion->iniciar($datos['usuario']);
+
+        return response()->json(['ok' => true, 'mensaje' => \App\Domain\Acceso\RecuperacionClaveService::RESPUESTA_GENERICA]);
+    }
+
+    /** Confirma el código y cambia la contraseña. Cierra todas las sesiones de la cuenta. */
+    public function recuperarConfirmar(Request $request, \App\Domain\Acceso\RecuperacionClaveService $recuperacion): JsonResponse
+    {
+        $datos = $request->validate([
+            'usuario' => ['required', 'string', 'max:255'],
+            'codigo' => ['required', 'string', 'max:12'],
+            'password' => ['required', 'string', 'confirmed', 'min:'.\App\Domain\Acceso\AjustesCuentas::CLAVE_MINIMA, 'max:255'],
+        ], array_merge(AccesoAlumnoService::mensajesCambio(), ['codigo.required' => 'Escribí el código que te mandamos.']));
+        $recuperacion->confirmar($datos['usuario'], $datos['codigo'], $datos['password']);
+
+        return response()->json(['ok' => true]);
+    }
+
     /** Rota el token actual: emite uno nuevo y revoca el usado en esta llamada. */
     public function refresh(Request $request): JsonResponse
     {
         $user = $request->user();
         $actual = $user->currentAccessToken();
         $nuevo = $this->emitir($user, $actual?->name ?? 'app');
+        $nuevoId = $user->tokens()->latest('id')->value('id');
+        if (is_numeric($actual->getKey()) && $nuevoId) {
+            app(DispositivosPush::class)->rotarSesion((int) $actual->getKey(), (int) $nuevoId);
+        }
         $actual?->delete();
 
         return response()->json($nuevo);
@@ -92,10 +114,10 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()?->delete();
-        if ($request->filled('push_token')) {
-            $request->user()->dispositivos()->where('token', $request->input('push_token'))->delete();
-        }
+        $sesion = $request->user()->currentAccessToken();
+        // El celular deja de recibir avisos de esta cuenta.
+        app(DispositivosPush::class)->cerrarSesion($request->user(), $sesion, $request->input('push_token'));
+        $sesion?->delete();
 
         return response()->json(['ok' => true]);
     }

@@ -42,7 +42,9 @@ MERCADOPAGO_WEBHOOK_SECRET=...
   cuenta. Si el alias es de otra cuenta, las dos opciones cobran en lugares distintos.
 - En Mercado Pago → Tus integraciones → Webhooks: URL `https://<APP_URL>/webhooks/mercadopago`,
   evento **Pagos**. Copiá la clave secreta en `MERCADOPAGO_WEBHOOK_SECRET` para que se verifique
-  la firma. Igual, el sistema nunca confía en el aviso: consulta el pago a la API.
+  la firma. **En producción es obligatoria**: sin ella los avisos se rechazan (queda un error en el
+  log) y los pagos entran solo por la conciliación cada 30 minutos. Igual, el sistema nunca confía
+  en el aviso: consulta el pago a la API.
 - `APP_URL` tiene que ser el dominio real: con él se arman la vuelta del checkout y el aviso.
 
 ## Código
