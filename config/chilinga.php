@@ -24,6 +24,13 @@ return [
     'registro_requiere_codigo' => filter_var(env('REGISTRO_REQUIERE_CODIGO', false), FILTER_VALIDATE_BOOLEAN),
 
     /*
+    | Content-Security-Policy (app/Http/Middleware/SecurityHeaders.php). Con false (por
+    | defecto) se aplica la política mínima (frame-ancestors, object-src, base-uri) y la
+    | completa va como Report-Only. Con true la completa pasa a obligatoria.
+    */
+    'csp_estricta' => filter_var(env('CSP_ESTRICTA', false), FILTER_VALIDATE_BOOLEAN),
+
+    /*
     | Cobro de cuotas desde el sistema (CobroCuotasService).
     | Transferencia: los datos que se le muestran al alumno para que pague desde su banco o
     | billetera. Sin alias ni CBU, la opción no aparece.

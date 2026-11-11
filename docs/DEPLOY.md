@@ -25,6 +25,7 @@ La infraestructura en Railway **no cambia** (mismo `Dockerfile`, mismo `start.sh
 | `PROGRAMA_EDICION_PUBLICA` | `false` | `false`: editar toques y partituras exige el permiso `partituras.edit` (profesores, coordinación, dirección) y el autor queda con el nombre de la cuenta; `true`: cualquier cuenta edita (comportamiento histórico) |
 | `ACTIVAR_FORMULARIO_PUBLICO_COMPROBANTES` | `true` | formulario sin cuenta `/pagar-cuota/comprobante` (busca por DNI y muestra solo iniciales, con trampa para robots y límite de 5 búsquedas por minuto). Con `false` queda cerrado y manda a entrar con la cuenta (la app y la web ya cubren el flujo) |
 | `REGISTRO_REQUIERE_CODIGO` | `false` | valor inicial: el registro de alumnos pide el código de alta que genera la escuela desde la ficha. Se cambia sin redeploy en Configuración > Cuentas de alumnos |
+| `CSP_ESTRICTA` | `false` | cabecera Content-Security-Policy. Con `false` se aplica la mínima (`frame-ancestors 'self'; object-src 'none'; base-uri 'self'`) y la completa (scripts, estilos, fuentes, videos de YouTube/Vimeo, mapas) va como `Content-Security-Policy-Report-Only`: el navegador avisa en la consola sin bloquear. Cuando la consola esté limpia en producción, poner `true` para aplicarla |
 | `EXPO_PUSH_ENABLED` | `false` | envío de push a la app vía Expo |
 | `EXPO_ACCESS_TOKEN` | — | opcional, si el proyecto de Expo exige token para push |
 | `SCHEDULER_ENABLED` | `1` | scheduler dentro del contenedor (`0` en réplicas adicionales) |

@@ -34,7 +34,22 @@ class SeguridadTest extends TestCase
         $this->get('/login')
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
-            ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+            ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+            ->assertHeader('Content-Security-Policy', "frame-ancestors 'self'; object-src 'none'; base-uri 'self'");
+    }
+
+    public function test_csp_completa_se_informa_y_se_puede_volver_obligatoria(): void
+    {
+        $r = $this->get('/login');
+        $this->assertStringContainsString("script-src 'self'", (string) $r->headers->get('Content-Security-Policy-Report-Only'));
+        // Archivos (no HTML) sin CSP: el visor de PDF del navegador sigue andando.
+        $this->getJson('/api/v1/salud')->assertHeaderMissing('Content-Security-Policy');
+
+        config(['chilinga.csp_estricta' => true]);
+        $r = $this->get('/login');
+        $this->assertStringContainsString("frame-ancestors 'self'", (string) $r->headers->get('Content-Security-Policy'));
+        $this->assertStringContainsString("object-src 'none'", (string) $r->headers->get('Content-Security-Policy'));
+        $this->assertNull($r->headers->get('Content-Security-Policy-Report-Only'));
     }
 
     public function test_edicion_publica_de_partituras_se_puede_cerrar(): void
