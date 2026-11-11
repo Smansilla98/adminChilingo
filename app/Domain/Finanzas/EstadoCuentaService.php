@@ -5,6 +5,7 @@ namespace App\Domain\Finanzas;
 use App\Models\Alumno;
 use App\Models\Beca;
 use App\Models\Cuota;
+use App\Models\GrupoFamiliar;
 use App\Models\Pago;
 use App\Models\PagoDetalle;
 use Carbon\Carbon;
@@ -21,11 +22,12 @@ class EstadoCuentaService
      * @return array{
      *   alumno_id: int, anio: int,
      *   items: list<array<string, mixed>>,
-     *   totales: array{bruto: float, descuento: float, neto: float, pagado: float, saldo: float, vencido: float},
-     *   becas: list<array<string, mixed>>
+     *   totales: array{bruto: float, descuento: float, descuento_familiar: float, descuento_adelantado: float, recargo: float, neto: float, pagado: float, saldo: float, vencido: float},
+     *   becas: list<array<string, mixed>>,
+     *   grupo_familiar: string|null
      * }
      */
-    public function paraAlumno(Alumno $alumno, ?int $anio = null): array
+    public function paraAlumno(Alumno $alumno, ?int $anio = null, ?int $exceptoPagoId = null): array
     {
         $anio ??= (int) now()->year;
         $alumno->loadMissing(['bloques:id,sede_id', 'bloque:id,sede_id']);
@@ -41,6 +43,7 @@ class EstadoCuentaService
         $pagado = PagoDetalle::query()
             ->where('alumno_id', $alumno->id)
             ->whereIn('cuota_id', $cuotas->pluck('id')->all() ?: [0])
+            ->when($exceptoPagoId !== null, fn ($q) => $q->where('pago_id', '!=', $exceptoPagoId))
             ->selectRaw('cuota_id, SUM(monto) as total, MAX(pago_id) as ultimo_pago_id')
             ->groupBy('cuota_id')
             ->get()
@@ -50,8 +53,10 @@ class EstadoCuentaService
         $becas = $alumno->becas()->where('estado', '!=', 'finalizada')->orderByDesc('fecha_inicio')->get();
 
         $hoy = Carbon::today();
+        $reglas = ReglasCobro::actuales();
+        $familia = $reglas['familiar']['activo'] ? GrupoFamiliar::situacionDe((int) $alumno->id) : null;
         $items = [];
-        $totales = ['bruto' => 0.0, 'descuento' => 0.0, 'neto' => 0.0, 'pagado' => 0.0, 'saldo' => 0.0, 'vencido' => 0.0];
+        $totales = ['bruto' => 0.0, 'descuento' => 0.0, 'descuento_familiar' => 0.0, 'descuento_adelantado' => 0.0, 'recargo' => 0.0, 'neto' => 0.0, 'pagado' => 0.0, 'saldo' => 0.0, 'vencido' => 0.0];
 
         foreach ($cuotas as $cuota) {
             $fechaRef = $cuota->fecha_vencimiento ?? Carbon::create($cuota->año, max(1, (int) $cuota->mes), 1);
@@ -63,13 +68,43 @@ class EstadoCuentaService
 
             $bruto = round((float) $cuota->monto, 2);
             $descuento = $beca ? $beca->descuentoSobre($bruto) : 0.0;
-            $neto = round($bruto - $descuento, 2);
+            $netoBase = round($bruto - $descuento, 2);
             $montoPagado = round((float) ($pagado->get($cuota->id)?->total ?? 0), 2);
-            $saldo = round(max(0, $neto - $montoPagado), 2);
+            $ultimoPagoId = $pagado->get($cuota->id)?->ultimo_pago_id;
+            $pagadoEl = ($f = $fechasPago->get($ultimoPagoId)) ? Carbon::parse($f)->startOfDay() : null;
             $vencida = $cuota->fecha_vencimiento && $cuota->fecha_vencimiento->lt($hoy);
 
+            // Descuento por grupo familiar (a partir del segundo integrante activo).
+            $descFamiliar = $familia && ! $familia['paga_completo'] && $netoBase > 0
+                ? round($netoBase * $reglas['familiar']['porcentaje'] / 100, 2) : 0.0;
+            // Descuento por pago adelantado: si se paga hasta X días antes del vencimiento.
+            $descAdelantado = 0.0;
+            $limiteAdelanto = $fechaRef->copy()->startOfDay()->subDays($reglas['adelantado']['dias']);
+            if ($reglas['adelantado']['activo'] && $netoBase > 0) {
+                $conAdelanto = round(($netoBase - $descFamiliar) * (1 - $reglas['adelantado']['porcentaje'] / 100), 2);
+                $pagoAdelantado = $montoPagado > 0 && $montoPagado + 0.009 >= $conAdelanto && $pagadoEl && $pagadoEl->lte($limiteAdelanto);
+                $pendienteATiempo = $montoPagado + 0.009 < $conAdelanto && $hoy->lte($limiteAdelanto);
+                if ($pagoAdelantado || $pendienteATiempo) {
+                    $descAdelantado = round($netoBase - $descFamiliar - $conAdelanto, 2);
+                }
+            }
+            $netoSinRecargo = round($netoBase - $descFamiliar - $descAdelantado, 2);
+            // Recargo por mora: desde X días después del vencimiento, salvo que se haya pagado antes.
+            $recargo = 0.0;
+            if ($reglas['recargo']['activo'] && $cuota->fecha_vencimiento && $netoSinRecargo > 0) {
+                $desde = $cuota->fecha_vencimiento->copy()->startOfDay()->addDays($reglas['recargo']['dias']);
+                $pagoATiempo = $montoPagado + 0.009 >= $netoSinRecargo && $pagadoEl && $pagadoEl->lte($desde);
+                if ($hoy->gt($desde) && ! $pagoATiempo) {
+                    $recargo = $reglas['recargo']['tipo'] === 'fijo'
+                        ? $reglas['recargo']['valor']
+                        : round($netoSinRecargo * $reglas['recargo']['valor'] / 100, 2);
+                }
+            }
+            $neto = round($netoSinRecargo + $recargo, 2);
+            $saldo = round(max(0, $neto - $montoPagado), 2);
+
             $estado = match (true) {
-                $neto <= 0 => 'becada',
+                $netoBase <= 0 => 'becada',
                 $montoPagado >= $neto => 'pagada',
                 $montoPagado > 0 => 'parcial',
                 $vencida => 'vencida',
@@ -86,16 +121,23 @@ class EstadoCuentaService
                 'bruto' => $bruto,
                 'beca' => $beca ? ['id' => $beca->id, 'etiqueta' => $beca->etiqueta()] : null,
                 'descuento' => $descuento,
+                'descuento_familiar' => $descFamiliar,
+                'descuento_adelantado' => $descAdelantado,
+                'adelantado_hasta' => $descAdelantado > 0 && $montoPagado <= 0 ? $limiteAdelanto->toDateString() : null,
+                'recargo' => $recargo,
                 'neto' => $neto,
                 'pagado' => $montoPagado,
                 'saldo' => $saldo,
                 'estado' => $estado,
-                'ultimo_pago_id' => $ultimoPagoId = $pagado->get($cuota->id)?->ultimo_pago_id,
-                'pagado_el' => ($f = $fechasPago->get($ultimoPagoId)) ? Carbon::parse($f)->toDateString() : null,
+                'ultimo_pago_id' => $ultimoPagoId,
+                'pagado_el' => $pagadoEl?->toDateString(),
             ];
 
             $totales['bruto'] += $bruto;
             $totales['descuento'] += $descuento;
+            $totales['descuento_familiar'] += $descFamiliar;
+            $totales['descuento_adelantado'] += $descAdelantado;
+            $totales['recargo'] += $recargo;
             $totales['neto'] += $neto;
             $totales['pagado'] += $montoPagado;
             $totales['saldo'] += $saldo;
@@ -109,6 +151,7 @@ class EstadoCuentaService
             'anio' => $anio,
             'items' => $items,
             'totales' => array_map(fn ($v) => round($v, 2), $totales),
+            'grupo_familiar' => $familia['grupo'] ?? null,
             'becas' => $becas->map(fn (Beca $b) => [
                 'id' => $b->id,
                 'etiqueta' => $b->etiqueta(),
@@ -119,6 +162,19 @@ class EstadoCuentaService
                 'motivo' => $b->motivo,
             ])->values()->all(),
         ];
+    }
+
+    /**
+     * Línea del estado de cuenta de una cuota para un alumno (con beca, descuentos, recargo y
+     * lo ya pagado, sin contar el pago que se está editando). Null si la cuota no le aplica.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function itemCuota(Alumno $alumno, Cuota $cuota, ?int $exceptoPagoId = null): ?array
+    {
+        $item = collect($this->paraAlumno($alumno, (int) $cuota->año, $exceptoPagoId)['items'])->firstWhere('cuota_id', $cuota->id);
+
+        return is_array($item) ? $item : null;
     }
 
     /**

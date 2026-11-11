@@ -112,6 +112,7 @@ return [
         ],
         'Programa y partituras' => [
             'partituras.view' => 'Ver partituras',
+            'partituras.edit' => 'Editar toques y partituras del programa',
             'partituras.admin' => 'Administrar programa y partituras',
             'biblioteca.admin' => 'Moderar biblioteca',
             'disenos.manage' => 'Usar el módulo Diseño',
@@ -171,7 +172,7 @@ return [
                 'comprobantes.view', 'comprobantes.create',
                 'eventos.view', 'eventos.create', 'eventos.update', 'eventos.delete',
                 'shows.view', 'shows.manage', 'calendario.view', 'villa_gesell.manage',
-                'partituras.view', 'reportes.view', 'inventario.view', 'becas.view',
+                'partituras.view', 'partituras.edit', 'reportes.view', 'inventario.view', 'becas.view',
             ],
         ],
         'coordinador_area' => [
@@ -182,7 +183,7 @@ return [
                 'personas.view', 'alumnos.view', 'alumnos.create', 'alumnos.update', 'alumnos.export',
                 'asistencias.view', 'asistencias.create', 'asistencias.update', 'asistencias.delete',
                 'seguimiento.view', 'seguimiento.create',
-                'calendario.view', 'eventos.view', 'partituras.view', 'bloques.view',
+                'calendario.view', 'eventos.view', 'partituras.view', 'partituras.edit', 'bloques.view',
             ],
         ],
         'profesor' => [
@@ -194,7 +195,7 @@ return [
                 'asistencias.view', 'asistencias.create', 'asistencias.update',
                 'seguimiento.view', 'seguimiento.create',
                 'comprobantes.view', 'comprobantes.create', 'pagos.view',
-                'eventos.view', 'calendario.view', 'partituras.view',
+                'eventos.view', 'calendario.view', 'partituras.view', 'partituras.edit',
             ],
         ],
         'alumno' => [

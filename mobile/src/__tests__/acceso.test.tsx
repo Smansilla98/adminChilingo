@@ -28,6 +28,18 @@ it('el registro pide la fecha de nacimiento y no deja usar el DNI como contrase�
   expect(mockRegistrarse).not.toHaveBeenCalled();
 });
 
+it('el registro manda el código de alta y pide 8 caracteres de contraseña', async () => {
+  await renderizar(<Registro />);
+  await fireEvent.changeText(screen.getByLabelText('Tu DNI'), '30123456');
+  await fireEvent.changeText(screen.getByLabelText('Código de alta (si te dieron uno)'), 'ab3');
+  await fireEvent.changeText(screen.getByLabelText('Elegí una contraseña'), 'corta');
+  await fireEvent.changeText(screen.getByLabelText('Repetila'), 'corta');
+  await fireEvent.press(screen.getAllByText('Crear mi cuenta').at(-1)!);
+  expect(await screen.findByText('Al menos 8 letras o números.')).toBeTruthy();
+  expect(screen.getByText('El código tiene 6 letras o números.')).toBeTruthy();
+  expect(mockRegistrarse).not.toHaveBeenCalled();
+});
+
 it('con la clave provisoria obliga a elegir una propia', async () => {
   const llamadas = simularApi({ 'POST auth/clave': { ok: true } });
   const listo = jest.fn();

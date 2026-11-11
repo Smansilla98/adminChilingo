@@ -69,6 +69,12 @@
             @error('proveedor')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-12">
+            <label class="form-label" for="gasto-comprobante">Comprobante (factura o ticket)</label>
+            <input type="file" id="gasto-comprobante" name="comprobante" class="form-control @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="form-text">PDF, JPG o PNG de hasta 10 MB.@if($gasto?->comprobante_path) Ya hay un comprobante: si subís otro, reemplaza al anterior.@endif</div>
+            @error('comprobante')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        </div>
+        <div class="col-12">
             <label class="form-label" for="gasto-notas">Notas</label>
             <textarea id="gasto-notas" name="notas" class="form-control @error('notas') is-invalid @enderror" rows="2">{{ old('notas', $gasto?->notas) }}</textarea>
             @error('notas')<div class="invalid-feedback">{{ $message }}</div>@enderror

@@ -93,6 +93,10 @@
                     <span class="auth-foot-muted">¿Sos alumno y no tenés cuenta?</span>
                     <a href="{{ route('registro.alumno') }}">Creala con tu DNI</a>
                 </div>
+                <div class="mb-1">
+                    <span class="auth-foot-muted">¿No te acordás la contraseña?</span>
+                    <a href="{{ route('recuperar.create') }}">Recuperala</a>
+                </div>
                 <div>
                     <span class="auth-foot-muted">¿Pagaste la cuota?</span>
                     <a href="{{ route('comprobante-cuota-public.create') }}">Cargá el comprobante sin cuenta</a>

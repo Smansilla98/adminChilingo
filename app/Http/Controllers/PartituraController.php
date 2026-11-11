@@ -69,7 +69,7 @@ class PartituraController extends Controller
     /** Sube un PDF/imagen de referencia para transcribirlo en el editor. */
     public function subirReferencia(Request $request, ProgramaRitmo $programaRitmo): JsonResponse
     {
-        if (! config('chilinga.edicion_publica_programa') && ! auth()->user()?->can('partituras.admin')) {
+        if (! \App\Domain\Acceso\EdicionPrograma::puedeEditar(auth()->user())) {
             abort(403, 'La edición del programa requiere iniciar sesión con permiso.');
         }
         $this->abortSiToqueNoPublico($programaRitmo);
@@ -108,7 +108,7 @@ class PartituraController extends Controller
     /** Guardado del editor (JSON). Requiere el nombre de quien edita. */
     public function guardar(Request $request, ProgramaRitmo $programaRitmo): JsonResponse
     {
-        if (! config('chilinga.edicion_publica_programa') && ! auth()->user()?->can('partituras.admin')) {
+        if (! \App\Domain\Acceso\EdicionPrograma::puedeEditar(auth()->user())) {
             abort(403, 'La edición del programa requiere iniciar sesión con permiso.');
         }
         $this->abortSiToqueNoPublico($programaRitmo);
@@ -202,7 +202,7 @@ class PartituraController extends Controller
 
     private function exigirEdicion(ProgramaRitmo $programaRitmo): void
     {
-        if (! config('chilinga.edicion_publica_programa') && ! auth()->user()?->can('partituras.admin')) {
+        if (! \App\Domain\Acceso\EdicionPrograma::puedeEditar(auth()->user())) {
             abort(403, 'La edición del programa requiere iniciar sesión con permiso.');
         }
         $this->abortSiToqueNoPublico($programaRitmo);

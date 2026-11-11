@@ -334,7 +334,7 @@ class RolesYNegocioTest extends TestCase
                 'role' => 'profesor',
                 'profesor_vinculo' => 'nuevo',
             ])
-            ->assertRedirect(route('accesos.index', ['user_id' => User::query()->where('email', 'nuevo@test.local')->value('id')]));
+            ->assertRedirect(route('usuarios.show', User::query()->where('email', 'nuevo@test.local')->value('id')));
 
         $creado = User::query()->where('email', 'nuevo@test.local')->first();
         $this->assertNotNull($creado);

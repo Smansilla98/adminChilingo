@@ -32,7 +32,6 @@
             ['Biblioteca', 'biblioteca.index', 'bi-images', null, 'Módulos'],
             ['Moderar biblioteca', 'biblioteca.admin.index', 'bi-shield-check', null, 'Módulos'],
             ['Diseño', 'disenos.index', 'bi-palette', 'admin.disenos', 'Módulos'],
-            ['Accesos', 'accesos.index', 'bi-shield-lock', null, 'Módulos'],
             ['Apariencia', 'apariencia.edit', 'bi-palette2', null, 'Módulos'],
             ['Ayuda', 'ayuda', 'bi-question-circle', 'ayuda', 'Módulos'],
             ['Mis bloques', 'profesor.bloques', 'bi-collection', 'profesor.mis_bloques', 'Módulos'],

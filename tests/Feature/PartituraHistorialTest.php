@@ -63,8 +63,10 @@ class PartituraHistorialTest extends TestCase
     {
         $toque = $this->toque();
         $url = route('programa.toque.editor.guardar', $toque);
-        // El material pide cuenta: la edición abierta es para quien entró.
-        $this->actingAs($this->usuario('Lu'));
+        // Editar pide cuenta con permiso; el autor queda con el nombre de la cuenta.
+        $lu = $this->usuario('Lu');
+        $this->asignarPermiso($lu->persona, 'partituras.edit');
+        $this->actingAs($lu->fresh());
 
         // Autoguardado: no publica, queda como borrador pendiente.
         $this->postJson(route('programa.toque.editor.borrador', $toque), ['score' => $this->score([['dur' => 'h', 'stroke' => 'acentuado']]), 'editor_nombre' => 'Lu'])
@@ -81,8 +83,9 @@ class PartituraHistorialTest extends TestCase
         $this->postJson($url, ['score' => $this->score([['dur' => 'h', 'stroke' => 'acentuado']]), 'editor_nombre' => 'Lucía'])->assertJsonPath('version', 1);
         $this->postJson($url, ['score' => $this->score([['dur' => 'w', 'stroke' => 'tapado']]), 'editor_nombre' => 'Pablo'])->assertJsonPath('version', 2);
 
+        $autor = \App\Domain\Acceso\EdicionPrograma::autor($lu->fresh());
         $this->getJson(route('programa.toque.editor.versiones', $toque))->assertOk()
-            ->assertJsonPath('data.0.numero', 2)->assertJsonPath('data.0.autor', 'Pablo')->assertJsonPath('data.1.nota', 'Primera');
+            ->assertJsonPath('data.0.numero', 2)->assertJsonPath('data.0.autor', $autor)->assertJsonPath('data.1.nota', 'Primera');
         $this->getJson(route('programa.toque.editor.version', [$toque, 1]))->assertOk()
             ->assertJsonPath('data.score.sections.0.measures.0.voces.surdo_grave.0.stroke', 'acentuado');
         $this->getJson(route('programa.toque.editor.version', [$toque, 9]))->assertNotFound();
@@ -90,7 +93,7 @@ class PartituraHistorialTest extends TestCase
 
     public function test_sin_edicion_publica_hace_falta_permiso(): void
     {
-        config(['chilinga.edicion_publica_programa' => false]);
+        $this->assertFalse(config('chilinga.edicion_publica_programa'), 'por defecto la edición pide permiso');
         $toque = $this->toque();
         $this->postJson(route('programa.toque.editor.borrador', $toque), ['score' => $this->score([]), 'editor_nombre' => 'Lu'])->assertUnauthorized();
         $this->actingAs($this->usuario('Lu'))
@@ -100,6 +103,26 @@ class PartituraHistorialTest extends TestCase
         $this->postJson(route('programa.toque.editor.borrador', $toque), ['score' => $this->score([]), 'editor_nombre' => 'Lu'])->assertOk();
         $this->deleteJson(route('programa.toque.editor.borrador.descartar', $toque))->assertOk();
         $this->assertNull($toque->fresh()->partitura_borrador);
+    }
+
+    public function test_profesor_edita_y_alumno_no(): void
+    {
+        $toque = $this->toque();
+        $sede = $this->sede('Sede Partituras');
+        $bloque = $this->bloque($sede, 'Bloque P', 9);
+        $profe = $this->usuario('Profe Edita');
+        $this->asignarDocente($profe->persona, $bloque);
+        $alumno = $this->usuario('Alumno Mira');
+        $this->inscribirAlumno($alumno->persona, $bloque);
+
+        $payload = ['score' => $this->score([]), 'editor_nombre' => 'Otro nombre'];
+        $this->actingAs($alumno->fresh())->postJson(route('programa.toque.editor.borrador', $toque), $payload)->assertForbidden();
+        $this->actingAs($alumno->fresh())->get(route('programa.toque.edit', $toque))->assertForbidden();
+        $this->actingAs($profe->fresh())->postJson(route('programa.toque.editor.borrador', $toque), $payload)->assertOk();
+
+        // Con la edición abierta (comportamiento histórico) cualquier cuenta edita.
+        config(['chilinga.edicion_publica_programa' => true]);
+        $this->actingAs($alumno->fresh())->postJson(route('programa.toque.editor.borrador', $toque), $payload)->assertOk();
     }
 
     public function test_la_app_publica_por_api_y_ve_versiones(): void

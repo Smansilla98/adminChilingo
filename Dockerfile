@@ -1,89 +1,60 @@
-# Dockerfile - Laravel La Chilinga (MySQL)
-# PHP 8.3 requerido por composer.lock (spatie/laravel-permission, maennchen/zipstream-php, etc.)
-FROM php:8.3-cli
+# syntax=docker/dockerfile:1
+# Imagen única de La Chilinga para Railway. El mismo build sirve para 3 servicios según
+# PROCESO (o el argumento de start.sh): web (FrankenPHP), scheduler y worker. Ver docs/DEPLOY_RAILWAY.md.
+# Versiones fijadas: subirlas a propósito, no por accidente.
 
-# Variables de entorno
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PORT=8000
-# Migraciones se ejecutan siempre con --force en start.sh (sin confirmación ni TTY)
-ENV MIGRATE_FORCE=1
+# ── 1) Assets del frontend (Vite + editor Diseño) ────────────────────────────────────────────
+# Node 20 → npm 10: el lock de resources/opendesign exige esa versión (ver docs/DEPLOY.md).
+FROM node:20.20-bookworm-slim AS assets
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY . .
+RUN npm run build
 
-# Instalar dependencias del sistema
+# ── 2) Imagen final: FrankenPHP (Caddy + PHP 8.3) ────────────────────────────────────────────
+FROM dunglas/frankenphp:1.12-php8.3-bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PORT=8080 \
+    COMPOSER_ALLOW_SUPERUSER=1
+
+# Extensiones PHP (GD con JPEG/WebP/FreeType para miniaturas del archivo histórico).
+RUN install-php-extensions pdo_mysql pdo_sqlite gd exif pcntl bcmath zip intl opcache
+
+# python3: genera los JSON de partituras; ffmpeg: kit de percusión; gosu: baja de root a www-data
+# cuando Railway arranca como root para poder escribir el volumen (RAILWAY_RUN_UID=0).
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libwebp-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    libsqlite3-dev \
-    sqlite3 \
-    zip \
-    unzip \
-    ca-certificates \
-    python3 \
-    ffmpeg \
+        python3 ffmpeg gosu unzip ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# GD con JPEG, WebP y FreeType: derivados del archivo histórico y miniaturas de la biblioteca.
-# (Sin --with-jpeg, GD solo lee PNG y las fotos no generan derivados.)
-RUN docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY docker/php/uploads.ini docker/php/opcache.ini $PHP_INI_DIR/conf.d/
+COPY docker/frankenphp/Caddyfile /etc/frankenphp/Caddyfile
 
-# Instalar extensiones PHP para MySQL y tests (sqlite)
-RUN docker-php-ext-install -j$(nproc) \
-    pdo \
-    pdo_mysql \
-    pdo_sqlite \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip
+COPY --from=composer:2.9 /usr/bin/composer /usr/bin/composer
 
-# Límite de subida (videos de biblioteca; el default de PHP es 2M)
-COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
-
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Instalar Node.js 20.x (Vite 7 requiere Node 20.19+ o 22.12+)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Directorio de trabajo
 WORKDIR /var/www/html
 
-# Copiar archivos del proyecto
+# Dependencias PHP primero (capa cacheable mientras no cambie composer.lock).
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction --no-progress
+
 COPY . .
+COPY --from=assets /app/public/build ./public/build
+COPY --from=assets /app/public/opendesign ./public/opendesign
 
-# Instalar dependencias PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Autoload optimizado + package:discover (no toca la base).
+RUN composer dump-autoload --optimize --no-dev --no-interaction \
+    && rm -f /usr/bin/composer \
+    && mkdir -p storage/app/public storage/app/persistent storage/framework/cache storage/framework/sessions \
+        storage/framework/views storage/logs bootstrap/cache \
+    && chmod +x start.sh \
+    && chown -R www-data:www-data /var/www/html /data /config
 
-# Regenerar autoloader
-RUN composer dump-autoload --optimize --no-interaction || true
+USER www-data
 
-# Instalar dependencias Node y compilar assets
-RUN if [ -f "package.json" ]; then npm install && npm run build; fi
+EXPOSE 8080
 
-# Permisos
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
-
-# Script de inicio: al arrancar ejecuta migraciones (--force) y luego php artisan serve
-RUN chmod +x /var/www/html/start.sh || true
-
-# No ejecutar artisan en build: no hay base de datos y Laravel intenta conectar (Connection refused).
-# La limpieza de caché (optimize:clear, config:clear) se hace en start.sh al iniciar el contenedor.
-
-EXPOSE ${PORT:-8000}
-
-# Al iniciar, start.sh espera la DB, ejecuta php artisan migrate --force (y reintentos) y arranca el servidor
+# start.sh: espera la base, migra (si falla, el deploy falla), cachea config/rutas/vistas y arranca el proceso.
 CMD ["/var/www/html/start.sh"]

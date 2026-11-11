@@ -26,7 +26,7 @@ export function CambiarClave({ obligatoria = false, usuario, alTerminar }: { obl
       (d) => ({
         ...(!d.actual ? { actual: obligatoria ? 'Escribí la contraseña provisoria.' : 'Escribí tu contraseña actual.' } : {}),
         ...(!d.password ? { password: 'Elegí una contraseña nueva.' } : {}),
-        ...(d.password && d.password.length < 6 ? { password: 'Al menos 6 letras o números.' } : {}),
+        ...(d.password && d.password.length < 8 ? { password: 'Al menos 8 letras o números.' } : {}),
         ...(d.password && d.password !== d.password_confirmation ? { password_confirmation: 'Las dos contraseñas no coinciden.' } : {}),
       }),
     );

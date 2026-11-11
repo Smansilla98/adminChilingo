@@ -26,15 +26,15 @@ class AccesoAlumnosAppTest extends TestCase
         $alumno = $this->alumno();
 
         $r = $this->postJson('/api/v1/auth/registro', [
-            'dni' => '30.123.456', 'fecha_nacimiento' => '2001-05-20', 'password' => 'tambor1', 'password_confirmation' => 'tambor1',
+            'dni' => '30.123.456', 'fecha_nacimiento' => '2001-05-20', 'password' => 'tambor123', 'password_confirmation' => 'tambor123',
         ])->assertCreated()->assertJsonPath('usuario', '30123456');
 
         $this->withToken($r->json('token'))->getJson('/api/v1/me')->assertOk()->assertJsonPath('debe_cambiar_clave', false);
         $this->assertSame((int) $alumno->persona_id, (int) User::query()->where('username', '30123456')->value('persona_id'));
 
         // Entra después con el DNI aunque lo escriba con puntos.
-        $this->postJson('/api/v1/auth/login', ['username' => '30.123.456', 'password' => 'tambor1'])->assertOk()->assertJsonPath('debe_cambiar_clave', false);
-        $this->postJson('/api/v1/auth/registro', ['dni' => '99999999', 'fecha_nacimiento' => '2001-05-20', 'password' => 'tambor1', 'password_confirmation' => 'tambor1'])
+        $this->postJson('/api/v1/auth/login', ['username' => '30.123.456', 'password' => 'tambor123'])->assertOk()->assertJsonPath('debe_cambiar_clave', false);
+        $this->postJson('/api/v1/auth/registro', ['dni' => '99999999', 'fecha_nacimiento' => '2001-05-20', 'password' => 'tambor123', 'password_confirmation' => 'tambor123'])
             ->assertUnprocessable()->assertJsonValidationErrors('dni');
     }
 
@@ -66,7 +66,7 @@ class AccesoAlumnosAppTest extends TestCase
     public function test_si_se_olvido_la_clave_le_dan_una_provisoria_nueva_y_se_cierran_sus_sesiones(): void
     {
         $alumno = $this->alumno();
-        $this->postJson('/api/v1/auth/registro', ['dni' => '30123456', 'fecha_nacimiento' => '2001-05-20', 'password' => 'tambor1', 'password_confirmation' => 'tambor1'])->assertCreated();
+        $this->postJson('/api/v1/auth/registro', ['dni' => '30123456', 'fecha_nacimiento' => '2001-05-20', 'password' => 'tambor123', 'password_confirmation' => 'tambor123'])->assertCreated();
         $user = User::query()->where('username', '30123456')->sole();
         $this->assertSame(1, $user->tokens()->count());
 

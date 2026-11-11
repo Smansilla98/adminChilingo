@@ -2,6 +2,7 @@
 
 namespace App\Domain\Personas;
 
+use App\Domain\Acceso\AjustesCuentas;
 use App\Models\Alumno;
 use App\Models\Auditoria;
 use App\Models\Persona;
@@ -20,29 +21,49 @@ use Illuminate\Validation\ValidationException;
  */
 class RegistroAlumnoService
 {
+    public function __construct(private readonly CodigoAltaService $codigos) {}
+
     /** Dominio reservado (RFC 2606): nunca recibe correos. Para quien no tiene correo. */
     public const DOMINIO_SIN_CORREO = 'alumnos.lachilinga.invalid';
 
-    public const NO_ENCONTRADO = 'No encontramos un alumno con ese DNI y esa fecha de nacimiento. Revisá que estén bien escritos. Si están bien, pedile a tu profe o a administración que los carguen en tu ficha.';
+    /**
+     * Mismo mensaje si no hay alumno con esos datos, si ya tiene cuenta o si el código no sirve:
+     * así nadie puede averiguar quién está inscripto probando DNIs.
+     */
+    public const NO_ENCONTRADO = 'No pudimos crear la cuenta con esos datos. Revisá el DNI, la fecha de nacimiento y el código (si te dieron uno). Si ya tenés cuenta, entrá con tu DNI o usá «Olvidé mi contraseña». Si sigue sin funcionar, pedile a tu profe o a administración.';
+
+    public const MENOR = 'Si tenés menos de 13 años, la cuenta te la da la escuela: pedile a tu profe o a administración el acceso a la app.';
 
     /**
-     * @param  array{dni: string, fecha_nacimiento: string, email?: string|null, password: string}  $datos
+     * @param  array{dni: string, fecha_nacimiento: string, email?: string|null, password: string, codigo?: string|null}  $datos
      */
     public function registrar(array $datos): User
     {
         $dni = self::soloNumeros($datos['dni']);
-        $nacimiento = Carbon::parse($datos['fecha_nacimiento'])->toDateString();
+        $fecha = Carbon::parse($datos['fecha_nacimiento']);
+        $nacimiento = $fecha->toDateString();
 
-        $alumno = $this->buscar($dni, $nacimiento);
-        if (! $alumno) {
-            throw ValidationException::withMessages(['dni' => self::NO_ENCONTRADO]);
+        // Depende solo de lo que escribió: no revela si el alumno existe.
+        if ($fecha->diffInYears(now()) < AjustesCuentas::EDAD_MINIMA_REGISTRO) {
+            throw ValidationException::withMessages(['fecha_nacimiento' => self::MENOR]);
         }
 
-        $persona = $alumno->persona;
-        $yaTiene = ($alumno->user_id && User::query()->whereKey($alumno->user_id)->exists())
-            || ($persona && User::query()->where('persona_id', $persona->id)->exists());
-        if ($yaTiene) {
-            throw ValidationException::withMessages(['dni' => 'Ya tenés una cuenta. Entrá con tu DNI y tu contraseña. Si no te acordás la contraseña, pedile a tu profe o a administración que te la cambie.']);
+        $alumno = $this->buscar($dni, $nacimiento);
+        $persona = $alumno?->persona;
+        $yaTiene = $alumno && (($alumno->user_id && User::query()->whereKey($alumno->user_id)->exists())
+            || ($persona && User::query()->where('persona_id', $persona->id)->exists()));
+
+        $codigoEscrito = trim((string) ($datos['codigo'] ?? ''));
+        $codigo = null;
+        if ($codigoEscrito !== '' || AjustesCuentas::registroRequiereCodigo()) {
+            $codigo = $persona ? $this->codigos->vigente($persona, $codigoEscrito) : null;
+            if (! $codigo) {
+                $alumno = null;
+            }
+        }
+
+        if (! $alumno || $yaTiene) {
+            throw ValidationException::withMessages(['dni' => self::NO_ENCONTRADO]);
         }
 
         $email = trim((string) ($datos['email'] ?? ''));
@@ -50,7 +71,10 @@ class RegistroAlumnoService
             throw ValidationException::withMessages(['email' => 'Ese correo ya lo usa otra cuenta. Escribí otro o dejalo vacío.']);
         }
 
-        return DB::transaction(function () use ($alumno, $persona, $dni, $nacimiento, $email, $datos) {
+        return DB::transaction(function () use ($alumno, $persona, $dni, $nacimiento, $email, $datos, $codigo) {
+            if ($codigo) {
+                $this->codigos->marcarUsado($codigo);
+            }
             if (! $persona) {
                 $persona = Persona::query()->create([
                     'nombre' => $alumno->nombre_apellido,
@@ -119,8 +143,21 @@ class RegistroAlumnoService
             'fecha_nacimiento.required' => 'Elegí tu fecha de nacimiento.',
             'fecha_nacimiento.before' => 'La fecha de nacimiento tiene que ser anterior a hoy.',
             'password.required' => 'Elegí una contraseña.',
-            'password.min' => 'La contraseña tiene que tener al menos 6 letras o números.',
+            'password.min' => 'La contraseña tiene que tener al menos 8 letras o números.',
+            'codigo.max' => 'El código de alta tiene 6 letras o números.',
             'password.confirmed' => 'Las dos contraseñas no coinciden. Escribilas de nuevo.',
+        ];
+    }
+
+    /** @return array<string, mixed> reglas comunes del registro (web y app) */
+    public static function reglas(): array
+    {
+        return [
+            'dni' => ['required', 'string', 'max:20'],
+            'fecha_nacimiento' => ['required', 'date', 'before:today'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'password' => ['required', 'string', 'confirmed', 'min:'.AjustesCuentas::CLAVE_MINIMA, 'max:255'],
+            'codigo' => ['nullable', 'string', 'max:12'],
         ];
     }
 

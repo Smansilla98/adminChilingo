@@ -9,7 +9,6 @@ use App\Models\PagoDetalle;
 use App\Models\Profesor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * Lo que ve un docente de los pagos: líneas de pago de alumnos de sus bloques por
@@ -29,7 +28,7 @@ class PagosDocenteService
     public function lineas(Profesor $profesor, array $filtros = []): ?Builder
     {
         $bIds = $this->bloques($profesor);
-        if ($bIds === [] || ! Schema::hasTable('pago_detalles') || ! Schema::hasTable('pagos')) {
+        if ($bIds === []) {
             return null;
         }
         $sedeIds = Bloque::query()->whereIn('id', $bIds)->pluck('sede_id')->unique()->filter()->values();
@@ -41,11 +40,9 @@ class PagosDocenteService
             ->whereHas('alumno', fn ($a) => $this->deSusBloques($a, $bIds))
             ->where(function ($outer) use ($bIds, $sedeIds) {
                 $outer->whereHas('cuota', fn ($c) => $c->whereIn('bloque_id', $bIds));
-                if (Schema::hasColumn('cuotas', 'alcance')) {
-                    $outer->orWhereHas('cuota', fn ($c) => $c->where('alcance', Cuota::ALCANCE_GENERAL)->whereNull('bloque_id'));
-                    if ($sedeIds->isNotEmpty()) {
-                        $outer->orWhereHas('cuota', fn ($c) => $c->where('alcance', Cuota::ALCANCE_SEDE)->whereIn('sede_id', $sedeIds));
-                    }
+                $outer->orWhereHas('cuota', fn ($c) => $c->where('alcance', Cuota::ALCANCE_GENERAL)->whereNull('bloque_id'));
+                if ($sedeIds->isNotEmpty()) {
+                    $outer->orWhereHas('cuota', fn ($c) => $c->where('alcance', Cuota::ALCANCE_SEDE)->whereIn('sede_id', $sedeIds));
                 }
             });
 
@@ -80,11 +77,7 @@ class PagosDocenteService
     private function deSusBloques(Builder $query, array $bIds): Builder
     {
         return $query->where(function ($inner) use ($bIds) {
-            if (Schema::hasTable('alumno_bloque')) {
-                $inner->whereHas('bloques', fn ($b) => $b->whereIn('bloques.id', $bIds))->orWhereIn('bloque_id', $bIds);
-            } else {
-                $inner->whereIn('bloque_id', $bIds);
-            }
+            $inner->whereHas('bloques', fn ($b) => $b->whereIn('bloques.id', $bIds))->orWhereIn('bloque_id', $bIds);
         });
     }
 }
