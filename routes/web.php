@@ -476,5 +476,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/morosos/recordatorios', [\App\Http\Controllers\MorososController::class, 'recordarMasivo'])->name('morosos.recordatorios');
         Route::post('/morosos/{alumno}/recordatorio', [\App\Http\Controllers\MorososController::class, 'recordar'])->whereNumber('alumno')->name('morosos.recordar');
     });
+    Route::middleware('permiso:cuotas.update')->group(function () {
+        Route::get('/configuracion/reglas-cobro', [\App\Http\Controllers\ReglasCobroController::class, 'edit'])->name('configuracion.reglas-cobro.edit');
+        Route::put('/configuracion/reglas-cobro', [\App\Http\Controllers\ReglasCobroController::class, 'update'])->name('configuracion.reglas-cobro.update');
+    });
     // === Fin Equipo B ===
 });

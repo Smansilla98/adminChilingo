@@ -296,4 +296,27 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->assertNotFalse($duplicados);
         $this->assertLessThan($duplicados, $bloqueo, 'el bloqueo va antes que la revisión de duplicados');
     }
+
+    public function test_pantalla_de_reglas_de_cobro_guarda_y_valida(): void
+    {
+        $admin = $this->admin();
+        $this->actingAs($admin)->get(route('configuracion.reglas-cobro.edit'))->assertOk()->assertSee('Reglas de cobro');
+
+        $this->actingAs($admin)->put(route('configuracion.reglas-cobro.update'), [
+            'recargo' => ['activo' => '1', 'tipo' => 'fijo', 'valor' => '500', 'dias' => '7'],
+            'familiar' => ['activo' => '1', 'porcentaje' => '15'],
+        ])->assertSessionHas('success');
+        $reglas = \App\Domain\Finanzas\ReglasCobro::actuales();
+        $this->assertTrue($reglas['recargo']['activo']);
+        $this->assertSame('fijo', $reglas['recargo']['tipo']);
+        $this->assertSame(500.0, $reglas['recargo']['valor']);
+        $this->assertSame(15.0, $reglas['familiar']['porcentaje']);
+        $this->assertFalse($reglas['adelantado']['activo'], 'lo que no se marca queda apagado');
+
+        // Recargo prendido sin valor: no se guarda.
+        $this->actingAs($admin)->put(route('configuracion.reglas-cobro.update'), [
+            'recargo' => ['activo' => '1', 'tipo' => 'porcentaje', 'valor' => ''],
+        ])->assertSessionHasErrors('recargo.valor');
+        $this->assertSame(500.0, \App\Domain\Finanzas\ReglasCobro::actuales()['recargo']['valor']);
+    }
 }
