@@ -1,0 +1,11 @@
+# Servicio transcriptor (CPU). Versiones fijas: actualizar a mano y correr los tests.
+fastapi==0.115.6
+uvicorn==0.34.0
+httpx==0.28.1
+pydantic==2.10.4
+numpy==2.0.2
+scipy==1.14.1
+librosa==0.10.2.post1
+soundfile==0.12.1
+numba==0.60.0
+llvmlite==0.43.0
