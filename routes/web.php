@@ -465,5 +465,9 @@ Route::middleware(['auth'])->group(function () {
     // === Equipo B: Finanzas ===
     Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');
     Route::post('/villa-gesell/gastos/{gasto}/restaurar', [VillaGesellGastoController::class, 'restaurar'])->withTrashed()->middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->name('villa-gesell.gastos.restaurar');
+    Route::middleware('permiso:cuotas.create')->group(function () {
+        Route::get('/cuotas-lote', [\App\Http\Controllers\CuotaLoteController::class, 'create'])->name('cuotas.lote.create');
+        Route::post('/cuotas-lote', [\App\Http\Controllers\CuotaLoteController::class, 'store'])->name('cuotas.lote.store');
+    });
     // === Fin Equipo B ===
 });

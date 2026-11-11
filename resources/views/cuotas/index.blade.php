@@ -9,6 +9,9 @@
 <x-ito.list-page title="Cuotas" subtitle="Definición de cuotas por período">
     <x-slot:actions>
         <a href="{{ route('cuotas.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nueva cuota</a>
+        @can('create', \App\Models\Cuota::class)
+            <a href="{{ route('cuotas.lote.create') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-range"></i> Por lote</a>
+        @endcan
     </x-slot:actions>
 
     <x-slot:toolbar>
