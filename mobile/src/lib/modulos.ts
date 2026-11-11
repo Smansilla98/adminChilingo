@@ -37,6 +37,7 @@ export const RUTAS: Record<string, { ruta: string; icono: Icono; grupo: Grupo }>
   auditoria: { ruta: '/auditoria', icono: 'history', grupo: 'Administración' },
   avisos_config: { ruta: '/avisos-config', icono: 'notifications-active', grupo: 'Administración' },
   progreso: { ruta: '/progreso', icono: 'trending-up', grupo: 'Académico' },
+  mis_liquidaciones: { ruta: '/mis-liquidaciones', icono: 'request-quote', grupo: 'Mi espacio' },
 };
 
 export const ORDEN_GRUPOS: Grupo[] = ['Mi espacio', 'Académico', 'Finanzas', 'Operación', 'Comunidad', 'Administración'];
