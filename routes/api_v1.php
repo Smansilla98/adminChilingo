@@ -373,5 +373,8 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     });
     Route::post('cuotas/lote/vista-previa', [\App\Http\Controllers\Api\V1\CuotaLoteController::class, 'vistaPrevia'])->name('cuotas.lote.vista-previa');
     Route::post('cuotas/lote', [\App\Http\Controllers\Api\V1\CuotaLoteController::class, 'generar'])->name('cuotas.lote.generar');
+    Route::get('morosos', [\App\Http\Controllers\Api\V1\MorosoController::class, 'index'])->name('morosos.index');
+    Route::post('morosos/recordatorios', [\App\Http\Controllers\Api\V1\MorosoController::class, 'recordarMasivo'])->name('morosos.recordatorios');
+    Route::post('morosos/{alumno}/recordatorio', [\App\Http\Controllers\Api\V1\MorosoController::class, 'recordar'])->whereNumber('alumno')->name('morosos.recordar');
     // === Fin Equipo B ===
 });

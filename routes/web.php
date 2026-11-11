@@ -469,5 +469,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/cuotas-lote', [\App\Http\Controllers\CuotaLoteController::class, 'create'])->name('cuotas.lote.create');
         Route::post('/cuotas-lote', [\App\Http\Controllers\CuotaLoteController::class, 'store'])->name('cuotas.lote.store');
     });
+    Route::middleware('permiso:pagos.view')->group(function () {
+        Route::get('/morosos', [\App\Http\Controllers\MorososController::class, 'index'])->name('morosos.index');
+    });
+    Route::middleware('permiso:notificaciones.send|pagos.view')->group(function () {
+        Route::post('/morosos/recordatorios', [\App\Http\Controllers\MorososController::class, 'recordarMasivo'])->name('morosos.recordatorios');
+        Route::post('/morosos/{alumno}/recordatorio', [\App\Http\Controllers\MorososController::class, 'recordar'])->whereNumber('alumno')->name('morosos.recordar');
+    });
     // === Fin Equipo B ===
 });
