@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Finanzas\EstadoCuentaService;
 use App\Models\Auditoria;
 use App\Models\Cuota;
 use App\Models\Pago;
@@ -194,5 +195,47 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->assertDatabaseHas('pago_detalles', ['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 24000]);
         $this->assertDatabaseHas('comprobante_cuota_alumno_items', ['cuota_id' => $cuota->id]);
         $this->assertDatabaseHas('alumnos', ['id' => $ana->id]);
+    }
+
+    public function test_reglas_de_cobro_recargo_familiar_y_adelantado_en_el_estado_de_cuenta(): void
+    {
+        $bloque = $this->bloque($this->sede('Palomar'));
+        $ana = $this->inscribirAlumno($this->persona('Ana'), $bloque);
+        $beto = $this->inscribirAlumno($this->persona('Beto'), $bloque);
+        $vence = now()->subDays(10)->startOfDay();
+        $cuota = Cuota::query()->create([
+            'nombre' => 'Vencida', 'año' => (int) now()->year, 'mes' => 3, 'monto' => 10000, 'alcance' => 'general',
+            'activo' => true, 'fecha_vencimiento' => $vence->toDateString(),
+        ]);
+
+        // Sin reglas: nada cambia.
+        $this->assertSame(10000.0, app(EstadoCuentaService::class)->paraAlumno($ana)['items'][0]['neto']);
+
+        // Recargo del 10% desde 5 días de vencida; familia: Beto paga 80% (segundo integrante).
+        $grupo = \App\Models\GrupoFamiliar::query()->create(['nombre' => 'Familia Pérez']);
+        $grupo->alumnos()->attach([$ana->id, $beto->id]);
+        \App\Models\Ajuste::guardar(\App\Domain\Finanzas\ReglasCobro::CLAVE, [
+            'recargo' => ['activo' => true, 'tipo' => 'porcentaje', 'valor' => 10, 'dias' => 5],
+            'familiar' => ['activo' => true, 'porcentaje' => 20],
+            'adelantado' => ['activo' => false, 'porcentaje' => 0, 'dias' => 0],
+        ]);
+        $estado = app(EstadoCuentaService::class);
+
+        $item = $estado->paraAlumno($ana)['items'][0];
+        $this->assertSame(1000.0, $item['recargo']);
+        $this->assertSame(11000.0, $item['neto']);
+        $this->assertSame(0.0, $item['descuento_familiar'], 'el primer integrante paga completo');
+
+        $itemBeto = $estado->paraAlumno($beto)['items'][0];
+        $this->assertSame(2000.0, $itemBeto['descuento_familiar']);
+        $this->assertSame(8800.0, $itemBeto['neto']); // 8000 tras la familia + recargo 10% sobre 8000
+        $this->assertSame('Familia Pérez', $estado->paraAlumno($beto)['grupo_familiar']);
+
+        // Pagado antes del día de recargo: no hay recargo.
+        $pago = Pago::query()->create(['fecha_pago' => $vence->copy()->addDays(2)->toDateString(), 'monto_total' => 10000]);
+        $pago->detalles()->create(['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 10000]);
+        $pagada = $estado->paraAlumno($ana)['items'][0];
+        $this->assertSame(0.0, $pagada['recargo']);
+        $this->assertSame('pagada', $pagada['estado']);
     }
 }
