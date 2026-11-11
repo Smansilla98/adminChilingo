@@ -298,9 +298,9 @@ Route::middleware(['auth'])->group(function () {
         ->middlewareFor('create', 'permiso:asistencias.create')
         ->middlewareFor(['edit', 'update'], 'permiso:asistencias.update')
         ->middlewareFor('destroy', 'permiso:asistencias.delete');
-    Route::get('/asistencias/bloque/{bloque}', function (Bloque $bloque) {
-        return redirect()->route('asistencias.create', ['bloque_id' => $bloque->id]);
-    })->middleware('permiso:asistencias.create')->name('asistencias.bloque');
+    // Redirección sin closure (route:cache en producción): /asistencias/bloque/{id} → alta con bloque_id.
+    Route::redirect('/asistencias/bloque/{bloque}', '/asistencias/create?bloque_id={bloque}')
+        ->middleware('permiso:asistencias.create')->name('asistencias.bloque');
 
     // Reportes
     Route::middleware('permiso:reportes.view')->group(function () {
@@ -426,6 +426,7 @@ Route::middleware(['auth'])->group(function () {
         ->middlewareFor(['edit', 'update'], 'permiso:gastos.update')
         ->middlewareFor('destroy', 'permiso:gastos.delete');
     Route::post('/gastos/{gasto}/aprobar', [GastoController::class, 'aprobar'])->middleware('permiso:gastos.approve')->name('gastos.aprobar');
+    Route::get('/gastos/{gasto}/comprobante', [GastoController::class, 'comprobante'])->middleware('permiso:gastos.view')->name('gastos.comprobante');
 
     // Inventario y compras
     Route::resource('inventarios', InventarioItemController::class)
@@ -466,4 +467,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'guardarAjustes'])->name('update');
     });
     // === Fin Equipo C (con sesión) ===
+    // === Equipo B: Finanzas ===
+    Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');
+    Route::post('/villa-gesell/gastos/{gasto}/restaurar', [VillaGesellGastoController::class, 'restaurar'])->withTrashed()->middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->name('villa-gesell.gastos.restaurar');
+    // === Fin Equipo B ===
 });

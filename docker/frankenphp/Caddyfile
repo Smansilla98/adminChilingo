@@ -1,0 +1,30 @@
+# FrankenPHP (Caddy + PHP embebido) para La Chilinga. Lo arranca start.sh en el proceso "web".
+# Railway termina el HTTPS y reenvía al puerto $PORT por HTTP: acá no hay certificados.
+{
+	admin off
+	auto_https off
+	skip_install_trust
+	# Sin "worker mode": cada request arranca Laravel de cero (igual que php-fpm), sin estado compartido.
+	frankenphp {
+		num_threads {$PHP_THREADS:8}
+	}
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+:{$PORT:8080} {
+	root * /var/www/html/public
+	encode zstd br gzip
+
+	# Videos de la biblioteca: mismo límite que upload_max_filesize/post_max_size (docker/php/uploads.ini).
+	request_body {
+		max_size 110MB
+	}
+
+	# Assets de Vite con hash en el nombre: se pueden cachear para siempre.
+	@versionados path /build/* /opendesign/assets/*
+	header @versionados Cache-Control "public, max-age=31536000, immutable"
+
+	php_server
+}

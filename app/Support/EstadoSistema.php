@@ -162,9 +162,16 @@ final class EstadoSistema
             $ultimo === null => $produccion ? self::ERROR : self::AVISO,
             ! $ok => self::ERROR,
             $horas > 36 => self::ERROR,
+            isset($ultimo['externo']['ok']) && ! $ultimo['externo']['ok'] => self::AVISO,
             default => self::OK,
         };
         $copias = $ultimo !== null ? count(Respaldo::archivos()) : 0;
+        $externo = match (true) {
+            ! Respaldo::externoConfigurado() => ' Ojo: no hay copia fuera del servidor (falta RESPALDO_DISCO_EXTERNO y RESPALDO_CLAVE).',
+            isset($ultimo['externo']['ok']) && ! $ultimo['externo']['ok'] => ' '.($ultimo['externo']['error'] ?? 'La copia externa falló.'),
+            isset($ultimo['externo']['ok']) => ' Con copia cifrada fuera del servidor.',
+            default => '',
+        };
 
         return [
             'clave' => 'respaldos',
@@ -174,12 +181,13 @@ final class EstadoSistema
                 $ultimo === null => 'Todavía no se hizo ningún backup. Se generan solos todos los días a las 3:30.',
                 ! $ok => 'El último intento falló ('.$fecha?->diffForHumans().'): '.($ultimo['error'] ?? 'error desconocido').'.',
                 $horas > 36 => 'El último backup es de '.$fecha->diffForHumans().': el automático dejó de correr.',
-                default => 'Último backup '.$fecha->diffForHumans().' ('.number_format(($ultimo['bytes'] ?? 0) / 1024 / 1024, 1, ',', '.').' MB). Se guardan los últimos '.$copias.'.',
+                default => 'Último backup '.$fecha->diffForHumans().' ('.number_format(($ultimo['bytes'] ?? 0) / 1024 / 1024, 1, ',', '.').' MB). Se guardan los últimos '.$copias.'.'.$externo,
             },
             'arreglo' => match (true) {
                 $estado === self::OK => null,
+                $estado === self::AVISO && $ok => 'Revisá las credenciales del disco externo (AWS_*) y RESPALDO_CLAVE. Ver docs/ROLLBACK.md.',
                 $ultimo === null => 'Esperá al primer backup nocturno o corré «php artisan chilinga:respaldo». Necesita el volumen persistente.',
-                default => 'Revisá que el volumen persistente tenga espacio y que el scheduler esté activo (SCHEDULER_ENABLED=1).',
+                default => 'Revisá que el volumen persistente tenga espacio y que el scheduler esté activo (servicio scheduler o SCHEDULER_EN_WEB=1).',
             },
             'descarga' => $ok,
         ];

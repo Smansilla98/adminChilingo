@@ -28,6 +28,10 @@
 >
         <form action="{{ $editando ? route('pagos.update', $pago) : route('pagos.store') }}" method="POST" enctype="multipart/form-data" id="form-pago-lineas">
             @csrf
+            @unless($editando)
+                {{-- Un doble envío del formulario no duplica el pago. --}}
+                <input type="hidden" name="client_uuid" value="{{ old('client_uuid', (string) \Illuminate\Support\Str::uuid()) }}">
+            @endunless
             @if($editando) @method('PUT') @endif
 
             <x-ito.form-section title="Cuotas que se pagan" icon="bi-receipt">

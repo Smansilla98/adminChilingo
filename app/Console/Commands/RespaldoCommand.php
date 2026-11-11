@@ -32,6 +32,20 @@ class RespaldoCommand extends Command
             $r['segundos'],
         ));
 
+        $externo = $r['externo'];
+        if ($externo === null) {
+            $this->warn('Sin copia fuera del servidor: configurá RESPALDO_DISCO_EXTERNO y RESPALDO_CLAVE (ver docs/ROLLBACK.md).');
+
+            return self::SUCCESS;
+        }
+        if (! $externo['ok']) {
+            // Falla => el heartbeat del respaldo no se envía y el monitoreo avisa.
+            $this->error($externo['error'] ?? 'No se pudo subir la copia externa.');
+
+            return self::FAILURE;
+        }
+        $this->info('Copia cifrada subida a '.config('operacion.respaldo.disco_externo').': '.($externo['archivo'] ?? ''));
+
         return self::SUCCESS;
     }
 }
