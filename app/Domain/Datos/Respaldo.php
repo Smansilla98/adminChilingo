@@ -175,6 +175,9 @@ class Respaldo
             gzwrite($gz, "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n");
             // Sin buffer: las tablas grandes se leen de a una fila, sin cargar todo en memoria.
             $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+        } elseif ($driver === 'sqlite') {
+            // Las tablas se vuelcan en orden alfabético: sin esto, restaurar choca con las claves foráneas.
+            gzwrite($gz, "PRAGMA foreign_keys=OFF;\n\n");
         }
 
         $filasTotal = 0;

@@ -49,6 +49,8 @@ class PruebaRestauracion
             $base = (string) tempnam(sys_get_temp_dir(), 'restauracion-').'.sqlite';
             touch($base);
             $config['database'] = $base;
+            // Backups viejos no traen PRAGMA foreign_keys=OFF y las tablas van en orden alfabético.
+            $config['foreign_key_constraints'] = false;
         } else {
             throw new RuntimeException("Motor no soportado: {$driver}.");
         }
