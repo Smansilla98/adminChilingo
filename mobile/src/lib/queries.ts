@@ -11,7 +11,6 @@ import type {
   InventarioItem,
   ItemAgenda,
   Me,
-  Paginado,
   Planilla,
   TipoAsistencia,
 } from './types';
@@ -61,15 +60,6 @@ export const useCalendario = (desde: string, hasta: string) =>
     queryKey: ['calendario', desde, hasta],
     queryFn: () => api<{ items: ItemAgenda[] }>(`calendario?desde=${desde}&hasta=${hasta}`).then((r) => r.items),
   });
-
-export const useAlumnos = (q: string) =>
-  useQuery({
-    queryKey: ['alumnos', q],
-    queryFn: () => api<Paginado<{ id: number; nombre: string; bloques?: { id: number; nombre: string }[]; sede?: { nombre: string } | null }>>(`alumnos?q=${encodeURIComponent(q)}`),
-  });
-
-export const useInventario = (q: string) =>
-  useQuery({ queryKey: ['inventario', q], queryFn: () => api<Paginado<InventarioItem>>(`inventario?q=${encodeURIComponent(q)}`) });
 
 export const useInventarioItem = (id: number) =>
   useQuery({ queryKey: ['inventario', 'item', id], queryFn: () => api<{ data: InventarioItem }>(`inventario/${id}`).then((r) => r.data), enabled: id > 0 });

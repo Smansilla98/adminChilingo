@@ -8,7 +8,7 @@ import { C, E, TOQUE } from '@/lib/theme';
 import type { Paginado } from '@/lib/types';
 
 import { Chip } from './form';
-import { ErrorVista, Icon, type Icono, Tenue, Vacio } from './ui';
+import { Aviso, ErrorVista, Icon, type Icono, Tenue, Vacio } from './ui';
 
 export type Filtros = Record<string, string | number | boolean | null | undefined>;
 
@@ -62,6 +62,7 @@ export function ListaPaginada<T>({ ruta, filtros, render, clave, vacio = 'No hay
           <View style={{ gap: E.m, marginBottom: E.s }}>
             {buscar && <Buscador valor={texto} onChange={setTexto} placeholder={placeholderBusqueda} />}
             {cabecera}
+            {lista.isRefetchError && items.length > 0 && <Aviso tono="alerta" texto="No se pudo actualizar la lista. Mostramos lo último guardado." />}
             {total !== undefined && items.length > 0 && <Tenue style={{ fontSize: 13 }}>{total} resultado{total === 1 ? '' : 's'}</Tenue>}
           </View>
         }
