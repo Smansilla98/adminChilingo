@@ -342,6 +342,12 @@ class User extends Authenticatable
         return $this->hasOne(Alumno::class);
     }
 
+    /** Códigos de recuperación de contraseña. */
+    public function recuperacionesClave()
+    {
+        return $this->hasMany(RecuperacionClave::class);
+    }
+
     /**
      * Relación con eventos creados
      */

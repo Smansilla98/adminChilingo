@@ -46,6 +46,7 @@ use App\Http\Controllers\ProgramaGestionController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioMailController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
+use App\Http\Controllers\RecuperarClaveController;
 use App\Http\Controllers\RegistroAlumnoController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\SedeController;
@@ -167,6 +168,13 @@ Route::post('/registro', [RegistroAlumnoController::class, 'store'])->middleware
 Route::get('/register', fn () => redirect()->route('registro.alumno'))->name('register');
 Route::post('/register', fn () => abort(404));
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// === Equipo C: recuperar contraseña (sin sesión) ===
+Route::get('/olvide-mi-clave', [RecuperarClaveController::class, 'create'])->name('recuperar.create');
+Route::post('/olvide-mi-clave', [RecuperarClaveController::class, 'store'])->middleware('throttle:recuperar-clave')->name('recuperar.store');
+Route::get('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmarCreate'])->name('recuperar.confirmar');
+Route::post('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmar'])->middleware('throttle:recuperar-clave')->name('recuperar.confirmar.store');
+// === Fin Equipo C: recuperar contraseña ===
 
 /*
 |--------------------------------------------------------------------------

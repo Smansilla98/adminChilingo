@@ -42,6 +42,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login');
 // Un alumno ya cargado crea su cuenta desde la app (DNI + fecha de nacimiento) y queda adentro.
 Route::post('auth/registro', [AuthController::class, 'registro'])->middleware('throttle:6,1')->name('auth.registro');
+// === Equipo C: recuperar contraseña (sin sesión) ===
+Route::post('auth/recuperar', [AuthController::class, 'recuperar'])->middleware('throttle:recuperar-clave')->name('auth.recuperar');
+Route::post('auth/recuperar/confirmar', [AuthController::class, 'recuperarConfirmar'])->middleware('throttle:recuperar-clave')->name('auth.recuperar.confirmar');
+// === Fin Equipo C: recuperar contraseña ===
 Route::get('salud', fn () => response()->json(['ok' => true, 'version' => 'v1', 'hora' => now()->toIso8601String()]))->name('salud');
 
 // Archivo histórico: lectura del material publicado, sin cuenta (docs/ARCHIVO_HISTORICO.md).

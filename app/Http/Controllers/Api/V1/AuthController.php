@@ -75,6 +75,28 @@ class AuthController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /** «Olvidé mi contraseña»: manda un código al correo o al WhatsApp. Responde igual exista o no la cuenta. */
+    public function recuperar(Request $request, \App\Domain\Acceso\RecuperacionClaveService $recuperacion): JsonResponse
+    {
+        $datos = $request->validate(['usuario' => ['required', 'string', 'max:255']]);
+        $recuperacion->iniciar($datos['usuario']);
+
+        return response()->json(['ok' => true, 'mensaje' => \App\Domain\Acceso\RecuperacionClaveService::RESPUESTA_GENERICA]);
+    }
+
+    /** Confirma el código y cambia la contraseña. Cierra todas las sesiones de la cuenta. */
+    public function recuperarConfirmar(Request $request, \App\Domain\Acceso\RecuperacionClaveService $recuperacion): JsonResponse
+    {
+        $datos = $request->validate([
+            'usuario' => ['required', 'string', 'max:255'],
+            'codigo' => ['required', 'string', 'max:12'],
+            'password' => ['required', 'string', 'confirmed', 'min:'.\App\Domain\Acceso\AjustesCuentas::CLAVE_MINIMA, 'max:255'],
+        ], array_merge(AccesoAlumnoService::mensajesCambio(), ['codigo.required' => 'Escribí el código que te mandamos.']));
+        $recuperacion->confirmar($datos['usuario'], $datos['codigo'], $datos['password']);
+
+        return response()->json(['ok' => true]);
+    }
+
     /** Rota el token actual: emite uno nuevo y revoca el usado en esta llamada. */
     public function refresh(Request $request): JsonResponse
     {
