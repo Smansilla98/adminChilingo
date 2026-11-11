@@ -116,6 +116,55 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->assertNotSoftDeleted('villa_gesell_gastos', ['id' => $gasto->id]);
     }
 
+    public function test_doble_envio_del_formulario_web_no_duplica_el_pago(): void
+    {
+        $ana = $this->inscribirAlumno($this->persona('Ana'), $this->bloque($this->sede('Palomar')));
+        $cuota = $this->cuota();
+        $tesorero = $this->tesorero();
+        $uuid = (string) \Illuminate\Support\Str::uuid();
+        $datos = [
+            'client_uuid' => $uuid,
+            'fecha_pago' => now()->toDateString(),
+            'monto_total' => 24000,
+            'monto_abono_profesor' => '',
+            'lineas' => [['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 24000]],
+        ];
+
+        $this->actingAs($tesorero)->get(route('pagos.create'))->assertOk()->assertSee('name="client_uuid"', false);
+        $primero = $this->actingAs($tesorero)->post(route('pagos.store'), $datos);
+        $pago = Pago::query()->sole();
+        $primero->assertRedirect(route('pagos.show', $pago));
+        $this->actingAs($tesorero)->post(route('pagos.store'), $datos)
+            ->assertRedirect(route('pagos.show', $pago))->assertSessionHas('success', fn ($m) => str_contains($m, 'no se duplicó'));
+        $this->assertSame(1, Pago::query()->count());
+        $this->assertSame(1, PagoDetalle::query()->count());
+    }
+
+    public function test_dos_registros_del_mismo_pago_por_api_quedan_en_uno(): void
+    {
+        $ana = $this->inscribirAlumno($this->persona('Ana'), $this->bloque($this->sede('Palomar')));
+        $cuota = $this->cuota();
+        Sanctum::actingAs($this->tesorero());
+        $datos = [
+            'fecha_pago' => now()->toDateString(),
+            'monto_total' => 24000,
+            'lineas' => [['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 24000]],
+        ];
+
+        // Misma clave por encabezado (no UUID): el reintento devuelve el mismo pago.
+        $id = $this->withHeader('Idempotency-Key', 'caja-palomar-0001')->postJson('/api/v1/pagos', $datos)->assertCreated()->json('data.id');
+        $this->withHeader('Idempotency-Key', 'caja-palomar-0001')->postJson('/api/v1/pagos', $datos)->assertOk()
+            ->assertJsonPath('duplicado', true)->assertJsonPath('data.id', $id);
+
+        // Otra clave, misma cuota ya saldada: se rechaza (no se cobra dos veces).
+        $this->withHeader('Idempotency-Key', 'caja-palomar-0002')->postJson('/api/v1/pagos', $datos)->assertStatus(422);
+        $this->assertSame(1, Pago::query()->count());
+
+        // La clave de otra persona no devuelve un pago ajeno.
+        Sanctum::actingAs($this->admin('Otra'));
+        $this->withHeader('Idempotency-Key', 'caja-palomar-0001')->postJson('/api/v1/pagos', $datos)->assertStatus(422)->assertJsonValidationErrors('client_uuid');
+    }
+
     public function test_borrar_un_alumno_o_una_cuota_con_pagos_no_borra_la_plata(): void
     {
         $bloque = $this->bloque($this->sede('Palomar'));

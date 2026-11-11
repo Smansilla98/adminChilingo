@@ -4,19 +4,17 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Finanzas\PagosDocenteService;
 use App\Domain\Finanzas\PagoService;
+use App\Domain\Finanzas\RegistrarPago;
 use App\Domain\Finanzas\RegistroPagoService;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\PagoResource;
 use App\Models\Cuota;
 use App\Models\Pago;
 use App\Models\PagoDetalle;
-use App\Models\SyncOperacion;
 use App\Services\AmbitoSedeService;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -69,40 +67,17 @@ class PagoController extends Controller
         return response()->json(['data' => $this->ficha($request, $pago)]);
     }
 
-    public function store(Request $request, RegistroPagoService $servicio): JsonResponse
+    public function store(Request $request, RegistrarPago $registrar): JsonResponse
     {
         $this->authorize('create', Pago::class);
-        $uuid = $request->validate(['client_uuid' => 'nullable|uuid'])['client_uuid'] ?? null;
-        if ($uuid && ($previa = SyncOperacion::query()->where('client_uuid', $uuid)->where('tipo', 'pago')->first())) {
-            $pago = Pago::query()->find($previa->respuesta['pago_id'] ?? 0);
-            if ($pago) {
-                return response()->json(['data' => $this->ficha($request, $pago), 'duplicado' => true]);
-            }
-        }
+        ['pago' => $pago, 'duplicado' => $duplicado] = $registrar->ejecutar(
+            $request->except('comprobante'),
+            $request->user(),
+            $request->file('comprobante'),
+            $request->header('Idempotency-Key'),
+        );
 
-        $datos = $request->validate($servicio->reglas(false));
-        try {
-            // Pago y marca de idempotencia en la misma transacción: si otro envío con el mismo
-            // UUID ganó la carrera, este se revierte entero.
-            $pago = DB::transaction(function () use ($servicio, $datos, $request, $uuid) {
-                $pago = $servicio->registrar($datos, $request->user(), $request->file('comprobante'));
-                if ($uuid) {
-                    SyncOperacion::query()->create(['client_uuid' => $uuid, 'user_id' => $request->user()->id, 'tipo' => 'pago', 'respuesta' => ['pago_id' => $pago->id]]);
-                }
-
-                return $pago;
-            });
-        } catch (UniqueConstraintViolationException $e) {
-            $previa = $uuid ? SyncOperacion::query()->where('client_uuid', $uuid)->first() : null;
-            $pago = $previa ? Pago::query()->find($previa->respuesta['pago_id'] ?? 0) : null;
-            if (! $pago) {
-                throw $e;
-            }
-
-            return response()->json(['data' => $this->ficha($request, $pago), 'duplicado' => true]);
-        }
-
-        return response()->json(['data' => $this->ficha($request, $pago), 'duplicado' => false], 201);
+        return response()->json(['data' => $this->ficha($request, $pago), 'duplicado' => $duplicado], $duplicado ? 200 : 201);
     }
 
     public function update(Request $request, Pago $pago, RegistroPagoService $servicio): JsonResponse
