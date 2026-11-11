@@ -265,4 +265,58 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->actingAs($admin)->post(route('gastos.store'), $datos + ['comprobante' => \Illuminate\Http\UploadedFile::fake()->create('virus.exe', 5)])
             ->assertSessionHasErrors('comprobante');
     }
+
+    /**
+     * Dos registros simultáneos del mismo alumno y cuota: el control de duplicados corre
+     * después de bloquear la cuota (SELECT ... FOR UPDATE), así que el segundo espera al primero
+     * y ve su pago ya confirmado. Se verifica el orden de las consultas (MySQL; SQLite no tiene
+     * bloqueos de fila, la prueba se omite allí).
+     */
+    public function test_registro_simultaneo_bloquea_la_cuota_antes_de_revisar_duplicados(): void
+    {
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'mysql') {
+            $this->markTestSkipped('El bloqueo de fila solo aplica en MySQL.');
+        }
+        $ana = $this->inscribirAlumno($this->persona('Ana'), $this->bloque($this->sede('Palomar')));
+        $cuota = $this->cuota();
+        $sql = [];
+        \Illuminate\Support\Facades\DB::listen(function ($q) use (&$sql) {
+            $sql[] = $q->sql;
+        });
+
+        app(\App\Domain\Finanzas\RegistroPagoService::class)->registrar([
+            'fecha_pago' => now()->toDateString(),
+            'monto_total' => 24000,
+            'lineas' => [['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 24000]],
+        ], $this->tesorero());
+
+        $bloqueo = collect($sql)->search(fn ($q) => str_contains($q, 'for update') && str_contains($q, '`cuotas`'));
+        $duplicados = collect($sql)->search(fn ($q) => str_contains($q, '`pago_detalles`') && ! str_starts_with($q, 'insert'));
+        $this->assertNotFalse($bloqueo, 'la cuota debe bloquearse con FOR UPDATE');
+        $this->assertNotFalse($duplicados);
+        $this->assertLessThan($duplicados, $bloqueo, 'el bloqueo va antes que la revisión de duplicados');
+    }
+
+    public function test_pantalla_de_reglas_de_cobro_guarda_y_valida(): void
+    {
+        $admin = $this->admin();
+        $this->actingAs($admin)->get(route('configuracion.reglas-cobro.edit'))->assertOk()->assertSee('Reglas de cobro');
+
+        $this->actingAs($admin)->put(route('configuracion.reglas-cobro.update'), [
+            'recargo' => ['activo' => '1', 'tipo' => 'fijo', 'valor' => '500', 'dias' => '7'],
+            'familiar' => ['activo' => '1', 'porcentaje' => '15'],
+        ])->assertSessionHas('success');
+        $reglas = \App\Domain\Finanzas\ReglasCobro::actuales();
+        $this->assertTrue($reglas['recargo']['activo']);
+        $this->assertSame('fijo', $reglas['recargo']['tipo']);
+        $this->assertSame(500.0, $reglas['recargo']['valor']);
+        $this->assertSame(15.0, $reglas['familiar']['porcentaje']);
+        $this->assertFalse($reglas['adelantado']['activo'], 'lo que no se marca queda apagado');
+
+        // Recargo prendido sin valor: no se guarda.
+        $this->actingAs($admin)->put(route('configuracion.reglas-cobro.update'), [
+            'recargo' => ['activo' => '1', 'tipo' => 'porcentaje', 'valor' => ''],
+        ])->assertSessionHasErrors('recargo.valor');
+        $this->assertSame(500.0, \App\Domain\Finanzas\ReglasCobro::actuales()['recargo']['valor']);
+    }
 }
