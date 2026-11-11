@@ -365,4 +365,11 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     // Administración: cerrar sesiones de la app de otra cuenta (celular perdido, cambio de dueño).
     Route::delete('usuarios/{usuario}/sesiones/{sesion}', [\App\Http\Controllers\Api\V1\SesionesUsuarioController::class, 'cerrar'])->whereNumber(['usuario', 'sesion'])->name('usuarios.sesiones.destroy');
     Route::delete('usuarios/{usuario}/sesiones', [\App\Http\Controllers\Api\V1\SesionesUsuarioController::class, 'cerrarTodas'])->whereNumber('usuario')->name('usuarios.sesiones.destroy-todas');
+    // === Equipo B: Finanzas ===
+    Route::post('gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->whereNumber('gasto')->middleware('permiso:gastos.delete')->name('gastos.restaurar');
+    Route::middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->prefix('villa-gesell')->name('villa-gesell.')->group(function () {
+        Route::get('gastos/papelera', [VillaGesellController::class, 'papeleraGastos'])->name('gastos.papelera');
+        Route::post('gastos/{gasto}/restaurar', [VillaGesellController::class, 'restaurarGasto'])->withTrashed()->whereNumber('gasto')->name('gastos.restaurar');
+    });
+    // === Fin Equipo B ===
 });

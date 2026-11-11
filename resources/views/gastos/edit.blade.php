@@ -5,7 +5,7 @@
 
 @section('content')
 <x-ito.shell-page :title="'Editar gasto #'.$gasto->id" :subtitle="$gasto->fecha?->format('d/m/Y')" :plain="true">
-    <form action="{{ route('gastos.update', $gasto) }}" method="POST">
+    <form action="{{ route('gastos.update', $gasto) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         @include('gastos._form', ['gasto' => $gasto])

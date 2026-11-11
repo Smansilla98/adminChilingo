@@ -5,10 +5,16 @@ namespace App\Models;
 use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $eliminado_por
+ * @property string|null $motivo_eliminacion
+ */
 class Gasto extends Model
 {
-    use Auditable;
+    use Auditable, SoftDeletes;
 
     protected $fillable = [
         'sede_id',
@@ -27,6 +33,7 @@ class Gasto extends Model
         'fecha' => 'date',
         'monto' => 'decimal:2',
         'aprobado_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public const TIPOS = [
@@ -56,6 +63,12 @@ class Gasto extends Model
     public function bloque(): BelongsTo
     {
         return $this->belongsTo(Bloque::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function eliminadoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'eliminado_por');
     }
 
     /** @return BelongsTo<User, $this> */

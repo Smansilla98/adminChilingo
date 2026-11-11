@@ -3,6 +3,7 @@
 namespace App\Domain\Finanzas;
 
 use App\Models\Alumno;
+use App\Models\Auditoria;
 use App\Models\Cuota;
 use App\Models\Pago;
 use App\Models\PagoDetalle;
@@ -12,7 +13,6 @@ use App\Support\LiquidacionDocente;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -50,11 +50,6 @@ class RegistroPagoService
         return $rules;
     }
 
-    public function tablasDisponibles(): bool
-    {
-        return Schema::hasTable('pagos') && Schema::hasTable('pago_detalles') && Schema::hasTable('alumnos') && Schema::hasTable('cuotas');
-    }
-
     /**
      * @param  array<string, mixed>  $validado  resultado de reglas()
      */
@@ -89,11 +84,16 @@ class RegistroPagoService
      */
     public function actualizar(Pago $pago, array $validado, User $por, ?UploadedFile $comprobante = null, bool $quitarComprobante = false): Pago
     {
+        if ($pago->estaAnulado()) {
+            throw ValidationException::withMessages(['pago' => 'Un pago anulado no se puede editar.']);
+        }
         $anterior = $pago->comprobante_path;
         $nuevo = $comprobante ? $this->guardarArchivo($comprobante) : null;
 
         try {
             DB::transaction(function () use ($pago, $validado, $por, $anterior, $nuevo, $quitarComprobante) {
+                $pago = Pago::query()->whereKey($pago->id)->lockForUpdate()->firstOrFail();
+                $antes = $this->foto($pago);
                 $plan = $this->preparar($validado, $por, $pago->id);
                 $pago->update([
                     'fecha_pago' => $validado['fecha_pago'],
@@ -101,8 +101,10 @@ class RegistroPagoService
                     'comprobante_path' => $nuevo ?? ($quitarComprobante ? null : $anterior),
                     'notas' => $validado['notas'] ?? null,
                 ]);
-                $pago->detalles()->delete();
+                // Uno por uno (no en masa): cada línea quitada queda en la auditoría.
+                $pago->detalles()->get()->each(fn (PagoDetalle $d) => $d->delete());
                 $this->crearDetalles($pago, $plan);
+                Auditoria::registrar('editado', $pago, $antes, $this->foto($pago->fresh()));
             });
         } catch (\Throwable $e) {
             if ($nuevo) {
@@ -117,6 +119,27 @@ class RegistroPagoService
         }
 
         return $pago->fresh();
+    }
+
+    /**
+     * Foto completa del pago (cabecera y líneas) para la auditoría de una edición.
+     *
+     * @return array<string, mixed>
+     */
+    public function foto(Pago $pago): array
+    {
+        return [
+            'fecha_pago' => $pago->fecha_pago->toDateString(),
+            'monto_total' => (string) $pago->monto_total,
+            'comprobante_path' => $pago->comprobante_path,
+            'notas' => $pago->notas,
+            'lineas' => $pago->detalles()->orderBy('id')->get()->map(fn (PagoDetalle $d) => [
+                'alumno_id' => (int) $d->alumno_id,
+                'cuota_id' => (int) $d->cuota_id,
+                'monto' => (string) $d->monto,
+                'abono_profesor' => $d->abono_profesor !== null ? (string) $d->abono_profesor : null,
+            ])->values()->all(),
+        ];
     }
 
     /**
@@ -193,7 +216,7 @@ class RegistroPagoService
     private function crearDetalles(Pago $pago, array $plan): void
     {
         $lineas = $plan['lineas'];
-        $conAbono = $plan['liquidar'] && Schema::hasColumn('pago_detalles', 'abono_profesor');
+        $conAbono = $plan['liquidar'];
         $abonos = [];
         if ($conAbono && $plan['totalAbono'] !== null && $lineas !== []) {
             $abonos = $plan['usarPreset'] && $plan['abonosPreset'] !== []
@@ -278,10 +301,7 @@ class RegistroPagoService
         if ($filtro !== null) {
             $ambito->aplicarCuotas($q, $filtro);
         }
-        if (Schema::hasColumn('cuotas', 'activo')) {
-            $q->orderBy('activo', 'desc');
-        }
-        $cuotas = $q->with(['bloque.sede', 'bloque.profesor', 'sede'])->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
+        $cuotas = $q->orderBy('activo', 'desc')->with(['bloque.sede', 'bloque.profesor', 'sede'])->orderBy('año', 'desc')->orderBy('mes', 'desc')->orderBy('id', 'desc')->get();
 
         return $cuotas->map(function (Cuota $c) {
             $sede = LiquidacionDocente::sedeParaCuota($c);
@@ -293,7 +313,7 @@ class RegistroPagoService
                 'nombre' => $c->nombre,
                 'anio' => (int) $c->año,
                 'mes' => $c->mes,
-                'alcance' => Schema::hasColumn('cuotas', 'alcance') ? ($c->alcance ?? 'bloque') : 'bloque',
+                'alcance' => $c->alcance ?? 'bloque',
                 'bloque_id' => $c->bloque_id,
                 'bloque' => $c->bloque?->nombre,
                 'sede_id' => $c->sede_id,
@@ -313,23 +333,16 @@ class RegistroPagoService
      */
     public function alumnosParaCuota(Cuota $cuota, ?int $exceptoPagoId = null): array
     {
-        if (! Schema::hasTable('pago_detalles') || ! Schema::hasTable('alumnos')) {
-            return [];
-        }
         $cuota->loadMissing(['bloque.sede', 'sede']);
         $query = Alumno::query()->where('activo', true)->orderBy('nombre_apellido')->with('sede');
-        $alcance = Schema::hasColumn('cuotas', 'alcance') ? $cuota->alcanceNormalizado() : Cuota::ALCANCE_BLOQUE;
+        $alcance = $cuota->alcanceNormalizado();
 
         if ($alcance === Cuota::ALCANCE_BLOQUE) {
             if (! $cuota->bloque_id) {
                 return [];
             }
             $bid = (int) $cuota->bloque_id;
-            if (Schema::hasTable('alumno_bloque')) {
-                $query->where(fn ($q) => $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))->orWhere('bloque_id', $bid));
-            } else {
-                $query->where('bloque_id', $bid);
-            }
+            $query->where(fn ($q) => $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))->orWhere('bloque_id', $bid));
             $ctx = $cuota->bloque?->nombre ?? '';
         } elseif ($alcance === Cuota::ALCANCE_GENERAL) {
             $query->where(fn ($q) => $q->whereHas('bloques')->orWhereNotNull('bloque_id'));
@@ -342,11 +355,9 @@ class RegistroPagoService
             return [];
         }
 
-        if (Schema::hasTable('cuota_alumno')) {
-            $soloCuota = $cuota->alumnos()->pluck('alumnos.id');
-            if ($soloCuota->isNotEmpty()) {
-                $query->whereIn('alumnos.id', $soloCuota->all());
-            }
+        $soloCuota = $cuota->alumnos()->pluck('alumnos.id');
+        if ($soloCuota->isNotEmpty()) {
+            $query->whereIn('alumnos.id', $soloCuota->all());
         }
         $yaPagaron = PagoDetalle::query()->where('cuota_id', $cuota->id)
             ->when($exceptoPagoId !== null, fn ($q) => $q->where('pago_id', '!=', $exceptoPagoId))

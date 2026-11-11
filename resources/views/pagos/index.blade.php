@@ -40,6 +40,14 @@
                 <label>Hasta</label>
                 <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}">
             </div>
+            <div class="ito-field">
+                <label>Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="vigentes" @selected(request('estado') === 'vigentes')>Vigentes</option>
+                    <option value="anulados" @selected(request('estado') === 'anulados')>Anulados</option>
+                </select>
+            </div>
             <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
         </form>
     </x-slot:toolbar>
@@ -52,6 +60,7 @@
                 'cuota_id' => 'Cuota',
                 'desde' => 'Desde',
                 'hasta' => 'Hasta',
+                'estado' => 'Estado',
             ]"
         />
     </x-slot:filters>

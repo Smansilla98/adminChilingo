@@ -428,6 +428,7 @@ Route::middleware(['auth'])->group(function () {
         ->middlewareFor(['edit', 'update'], 'permiso:gastos.update')
         ->middlewareFor('destroy', 'permiso:gastos.delete');
     Route::post('/gastos/{gasto}/aprobar', [GastoController::class, 'aprobar'])->middleware('permiso:gastos.approve')->name('gastos.aprobar');
+    Route::get('/gastos/{gasto}/comprobante', [GastoController::class, 'comprobante'])->middleware('permiso:gastos.view')->name('gastos.comprobante');
 
     // Inventario y compras
     Route::resource('inventarios', InventarioItemController::class)
@@ -461,4 +462,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])->middleware(['permiso:asistencias.create', 'modulo:profesor.asistencia'])->name('profesor.asistencias.store');
     Route::get('/profesor/asistencias/matriz', [AsistenciaController::class, 'index'])->middleware(['permiso:asistencias.view', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix');
     Route::post('/profesor/asistencias/matriz', [AsistenciaController::class, 'matrixUpdate'])->middleware(['permiso:asistencias.create|asistencias.update', 'modulo:profesor.asistencia'])->name('profesor.asistencias.matrix.update');
+    // === Equipo B: Finanzas ===
+    Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');
+    Route::post('/villa-gesell/gastos/{gasto}/restaurar', [VillaGesellGastoController::class, 'restaurar'])->withTrashed()->middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->name('villa-gesell.gastos.restaurar');
+    // === Fin Equipo B ===
 });

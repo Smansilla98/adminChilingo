@@ -7,7 +7,6 @@ use App\Models\ComprobanteCuotaAlumno;
 use App\Models\Pago;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class PagoService
@@ -33,10 +32,11 @@ class PagoService
                 'motivo_anulacion' => $motivo,
             ])->save();
 
-            if (Schema::hasColumn('comprobantes_cuota_alumnos', 'pago_id')) {
-                ComprobanteCuotaAlumno::query()->where('pago_id', $pago->id)
-                    ->update(['pago_id' => null, 'estado' => 'pendiente']);
-            }
+            // Por modelo (no en masa) y auditado: el comprobante vuelve a revisión.
+            ComprobanteCuotaAlumno::query()->where('pago_id', $pago->id)->get()->each(function (ComprobanteCuotaAlumno $c) use ($pago) {
+                Auditoria::registrar('desvinculado', $c, ['pago_id' => $pago->id, 'estado' => $c->estado], ['pago_id' => null, 'estado' => 'pendiente']);
+                $c->update(['pago_id' => null, 'estado' => 'pendiente']);
+            });
 
             Auditoria::registrar('anulado', $pago, null, ['motivo' => $motivo, 'monto_total' => (string) $pago->monto_total]);
 
