@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Icon, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Titulo } from '@/components/ui';
+import { MiHorario } from '@/features/asistencia/MiAsistencia';
 import { useAuth } from '@/lib/auth';
 import { formatearFecha } from '@/lib/formato';
 import { RUTAS } from '@/lib/modulos';
@@ -45,7 +46,13 @@ export default function Inicio() {
       <Titulo>{inicio.data?.saludo ?? 'Hola'}</Titulo>
 
       {!online && <Aviso tono="alerta" texto="Sin conexión: mostramos lo último guardado. La asistencia se guarda y se envía sola al volver la señal." />}
-      {pendientes.length > 0 && <Aviso tono="info" texto={`${pendientes.length} planilla(s) de asistencia esperando conexión para enviarse.`} />}
+      {pendientes.some((e) => !e.fallida) && <Aviso tono="info" texto={`${pendientes.filter((e) => !e.fallida).length} planilla(s) de asistencia esperando conexión para enviarse.`} />}
+      {pendientes.some((e) => e.fallida) && (
+        <Tarjeta acento={C.peligro} onPress={() => router.push('/perfil' as never)}>
+          <Texto style={{ fontWeight: '700' }}>{pendientes.filter((e) => e.fallida).length} planilla(s) de asistencia no se pudieron enviar</Texto>
+          <Tenue>Tocá para ver el motivo y reintentar.</Tenue>
+        </Tarjeta>
+      )}
 
       {contextos.length > 1 && (
         <View style={{ gap: E.s }}>
@@ -63,23 +70,23 @@ export default function Inicio() {
 
       {modulos.length > 0 && (
         <>
-          <Subtitulo>Accesos</Subtitulo>
-          <View style={s.grilla}>
-            {modulos.map((m) => {
-              const destino = RUTAS[m.clave];
-              return (
-                <Pressable
-                  key={m.clave}
-                  style={({ pressed }) => [s.modulo, pressed && { opacity: 0.7 }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={m.etiqueta}
-                  onPress={() => router.push(destino.ruta as never)}>
-                  <Icon name={destino.icono} size={30} color={C.acento} />
-                  <Text style={s.moduloTexto} numberOfLines={2}>{m.etiqueta}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
+            <Subtitulo>Accesos</Subtitulo>
+            <View style={s.grilla}>
+              {modulos.map((m) => {
+                const destino = RUTAS[m.clave];
+                return (
+                  <Pressable
+                    key={m.clave}
+                    style={({ pressed }) => [s.modulo, pressed && { opacity: 0.7 }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={m.etiqueta}
+                    onPress={() => router.push(destino.ruta as never)}>
+                    <Icon name={destino.icono} size={30} color={C.acento} />
+                    <Text style={s.moduloTexto} numberOfLines={2}>{m.etiqueta}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
         </>
       )}
     </Pantalla>
@@ -125,6 +132,7 @@ function TarjetaInicio({ tarjeta }: { tarjeta: TarjetaApi }) {
     case 'mi_espacio': {
       const cuota = d.cuota;
       return (
+        <>
         <Tarjeta acento={C.info} onPress={() => router.push('/mi-actividad' as never)}>
           <Fila><Icon name="school" size={22} color={C.info} /><Texto style={s.cabecera}>Mi cursada</Texto></Fila>
           <Texto>{(d.bloques ?? []).map((b: any) => b.nombre).join(' · ') || 'Sin bloque asignado'}</Texto>
@@ -139,8 +147,10 @@ function TarjetaInicio({ tarjeta }: { tarjeta: TarjetaApi }) {
             <View style={{ flex: 1 }}><Boton titulo="Mi actividad" icono="checklist" onPress={() => router.push('/mi-actividad' as never)} /></View>
             <View style={{ flex: 1 }}><Boton titulo="Pagar" icono="payments" variante="secundario" onPress={() => router.push('/mi-cuenta' as never)} /></View>
           </Fila>
-          <Tenue>Cuotas pendientes y pagadas, y el material de estudio de tu año.</Tenue>
+          <Tenue>Tus cuotas, tu asistencia y el material de estudio de tu año.</Tenue>
         </Tarjeta>
+        <MiHorario />
+        </>
       );
     }
     case 'finanzas':

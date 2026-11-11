@@ -12,11 +12,13 @@ class NotificacionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $avisos = $user->notifications()->latest()->limit(50)->get();
+        // Paginado (30 por página, más nuevos primero): la app carga más al llegar al final.
+        $pagina = $user->notifications()->latest()->paginate(min(50, max(10, $request->integer('por_pagina', 30))));
 
         return response()->json([
             'no_leidas' => $user->unreadNotifications()->count(),
-            'data' => $avisos->map(fn ($n) => [
+            'meta' => ['current_page' => $pagina->currentPage(), 'last_page' => $pagina->lastPage(), 'total' => $pagina->total()],
+            'data' => collect($pagina->items())->map(fn ($n) => [
                 'id' => $n->id,
                 'tipo' => $n->data['tipo'] ?? class_basename($n->type),
                 'titulo' => $n->data['titulo'] ?? '',

@@ -359,4 +359,10 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
             Route::delete('eventos/{acontecimiento}', [ArchivoGestionController::class, 'eliminarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.destroy');
         });
     });
+    // === Equipo D: app móvil ===
+    // Asistencia propia del alumno (porcentaje por bloque y mes, últimas clases y horario semanal).
+    Route::get('mi/asistencia', \App\Http\Controllers\Api\V1\MiAsistenciaController::class)->name('mi.asistencia');
+    // Administración: cerrar sesiones de la app de otra cuenta (celular perdido, cambio de dueño).
+    Route::delete('usuarios/{usuario}/sesiones/{sesion}', [\App\Http\Controllers\Api\V1\SesionesUsuarioController::class, 'cerrar'])->whereNumber(['usuario', 'sesion'])->name('usuarios.sesiones.destroy');
+    Route::delete('usuarios/{usuario}/sesiones', [\App\Http\Controllers\Api\V1\SesionesUsuarioController::class, 'cerrarTodas'])->whereNumber('usuario')->name('usuarios.sesiones.destroy-todas');
 });
