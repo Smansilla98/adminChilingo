@@ -475,4 +475,20 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/promociones/{promocion}/descartar', [\App\Http\Controllers\ProgresoController::class, 'descartar'])->name('promociones.descartar');
         });
     });
+    Route::get('/mis-liquidaciones', [\App\Http\Controllers\LiquidacionDocenteController::class, 'mias'])->name('liquidaciones.mias');
+    Route::get('/liquidaciones/{liquidacion}/recibo', [\App\Http\Controllers\LiquidacionDocenteController::class, 'recibo'])->whereNumber('liquidacion')->name('liquidaciones.recibo');
+    Route::middleware('permiso:liquidaciones.view')->prefix('liquidaciones')->name('liquidaciones.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\LiquidacionDocenteController::class, 'index'])->name('index');
+        Route::get('/{liquidacion}', [\App\Http\Controllers\LiquidacionDocenteController::class, 'show'])->whereNumber('liquidacion')->name('show');
+        Route::middleware('permiso:liquidaciones.manage')->group(function () {
+            Route::post('/generar', [\App\Http\Controllers\LiquidacionDocenteController::class, 'generar'])->name('generar');
+            Route::post('/{liquidacion}/aprobar', [\App\Http\Controllers\LiquidacionDocenteController::class, 'aprobar'])->whereNumber('liquidacion')->name('aprobar');
+            Route::post('/{liquidacion}/reabrir', [\App\Http\Controllers\LiquidacionDocenteController::class, 'reabrir'])->whereNumber('liquidacion')->name('reabrir');
+            Route::post('/{liquidacion}/pagar', [\App\Http\Controllers\LiquidacionDocenteController::class, 'pagar'])->whereNumber('liquidacion')->name('pagar');
+            Route::get('/docentes/{profesor}/valor-hora', [\App\Http\Controllers\LiquidacionDocenteController::class, 'tarifa'])->name('tarifa');
+            Route::put('/docentes/{profesor}/valor-hora', [\App\Http\Controllers\LiquidacionDocenteController::class, 'guardarTarifa'])->name('tarifa.update');
+            Route::post('/ajustes', [\App\Http\Controllers\LiquidacionDocenteController::class, 'ajuste'])->name('ajustes.store');
+            Route::delete('/ajustes/{ajuste}', [\App\Http\Controllers\LiquidacionDocenteController::class, 'eliminarAjuste'])->name('ajustes.destroy');
+        });
+    });
 });

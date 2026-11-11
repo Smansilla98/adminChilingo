@@ -125,7 +125,12 @@ return [
         ],
         'Reportes' => [
             'reportes.view' => 'Ver reportes',
+            'reportes.direccion' => 'Ver el tablero de dirección',
             'auditoria.view' => 'Ver auditoría',
+        ],
+        'Liquidación docente' => [
+            'liquidaciones.view' => 'Ver liquidaciones docentes',
+            'liquidaciones.manage' => 'Liquidar docentes (horas, valor hora, aprobar y pagar)',
         ],
         'Notificaciones' => [
             'notificaciones.send' => 'Enviar recordatorios y avisos',
@@ -172,6 +177,7 @@ return [
                 'eventos.view', 'eventos.create', 'eventos.update', 'eventos.delete',
                 'shows.view', 'shows.manage', 'calendario.view', 'villa_gesell.manage',
                 'partituras.view', 'reportes.view', 'inventario.view', 'becas.view',
+                'reportes.direccion',
             ],
         ],
         'coordinador_area' => [
@@ -271,6 +277,7 @@ return [
             'permisos' => [
                 'cuotas.view', 'becas.view', 'pagos.view', 'comprobantes.view',
                 'facturacion.view', 'gastos.view', 'compras.view', 'reportes.view', 'sedes.view',
+                'reportes.direccion', 'liquidaciones.view',
             ],
         ],
         'tesorero' => [
@@ -286,6 +293,7 @@ return [
                 'facturacion.view', 'facturacion.manage',
                 'gastos.view', 'gastos.create', 'gastos.update', 'gastos.approve',
                 'compras.view', 'compras.approve', 'reportes.view', 'notificaciones.send',
+                'reportes.direccion', 'liquidaciones.view', 'liquidaciones.manage',
             ],
         ],
     ],
@@ -335,5 +343,7 @@ return [
         'avisos_config' => ['etiqueta' => 'Avisos y cobro', 'icono' => 'notifications_active', 'permisos' => ['notificaciones.send']],
         // Equipo G
         'progreso' => ['etiqueta' => 'Progreso por toque', 'icono' => 'trending_up', 'permisos' => ['seguimiento.view']],
+        'mis_liquidaciones' => ['etiqueta' => 'Mis liquidaciones', 'icono' => 'request_quote', 'permisos' => ['@profesor']],
+        'direccion' => ['etiqueta' => 'Tablero de dirección', 'icono' => 'insights', 'permisos' => ['reportes.direccion']],
     ],
 ];

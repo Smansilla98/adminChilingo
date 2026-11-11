@@ -362,6 +362,9 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
 
     // === Equipo G: progreso por toque, liquidación docente y tablero de dirección ===
     Route::get('mi/progreso', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'mio'])->name('mi.progreso');
+    Route::get('mi/liquidaciones', [\App\Http\Controllers\Api\V1\LiquidacionController::class, 'mias'])->name('mi.liquidaciones');
+    Route::get('liquidaciones/{liquidacion}', [\App\Http\Controllers\Api\V1\LiquidacionController::class, 'show'])->whereNumber('liquidacion')->name('liquidaciones.show');
+    Route::get('liquidaciones/{liquidacion}/recibo', [\App\Http\Controllers\Api\V1\LiquidacionController::class, 'recibo'])->whereNumber('liquidacion')->middleware('throttle:20,1')->name('liquidaciones.recibo');
     Route::middleware('permiso:seguimiento.view')->prefix('progreso')->name('progreso.')->group(function () {
         Route::get('bloques', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'bloques'])->name('bloques');
         Route::get('bloques/{bloque}', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'bloque'])->whereNumber('bloque')->name('bloque');

@@ -47,6 +47,7 @@ class Navegacion
             $mod('profesor.mis_alumnos') ? self::link('profesor.alumnos', 'Mis alumnos', 'bi-people', 'profesor.alumnos*') : null,
             $u->can('seguimiento.view') ? self::link('progreso.index', 'Progreso por toque', 'bi-graph-up-arrow', 'progreso.*') : null,
             $mod('profesor.pagos_cuotas') ? self::link('profesor.pagos-cuotas.index', 'Pagos de cuotas', 'bi-cash-stack', 'profesor.pagos-cuotas.*') : null,
+            $u->isProfesor() ? self::link('liquidaciones.mias', 'Mis liquidaciones', 'bi-receipt-cutoff', 'liquidaciones.mias') : null,
             $mod('comprobantes') ? self::link('comprobantes-cuota-alumnos.create', 'Cargar comprobante', 'bi-upload', 'comprobantes-cuota-alumnos.create') : null,
             $mod('comprobantes') ? self::link('comprobantes-cuota-alumnos.index', 'Comprobantes', 'bi-receipt', 'comprobantes-cuota-alumnos.*') : null,
             $mod('profesor.mis_eventos') ? self::link('profesor.eventos', 'Mis eventos', 'bi-calendar-event', 'profesor.eventos*') : null,
@@ -122,6 +123,7 @@ class Navegacion
                 $mod('comprobantes') ? self::link('comprobantes-cuota-alumnos.index', 'Comprobantes', 'bi-upload', 'comprobantes-cuota-alumnos.*') : null,
                 $mod('admin.facturacion_mensual') ? self::link('facturacion-mensual.index', 'Facturación mensual', 'bi-file-earmark-text', 'facturacion-mensual.*') : null,
                 $mod('admin.gastos') ? self::link('gastos.index', 'Gastos', 'bi-wallet2', 'gastos.*') : null,
+                $u->can('liquidaciones.view') ? self::link('liquidaciones.index', 'Liquidación docente', 'bi-person-workspace', 'liquidaciones.index') : null,
                 $mod('admin.reportes') ? self::link('reportes.index', 'Reportes', 'bi-graph-up', 'reportes.*') : null,
                 $u->can('facturacion.view') ? self::link('operativo.cierre-mes', 'Cierre de mes', 'bi-calendar-check', 'operativo.cierre-mes') : null,
             ]);
