@@ -42,7 +42,9 @@ use App\Http\Controllers\PlanComprasController;
 use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\ProfesorPagoCuotaController;
 use App\Http\Controllers\ProgramaController;
+use App\Http\Controllers\ProgramaEdicionController;
 use App\Http\Controllers\ProgramaGestionController;
+use App\Http\Controllers\ProgramaPartiturasController;
 use App\Http\Controllers\RecordatorioChatbotController;
 use App\Http\Controllers\RecordatorioMailController;
 use App\Http\Controllers\RecordatorioWhatsAppController;
@@ -114,7 +116,7 @@ require __DIR__.'/archivo.php';
 // Programa y partituras públicos (lectura, como la biblioteca)
 Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
     Route::get('/', [ProgramaController::class, 'index'])->name('programa.index');
-    Route::get('/partituras', [ProgramaController::class, 'partiturasIndex'])->name('programa.partituras.index');
+    Route::get('/partituras', [ProgramaPartiturasController::class, 'partiturasIndex'])->name('programa.partituras.index');
     Route::get('/discografia', [DiscografiaController::class, 'index'])->name('programa.discos.index');
     Route::get('/discografia/{disco}', [DiscografiaController::class, 'show'])->name('programa.discos.show');
     Route::get('/discografia/{disco}/portada', [DiscografiaController::class, 'portada'])->name('programa.discos.portada');
@@ -139,8 +141,8 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
         Route::post('/toque/{programaRitmo:slug}/editor/referencia', [PartituraController::class, 'subirReferencia'])
             ->middleware(['throttle:10,1', 'edicion.programa'])
             ->name('programa.toque.editor.referencia');
-        Route::get('/toque/{programaRitmo:slug}/editar', [ProgramaController::class, 'editToque'])->middleware('edicion.programa')->name('programa.toque.edit');
-        Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaController::class, 'updateToque'])
+        Route::get('/toque/{programaRitmo:slug}/editar', [ProgramaEdicionController::class, 'editToque'])->middleware('edicion.programa')->name('programa.toque.edit');
+        Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaEdicionController::class, 'updateToque'])
             ->middleware(['throttle:20,1', 'edicion.programa'])
             ->name('programa.toque.update');
         // === Equipo E: grabación de referencia, exportación y transcripción ===
@@ -353,12 +355,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Programa y partituras (administración)
     Route::middleware('permiso:partituras.admin')->group(function () {
-        Route::get('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'editPartitura'])->name('programa.toque.partitura.edit');
-        Route::post('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaController::class, 'updatePartitura'])->name('programa.toque.partitura.update');
-        Route::post('/programa/partituras/cargar-cuadernillo', [ProgramaController::class, 'importarCuadernillo'])->name('programa.partituras.importar-cuadernillo');
-        Route::post('/programa/partituras/toques', [ProgramaController::class, 'storeToque'])->name('programa.partituras.toques.store');
-        Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaController::class, 'editSeccion'])->name('programa.seccion.edit');
-        Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaController::class, 'updateSeccion'])->name('programa.seccion.update');
+        Route::get('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaPartiturasController::class, 'editPartitura'])->name('programa.toque.partitura.edit');
+        Route::post('/programa/toque/{programaRitmo:slug}/partitura', [ProgramaPartiturasController::class, 'updatePartitura'])->name('programa.toque.partitura.update');
+        Route::post('/programa/partituras/cargar-cuadernillo', [ProgramaPartiturasController::class, 'importarCuadernillo'])->name('programa.partituras.importar-cuadernillo');
+        Route::post('/programa/partituras/toques', [ProgramaPartiturasController::class, 'storeToque'])->name('programa.partituras.toques.store');
+        Route::get('/programa/seccion/{programaSeccion:slug}/editar', [ProgramaEdicionController::class, 'editSeccion'])->name('programa.seccion.edit');
+        Route::put('/programa/seccion/{programaSeccion:slug}', [ProgramaEdicionController::class, 'updateSeccion'])->name('programa.seccion.update');
         Route::get('/programa/discografia/{disco}/editar', [DiscografiaController::class, 'edit'])->name('programa.discos.edit');
         Route::put('/programa/discografia/{disco}', [DiscografiaController::class, 'update'])->name('programa.discos.update');
         Route::get('/programa/gestion', [ProgramaGestionController::class, 'index'])->name('programa.gestion');

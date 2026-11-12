@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property array<string, mixed>|null $resumen_medios resumen calculado para el listado de partituras (no es columna)
+ */
 class ProgramaRitmo extends Model
 {
     protected $table = 'programa_ritmos';
