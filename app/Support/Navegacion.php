@@ -94,6 +94,7 @@ class Navegacion
             $grupos[] = self::grupo('personas', 'Personas', [
                 $mod('admin.personas') ? self::link('personas.index', 'Personas', 'bi-person-vcard', 'personas.*') : null,
                 $mod('admin.alumnos') ? self::link('alumnos.index', 'Alumnos', 'bi-people', 'alumnos.*') : null,
+                $u->can('alumnos.view') ? self::link('preinscripciones.index', 'Preinscripciones', 'bi-person-plus', 'preinscripciones.*') : null,
                 $mod('admin.profesores') ? self::link('profesores.index', 'Profesores', 'bi-person-badge', 'profesores.*') : null,
                 $u->can('usuarios.view') ? self::link('usuarios.index', 'Usuarios y permisos', 'bi-shield-lock', 'usuarios.*') : null,
             ]);

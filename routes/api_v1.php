@@ -411,6 +411,14 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
         Route::get('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'ajustes'])->name('configuracion.cuentas');
         Route::put('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'guardarAjustes'])->name('configuracion.cuentas.update');
     });
+    // Bandeja de preinscripciones (app).
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('preinscripciones', [\App\Http\Controllers\Api\V1\PreinscripcionController::class, 'index'])->name('preinscripciones.api.index');
+    });
+    Route::middleware('permiso:alumnos.create')->group(function () {
+        Route::post('preinscripciones/{preinscripcion}/aprobar', [\App\Http\Controllers\Api\V1\PreinscripcionController::class, 'aprobar'])->name('preinscripciones.api.aprobar');
+        Route::post('preinscripciones/{preinscripcion}/rechazar', [\App\Http\Controllers\Api\V1\PreinscripcionController::class, 'rechazar'])->name('preinscripciones.api.rechazar');
+    });
     // === Fin Equipo C (con sesión) ===
     // === Equipo D: app móvil ===
     // Asistencia propia del alumno (porcentaje por bloque y mes, últimas clases y horario semanal).

@@ -178,6 +178,9 @@ Route::get('/olvide-mi-clave', [RecuperarClaveController::class, 'create'])->nam
 Route::post('/olvide-mi-clave', [RecuperarClaveController::class, 'store'])->middleware('throttle:recuperar-clave')->name('recuperar.store');
 Route::get('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmarCreate'])->name('recuperar.confirmar');
 Route::post('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmar'])->middleware('throttle:recuperar-clave')->name('recuperar.confirmar.store');
+// === Equipo C: preinscripción pública (lista de espera) ===
+Route::get('/inscripcion', [\App\Http\Controllers\PreinscripcionPublicController::class, 'create'])->name('inscripcion.create');
+Route::post('/inscripcion', [\App\Http\Controllers\PreinscripcionPublicController::class, 'store'])->middleware('throttle:preinscripcion')->name('inscripcion.store');
 // === Fin Equipo C: recuperar contraseña ===
 
 /*
@@ -477,6 +480,15 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permiso:usuarios.permissions')->prefix('configuracion/cuentas')->name('configuracion.cuentas.')->group(function () {
         Route::get('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'ajustes'])->name('edit');
         Route::put('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'guardarAjustes'])->name('update');
+    });
+    // Bandeja de preinscripciones: ver, y aprobar o rechazar.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('/preinscripciones', [\App\Http\Controllers\PreinscripcionController::class, 'index'])->name('preinscripciones.index');
+        Route::get('/preinscripciones/{preinscripcion}', [\App\Http\Controllers\PreinscripcionController::class, 'show'])->name('preinscripciones.show');
+    });
+    Route::middleware('permiso:alumnos.create')->group(function () {
+        Route::post('/preinscripciones/{preinscripcion}/aprobar', [\App\Http\Controllers\PreinscripcionController::class, 'aprobar'])->name('preinscripciones.aprobar');
+        Route::post('/preinscripciones/{preinscripcion}/rechazar', [\App\Http\Controllers\PreinscripcionController::class, 'rechazar'])->name('preinscripciones.rechazar');
     });
     // === Fin Equipo C (con sesión) ===
     // === Equipo B: Finanzas ===
