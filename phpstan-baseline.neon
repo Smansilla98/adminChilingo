@@ -487,12 +487,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/PagoController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$profesor\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PagoController.php
-
-		-
 			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -697,92 +691,8 @@ parameters:
 			path: app/Http/Controllers/ComprobanteCuotaAlumnoPublicController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$alumnos_count\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$avatar_class\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$initials\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$sedes_str\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$alumno\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$profesor\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 3
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>sede_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>timestamp" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Variable \$comprobantesPendientesCount on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Variable \$cuotasPendientes on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Variable \$proximosEventos on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/DashboardController.php
-
-		-
-			message: '#^Variable \$proximosEventosCount on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
 			count: 1
 			path: app/Http/Controllers/DashboardController.php
 
@@ -827,12 +737,6 @@ parameters:
 			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/ProfesorController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$profesor\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ProfesorPagoCuotaController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\ProgramaRitmo\:\:\$resumen_medios\.$#'
@@ -1259,12 +1163,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Services/ProgramaRitmoMediosService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$profesor\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/RecordatorioChatbotService.php
 
 		-
 			message: '#^Method App\\Services\\RecordatorioChatbotService\:\:pendientesAsistencia\(\) should return Illuminate\\Support\\Collection\<int, array\{estado\: string, texto\: string, url\: string\}\> but returns Illuminate\\Support\\Collection\<int, array\>\.$#'
