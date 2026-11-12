@@ -419,6 +419,14 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
         Route::post('preinscripciones/{preinscripcion}/aprobar', [\App\Http\Controllers\Api\V1\PreinscripcionController::class, 'aprobar'])->name('preinscripciones.api.aprobar');
         Route::post('preinscripciones/{preinscripcion}/rechazar', [\App\Http\Controllers\Api\V1\PreinscripcionController::class, 'rechazar'])->name('preinscripciones.api.rechazar');
     });
+    // Legajo de menor (app): la carga del apto es POST multipart.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('personas/{persona}/legajo', [\App\Http\Controllers\Api\V1\LegajoMenorController::class, 'show'])->name('personas.legajo.api');
+        Route::get('personas/{persona}/legajo/apto', [\App\Http\Controllers\Api\V1\LegajoMenorController::class, 'apto'])->name('personas.legajo.apto.api');
+    });
+    Route::middleware('permiso:alumnos.update')->group(function () {
+        Route::post('personas/{persona}/legajo', [\App\Http\Controllers\Api\V1\LegajoMenorController::class, 'update'])->name('personas.legajo.update.api');
+    });
     // === Fin Equipo C (con sesión) ===
     // === Equipo D: app móvil ===
     // Asistencia propia del alumno (porcentaje por bloque y mes, últimas clases y horario semanal).

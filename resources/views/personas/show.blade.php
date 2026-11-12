@@ -110,6 +110,9 @@
                 </div>
 
                 <div class="ito-detail-col">
+                    @if($persona->fecha_nacimiento && $persona->fecha_nacimiento->diffInYears(now()) < 18)
+                        <p><a class="btn btn-outline-primary btn-sm" href="{{ route('personas.legajo', $persona) }}"><i class="bi bi-folder2-open" aria-hidden="true"></i> Legajo de menor (tutor, imagen, apto médico)</a></p>
+                    @endif
                     <x-ito.detail-section title="Cuenta de acceso" icon="bi-key">
                         @if($persona->user)
                             <dl class="ito-dl">

@@ -104,6 +104,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('chilinga:avisos eventos')->dailyAt('18:00')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos eventos-nuevos')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos pasar-lista')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
+        // Aptos médicos de menores que vencen en 30 días o ya vencieron (Equipo C).
+        $schedule->command('chilinga:legajos:vencimientos')->dailyAt('09:20')->timezone(config('app.timezone'))->withoutOverlapping()->onOneServer();
         // Equipo F: mensajes a grupos programados, convocatorias y recordatorios de shows.
         $schedule->command('chilinga:difusiones')->everyMinute()->withoutOverlapping()->onOneServer();
         $schedule->command('chilinga:avisos shows-convocados')->everyFiveMinutes()->withoutOverlapping()->onOneServer();

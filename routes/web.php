@@ -490,6 +490,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/preinscripciones/{preinscripcion}/aprobar', [\App\Http\Controllers\PreinscripcionController::class, 'aprobar'])->name('preinscripciones.aprobar');
         Route::post('/preinscripciones/{preinscripcion}/rechazar', [\App\Http\Controllers\PreinscripcionController::class, 'rechazar'])->name('preinscripciones.rechazar');
     });
+    // Legajo de menor: tutor, uso de imagen y apto médico.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('/personas/{persona}/legajo', [\App\Http\Controllers\LegajoMenorController::class, 'show'])->name('personas.legajo');
+        Route::get('/personas/{persona}/legajo/apto', [\App\Http\Controllers\LegajoMenorController::class, 'apto'])->name('personas.legajo.apto');
+    });
+    Route::middleware('permiso:alumnos.update')->group(function () {
+        Route::put('/personas/{persona}/legajo', [\App\Http\Controllers\LegajoMenorController::class, 'update'])->name('personas.legajo.update');
+    });
     // === Fin Equipo C (con sesión) ===
     // === Equipo B: Finanzas ===
     Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');
