@@ -6,6 +6,7 @@ use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class InventarioItem extends Model
 {
@@ -101,6 +102,18 @@ class InventarioItem extends Model
     public function movimientos(): HasMany
     {
         return $this->hasMany(InventarioMovimiento::class)->orderByDesc('id');
+    }
+
+    /** @return HasMany<InventarioPrestamo, $this> */
+    public function prestamos(): HasMany
+    {
+        return $this->hasMany(InventarioPrestamo::class)->orderByDesc('entregado_el')->orderByDesc('id');
+    }
+
+    /** Préstamo en curso (sin devolver): mientras exista, el ítem no está disponible. @return HasOne<InventarioPrestamo, $this> */
+    public function prestamoActivo(): HasOne
+    {
+        return $this->hasOne(InventarioPrestamo::class)->ofMany(['id' => 'max'], fn ($q) => $q->whereNull('devuelto_el'));
     }
 
     public function asegurarCodigo(): void

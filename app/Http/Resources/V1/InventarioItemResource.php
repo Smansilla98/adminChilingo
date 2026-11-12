@@ -10,6 +10,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin \App\Models\InventarioItem */
 class InventarioItemResource extends JsonResource
 {
+    private function prestamoAbierto(): ?\App\Models\InventarioPrestamo
+    {
+        if ($this->resource->relationLoaded('prestamos')) {
+            return $this->resource->prestamos->whereNull('devuelto_el')->first();
+        }
+
+        return \App\Models\InventarioPrestamo::query()->where('inventario_item_id', $this->id)->whereNull('devuelto_el')->first();
+    }
+
     public function toArray(Request $request): array
     {
         return [
@@ -39,6 +48,9 @@ class InventarioItemResource extends JsonResource
                 'autor' => $m->autor?->name,
                 'fecha' => $m->created_at?->toIso8601String(),
             ])->values()),
+            // Con un préstamo abierto el instrumento no figura disponible.
+            'prestado' => $this->prestamoAbierto() !== null,
+            'prestamo' => $this->prestamoAbierto()?->responsable(),
             'puede_editar' => $request->user()?->can('update', $this->resource) ?? false,
             'puede_eliminar' => $request->user()?->can('delete', $this->resource) ?? false,
         ];

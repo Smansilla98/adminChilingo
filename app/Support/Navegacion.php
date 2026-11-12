@@ -61,6 +61,7 @@ class Navegacion
             self::link('biblioteca.index', 'Biblioteca', 'bi-images', 'biblioteca.*'),
             self::link('archivo.index', 'Archivo histórico', 'bi-camera', 'archivo.*'),
             self::link('alumno.cuota', 'Pagar mi cuota', 'bi-credit-card', 'alumno.cuota*'),
+            self::link('alumno.shows', 'Mis shows', 'bi-mic', 'alumno.shows*'),
             $mod('calendario') ? self::link('calendario.index', 'Calendario', 'bi-calendar3', 'calendario.*') : null,
         ];
 
@@ -102,6 +103,7 @@ class Navegacion
             $grupos[] = self::grupo('actividades', 'Actividades', [
                 $mod('admin.eventos') ? self::link('eventos.index', 'Eventos', 'bi-calendar-event', 'eventos.*') : null,
                 $mod('admin.shows') ? self::link('shows.index', 'Shows', 'bi-mic', 'shows.*') : null,
+                $u->can('difusion.send') ? self::link('difusion.index', 'Mensajes a grupos', 'bi-megaphone', 'difusion.*') : null,
             ]);
             if ($mod('admin.villa_gesell')) {
                 $grupos[] = self::grupo('villa_gesell', 'Villa Gesell', [

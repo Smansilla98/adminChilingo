@@ -510,4 +510,34 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/configuracion/reglas-cobro', [\App\Http\Controllers\ReglasCobroController::class, 'update'])->name('configuracion.reglas-cobro.update');
     });
     // === Fin Equipo B ===
+
+    // === Equipo F: Comunidad (difusión, shows y ensayos, préstamos) ===
+    Route::middleware('permiso:difusion.send')->prefix('difusion')->name('difusion.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\DifusionController::class, 'index'])->name('index');
+        Route::get('/crear', [\App\Http\Controllers\DifusionController::class, 'create'])->name('create');
+        Route::post('/vista-previa', [\App\Http\Controllers\DifusionController::class, 'vistaPrevia'])->middleware('throttle:60,1')->name('vista-previa');
+        Route::post('/', [\App\Http\Controllers\DifusionController::class, 'store'])->middleware('throttle:20,1')->name('store');
+        Route::get('/{difusion}', [\App\Http\Controllers\DifusionController::class, 'show'])->whereNumber('difusion')->name('show');
+        Route::post('/{difusion}/cancelar', [\App\Http\Controllers\DifusionController::class, 'cancelar'])->whereNumber('difusion')->name('cancelar');
+    });
+    Route::middleware('permiso:shows.view')->group(function () {
+        $plan = \App\Http\Controllers\ShowPlanController::class;
+        Route::post('shows/{show}/asistencia', [$plan, 'asistencia'])->name('shows.asistencia');
+        Route::put('shows/{show}/logistica', [$plan, 'logistica'])->name('shows.logistica');
+        Route::post('shows/{show}/temas', [$plan, 'agregarTema'])->name('shows.temas.store');
+        Route::delete('shows/{show}/temas/{tema}', [$plan, 'quitarTema'])->name('shows.temas.destroy');
+        Route::post('shows/{show}/instrumentos', [$plan, 'agregarInstrumento'])->name('shows.instrumentos.store');
+        Route::delete('shows/{show}/instrumentos/{instrumento}', [$plan, 'quitarInstrumento'])->name('shows.instrumentos.destroy');
+        Route::post('shows/{show}/ensayos', [$plan, 'crearEnsayo'])->name('shows.ensayos.store');
+        Route::get('show-ensayos/{ensayo}', [$plan, 'verEnsayo'])->name('shows.ensayos.show');
+        Route::post('show-ensayos/{ensayo}/asistencia', [$plan, 'asistenciaEnsayo'])->name('shows.ensayos.asistencia');
+        Route::delete('show-ensayos/{ensayo}', [$plan, 'eliminarEnsayo'])->name('shows.ensayos.destroy');
+    });
+    Route::get('/mis-shows', [\App\Http\Controllers\MiShowController::class, 'index'])->name('alumno.shows');
+    Route::post('/mis-shows/{show}/confirmacion', [\App\Http\Controllers\MiShowController::class, 'confirmar'])->middleware('throttle:30,1')->name('alumno.shows.confirmar');
+    Route::middleware('permiso:inventario.update')->group(function () {
+        Route::post('inventarios/{inventario}/prestamos', [\App\Http\Controllers\PrestamoController::class, 'store'])->whereNumber('inventario')->name('inventarios.prestamos.store');
+        Route::post('inventario-prestamos/{prestamo}/devolucion', [\App\Http\Controllers\PrestamoController::class, 'devolver'])->whereNumber('prestamo')->name('inventario-prestamos.devolucion');
+    });
+    // === Fin Equipo F ===
 });

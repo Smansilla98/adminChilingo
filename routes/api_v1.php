@@ -370,6 +370,38 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
             Route::delete('eventos/{acontecimiento}', [ArchivoGestionController::class, 'eliminarAcontecimiento'])->whereNumber('acontecimiento')->name('eventos.destroy');
         });
     });
+
+    // === Equipo F: Comunidad (difusión, shows y ensayos, préstamos) ===
+    Route::middleware('permiso:difusion.send')->prefix('difusiones')->name('difusiones.')->group(function () {
+        Route::get('catalogo', [\App\Http\Controllers\Api\V1\DifusionController::class, 'catalogo'])->name('catalogo');
+        Route::get('/', [\App\Http\Controllers\Api\V1\DifusionController::class, 'index'])->name('index');
+        Route::post('vista-previa', [\App\Http\Controllers\Api\V1\DifusionController::class, 'vistaPrevia'])->middleware('throttle:60,1')->name('vista-previa');
+        Route::post('/', [\App\Http\Controllers\Api\V1\DifusionController::class, 'store'])->middleware('throttle:20,1')->name('store');
+        Route::get('{difusion}', [\App\Http\Controllers\Api\V1\DifusionController::class, 'show'])->whereNumber('difusion')->name('show');
+        Route::post('{difusion}/cancelar', [\App\Http\Controllers\Api\V1\DifusionController::class, 'cancelar'])->whereNumber('difusion')->name('cancelar');
+    });
+    Route::get('shows/plan-catalogo', [\App\Http\Controllers\Api\V1\ShowPlanController::class, 'catalogo'])->middleware('permiso:shows.view')->name('shows.plan-catalogo');
+    Route::middleware('permiso:shows.view')->group(function () {
+        $plan = \App\Http\Controllers\Api\V1\ShowPlanController::class;
+        Route::get('shows/{show}/convocados', [$plan, 'convocados'])->whereNumber('show')->name('shows.convocados');
+        Route::put('shows/{show}/asistencia', [$plan, 'asistencia'])->whereNumber('show')->name('shows.asistencia');
+        Route::put('shows/{show}/logistica', [$plan, 'logistica'])->whereNumber('show')->name('shows.logistica');
+        Route::put('shows/{show}/temas', [$plan, 'temas'])->whereNumber('show')->name('shows.temas');
+        Route::put('shows/{show}/instrumentos', [$plan, 'instrumentos'])->whereNumber('show')->name('shows.instrumentos');
+        Route::post('shows/{show}/ensayos', [$plan, 'crearEnsayo'])->whereNumber('show')->name('shows.ensayos.store');
+        Route::get('show-ensayos/{ensayo}', [$plan, 'verEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.show');
+        Route::put('show-ensayos/{ensayo}', [$plan, 'actualizarEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.update');
+        Route::delete('show-ensayos/{ensayo}', [$plan, 'eliminarEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.destroy');
+        Route::put('show-ensayos/{ensayo}/asistencia', [$plan, 'asistenciaEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.asistencia');
+    });
+    Route::get('mi/shows', [\App\Http\Controllers\Api\V1\MiShowController::class, 'index'])->name('mi.shows');
+    Route::get('mi/shows/{show}', [\App\Http\Controllers\Api\V1\MiShowController::class, 'show'])->whereNumber('show')->name('mi.shows.show');
+    Route::post('mi/shows/{show}/confirmacion', [\App\Http\Controllers\Api\V1\MiShowController::class, 'confirmar'])->whereNumber('show')->middleware('throttle:30,1')->name('mi.shows.confirmar');
+    Route::get('inventario/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'index'])->middleware('permiso:inventario.view')->name('inventario.prestamos.index');
+    Route::post('inventario/{item}/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'store'])->whereNumber('item')->middleware('permiso:inventario.update')->name('inventario.prestamos.store');
+    Route::post('inventario/prestamos/{prestamo}/devolucion', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'devolver'])->whereNumber('prestamo')->middleware('permiso:inventario.update')->name('inventario.prestamos.devolucion');
+    Route::get('mi/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'mios'])->name('mi.prestamos');
+    // === Fin Equipo F ===
     // === Equipo C: cuentas, preinscripción, legajo y ciclo lectivo (con sesión) ===
     Route::post('personas/{persona}/codigo-alta', [\App\Http\Controllers\Api\V1\CuentasController::class, 'codigoAlta'])->middleware('throttle:20,1')->name('personas.codigo-alta');
     Route::middleware('permiso:usuarios.permissions')->group(function () {

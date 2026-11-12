@@ -70,6 +70,95 @@
                     </form>
                 </x-ito.detail-section>
 
+                @php
+                    $prestamoAbierto = $prestamos->firstWhere('devuelto_el', null);
+                    $puedePrestar = ! $item->es_consumible && $item->estado !== 'baja';
+                @endphp
+                @if(\Illuminate\Support\Facades\Schema::hasTable('inventario_prestamos') && $puedePrestar)
+                    <x-ito.detail-section title="Préstamo" icon="bi-person-check" help="Mientras esté prestado, el instrumento no figura disponible para shows ni para otro préstamo.">
+                        @if($prestamoAbierto)
+                            <p class="mb-2">
+                                <strong>{{ $prestamoAbierto->responsable() }}</strong> lo tiene desde el {{ $prestamoAbierto->entregado_el->format('d/m/Y') }}.
+                                Devolución prevista: <strong class="{{ $prestamoAbierto->estado() === 'vencido' ? 'text-danger' : '' }}">{{ $prestamoAbierto->devolucion_prevista->format('d/m/Y') }}</strong>
+                                <x-ito.status :tone="$prestamoAbierto->estado() === 'vencido' ? 'danger' : 'info'" :label="$prestamoAbierto->etiquetaEstado()" />
+                            </p>
+                            @can('update', $item)
+                                <form method="POST" action="{{ route('inventario-prestamos.devolucion', $prestamoAbierto) }}" class="row g-2 align-items-end">
+                                    @csrf
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="dev-fecha">Devuelto el</label>
+                                        <input type="date" id="dev-fecha" name="devuelto_el" class="form-control" value="{{ now()->toDateString() }}" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="dev-condicion">Cómo vuelve</label>
+                                        <select id="dev-condicion" name="condicion_devolucion" class="form-select" required>
+                                            @foreach(\App\Models\InventarioItem::ESTADOS as $k => $lab)
+                                                <option value="{{ $k }}" @selected($k === $item->estado)>{{ $lab }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @if($prestamoAbierto->deposito)
+                                        <div class="col-md-4 form-check">
+                                            <input type="hidden" name="deposito_devuelto" value="0">
+                                            <input class="form-check-input" type="checkbox" name="deposito_devuelto" value="1" id="dev-deposito">
+                                            <label class="form-check-label" for="dev-deposito">Se devolvió la seña (${{ number_format((float) $prestamoAbierto->deposito, 0, ',', '.') }})</label>
+                                        </div>
+                                    @endif
+                                    <div class="col-12"><button class="btn btn-primary btn-sm">Registrar devolución</button></div>
+                                </form>
+                            @endcan
+                        @else
+                            <p class="text-muted">Disponible. No hay ningún préstamo abierto.</p>
+                            @can('update', $item)
+                                <form method="POST" action="{{ route('inventarios.prestamos.store', $item) }}" class="row g-2 align-items-end">
+                                    @csrf
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="pre-alumno">Alumno</label>
+                                        <select id="pre-alumno" name="alumno_id" class="form-select">
+                                            <option value="">— o escribí el nombre abajo —</option>
+                                            @foreach($alumnosPrestamo as $a)
+                                                <option value="{{ $a->id }}">{{ $a->nombre_apellido }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="pre-resp">Otro responsable</label>
+                                        <input id="pre-resp" name="responsable_nombre" class="form-control" maxlength="255">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="pre-entrega">Entregado el</label>
+                                        <input type="date" id="pre-entrega" name="entregado_el" class="form-control" value="{{ now()->toDateString() }}" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="pre-vence">Devolver antes del</label>
+                                        <input type="date" id="pre-vence" name="devolucion_prevista" class="form-control" value="{{ now()->addMonth()->toDateString() }}" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="pre-deposito">Seña (opcional)</label>
+                                        <input type="number" step="0.01" min="0" id="pre-deposito" name="deposito" class="form-control">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="pre-condicion">Cómo sale</label>
+                                        <select id="pre-condicion" name="condicion_entrega" class="form-select" required>
+                                            @foreach(\App\Models\InventarioItem::ESTADOS as $k => $lab)
+                                                <option value="{{ $k }}" @selected($k === $item->estado)>{{ $lab }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6"><button class="btn btn-primary btn-sm w-100">Prestar</button></div>
+                                </form>
+                            @endcan
+                        @endif
+                        @if($prestamos->isNotEmpty())
+                            <hr>
+                            <p class="small text-muted mb-1">Préstamos anteriores</p>
+                            @foreach($prestamos->whereNotNull('devuelto_el') as $p)
+                                <div class="small">{{ $p->responsable() }} · {{ $p->entregado_el->format('d/m/Y') }} → {{ $p->devuelto_el->format('d/m/Y') }} · {{ \App\Models\InventarioItem::ESTADOS[$p->condicion_devolucion] ?? '' }}</div>
+                            @endforeach
+                        @endif
+                    </x-ito.detail-section>
+                @endif
+
                 <x-ito.detail-section title="Historial" icon="bi-clock-history">
                     @if(($item->movimientos ?? collect())->isNotEmpty())
                         <ol class="ito-timeline">

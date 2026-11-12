@@ -130,6 +130,7 @@ return [
         ],
         'Notificaciones' => [
             'notificaciones.send' => 'Enviar recordatorios y avisos',
+            'difusion.send' => 'Mandar mensajes a grupos (difusión)',
         ],
         'Usuarios' => [
             'usuarios.view' => 'Ver usuarios',
@@ -173,6 +174,7 @@ return [
                 'eventos.view', 'eventos.create', 'eventos.update', 'eventos.delete',
                 'shows.view', 'shows.manage', 'calendario.view', 'villa_gesell.manage',
                 'partituras.view', 'partituras.edit', 'reportes.view', 'inventario.view', 'becas.view',
+                'difusion.send',
             ],
         ],
         'coordinador_area' => [
@@ -195,7 +197,7 @@ return [
                 'asistencias.view', 'asistencias.create', 'asistencias.update',
                 'seguimiento.view', 'seguimiento.create',
                 'comprobantes.view', 'comprobantes.create', 'pagos.view',
-                'eventos.view', 'calendario.view', 'partituras.view', 'partituras.edit',
+                'eventos.view', 'calendario.view', 'partituras.view', 'partituras.edit', 'shows.view',
             ],
         ],
         'alumno' => [
@@ -253,7 +255,7 @@ return [
                 'cuotas.view', 'becas.view', 'pagos.view', 'pagos.create',
                 'comprobantes.view', 'comprobantes.create', 'comprobantes.approve',
                 'eventos.view', 'eventos.create', 'eventos.update', 'calendario.view',
-                'notificaciones.send',
+                'notificaciones.send', 'difusion.send',
             ],
         ],
         'archivista' => [
@@ -334,5 +336,7 @@ return [
         'biblioteca' => ['etiqueta' => 'Biblioteca', 'icono' => 'local_library', 'permisos' => []],
         'notificaciones' => ['etiqueta' => 'Avisos', 'icono' => 'notifications', 'permisos' => []],
         'avisos_config' => ['etiqueta' => 'Avisos y cobro', 'icono' => 'notifications_active', 'permisos' => ['notificaciones.send']],
+        'difusion' => ['etiqueta' => 'Mensajes a grupos', 'icono' => 'campaign', 'permisos' => ['difusion.send']],
+        'mis_shows' => ['etiqueta' => 'Mis shows', 'icono' => 'theater_comedy', 'permisos' => ['@alumno']],
     ],
 ];

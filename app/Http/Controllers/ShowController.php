@@ -47,11 +47,18 @@ class ShowController extends Controller
         return redirect()->route('shows.index')->with('success', 'Show creado.');
     }
 
-    public function show(Show $show)
+    public function show(Show $show, \App\Domain\Agenda\ConvocatoriaShow $convocatoria, \App\Domain\Agenda\ShowPlanService $plan)
     {
         $show->load('bloques.sede', 'bloques.profesor');
 
-        return view('shows.show', compact('show'));
+        // Equipo F: confirmaciones, asistencia, temas, ensayos, logística e instrumentos.
+        return view('shows.show', [
+            'show' => $show,
+            'planilla' => $convocatoria->planilla($show),
+            'resumen' => $convocatoria->resumen($show),
+            'plan' => $plan->plan($show),
+            'catalogoPlan' => auth()->user()?->can('update', $show) ? $plan->catalogo() : ['toques' => [], 'instrumentos' => []],
+        ]);
     }
 
     public function edit(Show $show)
