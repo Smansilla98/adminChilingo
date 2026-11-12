@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Domain\Finanzas\EstadoCuentaService;
 use App\Models\Alumno;
 use App\Models\ComprobanteCuotaAlumno;
 use App\Models\ComprobanteCuotaAlumnoItem;
@@ -32,22 +33,12 @@ class PagoDesdeComprobanteService
         $alumnoId = (int) $comprobante->alumno_id;
         $this->engancharPagosExtra($comprobante);
         $lineas = [];
+        $netos = [];
         $omitidas = 0;
 
         foreach ($comprobante->items as $item) {
             $cuotaId = (int) $item->cuota_id;
             if ($cuotaId <= 0 || ! $item->cuota) {
-                $omitidas++;
-
-                continue;
-            }
-
-            $yaPagado = PagoDetalle::query()
-                ->where('alumno_id', $alumnoId)
-                ->where('cuota_id', $cuotaId)
-                ->exists();
-
-            if ($yaPagado) {
                 $omitidas++;
 
                 continue;
@@ -60,10 +51,20 @@ class PagoDesdeComprobanteService
                 continue;
             }
 
+            // Pago parcial: se cobra lo pedido, sin pasar del saldo que queda en la cuota.
+            $estado = app(EstadoCuentaService::class)->itemCuota($alumno, $item->cuota);
+            $saldo = $estado !== null ? (float) $estado['saldo'] : 0.0;
+            if ($saldo <= 0.005) {
+                $omitidas++;
+
+                continue;
+            }
+            $netos[$cuotaId] = $estado !== null ? (float) $estado['neto'] : 0.0;
+
             $lineas[] = [
                 'alumno_id' => $alumnoId,
                 'cuota_id' => $cuotaId,
-                'monto' => round((float) $item->monto, 2),
+                'monto' => round(min((float) $item->monto, $saldo), 2),
             ];
         }
 
@@ -91,6 +92,7 @@ class PagoDesdeComprobanteService
         $pago = DB::transaction(function () use (
             $comprobante,
             $lineas,
+            $netos,
             $cuotasPorId,
             $montoTotal,
             $path,
@@ -107,7 +109,7 @@ class PagoDesdeComprobanteService
             ]);
 
             $abonos = $liquidarProfesor && class_exists(LiquidacionDocente::class)
-                ? LiquidacionDocente::abonosPorLinea($lineas, $cuotasPorId)
+                ? LiquidacionDocente::abonosPorLinea($lineas, $cuotasPorId, $netos)
                 : [];
 
             foreach ($lineas as $idx => $linea) {

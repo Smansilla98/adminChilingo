@@ -122,6 +122,8 @@ class Navegacion
             $grupos[] = self::grupo('finanzas', 'Administración', [
                 $mod('admin.cuotas') ? self::link('cuotas.index', 'Cuotas', 'bi-cash-stack', 'cuotas.*') : null,
                 $mod('admin.pagos') ? self::link('pagos.index', 'Pagos', 'bi-receipt', 'pagos.*') : null,
+                $mod('morosos') ? self::link('morosos.index', 'Morosos', 'bi-exclamation-triangle', 'morosos.*') : null,
+                $mod('cuotas_lote') ? self::link('cuotas.lote.create', 'Cuotas por lote', 'bi-calendar-range', 'cuotas.lote.*') : null,
                 $mod('comprobantes') ? self::link('comprobantes-cuota-alumnos.index', 'Comprobantes', 'bi-upload', 'comprobantes-cuota-alumnos.*') : null,
                 $mod('admin.facturacion_mensual') ? self::link('facturacion-mensual.index', 'Facturación mensual', 'bi-file-earmark-text', 'facturacion-mensual.*') : null,
                 $mod('admin.gastos') ? self::link('gastos.index', 'Gastos', 'bi-wallet2', 'gastos.*') : null,

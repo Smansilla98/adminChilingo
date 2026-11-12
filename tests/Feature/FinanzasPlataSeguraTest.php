@@ -319,4 +319,67 @@ class FinanzasPlataSeguraTest extends TestCase
         ])->assertSessionHasErrors('recargo.valor');
         $this->assertSame(500.0, \App\Domain\Finanzas\ReglasCobro::actuales()['recargo']['valor']);
     }
+
+    /**
+     * Pago parcial de punta a punta: caja cobra una parte, el cobro online cobra otra (con el monto
+     * elegido), el saldo se ve en el estado de cuenta, nadie cobra de más y el abono docente suma
+     * el total de la cuota (prorrateado por lo que se cobra).
+     */
+    public function test_pago_parcial_de_punta_a_punta_con_saldo_visible(): void
+    {
+        \App\Models\Ajuste::guardar('cobro', ['alias' => 'chilinga.cuotas', 'titular' => 'Asociación Civil'], null);
+        $sede = $this->sede('Palomar');
+        $sede->forceFill(['liquidacion_retencion_escuela' => 4000, 'liquidacion_porc_docente' => 100])->save();
+        $bloque = $this->bloque($sede);
+        $ana = $this->inscribirAlumno($this->persona('Ana'), $bloque);
+        $cuota = $this->cuota(['monto' => 10000, 'alcance' => 'bloque', 'bloque_id' => $bloque->id]);
+        $tesorero = $this->tesorero();
+        $admin = $this->admin();
+        $registro = app(\App\Domain\Finanzas\RegistroPagoService::class);
+        $estado = app(EstadoCuentaService::class);
+        $cobros = app(\App\Domain\Finanzas\CobroCuotasService::class);
+        $aprobar = app(\App\Services\PagoDesdeComprobanteService::class);
+        $linea = fn (float $monto) => ['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => $monto];
+        $saldo = fn () => $estado->paraAlumno($ana)['items'][0];
+
+        // 1) Caja: cobra 4.000 de 10.000.
+        $registro->registrar(['fecha_pago' => now()->toDateString(), 'monto_total' => 4000, 'lineas' => [$linea(4000)], 'liquidar_profesor' => '1'], $tesorero);
+        $this->assertSame('parcial', $saldo()['estado']);
+        $this->assertSame(6000.0, $saldo()['saldo'], 'el saldo queda visible en el estado de cuenta');
+
+        // 2) Caja no cobra más que el saldo.
+        try {
+            $registro->registrar(['fecha_pago' => now()->toDateString(), 'monto_total' => 7000, 'lineas' => [$linea(7000)], 'liquidar_profesor' => '1'], $tesorero);
+            $this->fail('debió rechazar un cobro mayor al saldo');
+        } catch (\Illuminate\Validation\ValidationException) {
+            $this->assertSame(1, Pago::query()->count());
+        }
+
+        // 3) Online: el alumno elige pagar 2.000 de lo que debe (saldo 6.000).
+        $c1 = $cobros->iniciar($admin, $ana, [$cuota->id], 'transferencia', [$cuota->id => 2000]);
+        $this->assertSame('2000.00', (string) $c1->monto_total);
+        try {
+            $cobros->iniciar($admin, $ana, [$cuota->id], 'transferencia', [$cuota->id => 50000]);
+            $this->fail('debió rechazar un monto mayor al saldo');
+        } catch (\Illuminate\Validation\ValidationException) {
+            $this->assertSame(1, \App\Models\ComprobanteCuotaAlumno::query()->count());
+        }
+        $aprobar->aprobar($c1->fresh(), $admin->id);
+        $this->assertSame(4000.0, $saldo()['saldo'], '6.000 - 2.000');
+
+        // 4) Online: el resto (sin monto elegido = saldo completo).
+        $c2 = $cobros->iniciar($admin, $ana, [$cuota->id], 'transferencia');
+        $this->assertSame('4000.00', (string) $c2->monto_total);
+        $aprobar->aprobar($c2->fresh(), $admin->id);
+        $this->assertSame('pagada', $saldo()['estado']);
+        $this->assertSame(0.0, $saldo()['saldo']);
+        $this->assertSame(3, Pago::query()->count(), 'caja + dos cobros online');
+
+        // El abono docente se reparte según lo cobrado: entre las tres partes suma el abono de la cuota (6.000).
+        $this->assertSame(6000.0, (float) PagoDetalle::query()->sum('abono_profesor'));
+
+        // 5) Ya no hay nada para cobrar.
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $cobros->iniciar($admin, $ana, [$cuota->id], 'transferencia');
+    }
 }

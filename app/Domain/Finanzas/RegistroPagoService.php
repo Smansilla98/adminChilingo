@@ -148,7 +148,7 @@ class RegistroPagoService
      * y cuota no pueden pasar ambos el control de duplicados.
      *
      * @param  array<string, mixed>  $validado
-     * @return array{lineas: array<int, array<string, mixed>>, cuotas: Collection<int, Cuota>, liquidar: bool, totalAbono: float|null, abonosPreset: array<int, float>, usarPreset: bool}
+     * @return array{lineas: array<int, array<string, mixed>>, cuotas: Collection<int, Cuota>, liquidar: bool, totalAbono: float|null, abonosPreset: array<int, float>, usarPreset: bool, netos: array<int, float>}
      */
     private function preparar(array $validado, User $por, ?int $exceptoPagoId): array
     {
@@ -174,6 +174,7 @@ class RegistroPagoService
             ]);
         }
 
+        $netos = [];
         $cuotaIds = array_values(array_unique(array_map(fn ($l) => (int) $l['cuota_id'], $lineas)));
         $cuotas = Cuota::query()->with(['bloque.sede', 'sede'])->whereIn('id', $cuotaIds)->lockForUpdate()->get()->keyBy('id');
         $permiso = $exceptoPagoId !== null ? 'pagos.update' : 'pagos.create';
@@ -184,13 +185,6 @@ class RegistroPagoService
                 throw ValidationException::withMessages(['lineas.'.$idx.'.cuota_id' => 'Cuota no válida.']);
             }
             $alumnoId = (int) $linea['alumno_id'];
-            $duplicado = PagoDetalle::query()->where('cuota_id', $cuota->id)->where('alumno_id', $alumnoId)
-                ->when($exceptoPagoId !== null, fn ($q) => $q->where('pago_id', '!=', $exceptoPagoId));
-            if ($duplicado->exists()) {
-                throw ValidationException::withMessages([
-                    'lineas.'.$idx.'.alumno_id' => 'Este alumno ya tiene pago registrado para la cuota elegida en esa línea (en otro pago).',
-                ]);
-            }
             $alumno = Alumno::query()->find($alumnoId);
             if ($alumno && ! $por->acceso()->puedeSobreAlumno($permiso, $alumno)) {
                 abort(403, 'No podés registrar pagos de alumnos fuera de tu alcance.');
@@ -200,18 +194,32 @@ class RegistroPagoService
                     'lineas.'.$idx.'.alumno_id' => 'El alumno de la línea '.($idx + 1).' no corresponde a la cuota según alcance / bloques.',
                 ]);
             }
+            // Pago parcial: se cobra hasta el saldo de la cuota (neto menos lo ya pagado).
+            $item = app(EstadoCuentaService::class)->itemCuota($alumno, $cuota, $exceptoPagoId);
+            $saldo = $item !== null ? (float) $item['saldo'] : 0.0;
+            if ($saldo <= 0.005) {
+                throw ValidationException::withMessages([
+                    'lineas.'.$idx.'.alumno_id' => 'La línea '.($idx + 1).' ya está paga: no le queda saldo en esa cuota.',
+                ]);
+            }
+            if ((float) $linea['monto'] > $saldo + 0.009) {
+                throw ValidationException::withMessages([
+                    'lineas.'.$idx.'.monto' => 'La línea '.($idx + 1).' supera el saldo de la cuota ($'.number_format($saldo, 2, ',', '.').').',
+                ]);
+            }
+            $netos[(int) $cuota->id] = (float) $item['neto'];
         }
 
-        $abonosPreset = $liquidar ? LiquidacionDocente::abonosPorLinea($lineas, $cuotas) : [];
+        $abonosPreset = $liquidar ? LiquidacionDocente::abonosPorLinea($lineas, $cuotas, $netos) : [];
         $manual = $validado['monto_abono_profesor'] ?? null;
         $usarPreset = $liquidar && ($manual === null || $manual === '');
         $totalAbono = $liquidar ? ($usarPreset ? round(array_sum($abonosPreset), 2) : max(0.0, round((float) $manual, 2))) : null;
 
-        return ['lineas' => $lineas, 'cuotas' => $cuotas, 'liquidar' => $liquidar, 'totalAbono' => $totalAbono, 'abonosPreset' => $abonosPreset, 'usarPreset' => $usarPreset];
+        return ['lineas' => $lineas, 'cuotas' => $cuotas, 'liquidar' => $liquidar, 'totalAbono' => $totalAbono, 'abonosPreset' => $abonosPreset, 'usarPreset' => $usarPreset, 'netos' => $netos];
     }
 
     /**
-     * @param  array{lineas: array<int, array<string, mixed>>, cuotas: Collection<int, Cuota>, liquidar: bool, totalAbono: float|null, abonosPreset: array<int, float>, usarPreset: bool}  $plan
+     * @param  array{lineas: array<int, array<string, mixed>>, cuotas: Collection<int, Cuota>, liquidar: bool, totalAbono: float|null, abonosPreset: array<int, float>, usarPreset: bool, netos: array<int, float>}  $plan
      */
     private function crearDetalles(Pago $pago, array $plan): void
     {
@@ -359,19 +367,19 @@ class RegistroPagoService
         if ($soloCuota->isNotEmpty()) {
             $query->whereIn('alumnos.id', $soloCuota->all());
         }
-        $yaPagaron = PagoDetalle::query()->where('cuota_id', $cuota->id)
-            ->when($exceptoPagoId !== null, fn ($q) => $q->where('pago_id', '!=', $exceptoPagoId))
-            ->pluck('alumno_id')->unique()->filter()->values();
-        if ($yaPagaron->isNotEmpty()) {
-            $query->whereNotIn('alumnos.id', $yaPagaron->all());
-        }
+        $estado = app(EstadoCuentaService::class);
 
-        return $query->get(['alumnos.id', 'alumnos.nombre_apellido', 'alumnos.sede_id'])->map(fn (Alumno $a) => [
-            'id' => $a->id,
-            'nombre_apellido' => $a->nombre_apellido,
-            'sede_nombre' => $a->sede?->nombre,
-            'bloque_nombre' => $ctx,
-        ])->values()->all();
+        return $query->get(['alumnos.id', 'alumnos.nombre_apellido', 'alumnos.sede_id'])
+            ->filter(function (Alumno $a) use ($estado, $cuota, $exceptoPagoId) {
+                $item = $estado->itemCuota($a, $cuota, $exceptoPagoId);
+
+                return $item !== null && (float) $item['saldo'] > 0.005;
+            })->map(fn (Alumno $a) => [
+                'id' => $a->id,
+                'nombre_apellido' => $a->nombre_apellido,
+                'sede_nombre' => $a->sede?->nombre,
+                'bloque_nombre' => $ctx,
+            ])->values()->all();
     }
 
     private function guardarArchivo(UploadedFile $upload): string

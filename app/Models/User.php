@@ -292,6 +292,8 @@ class User extends Authenticatable
         'admin.sedes' => 'sedes.view',
         'admin.cuotas' => 'cuotas.view',
         'admin.pagos' => 'pagos.view',
+        'morosos' => 'pagos.view',
+        'cuotas_lote' => 'cuotas.create',
         'admin.eventos' => 'eventos.view',
         'admin.asistencias' => 'asistencias.view',
         'admin.reportes' => 'reportes.view',

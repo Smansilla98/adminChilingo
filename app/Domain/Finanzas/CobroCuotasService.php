@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @phpstan-type LineaCobro array{orden: string, cuota_id: int, cuota: string, periodo: string, vencida: bool, monto: float, beca: string|null, bloque_id: int|null, bloque: string|null, sede: string|null, profesor: string|null, abono_profesor: float, en_curso: string|null}
+ * @phpstan-type LineaCobro array{orden: string, cuota_id: int, cuota: string, periodo: string, vencida: bool, monto: float, pagado: float, neto: float, beca: string|null, bloque_id: int|null, bloque: string|null, sede: string|null, profesor: string|null, abono_profesor: float, en_curso: string|null}
  *
  * Pago de cuotas iniciado desde el sistema.
  *
@@ -80,7 +80,7 @@ class CobroCuotasService
 
         $items = collect([now()->year - 1, now()->year])
             ->flatMap(fn (int $anio) => $this->estadoCuenta->paraAlumno($alumno, $anio)['items'])
-            ->filter(fn (array $i) => $i['saldo'] > 0 && $i['pagado'] <= 0);
+            ->filter(fn (array $i) => $i['saldo'] > 0);
         if ($items->isEmpty()) {
             return collect();
         }
@@ -113,6 +113,8 @@ class CobroCuotasService
                 'periodo' => (string) $i['periodo'],
                 'vencida' => $i['estado'] === 'vencida',
                 'monto' => (float) $i['saldo'],
+                'pagado' => (float) $i['pagado'],
+                'neto' => (float) $i['neto'],
                 'beca' => isset($i['beca']['etiqueta']) ? (string) $i['beca']['etiqueta'] : null,
                 'bloque_id' => $bloque?->id,
                 'bloque' => $bloque?->nombre,
@@ -241,10 +243,14 @@ class CobroCuotasService
     }
 
     /** Arranca un pago: comprobante "esperando pago" con las cuotas elegidas. */
-    public function iniciar(User $por, Alumno $alumno, array $cuotaIds, string $medio): ComprobanteCuotaAlumno
+    /**
+     * @param  array<int|string, mixed>  $montos  lo que se paga de cada cuota (id => monto); si falta, el saldo completo
+     */
+    public function iniciar(User $por, Alumno $alumno, array $cuotaIds, string $medio, array $montos = []): ComprobanteCuotaAlumno
     {
         $this->validarMedio($medio);
         $elegidas = array_values(array_unique(array_map('intval', $cuotaIds)));
+        $montos = collect($montos)->mapWithKeys(fn ($v, $k) => [(int) $k => $v])->all();
         $pendientes = $this->pendientes($alumno)->keyBy('cuota_id');
         $lineas = [];
         foreach ($elegidas as $id) {
@@ -254,6 +260,14 @@ class CobroCuotasService
             }
             if ($linea['en_curso']) {
                 throw ValidationException::withMessages(['cuota_ids' => "La cuota {$linea['cuota']} ya tiene un pago en curso ({$linea['en_curso']}). Seguilo desde ahí o cancelalo."]);
+            }
+            $pedido = $montos[$id] ?? null;
+            if ($pedido !== null && $pedido !== '') {
+                $m = round((float) $pedido, 2);
+                if ($m <= 0 || $m > $linea['monto'] + 0.009) {
+                    throw ValidationException::withMessages(['montos.'.$id => 'Lo que pagás de '.$linea['cuota'].' tiene que estar entre $1 y su saldo ($'.number_format($linea['monto'], 2, ',', '.').').']);
+                }
+                $linea['monto'] = $m;
             }
             $lineas[] = $linea;
         }

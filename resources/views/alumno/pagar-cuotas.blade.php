@@ -67,7 +67,15 @@
                     </span>
                     @if($c['vencida'])<span class="badge text-bg-warning mt-1">Vencida</span>@endif
                     @if($c['en_curso'])<span class="badge text-bg-secondary mt-1">Pago en curso {{ $c['en_curso'] }}</span>@endif
+                    @if($c['pagado'] > 0)<span class="d-block small text-success mt-1">Ya pagaste {{ $pesos($c['pagado']) }} de {{ $pesos($c['neto']) }}. Queda de saldo {{ $pesos($c['monto']) }}.</span>@endif
                 </label>
+                <div class="ps-1 mt-2">
+                    <label class="form-label small mb-1" for="pc-m{{ $c['cuota_id'] }}">Cuánto pagás de esta cuota</label>
+                    <input type="number" class="form-control form-control-sm pc-monto" style="max-width: 14rem"
+                           id="pc-m{{ $c['cuota_id'] }}" name="montos[{{ $c['cuota_id'] }}]" data-cuota="{{ $c['cuota_id'] }}"
+                           value="{{ old('montos.'.$c['cuota_id'], $c['monto']) }}" min="1" max="{{ $c['monto'] }}" step="0.01" @disabled($c['en_curso'])>
+                    <div class="form-text">Podés pagar una parte: lo que no pagues queda como saldo de la cuota.</div>
+                </div>
             </div>
         @empty
             @if($resumen['emitidas'] === 0)
@@ -195,16 +203,23 @@
 })();
 (() => {
     const checks = [...document.querySelectorAll('.pc-cuota:not(:disabled)')];
+    // Lo que se paga de cada cuota: el monto que escribe la persona (o el saldo si no lo tocó).
+    const montoDe = (c) => {
+        const campo = document.querySelector(`input.pc-monto[data-cuota="${c.value}"]`);
+        const n = Number(campo ? campo.value : c.dataset.monto);
+        return Number.isFinite(n) && n > 0 ? n : 0;
+    };
     const total = document.getElementById('pc-total');
     const enviar = document.getElementById('pc-enviar');
     if (!total) return;
     const pesos = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
     const actualizar = () => {
-        const suma = checks.filter((c) => c.checked).reduce((s, c) => s + Number(c.dataset.monto), 0);
+        const suma = checks.filter((c) => c.checked).reduce((s, c) => s + montoDe(c), 0);
         total.textContent = pesos.format(suma);
         enviar.disabled = suma <= 0;
     };
     checks.forEach((c) => c.addEventListener('change', actualizar));
+    document.querySelectorAll('.pc-monto').forEach((i) => i.addEventListener('input', actualizar));
     document.getElementById('pc-todas')?.addEventListener('click', () => { checks.forEach((c) => { c.checked = true; }); actualizar(); });
     actualizar();
 })();

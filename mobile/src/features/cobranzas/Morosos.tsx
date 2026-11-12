@@ -6,14 +6,21 @@ import { FiltrosChips } from '@/components/lista';
 import { E } from '@/lib/theme';
 import { ApiError } from '@/lib/api';
 
+import { useCatalogo } from '@/lib/recursos';
+import { useBloquesAsistencia } from '@/lib/queries';
+
 import { useMorosos, useRecordarMoroso, useRecordarMorosos } from './hooks';
 import { type Moroso, type Tramo, TRAMO_NOMBRE } from './tipos';
 
 /** Morosidad: alumnos con cuotas vencidas, por antigüedad, con recordatorio individual y masivo. */
 export function Morosos() {
   const [tramo, setTramo] = useState<Tramo | null>(null);
+  const [sedeId, setSedeId] = useState<number | null>(null);
+  const [bloqueId, setBloqueId] = useState<number | null>(null);
   const [mensaje, setMensaje] = useState<{ texto: string; tono: 'exito' | 'alerta' | 'peligro' } | null>(null);
-  const consulta = useMorosos(tramo);
+  const consulta = useMorosos({ tramo, sedeId, bloqueId });
+  const sedes = useCatalogo<{ data: { id: number; nombre: string }[] }>('sedes');
+  const bloques = useBloquesAsistencia();
   const individual = useRecordarMoroso();
   const masivo = useRecordarMorosos();
 
@@ -67,6 +74,22 @@ export function Morosos() {
         onChange={setTramo}
         todos="Todas"
       />
+      {(sedes.data?.data ?? []).length > 0 && (
+        <FiltrosChips
+          opciones={(sedes.data?.data ?? []).map((s) => ({ valor: s.id, etiqueta: s.nombre }))}
+          valor={sedeId}
+          onChange={setSedeId}
+          todos="Todas las sedes"
+        />
+      )}
+      {(bloques.data ?? []).length > 0 && (
+        <FiltrosChips
+          opciones={(bloques.data ?? []).map((b) => ({ valor: b.id, etiqueta: b.nombre }))}
+          valor={bloqueId}
+          onChange={setBloqueId}
+          todos="Todos los bloques"
+        />
+      )}
       {conCuenta.length > 0 && (
         <Boton titulo={`Recordar a todos (${conCuenta.length})`} icono="notifications" onPress={recordarTodos} cargando={masivo.isPending} />
       )}

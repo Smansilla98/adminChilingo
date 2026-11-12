@@ -333,6 +333,8 @@ return [
         'comprobantes' => ['etiqueta' => 'Comprobantes de cuota', 'icono' => 'fact_check', 'permisos' => ['comprobantes.view']],
         'becas' => ['etiqueta' => 'Becas', 'icono' => 'volunteer_activism', 'permisos' => ['becas.view', 'becas.manage']],
         'pagos' => ['etiqueta' => 'Pagos', 'icono' => 'payments', 'permisos' => ['pagos.view']],
+        'morosos' => ['etiqueta' => 'Morosos', 'icono' => 'warning', 'permisos' => ['pagos.view']],
+        'cuotas_lote' => ['etiqueta' => 'Cuotas por lote', 'icono' => 'date_range', 'permisos' => ['cuotas.create']],
         'facturacion' => ['etiqueta' => 'Facturación', 'icono' => 'request_quote', 'permisos' => ['facturacion.view']],
         'gastos' => ['etiqueta' => 'Gastos', 'icono' => 'account_balance_wallet', 'permisos' => ['gastos.view']],
         'reportes' => ['etiqueta' => 'Reportes', 'icono' => 'bar_chart', 'permisos' => ['reportes.view']],

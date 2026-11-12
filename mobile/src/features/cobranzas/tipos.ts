@@ -67,8 +67,9 @@ export interface DatosLote {
   mes_desde: number;
   mes_hasta: number;
   monto: number;
-  alcance: 'bloque' | 'general';
+  alcance: 'bloque' | 'sede' | 'general';
   bloque_ids: number[];
+  sede_ids: number[];
   dia_vencimiento: number | null;
   descripcion: string | null;
 }
