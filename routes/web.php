@@ -535,5 +535,9 @@ Route::middleware(['auth'])->group(function () {
     });
     Route::get('/mis-shows', [\App\Http\Controllers\MiShowController::class, 'index'])->name('alumno.shows');
     Route::post('/mis-shows/{show}/confirmacion', [\App\Http\Controllers\MiShowController::class, 'confirmar'])->middleware('throttle:30,1')->name('alumno.shows.confirmar');
+    Route::middleware('permiso:inventario.update')->group(function () {
+        Route::post('inventarios/{inventario}/prestamos', [\App\Http\Controllers\PrestamoController::class, 'store'])->whereNumber('inventario')->name('inventarios.prestamos.store');
+        Route::post('inventario-prestamos/{prestamo}/devolucion', [\App\Http\Controllers\PrestamoController::class, 'devolver'])->whereNumber('prestamo')->name('inventario-prestamos.devolucion');
+    });
     // === Fin Equipo F ===
 });

@@ -40,6 +40,8 @@ export default function MiActividad() {
         <Tenue>{pendientes.length} {pendientes.length === 1 ? 'cuota pendiente' : 'cuotas pendientes'} · {pagadas.length} {pagadas.length === 1 ? 'pagada' : 'pagadas'}</Tenue>
       </Tarjeta>
 
+      <Boton titulo="Mis préstamos de instrumentos" icono="inventory-2" variante="secundario" onPress={() => router.push('/mis-prestamos' as never)} />
+
       <FiltrosChips<Seccion>
         todos={false}
         valor={seccion}

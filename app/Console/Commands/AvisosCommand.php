@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class AvisosCommand extends Command
 {
-    protected $signature = 'chilinga:avisos {tipo : cuotas-nuevas|cuotas-por-vencer|cuotas-vencidas|eventos|eventos-nuevos|pasar-lista|ausencias|shows-convocados|shows-recordatorio}';
+    protected $signature = 'chilinga:avisos {tipo : cuotas-nuevas|cuotas-por-vencer|cuotas-vencidas|eventos|eventos-nuevos|pasar-lista|ausencias|shows-convocados|shows-recordatorio|prestamos-vencidos}';
 
     protected $description = 'Genera avisos internos/push (idempotente: no repite avisos ya enviados).';
 
@@ -23,10 +23,11 @@ class AvisosCommand extends Command
             'ausencias' => $avisos->ausenciasSeguidas(),
             'shows-convocados' => app(\App\Domain\Agenda\AvisosShows::class)->convocados(),
             'shows-recordatorio' => app(\App\Domain\Agenda\AvisosShows::class)->recordatorios(),
+            'prestamos-vencidos' => app(\App\Domain\Inventario\AvisosPrestamos::class)->vencidos(),
             default => null,
         };
         if ($n === null) {
-            $this->error('Tipo desconocido. Usá cuotas-nuevas, cuotas-por-vencer, cuotas-vencidas, eventos, eventos-nuevos, pasar-lista, ausencias, shows-convocados o shows-recordatorio.');
+            $this->error('Tipo desconocido. Usá cuotas-nuevas, cuotas-por-vencer, cuotas-vencidas, eventos, eventos-nuevos, pasar-lista, ausencias, shows-convocados, shows-recordatorio o prestamos-vencidos.');
 
             return self::FAILURE;
         }

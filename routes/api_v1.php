@@ -397,6 +397,10 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::get('mi/shows', [\App\Http\Controllers\Api\V1\MiShowController::class, 'index'])->name('mi.shows');
     Route::get('mi/shows/{show}', [\App\Http\Controllers\Api\V1\MiShowController::class, 'show'])->whereNumber('show')->name('mi.shows.show');
     Route::post('mi/shows/{show}/confirmacion', [\App\Http\Controllers\Api\V1\MiShowController::class, 'confirmar'])->whereNumber('show')->middleware('throttle:30,1')->name('mi.shows.confirmar');
+    Route::get('inventario/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'index'])->middleware('permiso:inventario.view')->name('inventario.prestamos.index');
+    Route::post('inventario/{item}/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'store'])->whereNumber('item')->middleware('permiso:inventario.update')->name('inventario.prestamos.store');
+    Route::post('inventario/prestamos/{prestamo}/devolucion', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'devolver'])->whereNumber('prestamo')->middleware('permiso:inventario.update')->name('inventario.prestamos.devolucion');
+    Route::get('mi/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'mios'])->name('mi.prestamos');
     // === Fin Equipo F ===
     // === Equipo C: cuentas, preinscripción, legajo y ciclo lectivo (con sesión) ===
     Route::post('personas/{persona}/codigo-alta', [\App\Http\Controllers\Api\V1\CuentasController::class, 'codigoAlta'])->middleware('throttle:20,1')->name('personas.codigo-alta');

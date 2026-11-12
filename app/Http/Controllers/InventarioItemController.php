@@ -112,8 +112,13 @@ class InventarioItemController extends Controller
             $inventario->load(['movimientos.autor', 'movimientos.sede']);
         }
         $sedes = Sede::orderBy('nombre')->get();
+        // Equipo F: préstamos del instrumento y alumnos a quienes prestar.
+        $prestamos = $inventario->prestamos()->with(['alumno', 'persona'])->limit(20)->get();
+        $alumnosPrestamo = Schema::hasTable('inventario_prestamos')
+            ? \App\Models\Alumno::query()->where('activo', true)->orderBy('nombre_apellido')->get(['id', 'nombre_apellido'])
+            : collect();
 
-        return view('inventarios.show', ['item' => $inventario, 'sedes' => $sedes]);
+        return view('inventarios.show', ['item' => $inventario, 'sedes' => $sedes, 'prestamos' => $prestamos, 'alumnosPrestamo' => $alumnosPrestamo]);
     }
 
     public function edit(InventarioItem $inventario)
