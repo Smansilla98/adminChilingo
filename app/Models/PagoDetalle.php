@@ -6,6 +6,10 @@ use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read float|int|null $total suma calculada en consultas de estado de cuenta
+ * @property-read int|null $ultimo_pago_id último pago calculado en consultas de estado de cuenta
+ */
 class PagoDetalle extends Model
 {
     use Auditable;

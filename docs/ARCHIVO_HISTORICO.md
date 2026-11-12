@@ -146,9 +146,9 @@ Duplicados: mismo hash SHA-256 → aviso, nunca borrado automático.
 |---|---|
 | Dominio | `app/Domain/Archivo/` — `ArchivoService` (carga, metadatos, lote, orden, moderación), `ArchivoEditorialService`, `ArchivoConsultas`, `ImagenesArchivo`, `PresentadorArchivo` |
 | Autorización | `ArchivoFotoPolicy`, `ArchivoAcontecimientoPolicy`, `ArchivoCapituloPolicy` |
-| Web pública | `PublicoController`, vistas `resources/views/archivo/*`, `public/css/archivo.css`, `public/js/archivo.js` |
-| Aportes | `AporteController`, `public/js/archivo-carga.js` (subida de a una, progreso, duplicados) |
-| Gestión | `GestionController`, `CapituloController`, `AcontecimientoController`, `EtiquetaController`, `public/js/archivo-gestion.js` (selección, arrastre) |
+| Web pública | `PublicoController`, vistas `resources/views/archivo/*`, `resources/css/archivo.css`, `resources/js/legacy/archivo.js` |
+| Aportes | `AporteController`, `resources/js/legacy/archivo-carga.js` (subida de a una, progreso, duplicados) |
+| Gestión | `GestionController`, `CapituloController`, `AcontecimientoController`, `EtiquetaController`, `resources/js/legacy/archivo-gestion.js` (selección, arrastre) |
 | API | `Api\V1\ArchivoController`, `Api\V1\ArchivoGestionController` (ver `docs/API.md`) |
 | App | `mobile/src/app/(app)/archivo/*`, `mobile/src/features/archivo/*` |
 | Tests | `tests/Feature/ArchivoHistoricoTest.php`, `tests/Feature/Api/ArchivoApiTest.php`, `mobile/src/__tests__/archivo.test.tsx` |

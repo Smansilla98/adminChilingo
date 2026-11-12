@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read int|null $clases cantidad calculada en reportes
+ * @property-read string|null $last_fecha última fecha calculada en reportes
+ * @property-read int|null $presentes presentes calculados en reportes
+ */
 class Asistencia extends Model
 {
     /** Leyenda tipo Excel: P / T / J / I / F / S */

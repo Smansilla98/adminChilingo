@@ -15,11 +15,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BibliotecaPublicController extends Controller
 {
-    /** Límite de subida en KB (alineado con docker/php/uploads.ini). */
-    private const ARCHIVO_MAX_KB = 102400;
-
-    private const ARCHIVO_EXTENSIONES = 'jpg,jpeg,png,webp,gif,mp4,m4v,webm,mov,mp3,wav,ogg,m4a,pdf';
-
     public function index(Request $request)
     {
         if (! Schema::hasTable('biblioteca_items')) {

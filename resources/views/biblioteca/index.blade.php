@@ -105,6 +105,6 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/biblioteca-modal.js') }}?v=4"></script>
-<script src="{{ asset('js/biblioteca-share.js') }}?v=1"></script>
+@vite('resources/js/legacy/biblioteca-modal.js')
+@vite('resources/js/legacy/biblioteca-share.js')
 @endpush

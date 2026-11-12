@@ -186,7 +186,7 @@ class Navegacion
 
         $salida = [];
         foreach ($grupos as $g) {
-            $links = array_values(array_map(fn ($l) => self::resolver($l, $request), array_values(array_filter($g['links']))));
+            $links = array_map(fn ($l) => self::resolver($l, $request), array_values(array_filter($g['links'])));
             if ($links === []) {
                 continue;
             }

@@ -4,7 +4,7 @@
 @section('page-title', 'Archivo histórico')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/archivo-gestion.css') }}?v=1">
+@vite('resources/css/archivo-gestion.css')
 @endpush
 
 @section('content')
@@ -122,6 +122,6 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/archivo-carga.js') }}?v=1" defer></script>
-<script src="{{ asset('js/archivo-gestion.js') }}?v=1" defer></script>
+@vite('resources/js/legacy/archivo-carga.js')
+@vite('resources/js/legacy/archivo-gestion.js')
 @endpush

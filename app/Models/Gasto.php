@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property int|null $eliminado_por
  * @property string|null $motivo_eliminacion
+ * @property-read float|int|null $total suma calculada en reportes
  */
 class Gasto extends Model
 {

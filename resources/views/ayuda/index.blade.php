@@ -460,7 +460,7 @@
 @endsection
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/ayuda.css') }}?v=2">
+@vite('resources/css/ayuda.css')
 @endpush
 
 @push('scripts')

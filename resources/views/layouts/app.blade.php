@@ -5,7 +5,7 @@
     @stack('vite')
     @stack('styles')
     @auth
-    <link rel="stylesheet" href="{{ asset('css/recordatorio-chatbot.css') }}?v=5">
+    @vite('resources/css/recordatorio-chatbot.css')
     @endauth
 </head>
 <body>
@@ -126,15 +126,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="{{ asset('js/ito-shell.js') }}?v=2"></script>
-<script src="{{ asset('js/hub-search.js') }}?v=2"></script>
+@vite('resources/js/legacy/ito-shell.js')
+@vite('resources/js/legacy/hub-search.js')
 @auth
-<script src="{{ asset('js/recordatorio-chatbot.js') }}?v=3"></script>
+@vite('resources/js/legacy/recordatorio-chatbot.js')
 @endauth
-<script src="{{ asset('js/ito-a11y.js') }}?v=3"></script>
-<script src="{{ asset('js/ito-nav-progress.js') }}?v=1"></script>
-<script src="{{ asset('js/ito-form-steps.js') }}?v=1"></script>
-<script src="{{ asset('js/ito-tables.js') }}?v=2"></script>
+@vite('resources/js/legacy/ito-a11y.js')
+@vite('resources/js/legacy/ito-nav-progress.js')
+@vite('resources/js/legacy/ito-form-steps.js')
+@vite('resources/js/legacy/ito-tables.js')
 @stack('scripts')
 </body>
 </html>

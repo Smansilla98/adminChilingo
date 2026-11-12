@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int|null $persona_id vínculo con la tabla personas (columna agregada después)
+ */
 class Alumno extends Model
 {
     use Auditable;

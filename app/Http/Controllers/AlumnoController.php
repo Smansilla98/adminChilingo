@@ -288,16 +288,6 @@ class AlumnoController extends Controller
             ->with('import_errors', $resultado['errores']);
     }
 
-    private function alumnoPerteneceABloquesDelProfesor(Alumno $alumno, Profesor $profesor): bool
-    {
-        $ids = $profesor->bloqueIdsDondeParticipa()->map(fn ($id) => (int) $id)->unique()->values()->all();
-        if ($ids === []) {
-            return false;
-        }
-
-        return $alumno->bloqueIds()->intersect($ids)->isNotEmpty();
-    }
-
     /**
      * @return \Illuminate\Support\Collection<int, Profesor>
      */

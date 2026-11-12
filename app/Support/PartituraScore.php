@@ -470,7 +470,7 @@ class PartituraScore
             }
         }
 
-        return ['type' => 'pdf', 'file' => $file, 'pages' => array_values($pages)];
+        return ['type' => 'pdf', 'file' => $file, 'pages' => $pages];
     }
 
     /** Hash del contenido de un JSON de partitura (fuente de verdad en el repo). */
