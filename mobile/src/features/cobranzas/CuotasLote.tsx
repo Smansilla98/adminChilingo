@@ -5,6 +5,7 @@ import { Campo, CampoMonto } from '@/components/form';
 import { Aviso, Boton, Cargando, Chip, Encabezado, Fila, Pantalla, Segmentos, Tarjeta, Tenue, Texto } from '@/components/ui';
 import { ApiError } from '@/lib/api';
 import { useBloquesAsistencia } from '@/lib/queries';
+import { useCatalogo } from '@/lib/recursos';
 import { E, C, moneda } from '@/lib/theme';
 
 import { useGenerarLote, useVistaPreviaLote } from './hooks';
@@ -15,6 +16,7 @@ const anioActual = new Date().getFullYear();
 /** Cuotas por lote: arma un rango de meses para bloques o toda la escuela, con vista previa. */
 export function CuotasLote() {
   const bloques = useBloquesAsistencia();
+  const sedes = useCatalogo<{ data: { id: number; nombre: string }[] }>('sedes');
   const previa = useVistaPreviaLote();
   const generar = useGenerarLote();
 
@@ -24,8 +26,9 @@ export function CuotasLote() {
   const [mesHasta, setMesHasta] = useState('12');
   const [monto, setMonto] = useState('');
   const [dia, setDia] = useState('');
-  const [alcance, setAlcance] = useState<'bloque' | 'general'>('bloque');
+  const [alcance, setAlcance] = useState<'bloque' | 'sede' | 'general'>('bloque');
   const [bloqueIds, setBloqueIds] = useState<number[]>([]);
+  const [sedeIds, setSedeIds] = useState<number[]>([]);
   const [resultado, setResultado] = useState<VistaPreviaLote | null>(null);
   const [aviso, setAviso] = useState<{ texto: string; tono: 'exito' | 'peligro' | 'alerta' } | null>(null);
 
@@ -41,6 +44,7 @@ export function CuotasLote() {
     if (!(desde >= 1 && desde <= 12 && hasta >= 1 && hasta <= 12) || hasta < desde) return fallo('Elegí un rango de meses válido (el mes de fin no puede ser anterior al de inicio).');
     if (!(montoNum > 0)) return fallo('Ingresá el monto de la cuota.');
     if (alcance === 'bloque' && bloqueIds.length === 0) return fallo('Elegí al menos un bloque.');
+    if (alcance === 'sede' && sedeIds.length === 0) return fallo('Elegí al menos una sede.');
     const diaNum = dia.trim() === '' ? null : Number(dia);
     if (diaNum !== null && !(diaNum >= 1 && diaNum <= 31)) return fallo('El día de vencimiento tiene que estar entre 1 y 31.');
 
@@ -52,6 +56,7 @@ export function CuotasLote() {
       monto: montoNum,
       alcance,
       bloque_ids: alcance === 'bloque' ? bloqueIds : [],
+      sede_ids: alcance === 'sede' ? sedeIds : [],
       dia_vencimiento: diaNum,
       descripcion: null,
     };
@@ -92,7 +97,8 @@ export function CuotasLote() {
     ]);
   };
 
-  const toggleBloque = (id: number) => setBloqueIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const toggle = (set: (fn: (prev: number[]) => number[]) => void, id: number) =>
+    set((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   return (
     <Pantalla>
@@ -113,9 +119,10 @@ export function CuotasLote() {
       <CampoMonto etiqueta="Monto ($)" valor={monto} onChange={setMonto} requerido />
       <Campo etiqueta="Día de vencimiento (opcional)" valor={dia} onChange={setDia} teclado="numeric" ayuda="Si el mes no tiene ese día, vence el último." />
 
-      <Segmentos<'bloque' | 'general'>
+      <Segmentos<'bloque' | 'sede' | 'general'>
         opciones={[
-          { valor: 'bloque', etiqueta: 'Bloques elegidos' },
+          { valor: 'bloque', etiqueta: 'Bloques' },
+          { valor: 'sede', etiqueta: 'Sedes' },
           { valor: 'general', etiqueta: 'Toda la escuela' },
         ]}
         valor={alcance}
@@ -125,12 +132,25 @@ export function CuotasLote() {
         }}
       />
 
+      {alcance === 'sede' && (
+        <Tarjeta>
+          <Texto style={{ fontWeight: '700' }}>Sedes</Texto>
+          <Fila style={{ gap: E.s, flexWrap: 'wrap' }}>
+            {(sedes.data?.data ?? []).map((s) => (
+              <Pressable key={s.id} accessibilityRole="checkbox" accessibilityState={{ checked: sedeIds.includes(s.id) }} onPress={() => toggle(setSedeIds, s.id)}>
+                <Chip texto={s.nombre} color={sedeIds.includes(s.id) ? C.acento : undefined} />
+              </Pressable>
+            ))}
+          </Fila>
+        </Tarjeta>
+      )}
+
       {alcance === 'bloque' && (
         <Tarjeta>
           <Texto style={{ fontWeight: '700' }}>Bloques</Texto>
           <Fila style={{ gap: E.s, flexWrap: 'wrap' }}>
             {(bloques.data ?? []).map((b) => (
-              <Pressable key={b.id} accessibilityRole="checkbox" accessibilityState={{ checked: bloqueIds.includes(b.id) }} onPress={() => toggleBloque(b.id)}>
+              <Pressable key={b.id} accessibilityRole="checkbox" accessibilityState={{ checked: bloqueIds.includes(b.id) }} onPress={() => toggle(setBloqueIds, b.id)}>
                 <Chip texto={b.nombre} color={bloqueIds.includes(b.id) ? C.acento : undefined} />
               </Pressable>
             ))}

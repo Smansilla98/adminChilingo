@@ -29,8 +29,11 @@ const listaMorosos = {
 
 beforeEach(() => jest.restoreAllMocks());
 
+const catalogos = { 'GET sedes': { data: [{ id: 3, nombre: 'Palomar' }] }, 'GET bloques': { data: [] } };
+
 it('lista morosos con antigüedad y manda un recordatorio individual', async () => {
   const llamadas = simularApi({
+    ...catalogos,
     'GET morosos': listaMorosos,
     'POST morosos/1/recordatorio': { data: { estado: 'enviado', canales: { interna: 'enviado' } } },
   });
@@ -47,6 +50,7 @@ it('lista morosos con antigüedad y manda un recordatorio individual', async () 
 
 it('recordar a todos pide confirmación y manda solo a quienes tienen cuenta', async () => {
   const llamadas = simularApi({
+    ...catalogos,
     'GET morosos': listaMorosos,
     'POST morosos/recordatorios': { data: { enviado: 1, duplicado: 0, sin_envio: 0, al_dia: 0, sin_cuenta: 0 } },
   });
@@ -75,6 +79,7 @@ it('cuotas por lote: vista previa antes de generar y sin duplicar', async () => 
     },
   };
   const llamadas = simularApi({
+    'GET sedes': { data: [{ id: 3, nombre: 'Palomar' }] },
     'GET bloques': { data: [{ id: 5, nombre: 'Martes', anio: 2027 }] },
     'POST cuotas/lote/vista-previa': preview,
     'POST cuotas/lote': { data: { creadas: 1, omitidas: 1 } },
@@ -97,4 +102,29 @@ it('cuotas por lote: vista previa antes de generar y sin duplicar', async () => 
   await waitFor(() => expect(screen.getByText('Se generaron 1 cuota(s). Omitidas: 1.')).toBeTruthy());
   const previaBody = llamadas.find((l) => l.ruta === 'cuotas/lote/vista-previa')?.body as Record<string, unknown>;
   expect(previaBody).toMatchObject({ alcance: 'bloque', bloque_ids: [5], monto: 25000, mes_desde: 1, mes_hasta: 12 });
+});
+
+it('morosos filtra por sede y la consulta lleva sede_id', async () => {
+  const llamadas = simularApi({ ...catalogos, 'GET morosos': listaMorosos });
+  await renderizar(<Morosos />);
+
+  await fireEvent.press((await screen.findAllByText('Palomar'))[0]);
+  await waitFor(() => expect(llamadas.some((l) => l.ruta === 'morosos?sede_id=3')).toBe(true));
+});
+
+it('cuotas por lote con alcance por sede manda sede_ids y no bloque_ids', async () => {
+  const llamadas = simularApi({
+    'GET sedes': { data: [{ id: 3, nombre: 'Palomar' }] },
+    'GET bloques': { data: [] },
+    'POST cuotas/lote/vista-previa': { data: { total: 0, crear: 0, existen: 0, sin_permiso: 0, items: [] } },
+  });
+  await renderizar(<CuotasLote />);
+
+  await fireEvent.changeText(await screen.findByLabelText('Monto ($)'), '1000');
+  await fireEvent.press(screen.getByText('Sedes'));
+  await fireEvent.press(await screen.findByText('Palomar'));
+  await fireEvent.press(screen.getByText('Ver vista previa'));
+
+  await waitFor(() => expect(llamadas.find((l) => l.ruta === 'cuotas/lote/vista-previa')).toBeTruthy());
+  expect(llamadas.find((l) => l.ruta === 'cuotas/lote/vista-previa')?.body).toMatchObject({ alcance: 'sede', sede_ids: [3], bloque_ids: [] });
 });

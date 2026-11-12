@@ -4,8 +4,17 @@ import { api, qs } from '@/lib/api';
 
 import type { DatosLote, RespuestaMorosos, ResultadoLote, ResultadoMasivo, ResultadoRecordatorio, Tramo, VistaPreviaLote } from './tipos';
 
-export const useMorosos = (tramo: Tramo | null) =>
-  useQuery({ queryKey: ['morosos', tramo], queryFn: () => api<RespuestaMorosos>(`morosos${qs({ tramo })}`) });
+export interface FiltrosMorosos {
+  tramo: Tramo | null;
+  sedeId: number | null;
+  bloqueId: number | null;
+}
+
+export const useMorosos = (f: FiltrosMorosos) =>
+  useQuery({
+    queryKey: ['morosos', f.tramo, f.sedeId, f.bloqueId],
+    queryFn: () => api<RespuestaMorosos>(`morosos${qs({ tramo: f.tramo, sede_id: f.sedeId, bloque_id: f.bloqueId })}`),
+  });
 
 export function useRecordarMoroso() {
   const qc = useQueryClient();
