@@ -58,4 +58,26 @@ class PartituraAppAudioTest extends TestCase
             ->assertStatus(503)->assertJsonStructure(['message']);
         $this->getJson('/api/v1/partituras-transcriptor')->assertOk()->assertJsonPath('transcripcion.habilitada', false);
     }
+
+    public function test_ajustar_inicio_guarda_pulsos_sin_crear_version(): void
+    {
+        Storage::fake(PartituraAudio::disco());
+        $toque = $this->toque();
+        Sanctum::actingAs($this->admin());
+        $this->post('/api/v1/partituras/zz-app-audio/audio', ['audio' => $this->audio()], ['Accept' => 'application/json'])->assertCreated();
+
+        $this->putJson('/api/v1/partituras/zz-app-audio/audio/inicio', ['offset_seg' => 1.25, 'beats' => [1.25, 1.8, 2.3, 2.9]])
+            ->assertOk()->assertJsonPath('audio_ref.offset_seg', 1.25);
+
+        $ref = $toque->fresh()->mediosNormalizados()['partitura_score']['audio_ref'];
+        $this->assertSame([1.25, 1.8, 2.3, 2.9], $ref['beats']);
+        $this->assertSame(0, \App\Models\PartituraVersion::query()->count());
+    }
+
+    public function test_ajustar_inicio_sin_grabacion_es_422(): void
+    {
+        $this->toque();
+        Sanctum::actingAs($this->admin());
+        $this->putJson('/api/v1/partituras/zz-app-audio/audio/inicio', ['offset_seg' => 1])->assertStatus(422);
+    }
 }
