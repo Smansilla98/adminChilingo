@@ -44,7 +44,7 @@ class PantallasWebTest extends TestCase
         $this->get(route('alumnos.create', ['persona_id' => $maria->persona_id]))->assertOk();
         $this->get(route('profesores.create', ['persona_id' => $maria->persona_id]))->assertOk();
         $this->get(route('pagos.show', $pago))->assertOk()->assertSee('Anular');
-        $this->get(route('accesos.index'))->assertOk();
+        $this->get(route('accesos.index'))->assertRedirect(route('usuarios.index'));
     }
 
     public function test_persona_multirrol_ve_su_espacio_docente_y_gestion_en_el_menu(): void

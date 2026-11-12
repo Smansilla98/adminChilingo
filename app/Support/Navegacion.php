@@ -63,6 +63,7 @@ class Navegacion
             self::link('biblioteca.index', 'Biblioteca', 'bi-images', 'biblioteca.*'),
             self::link('archivo.index', 'Archivo histórico', 'bi-camera', 'archivo.*'),
             self::link('alumno.cuota', 'Pagar mi cuota', 'bi-credit-card', 'alumno.cuota*'),
+            self::link('alumno.shows', 'Mis shows', 'bi-mic', 'alumno.shows*'),
             $mod('calendario') ? self::link('calendario.index', 'Calendario', 'bi-calendar3', 'calendario.*') : null,
         ];
 
@@ -105,6 +106,7 @@ class Navegacion
             $grupos[] = self::grupo('actividades', 'Actividades', [
                 $mod('admin.eventos') ? self::link('eventos.index', 'Eventos', 'bi-calendar-event', 'eventos.*') : null,
                 $mod('admin.shows') ? self::link('shows.index', 'Shows', 'bi-mic', 'shows.*') : null,
+                $u->can('difusion.send') ? self::link('difusion.index', 'Mensajes a grupos', 'bi-megaphone', 'difusion.*') : null,
             ]);
             if ($mod('admin.villa_gesell')) {
                 $grupos[] = self::grupo('villa_gesell', 'Villa Gesell', [
@@ -146,7 +148,7 @@ class Navegacion
                 $u->isAdmin() ? self::link('estado-sistema', 'Estado del sistema', 'bi-heart-pulse', 'estado-sistema') : null,
                 $u->can('notificaciones.send') ? self::link('configuracion.avisos.edit', 'Avisos y cobro', 'bi-bell', 'configuracion.avisos.*') : null,
                 $u->can('auditoria.view') ? self::link('auditoria.index', 'Auditoría', 'bi-clock-history', 'auditoria.*') : null,
-                $u->can('usuarios.permissions') ? self::link('accesos.index', 'Visibilidad del menú', 'bi-eye', 'accesos.*') : null,
+                $u->can('usuarios.permissions') ? self::link('configuracion.cuentas.edit', 'Cuentas de alumnos', 'bi-person-lock', 'configuracion.cuentas.*') : null,
                 self::link('apariencia.edit', 'Apariencia', 'bi-palette2', 'apariencia.*'),
                 $mod('ayuda') ? self::link('roles', 'Perfiles y roles', 'bi-person-badge', 'roles') : null,
                 $mod('ayuda') ? self::link('ayuda', 'Ayuda', 'bi-question-circle', 'ayuda') : null,

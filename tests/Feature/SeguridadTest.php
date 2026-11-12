@@ -34,7 +34,22 @@ class SeguridadTest extends TestCase
         $this->get('/login')
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
-            ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+            ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+            ->assertHeader('Content-Security-Policy', "frame-ancestors 'self'; object-src 'none'; base-uri 'self'");
+    }
+
+    public function test_csp_completa_se_informa_y_se_puede_volver_obligatoria(): void
+    {
+        $r = $this->get('/login');
+        $this->assertStringContainsString("script-src 'self'", (string) $r->headers->get('Content-Security-Policy-Report-Only'));
+        // Archivos (no HTML) sin CSP: el visor de PDF del navegador sigue andando.
+        $this->getJson('/api/v1/salud')->assertHeaderMissing('Content-Security-Policy');
+
+        config(['chilinga.csp_estricta' => true]);
+        $r = $this->get('/login');
+        $this->assertStringContainsString("frame-ancestors 'self'", (string) $r->headers->get('Content-Security-Policy'));
+        $this->assertStringContainsString("object-src 'none'", (string) $r->headers->get('Content-Security-Policy'));
+        $this->assertNull($r->headers->get('Content-Security-Policy-Report-Only'));
     }
 
     public function test_edicion_publica_de_partituras_se_puede_cerrar(): void
@@ -42,7 +57,8 @@ class SeguridadTest extends TestCase
         $toque = ProgramaRitmo::query()->firstOrFail();
         $payload = ['editor_nombre' => 'Visitante', 'score' => ['title' => 'x']];
 
-        config(['chilinga.edicion_publica_programa' => false]);
+        // Cerrada por defecto.
+        $this->assertFalse(config('chilinga.edicion_publica_programa'));
         $this->postJson(route('programa.toque.editor.guardar', $toque), $payload)->assertUnauthorized();
         $this->actingAs($this->usuario('Visitante'))->postJson(route('programa.toque.editor.guardar', $toque), $payload)->assertForbidden();
 
@@ -120,5 +136,18 @@ class SeguridadTest extends TestCase
 
         $this->getJson("/api/v1/partituras/{$toque->slug}/versiones")->assertForbidden();
         $this->getJson("/api/v1/partituras/{$toque->slug}/versiones/1")->assertForbidden();
+    }
+
+    public function test_en_produccion_el_aviso_de_mercado_pago_sin_secreto_se_rechaza(): void
+    {
+        config(['services.mercadopago' => ['access_token' => 'TEST-token', 'webhook_secret' => null]]);
+        \Illuminate\Support\Facades\Http::fake();
+        \Illuminate\Support\Facades\Log::spy();
+        $this->app->instance('env', 'production');
+        $this->app['env'] = 'production';
+
+        $this->postJson('/webhooks/mercadopago', ['type' => 'payment', 'data' => ['id' => '7']])->assertStatus(401);
+        \Illuminate\Support\Facades\Http::assertNothingSent();
+        \Illuminate\Support\Facades\Log::shouldHaveReceived('error')->withArgs(fn ($m) => str_contains($m, 'MERCADOPAGO_WEBHOOK_SECRET'));
     }
 }

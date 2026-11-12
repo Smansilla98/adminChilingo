@@ -3,7 +3,8 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { confirmar } from '@/components/feedback';
 import { ItemLista } from '@/components/lista';
 import { Acciones, Boton, Cargando, Chip, Encabezado, ErrorVista, Pantalla, Subtitulo, Tarjeta, Tenue, Texto } from '@/components/ui';
-import type { Show } from '@/features/agenda/tipos';
+import { SeccionParticipacion } from '@/features/shows/PlanShow';
+import type { ShowDetalle } from '@/features/shows/tipos';
 import { api } from '@/lib/api';
 import { formatearFecha } from '@/lib/formato';
 import { useDetalle, useOperacion } from '@/lib/recursos';
@@ -11,7 +12,7 @@ import { C } from '@/lib/theme';
 
 export default function DetalleShow() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const q = useDetalle<Show>('shows', id);
+  const q = useDetalle<ShowDetalle>('shows', id);
   const eliminar = useOperacion(() => api(`shows/${id}`, { method: 'DELETE' }), { exito: 'Show eliminado', invalidar: ['shows', 'calendario'], alTerminar: () => router.back() });
 
   if (q.isPending) return <Cargando />;
@@ -39,6 +40,7 @@ export default function DetalleShow() {
         <ItemLista key={b.id} icono="groups" titulo={b.nombre} subtitulo={[b.sede, b.profesor].filter(Boolean).join(' · ') || null}
           onPress={() => router.push({ pathname: '/bloques/[id]', params: { id: String(b.id) } } as never)} />
       ))}
+      <SeccionParticipacion showId={s.id} resumen={s.confirmaciones} plan={s} puedeEditar={!!s.acciones?.editar} />
     </Pantalla>
   );
 }

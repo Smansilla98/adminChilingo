@@ -41,4 +41,23 @@ class ShowPolicy
     {
         return $this->update($user, $show);
     }
+
+    /**
+     * Tomar asistencia al show y a sus ensayos: quien lo gestiona o un docente
+     * (asistencias.create) de alguno de los bloques convocados.
+     */
+    public function asistencia(User $user, Show $show): bool
+    {
+        if ($this->update($user, $show)) {
+            return true;
+        }
+        $acceso = $user->acceso();
+        foreach ($show->bloques()->get(['bloques.id', 'bloques.sede_id']) as $b) {
+            if ($acceso->puedeEnBloque('asistencias.create', (int) $b->id, $b->sede_id ? (int) $b->sede_id : null)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

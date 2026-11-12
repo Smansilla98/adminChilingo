@@ -2,6 +2,10 @@
 
 **Guía completa de ejecución (local, Docker, Railway):** ver **[EJECUCION.md](EJECUCION.md)**.
 
+> **Noviembre 2026:** servidor FrankenPHP, servicios web/scheduler/worker, logs a stderr, Sentry,
+> copia cifrada de backups en S3/R2 y heartbeats → **[DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md)** (checklist del dueño).
+> Restaurar y volver atrás → **[ROLLBACK.md](ROLLBACK.md)**. Lo que sigue y lo contradiga quedó desactualizado.
+
 ## Plataforma multirrol (septiembre 2026) — checklist de deploy
 
 La infraestructura en Railway **no cambia** (mismo `Dockerfile`, mismo `start.sh`, misma base MySQL).
@@ -22,7 +26,10 @@ La infraestructura en Railway **no cambia** (mismo `Dockerfile`, mismo `start.sh
 | Variable | Default | |
 |----------|---------|-|
 | `SANCTUM_TOKEN_MINUTOS` | `43200` (30 días) | vencimiento de los tokens de la app |
-| `PROGRAMA_EDICION_PUBLICA` | `true` | edición de partituras sin login (comportamiento histórico); `false` exige permiso |
+| `PROGRAMA_EDICION_PUBLICA` | `false` | `false`: editar toques y partituras exige el permiso `partituras.edit` (profesores, coordinación, dirección) y el autor queda con el nombre de la cuenta; `true`: cualquier cuenta edita (comportamiento histórico) |
+| `ACTIVAR_FORMULARIO_PUBLICO_COMPROBANTES` | `true` | formulario sin cuenta `/pagar-cuota/comprobante` (busca por DNI y muestra solo iniciales, con trampa para robots y límite de 5 búsquedas por minuto). Con `false` queda cerrado y manda a entrar con la cuenta (la app y la web ya cubren el flujo) |
+| `REGISTRO_REQUIERE_CODIGO` | `false` | valor inicial: el registro de alumnos pide el código de alta que genera la escuela desde la ficha. Se cambia sin redeploy en Configuración > Cuentas de alumnos |
+| `CSP_ESTRICTA` | `false` | cabecera Content-Security-Policy. Con `false` se aplica la mínima (`frame-ancestors 'self'; object-src 'none'; base-uri 'self'`) y la completa (scripts, estilos, fuentes, videos de YouTube/Vimeo, mapas) va como `Content-Security-Policy-Report-Only`: el navegador avisa en la consola sin bloquear. Cuando la consola esté limpia en producción, poner `true` para aplicarla |
 | `EXPO_PUSH_ENABLED` | `false` | envío de push a la app vía Expo |
 | `EXPO_ACCESS_TOKEN` | — | opcional, si el proyecto de Expo exige token para push |
 | `SCHEDULER_ENABLED` | `1` | scheduler dentro del contenedor (`0` en réplicas adicionales) |
@@ -40,14 +47,14 @@ Además de los resúmenes existentes, el scheduler corre:
 | `chilinga:respaldo` | todos los días 03:30 (backup de la base, ver abajo) |
 | `chilinga:mercadopago:conciliar` | cada 30 minutos (pagos de Mercado Pago cuyo aviso no llegó) |
 
-`start.sh` levanta `php artisan schedule:work` en segundo plano dentro del mismo contenedor:
-no hace falta un servicio Cron aparte. Con **más de una réplica**, dejarlo activo en una sola
-(`SCHEDULER_ENABLED=0` en las demás). Los avisos son idempotentes: correrlos de más no duplica.
+Mientras no exista el servicio `scheduler`, el web levanta `php artisan schedule:work` en segundo plano
+(`SCHEDULER_EN_WEB=1`). Al crear el servicio scheduler, `SCHEDULER_EN_WEB=0` en el web
+(ver [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md)). Los avisos son idempotentes: correrlos de más no duplica.
 
 ### Colas
 
 `QUEUE_CONNECTION=database`. Las notificaciones actuales son síncronas (no requieren worker).
-Si en el futuro se encolan, agregar un servicio con `php artisan queue:work --tries=3`.
+Si en el futuro se encolan, crear el servicio `worker` (`railway.worker.toml`, ver DEPLOY_RAILWAY.md).
 
 ### API y app
 
@@ -81,8 +88,9 @@ Sin cambios: comprobantes y archivos en `storage/app` (usar volumen persistente 
 últimos 14 (`--conservar=N` para cambiarlo). **Estado del sistema** avisa si no hay backup o si
 el último tiene más de 36 h, y el administrador puede descargar el último desde ahí.
 
-El volumen de Railway es un solo disco: **descargá un backup cada tanto y guardalo fuera de
-Railway** (contiene datos personales, no lo compartas).
+Con `RESPALDO_DISCO_EXTERNO` + `RESPALDO_CLAVE` cada backup sube además una copia cifrada a S3/R2
+(últimas 30). `php artisan chilinga:respaldo:probar [--externo]` lo restaura en una base temporal para
+comprobar que sirve. Detalle y restauración: [ROLLBACK.md](ROLLBACK.md).
 
 Restaurar (en una base vacía o sobre la actual, reemplaza las tablas):
 
@@ -95,15 +103,10 @@ gunzip -c chilinga-AAAAMMDD-HHMMSS.sql.gz | mysql -h HOST -P PUERTO -u USUARIO -
 - Laravel: `GET /up`
 - App + DB: `GET /salud` (JSON; 503 si no hay conexión a la base)
 
-## Migraciones recientes (automáticas en Railway)
+## Migraciones (automáticas en Railway)
 
-`start.sh` ejecuta `php artisan migrate --force` y, además, estas tres (idempotentes):
-
-- `2026_08_19_120000_create_observaciones_pedagogicas_table.php`
-- `2026_08_19_160000_add_cargado_por_to_comprobantes_cuota_alumnos.php`
-- `2026_08_19_180000_cuaderno_pedagogico_e_indices.php`
-
-No hace falta correrlas a mano si el contenedor arranca con `start.sh`.
+`start.sh web` ejecuta `php artisan migrate --force`. **Si falla, el contenedor no arranca** y Railway
+mantiene el deploy anterior (antes arrancaba igual con el esquema a medias).
 
 ## Configuración general ya aplicada
 
@@ -146,14 +149,11 @@ Build y ejecución local (con MySQL en otro contenedor o en host):
 
 ```bash
 docker build -t chilinga-admin .
-docker run --rm -p 8000:8000 -e APP_KEY=base64:xxx -e DB_HOST=host.docker.internal -e DB_DATABASE=chilinga_admin -e DB_USERNAME=root -e DB_PASSWORD=xxx chilinga-admin
+docker run --rm -p 8080:8080 -e APP_KEY=base64:xxx -e DB_HOST=host.docker.internal -e DB_DATABASE=chilinga_admin -e DB_USERNAME=root -e DB_PASSWORD=xxx chilinga-admin
 ```
 
-El `start.sh` espera a que MySQL esté disponible, ejecuta migraciones y `storage:link`, y arranca `php artisan serve` en el puerto `PORT` (por defecto 8000). Para producción con imagen Docker, pasar todas las variables de `env.railway.example`.
-
-## Procfile
-
-Incluido para entornos que usan buildpack Heroku PHP. Si Railway usa Nixpacks, puede ignorar el Procfile y detectar Laravel solo.
+El `start.sh` espera a MySQL, migra (si falla, sale con error), cachea config/rutas/vistas y arranca
+FrankenPHP en el puerto `PORT` (por defecto 8080). Ver [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md).
 
 ## Error "Table 'railway.sessions' doesn't exist"
 

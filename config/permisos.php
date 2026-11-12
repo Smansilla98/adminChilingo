@@ -112,6 +112,7 @@ return [
         ],
         'Programa y partituras' => [
             'partituras.view' => 'Ver partituras',
+            'partituras.edit' => 'Editar toques y partituras del programa',
             'partituras.admin' => 'Administrar programa y partituras',
             'biblioteca.admin' => 'Moderar biblioteca',
             'disenos.manage' => 'Usar el módulo Diseño',
@@ -134,6 +135,7 @@ return [
         ],
         'Notificaciones' => [
             'notificaciones.send' => 'Enviar recordatorios y avisos',
+            'difusion.send' => 'Mandar mensajes a grupos (difusión)',
         ],
         'Usuarios' => [
             'usuarios.view' => 'Ver usuarios',
@@ -178,6 +180,8 @@ return [
                 'shows.view', 'shows.manage', 'calendario.view', 'villa_gesell.manage',
                 'partituras.view', 'reportes.view', 'inventario.view', 'becas.view',
                 'reportes.direccion',
+                'partituras.view', 'partituras.edit', 'reportes.view', 'inventario.view', 'becas.view',
+                'difusion.send',
             ],
         ],
         'coordinador_area' => [
@@ -188,7 +192,7 @@ return [
                 'personas.view', 'alumnos.view', 'alumnos.create', 'alumnos.update', 'alumnos.export',
                 'asistencias.view', 'asistencias.create', 'asistencias.update', 'asistencias.delete',
                 'seguimiento.view', 'seguimiento.create',
-                'calendario.view', 'eventos.view', 'partituras.view', 'bloques.view',
+                'calendario.view', 'eventos.view', 'partituras.view', 'partituras.edit', 'bloques.view',
             ],
         ],
         'profesor' => [
@@ -200,7 +204,7 @@ return [
                 'asistencias.view', 'asistencias.create', 'asistencias.update',
                 'seguimiento.view', 'seguimiento.create',
                 'comprobantes.view', 'comprobantes.create', 'pagos.view',
-                'eventos.view', 'calendario.view', 'partituras.view',
+                'eventos.view', 'calendario.view', 'partituras.view', 'partituras.edit', 'shows.view',
             ],
         ],
         'alumno' => [
@@ -258,7 +262,7 @@ return [
                 'cuotas.view', 'becas.view', 'pagos.view', 'pagos.create',
                 'comprobantes.view', 'comprobantes.create', 'comprobantes.approve',
                 'eventos.view', 'eventos.create', 'eventos.update', 'calendario.view',
-                'notificaciones.send',
+                'notificaciones.send', 'difusion.send',
             ],
         ],
         'archivista' => [
@@ -341,9 +345,7 @@ return [
         'biblioteca' => ['etiqueta' => 'Biblioteca', 'icono' => 'local_library', 'permisos' => []],
         'notificaciones' => ['etiqueta' => 'Avisos', 'icono' => 'notifications', 'permisos' => []],
         'avisos_config' => ['etiqueta' => 'Avisos y cobro', 'icono' => 'notifications_active', 'permisos' => ['notificaciones.send']],
-        // Equipo G
-        'progreso' => ['etiqueta' => 'Progreso por toque', 'icono' => 'trending_up', 'permisos' => ['seguimiento.view']],
-        'mis_liquidaciones' => ['etiqueta' => 'Mis liquidaciones', 'icono' => 'request_quote', 'permisos' => ['@profesor']],
-        'direccion' => ['etiqueta' => 'Tablero de dirección', 'icono' => 'insights', 'permisos' => ['reportes.direccion']],
+        'partituras.view', 'partituras.edit', 'reportes.view', 'inventario.view', 'becas.view',
+        'reportes.direccion', 'difusion.send',
     ],
 ];

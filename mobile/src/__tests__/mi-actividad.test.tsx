@@ -29,7 +29,31 @@ beforeEach(() => {
       { slug: 'marcha', nombre: 'Marcha camión', anio: 1, autor: 'La Chilinga', tiene_partitura: true },
       { slug: 'candombe', nombre: 'Candombe', anio: 2, autor: null, tiene_partitura: false },
     ] },
+    'GET mi/asistencia': {
+      anio: 2026,
+      alumnos: [{
+        alumno_id: 7, nombre: 'Ana', resumen: { clases: 4, presentes: 2, tardes: 1, ausentes: 1, justificadas: 0, porcentaje: 75 },
+        bloques: [{
+          bloque_id: 3, nombre: 'Martes noche', sede: 'Quilmes', actual: true,
+          horarios: [{ dia: 2, dia_nombre: 'Martes', inicio: '19:00', fin: '21:00' }],
+          resumen: { clases: 4, presentes: 2, tardes: 1, ausentes: 1, justificadas: 0, porcentaje: 75 },
+          meses: [{ mes: 10, clases: 4, presentes: 2, tardes: 1, ausentes: 1, justificadas: 0, porcentaje: 75 }],
+        }],
+        ultimas: [{ fecha: '2026-10-28', bloque: 'Martes noche', tipo: 'presente', tipo_etiqueta: 'Presente' }],
+      }],
+    },
   });
+});
+
+it('muestra su asistencia por bloque y mes y su horario semanal', async () => {
+  await renderizar(<MiActividad />);
+  await fireEvent.press(await screen.findByText('Asistencia'));
+
+  expect(await screen.findByText('Mi horario')).toBeTruthy();
+  expect(screen.getByText('19:00 a 21:00')).toBeTruthy();
+  expect(screen.getByLabelText('75 por ciento de asistencia')).toBeTruthy();
+  expect(screen.getByText('Octubre')).toBeTruthy();
+  expect(screen.getByText('Últimas clases')).toBeTruthy();
 });
 
 it('muestra qué debe, lo que ya pagó y el material de estudio del alumno', async () => {

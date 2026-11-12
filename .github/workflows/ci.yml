@@ -177,3 +177,60 @@ jobs:
           APP_VARIANT: production
           EXPO_PUBLIC_API_URL: https://ci.invalid/api/v1
         run: npx expo export --platform android --platform ios --output-dir /tmp/expo-dist
+
+  docker:
+    name: Imagen Docker (build + arranque + /salud)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: chilinga_docker
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Revisar start.sh (sintaxis + shellcheck)
+        run: |
+          sh -n start.sh
+          shellcheck start.sh
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build de la imagen de producción
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: chilinga-admin:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Como root + volumen, igual que Railway con RAILWAY_RUN_UID=0: start.sh baja a www-data.
+      - name: Arrancar el contenedor y esperar /salud
+        run: |
+          docker run -d --name web --network host --user root \
+            -e PORT=18080 -e APP_ENV=production -e APP_DEBUG=false \
+            -e APP_KEY="base64:$(openssl rand -base64 32)" -e APP_URL=http://127.0.0.1:18080 \
+            -e DB_CONNECTION=mysql -e DB_HOST=127.0.0.1 -e DB_PORT=3306 \
+            -e DB_DATABASE=chilinga_docker -e DB_USERNAME=root -e DB_PASSWORD=root \
+            -e PERSISTENT_STORAGE_PATH=/data/storage -e PERC_KIT_REBUILD=0 \
+            chilinga-admin:ci
+          ok=0
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:18080/salud; then echo; ok=1; break; fi
+            if [ "$(docker inspect -f '{{.State.Running}}' web)" != "true" ]; then break; fi
+            sleep 3
+          done
+          [ "$ok" = 1 ] || { echo "/salud no respondió"; exit 1; }
+          curl -fsS -o /dev/null http://127.0.0.1:18080/login
+          docker exec web sh -c 'grep -Eq "^Uid:[[:space:]]+33[[:space:]]" /proc/1/status' \
+            || { echo "El servidor no corre como www-data"; exit 1; }
+
+      - name: Logs del contenedor
+        if: always()
+        run: docker logs web 2>&1 | tail -200 || true

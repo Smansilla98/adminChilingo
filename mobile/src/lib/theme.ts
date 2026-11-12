@@ -7,6 +7,8 @@ export const C = {
   texto: '#ffffff',
   tenue: '#a3a3a3',
   acento: '#f26422',
+  /** Fondo naranja con texto blanco: 4.6:1 (WCAG AA). El acento de siempre queda para iconos y bordes. */
+  acentoBoton: '#c94c16',
   acentoSuave: 'rgba(242,100,34,0.18)',
   exito: '#3daf3a',
   exitoSuave: 'rgba(61,175,58,0.18)',

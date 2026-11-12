@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Finanzas\RegistrarPago;
 use App\Domain\Finanzas\RegistroPagoService;
 use App\Models\Bloque;
 use App\Models\Cuota;
@@ -49,6 +50,11 @@ class PagoController extends Controller
                 if ($request->filled('hasta')) {
                     $query->where('fecha_pago', '<=', $request->hasta);
                 }
+                match ($request->input('estado')) {
+                    'vigentes' => $query->whereNull('anulado_at'),
+                    'anulados' => $query->whereNotNull('anulado_at'),
+                    default => null,
+                };
                 $pagos = $query->orderBy('fecha_pago', 'desc')->paginate(20);
             } catch (QueryException $e) {
                 // mantener paginador vacío
@@ -163,30 +169,23 @@ class PagoController extends Controller
         return response()->json(['alumnos' => $alumnos]);
     }
 
-    public function store(Request $request, RegistroPagoService $servicio)
+    public function store(Request $request, RegistrarPago $registrar)
     {
-        if (! $servicio->tablasDisponibles()) {
-            return back()->withErrors([
-                'general' => 'Faltan tablas requeridas para registrar pagos. Ejecutá migraciones y reintentá.',
-            ])->withInput();
-        }
+        ['pago' => $pago, 'duplicado' => $duplicado] = $registrar->ejecutar(
+            $request->except('comprobante'),
+            $request->user(),
+            $request->file('comprobante'),
+            $request->header('Idempotency-Key'),
+        );
 
-        $this->normalizarAbono($request);
-        $validated = $request->validate($servicio->reglas(false));
-        $pago = $servicio->registrar($validated, $request->user(), $request->file('comprobante'));
-
-        return redirect()->route('pagos.show', $pago)->with('success', 'Pago registrado correctamente.');
+        return redirect()->route('pagos.show', $pago)->with('success', $duplicado
+            ? 'Este pago ya estaba registrado (el formulario se envió dos veces): no se duplicó.'
+            : 'Pago registrado correctamente.');
     }
 
     public function update(Request $request, Pago $pago, RegistroPagoService $servicio)
     {
         $this->authorize('update', $pago);
-        if (! $servicio->tablasDisponibles()) {
-            return back()->withErrors([
-                'general' => 'Faltan tablas requeridas para actualizar pagos. Ejecutá migraciones y reintentá.',
-            ])->withInput();
-        }
-
         $this->normalizarAbono($request);
         $validated = $request->validate($servicio->reglas(true));
         $servicio->actualizar($pago, $validated, $request->user(), $request->file('comprobante'), $request->boolean('quitar_comprobante'));

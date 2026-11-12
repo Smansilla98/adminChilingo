@@ -45,6 +45,9 @@
             data-samples-base="{{ parse_url(asset('sounds/perc'), PHP_URL_PATH) ?: '/sounds/perc' }}"
             data-score="{{ json_encode($score, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}"
             data-controles="1"
+            data-audio-base="{{ url('/programa/toque/'.$programaRitmo->slug.'/audio') }}"
+            data-exportar-midi="{{ route('programa.toque.exportar', [$programaRitmo, 'midi']) }}"
+            data-exportar-xml="{{ route('programa.toque.exportar', [$programaRitmo, 'musicxml']) }}"
         ></div>
 
         @if(count($instrumentosScore) > 0)

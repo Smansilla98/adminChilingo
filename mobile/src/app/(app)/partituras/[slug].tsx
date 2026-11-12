@@ -1,19 +1,21 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, AppState, Linking, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { Aviso, Boton, Cargando, Chip, ErrorVista, Pantalla, Subtitulo, Tenue, Texto, Titulo } from '@/components/ui';
 import { api } from '@/lib/api';
 import { descargarYAbrir, elegirDocumento, subirArchivo } from '@/lib/archivos';
 import { esEnlaceExterno } from '@/lib/enlaces';
 import { MotorAudio } from '@/lib/partitura/audio';
+import { GrabacionRef, VELOCIDADES } from '@/lib/partitura/grabacion';
 import { cicloGolpe, ETIQUETA_GOLPE, golpesDe, INSTRUMENTOS, nombreDe, SIMBOLOS } from '@/lib/partitura/catalogo';
 import {
   agregarCompas, agregarSeccion, conInstrumento, cuantizarVoz, escribirCelda, grillaDeVoz,
-  paraGuardar, partituraVacia, renombrarSeccion, repeticion, tempoDe, ticksDeCompas,
+  expandirTimeline, paraGuardar, partituraVacia, renombrarSeccion, repeticion, TEMPO_MAX, TEMPO_MIN, tempoDe, ticksDeCompas,
   type Score,
 } from '@/lib/partitura/modelo';
+import { posicionEnGrabacion } from '@/lib/partitura/sincro';
 import { usePuede } from '@/lib/permisos';
 import { C, E } from '@/lib/theme';
 
@@ -43,6 +45,7 @@ export default function Partitura() {
   const admin = usePuede('partituras.admin');
   const qc = useQueryClient();
   const motor = useRef(new MotorAudio());
+  const grabacion = useRef(new GrabacionRef());
   const marcaPrevia = useRef('');
 
   const [instrumento, setInstrumento] = useState<string | null>(null);
@@ -59,10 +62,31 @@ export default function Partitura() {
   const [marca, setMarca] = useState<{ s: number; m: number } | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [rango, setRango] = useState<{ s: number; desde: number; hasta: number | null } | null>(null);
+  const [progreso, setProgreso] = useState<string | null>(null);
+  const [grabando, setGrabando] = useState(false);
+  const [velocidadGrab, setVelocidadGrab] = useState(100);
+  const [marcaGrab, setMarcaGrab] = useState<{ s: number; m: number } | null>(null);
 
   useEffect(() => {
     const m = motor.current;
-    return () => m.soltar();
+    const g = grabacion.current;
+    return () => { m.soltar(); g.soltar(); };
+  }, []);
+
+  // Al pasar a segundo plano se corta todo: el audio no puede seguir sonando sin la pantalla.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (estado) => {
+      if (estado === 'active') return;
+      motor.current.parar(false);
+      grabacion.current.pausar();
+      setSonando(false);
+      setEnConteo(false);
+      setMarca(null);
+      setGrabando(false);
+      marcaPrevia.current = '';
+    });
+    return () => sub.remove();
   }, []);
 
   // Toma la partitura del servidor cada vez que llega una nueva, salvo que haya
@@ -72,7 +96,7 @@ export default function Partitura() {
   if (remoto && remoto !== origen && !sucio) {
     setOrigen(remoto);
     setScore(remoto);
-    setTempo(Math.min(100, Math.max(60, remoto.tempo || 88)));
+    setTempo(Math.min(TEMPO_MAX, Math.max(TEMPO_MIN, remoto.tempo || 88)));
   }
 
   useEffect(() => {
@@ -95,14 +119,15 @@ export default function Partitura() {
     setSucio(true);
   };
 
-  const tocar = async (seccion: number | null) => {
+  const tocar = async (seccion: number | null, tramo: { sectionIdx: number; desde: number; hasta: number } | null = null) => {
     const actual = partitura ?? partituraVacia(t.nombre, t.autor ?? '');
     setAviso(null);
     try {
-      await motor.current.preparar();
+      await motor.current.preparar((listos, total) => setProgreso(listos < total ? `Cargando sonidos ${listos} de ${total}…` : null));
+      setProgreso(null);
       if (motor.current.faltan.length) setAviso(`Faltan ${motor.current.faltan.length} sonidos. Lo demás suena igual.`);
       motor.current.onFin = () => { setSonando(false); setEnConteo(false); setMarca(null); };
-      motor.current.tocar(actual, { bpm: tempo, soloSeccion: seccion, conteo, metronomo, loop: seccion !== null }, (p) => {
+      motor.current.tocar(actual, { bpm: tempo, soloSeccion: tramo ? null : seccion, rango: tramo, conteo, metronomo, loop: seccion !== null || tramo !== null }, (p) => {
         const clave = `${p.conteo}:${p.sectionIdx}:${p.measureIdx}`;
         if (clave === marcaPrevia.current) return;
         marcaPrevia.current = clave;
@@ -114,6 +139,57 @@ export default function Partitura() {
     } catch (e) {
       setAviso(e instanceof Error ? e.message : 'No se pudo cargar el audio.');
     }
+  };
+
+  /** Escucha la grabación de referencia con el cursor de la partitura sincronizado. */
+  const escucharGrabacion = async () => {
+    const ref = partitura?.audio_ref ?? t.score?.audio_ref ?? null;
+    if (!ref) return;
+    setAviso(null);
+    try {
+      const ok = await grabacion.current.cargar(slug, ref);
+      if (!ok) return setAviso('La grabación de este toque no está disponible.');
+      grabacion.current.setVelocidad(velocidadGrab);
+      grabacion.current.play();
+      setGrabando(true);
+      const cant = expandirTimeline(partitura ?? partituraVacia(t.nombre, t.autor ?? '')).length;
+      const tic = setInterval(() => {
+        if (!grabacion.current.sonando) { clearInterval(tic); return; }
+        const pos = posicionEnGrabacion(partitura ?? partituraVacia(t.nombre, t.autor ?? ''), grabacion.current.tiempo, cant);
+        if (pos.antes || pos.despues) { setMarcaGrab(null); return; }
+        const tl = expandirTimeline(partitura ?? partituraVacia(t.nombre, t.autor ?? ''))[pos.orden];
+        if (tl) setMarcaGrab({ s: tl.sectionIdx, m: tl.measureIdx });
+        if (grabacion.current.tiempo >= grabacion.current.duracion - 0.05 && grabacion.current.duracion > 0) {
+          clearInterval(tic);
+          grabacion.current.pausar();
+          setGrabando(false);
+          setMarcaGrab(null);
+        }
+      }, 120);
+    } catch (e) {
+      setAviso(e instanceof Error ? e.message : 'No se pudo cargar la grabación.');
+    }
+  };
+
+  const pararGrabacion = () => {
+    grabacion.current.pausar();
+    setGrabando(false);
+    setMarcaGrab(null);
+  };
+
+  const cambiarVelocidad = () => {
+    const i = VELOCIDADES.indexOf(velocidadGrab as (typeof VELOCIDADES)[number]);
+    const siguiente = VELOCIDADES[(i + 1) % VELOCIDADES.length];
+    setVelocidadGrab(siguiente);
+    grabacion.current.setVelocidad(siguiente);
+  };
+
+  /** Marcar el loop: primer toque = A, segundo = B (en la misma parte). */
+  const marcarCompas = (s: number, m: number) => {
+    setRango((r) => {
+      if (!r || r.s !== s || r.hasta !== null) return { s, desde: m, hasta: null };
+      return { s, desde: Math.min(r.desde, m), hasta: Math.max(r.desde, m) };
+    });
   };
 
   const parar = () => {
@@ -187,7 +263,9 @@ export default function Partitura() {
 
       <View style={s.transporte}>
         <Boton titulo={sonando ? 'Parar' : 'Escuchar'} icono={sonando ? 'stop' : 'play-arrow'} onPress={() => (sonando ? parar() : void tocar(null))} />
-        <Boton titulo={`${tempo} bpm`} variante="secundario" onPress={() => setTempo((n) => (n >= 100 ? 60 : n + 2))} />
+        <Boton titulo="−5" variante="secundario" onPress={() => setTempo((n) => Math.max(TEMPO_MIN, n - 5))} />
+        <Boton titulo={`${tempo} bpm`} variante="secundario" onPress={() => setTempo((n) => Math.min(TEMPO_MAX, n + 1))} />
+        <Boton titulo="+5" variante="secundario" onPress={() => setTempo((n) => Math.min(TEMPO_MAX, n + 5))} />
         <Boton titulo="Metrónomo" variante={metronomo ? 'primario' : 'secundario'} onPress={() => setMetronomo((v) => !v)} />
         <Boton titulo="Conteo" variante={conteo ? 'primario' : 'secundario'} onPress={() => setConteo((v) => !v)} />
         <Boton titulo={solo ? 'Todas las cuerdas' : 'Solo esta cuerda'} variante="secundario" onPress={() => setSolo((v) => (v ? null : elegido))} />
@@ -197,7 +275,26 @@ export default function Partitura() {
           onPress={() => elegido && setMudas((xs) => (xs.includes(elegido) ? xs.filter((x) => x !== elegido) : [...xs, elegido]))}
         />
       </View>
-      <Tenue>El tempo va de 60 a 100. Tocá el número para subirlo de a 2; al pasar 100 vuelve a 60. Solo escucha la cuerda elegida. Silenciar la saca del conjunto.</Tenue>
+      <Tenue>El tempo va de {TEMPO_MIN} a {TEMPO_MAX} bpm. Tocá el número para subirlo de a 1. Solo escucha la cuerda elegida. Silenciar la saca del conjunto.</Tenue>
+      {progreso && <Tenue>{progreso}</Tenue>}
+      {(partitura?.audio_ref ?? t.score?.audio_ref) && (
+        <View style={s.transporte}>
+          <Boton titulo={grabando ? 'Pausar grabación' : 'Escuchar grabación'} icono={grabando ? 'pause' : 'graphic-eq'} onPress={() => (grabando ? pararGrabacion() : void escucharGrabacion())} />
+          <Boton titulo={`${velocidadGrab}%`} variante="secundario" onPress={cambiarVelocidad} />
+        </View>
+      )}
+      <View style={s.transporte}>
+        <Boton titulo="Descargar MIDI" icono="save" variante="secundario" onPress={() => void descargarYAbrir(`partituras/${slug}/exportar/midi`, { nombre: `${t.nombre}.mid` }).catch((e) => setAviso(e instanceof Error ? e.message : 'No se pudo exportar.'))} />
+        <Boton titulo="Descargar MusicXML" icono="save" variante="secundario" onPress={() => void descargarYAbrir(`partituras/${slug}/exportar/musicxml`, { nombre: `${t.nombre}.musicxml` }).catch((e) => setAviso(e instanceof Error ? e.message : 'No se pudo exportar.'))} />
+        <Boton titulo="Versiones" icono="history" variante="secundario" onPress={() => router.push(`/partituras/versiones/${slug}`)} />
+      </View>
+      {rango && (
+        <View style={s.transporte}>
+          <Tenue>{`Loop: compases ${rango.desde + 1}${rango.hasta !== null ? `–${rango.hasta + 1}` : ' (tocá otro para cerrar)'} de la parte`}</Tenue>
+          {rango.hasta !== null && <Boton titulo="Repetir este tramo" icono="loop" onPress={() => void tocar(null, { sectionIdx: rango.s, desde: rango.desde, hasta: rango.hasta ?? rango.desde })} />}
+          <Boton titulo="Quitar loop" variante="secundario" onPress={() => setRango(null)} />
+        </View>
+      )}
 
       {(partitura?.instruments.length || lectura?.instrumentos.length) ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: E.s }}>
@@ -266,10 +363,16 @@ export default function Partitura() {
           <Boton titulo="Escuchar esta parte" icono="loop" variante="secundario" onPress={() => void tocar(si)} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: E.s }}>
             {sec.compases.map((compas, n) => (
-              <View key={`${sec.nombre}-${n}`} style={[s.compas, marca?.s === si && marca.m === n && s.activa]}>
+              <Pressable
+                key={`${sec.nombre}-${n}`}
+                accessibilityRole="button"
+                accessibilityLabel={`Compás ${n + 1}, marcar para repetir`}
+                onPress={() => marcarCompas(si, n)}
+                style={[s.compas, (marca?.s === si && marca.m === n) || (marcaGrab?.s === si && marcaGrab.m === n) ? s.activa : null, rango?.s === si && rango.desde <= n && n <= (rango.hasta ?? rango.desde) && s.enLoop]}
+              >
                 <Tenue>{n + 1}</Tenue>
                 <Texto style={s.simbolos}>{elegido ? (compas.voces[elegido] || '·') : '·'}</Texto>
-              </View>
+              </Pressable>
             ))}
           </ScrollView>
         </View>
@@ -322,5 +425,6 @@ const s = StyleSheet.create({
   celda: { width: 44, height: 44, borderRadius: 8, borderWidth: 1, borderColor: C.borde, backgroundColor: C.superficie, alignItems: 'center', justifyContent: 'center' },
   golpe: { backgroundColor: C.superficie2 },
   activa: { borderColor: C.acento, borderWidth: 2 },
+  enLoop: { backgroundColor: C.superficie2 },
   nombre: { color: C.texto, fontSize: 18, fontWeight: '700', borderBottomWidth: 1, borderColor: C.borde, paddingVertical: 4 },
 });

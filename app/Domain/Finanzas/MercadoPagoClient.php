@@ -80,6 +80,13 @@ class MercadoPagoClient
     {
         $secreto = config('services.mercadopago.webhook_secret');
         if (blank($secreto)) {
+            // En producción no se aceptan avisos sin firma: falta MERCADOPAGO_WEBHOOK_SECRET.
+            if (app()->environment('production')) {
+                \Illuminate\Support\Facades\Log::error('Mercado Pago: aviso rechazado porque falta MERCADOPAGO_WEBHOOK_SECRET.');
+
+                return false;
+            }
+
             return true;
         }
         $partes = [];

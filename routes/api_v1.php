@@ -42,6 +42,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('auth.login');
 // Un alumno ya cargado crea su cuenta desde la app (DNI + fecha de nacimiento) y queda adentro.
 Route::post('auth/registro', [AuthController::class, 'registro'])->middleware('throttle:6,1')->name('auth.registro');
+// === Equipo C: recuperar contraseña (sin sesión) ===
+Route::post('auth/recuperar', [AuthController::class, 'recuperar'])->middleware('throttle:recuperar-clave')->name('auth.recuperar');
+Route::post('auth/recuperar/confirmar', [AuthController::class, 'recuperarConfirmar'])->middleware('throttle:recuperar-clave')->name('auth.recuperar.confirmar');
+// === Fin Equipo C: recuperar contraseña ===
 Route::get('salud', fn () => response()->json(['ok' => true, 'version' => 'v1', 'hora' => now()->toIso8601String()]))->name('salud');
 
 // Archivo histórico: lectura del material publicado, sin cuenta (docs/ARCHIVO_HISTORICO.md).
@@ -294,6 +298,13 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::put('partituras/{slug}', [PartituraController::class, 'update'])->middleware('permiso:partituras.admin')->name('partituras.update');
     Route::delete('partituras/{slug}', [PartituraController::class, 'destroy'])->middleware('permiso:partituras.admin')->name('partituras.destroy');
     Route::get('partituras/{slug}', [PartituraController::class, 'show'])->name('partituras.show');
+    // === Equipo E: grabación de referencia, exportación y transcripción ===
+    Route::get('partituras-transcriptor', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'estado'])->name('partituras.transcriptor');
+    Route::get('partituras/{slug}/exportar/{formato}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'exportar'])->whereIn('formato', ['midi', 'musicxml'])->name('partituras.exportar');
+    Route::get('partituras/{slug}/audio/{archivo}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'audio'])->where('archivo', '[0-9]+-[a-z0-9]{16}\.(mp3|wav|m4a|ogg)')->name('partituras.audio');
+    Route::post('partituras/{slug}/audio', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'subirAudio'])->middleware(['permiso:partituras.admin', 'throttle:20,1'])->name('partituras.audio.subir');
+    Route::post('partituras/{slug}/transcripciones', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'transcribir'])->middleware(['permiso:partituras.admin', 'throttle:20,1'])->name('partituras.transcribir');
+    Route::get('partituras/{slug}/transcripciones/{id}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'transcripcion'])->whereNumber('id')->middleware('permiso:partituras.admin')->name('partituras.transcripcion');
 
     Route::get('recordatorios/chat', [RecordatorioController::class, 'chat'])->name('recordatorios.chat');
     Route::post('recordatorios/whatsapp', [RecordatorioController::class, 'whatsapp'])->middleware('permiso:notificaciones.send')->name('recordatorios.whatsapp');
@@ -360,6 +371,62 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
         });
     });
 
+    // === Equipo F: Comunidad (difusión, shows y ensayos, préstamos) ===
+    Route::middleware('permiso:difusion.send')->prefix('difusiones')->name('difusiones.')->group(function () {
+        Route::get('catalogo', [\App\Http\Controllers\Api\V1\DifusionController::class, 'catalogo'])->name('catalogo');
+        Route::get('/', [\App\Http\Controllers\Api\V1\DifusionController::class, 'index'])->name('index');
+        Route::post('vista-previa', [\App\Http\Controllers\Api\V1\DifusionController::class, 'vistaPrevia'])->middleware('throttle:60,1')->name('vista-previa');
+        Route::post('/', [\App\Http\Controllers\Api\V1\DifusionController::class, 'store'])->middleware('throttle:20,1')->name('store');
+        Route::get('{difusion}', [\App\Http\Controllers\Api\V1\DifusionController::class, 'show'])->whereNumber('difusion')->name('show');
+        Route::post('{difusion}/cancelar', [\App\Http\Controllers\Api\V1\DifusionController::class, 'cancelar'])->whereNumber('difusion')->name('cancelar');
+    });
+    Route::get('shows/plan-catalogo', [\App\Http\Controllers\Api\V1\ShowPlanController::class, 'catalogo'])->middleware('permiso:shows.view')->name('shows.plan-catalogo');
+    Route::middleware('permiso:shows.view')->group(function () {
+        $plan = \App\Http\Controllers\Api\V1\ShowPlanController::class;
+        Route::get('shows/{show}/convocados', [$plan, 'convocados'])->whereNumber('show')->name('shows.convocados');
+        Route::put('shows/{show}/asistencia', [$plan, 'asistencia'])->whereNumber('show')->name('shows.asistencia');
+        Route::put('shows/{show}/logistica', [$plan, 'logistica'])->whereNumber('show')->name('shows.logistica');
+        Route::put('shows/{show}/temas', [$plan, 'temas'])->whereNumber('show')->name('shows.temas');
+        Route::put('shows/{show}/instrumentos', [$plan, 'instrumentos'])->whereNumber('show')->name('shows.instrumentos');
+        Route::post('shows/{show}/ensayos', [$plan, 'crearEnsayo'])->whereNumber('show')->name('shows.ensayos.store');
+        Route::get('show-ensayos/{ensayo}', [$plan, 'verEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.show');
+        Route::put('show-ensayos/{ensayo}', [$plan, 'actualizarEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.update');
+        Route::delete('show-ensayos/{ensayo}', [$plan, 'eliminarEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.destroy');
+        Route::put('show-ensayos/{ensayo}/asistencia', [$plan, 'asistenciaEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.asistencia');
+    });
+    Route::get('mi/shows', [\App\Http\Controllers\Api\V1\MiShowController::class, 'index'])->name('mi.shows');
+    Route::get('mi/shows/{show}', [\App\Http\Controllers\Api\V1\MiShowController::class, 'show'])->whereNumber('show')->name('mi.shows.show');
+    Route::post('mi/shows/{show}/confirmacion', [\App\Http\Controllers\Api\V1\MiShowController::class, 'confirmar'])->whereNumber('show')->middleware('throttle:30,1')->name('mi.shows.confirmar');
+    Route::get('inventario/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'index'])->middleware('permiso:inventario.view')->name('inventario.prestamos.index');
+    Route::post('inventario/{item}/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'store'])->whereNumber('item')->middleware('permiso:inventario.update')->name('inventario.prestamos.store');
+    Route::post('inventario/prestamos/{prestamo}/devolucion', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'devolver'])->whereNumber('prestamo')->middleware('permiso:inventario.update')->name('inventario.prestamos.devolucion');
+    Route::get('mi/prestamos', [\App\Http\Controllers\Api\V1\PrestamoController::class, 'mios'])->name('mi.prestamos');
+    // === Fin Equipo F ===
+    // === Equipo C: cuentas, preinscripción, legajo y ciclo lectivo (con sesión) ===
+    Route::post('personas/{persona}/codigo-alta', [\App\Http\Controllers\Api\V1\CuentasController::class, 'codigoAlta'])->middleware('throttle:20,1')->name('personas.codigo-alta');
+    Route::middleware('permiso:usuarios.permissions')->group(function () {
+        Route::get('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'ajustes'])->name('configuracion.cuentas');
+        Route::put('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'guardarAjustes'])->name('configuracion.cuentas.update');
+    });
+    // === Fin Equipo C (con sesión) ===
+    // === Equipo D: app móvil ===
+    // Asistencia propia del alumno (porcentaje por bloque y mes, últimas clases y horario semanal).
+    Route::get('mi/asistencia', \App\Http\Controllers\Api\V1\MiAsistenciaController::class)->name('mi.asistencia');
+    // Administración: cerrar sesiones de la app de otra cuenta (celular perdido, cambio de dueño).
+    Route::delete('usuarios/{usuario}/sesiones/{sesion}', [\App\Http\Controllers\Api\V1\SesionesUsuarioController::class, 'cerrar'])->whereNumber(['usuario', 'sesion'])->name('usuarios.sesiones.destroy');
+    Route::delete('usuarios/{usuario}/sesiones', [\App\Http\Controllers\Api\V1\SesionesUsuarioController::class, 'cerrarTodas'])->whereNumber('usuario')->name('usuarios.sesiones.destroy-todas');
+    // === Equipo B: Finanzas ===
+    Route::post('gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->whereNumber('gasto')->middleware('permiso:gastos.delete')->name('gastos.restaurar');
+    Route::middleware(['permiso:villa_gesell.manage', 'modulo:admin.villa_gesell'])->prefix('villa-gesell')->name('villa-gesell.')->group(function () {
+        Route::get('gastos/papelera', [VillaGesellController::class, 'papeleraGastos'])->name('gastos.papelera');
+        Route::post('gastos/{gasto}/restaurar', [VillaGesellController::class, 'restaurarGasto'])->withTrashed()->whereNumber('gasto')->name('gastos.restaurar');
+    });
+    Route::post('cuotas/lote/vista-previa', [\App\Http\Controllers\Api\V1\CuotaLoteController::class, 'vistaPrevia'])->name('cuotas.lote.vista-previa');
+    Route::post('cuotas/lote', [\App\Http\Controllers\Api\V1\CuotaLoteController::class, 'generar'])->name('cuotas.lote.generar');
+    Route::get('morosos', [\App\Http\Controllers\Api\V1\MorosoController::class, 'index'])->name('morosos.index');
+    Route::post('morosos/recordatorios', [\App\Http\Controllers\Api\V1\MorosoController::class, 'recordarMasivo'])->name('morosos.recordatorios');
+    Route::post('morosos/{alumno}/recordatorio', [\App\Http\Controllers\Api\V1\MorosoController::class, 'recordar'])->whereNumber('alumno')->name('morosos.recordar');
+    // === Fin Equipo B ===
     // === Equipo G: progreso por toque, liquidación docente y tablero de dirección ===
     Route::get('mi/progreso', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'mio'])->name('mi.progreso');
     Route::get('mi/liquidaciones', [\App\Http\Controllers\Api\V1\LiquidacionController::class, 'mias'])->name('mi.liquidaciones');

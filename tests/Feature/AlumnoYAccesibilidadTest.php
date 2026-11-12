@@ -89,7 +89,7 @@ class AlumnoYAccesibilidadTest extends TestCase
 
         $this->post(route('registro.alumno.store'), [
             'dni' => '30.123.456', 'fecha_nacimiento' => '2001-05-20',
-            'password' => 'tambor1', 'password_confirmation' => 'tambor1',
+            'password' => 'tambor123', 'password_confirmation' => 'tambor123',
         ])->assertRedirect(route('dashboard'))->assertSessionHas('success');
 
         $user = User::query()->where('username', '30123456')->sole();
@@ -102,13 +102,13 @@ class AlumnoYAccesibilidadTest extends TestCase
 
         // Entra con el DNI con puntos.
         auth()->logout();
-        $this->post('/login', ['username' => '30.123.456', 'password' => 'tambor1'])->assertRedirect(route('dashboard'));
+        $this->post('/login', ['username' => '30.123.456', 'password' => 'tambor123'])->assertRedirect(route('dashboard'));
     }
 
     public function test_el_registro_no_deja_pasar_datos_que_no_coinciden_ni_cuentas_dobles(): void
     {
         $this->alumnoDeSegundo();
-        $datos = ['dni' => '30123456', 'fecha_nacimiento' => '1999-01-01', 'password' => 'tambor1', 'password_confirmation' => 'tambor1'];
+        $datos = ['dni' => '30123456', 'fecha_nacimiento' => '1999-01-01', 'password' => 'tambor123', 'password_confirmation' => 'tambor123'];
 
         $this->post(route('registro.alumno.store'), $datos)->assertSessionHasErrors('dni');
         $this->post(route('registro.alumno.store'), ['dni' => '99999999'] + $datos)->assertSessionHasErrors('dni');
@@ -117,7 +117,7 @@ class AlumnoYAccesibilidadTest extends TestCase
         $this->post(route('registro.alumno.store'), ['fecha_nacimiento' => '2001-05-20'] + $datos)->assertRedirect(route('dashboard'));
         auth()->logout();
         $this->post(route('registro.alumno.store'), ['fecha_nacimiento' => '2001-05-20'] + $datos)
-            ->assertSessionHasErrors(['dni' => 'Ya tenés una cuenta. Entrá con tu DNI y tu contraseña. Si no te acordás la contraseña, pedile a tu profe o a administración que te la cambie.']);
+            ->assertSessionHasErrors(['dni' => \App\Domain\Personas\RegistroAlumnoService::NO_ENCONTRADO]);
         $this->assertSame(1, User::query()->where('username', 'like', '30123456%')->count());
     }
 

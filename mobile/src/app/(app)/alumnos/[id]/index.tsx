@@ -9,7 +9,7 @@ import type { AlumnoFicha } from '@/features/alumnos/FormAlumno';
 import { Seguimiento } from '@/features/alumnos/Seguimiento';
 import { EstadoCuentaVista } from '@/features/finanzas/EstadoCuentaVista';
 import { api } from '@/lib/api';
-import { formatearFecha } from '@/lib/formato';
+import { enlaceWhatsApp, formatearFecha } from '@/lib/formato';
 import { usePuede } from '@/lib/permisos';
 import { useDetalle, useOperacion } from '@/lib/recursos';
 import { C } from '@/lib/theme';
@@ -41,6 +41,7 @@ export default function FichaAlumno() {
         {a.acciones.ver_persona && a.persona_id && <Boton titulo="Ficha de persona" icono="badge" variante="secundario" onPress={() => router.push({ pathname: '/personas/[id]', params: { id: String(a.persona_id) } } as never)} />}
         {a.acciones.editar && <Boton titulo="Editar" icono="edit" variante="secundario" onPress={() => router.push({ pathname: '/alumnos/[id]/editar', params: { id: String(a.id) } } as never)} />}
         {!!a.telefono && <Boton titulo="Llamar" icono="call" variante="secundario" onPress={() => Linking.openURL(`tel:${a.telefono}`)} />}
+        {!!enlaceWhatsApp(a.telefono) && <Boton titulo="WhatsApp" icono="chat" variante="secundario" onPress={() => Linking.openURL(enlaceWhatsApp(a.telefono)!)} />}
         {puedePagar && a.acciones.ver_finanzas && <Boton titulo="Registrar pago" icono="add-card" onPress={() => router.push({ pathname: '/pagos/nuevo', params: { alumno_id: String(a.id) } } as never)} />}
         {a.acciones.eliminar && (
           <Boton titulo="Eliminar" icono="delete" variante="peligro" cargando={eliminar.isPending} onPress={async () => {

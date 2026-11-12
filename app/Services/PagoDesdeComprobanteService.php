@@ -10,7 +10,6 @@ use App\Models\Pago;
 use App\Models\PagoDetalle;
 use App\Support\LiquidacionDocente;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -24,10 +23,6 @@ class PagoDesdeComprobanteService
      */
     public function aprobar(ComprobanteCuotaAlumno $comprobante, ?int $userId, bool $liquidarProfesor = true): array
     {
-        if (! Schema::hasTable('pagos') || ! Schema::hasTable('pago_detalles')) {
-            throw new RuntimeException('Faltan tablas de pagos. Ejecutá las migraciones.');
-        }
-
         $comprobante->loadMissing(['items.cuota.bloque.sede', 'items.cuota.sede', 'alumno', 'items.bloque']);
 
         if ($comprobante->pago_id) {
@@ -124,7 +119,7 @@ class PagoDesdeComprobanteService
                     'monto' => (float) $linea['monto'],
                 ];
 
-                if ($liquidarProfesor && Schema::hasColumn('pago_detalles', 'abono_profesor')) {
+                if ($liquidarProfesor) {
                     $abono = round((float) ($abonos[$idx] ?? 0), 2);
                     $cuotaRef = (float) ($cuota->monto ?? 0);
                     $det['abono_profesor'] = $abono;
@@ -136,11 +131,7 @@ class PagoDesdeComprobanteService
                 PagoDetalle::create($det);
             }
 
-            $update = ['estado' => 'pagado'];
-            if (Schema::hasColumn('comprobantes_cuota_alumnos', 'pago_id')) {
-                $update['pago_id'] = $pago->id;
-            }
-            $comprobante->update($update);
+            $comprobante->update(['estado' => 'pagado', 'pago_id' => $pago->id]);
 
             return $pago;
         });

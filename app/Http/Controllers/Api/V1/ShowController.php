@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Agenda\ConvocatoriaShow;
+use App\Domain\Agenda\ShowPlanService;
 use App\Domain\Agenda\ShowService;
 use App\Http\Controllers\Controller;
 use App\Models\Bloque;
@@ -90,7 +92,12 @@ class ShowController extends Controller
                 'sede' => $detalle ? $b->sede?->nombre : null,
                 'profesor' => $detalle ? $b->profesor?->nombre : null,
             ])->values(),
-            'acciones' => $detalle ? ['editar' => $user->can('update', $s), 'eliminar' => $user->can('delete', $s)] : null,
+            'acciones' => $detalle ? [
+                'editar' => $user->can('update', $s), 'eliminar' => $user->can('delete', $s), 'asistencia' => $user->can('asistencia', $s),
+            ] : null,
+            // Equipo F: confirmaciones, temas, ensayos, logística e instrumentos.
+            'confirmaciones' => $detalle ? app(ConvocatoriaShow::class)->resumen($s) : null,
+            ...($detalle ? app(ShowPlanService::class)->plan($s) : []),
         ];
     }
 }

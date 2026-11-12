@@ -69,6 +69,13 @@
     data-ref-tipo="{{ $refTipo ?? 'imagen' }}"
     data-ref-nombre="{{ e($refNombre ?? '') }}"
     data-slug="{{ $programaRitmo->slug }}"
+    data-audio-base="{{ url('/programa/toque/'.$programaRitmo->slug.'/audio') }}"
+    data-audio-subir-url="{{ route('programa.toque.editor.audio', $programaRitmo) }}"
+    @if(!empty($transcriptor))
+        data-transcribir-url="{{ route('programa.toque.editor.transcribir', $programaRitmo) }}"
+        data-transcribir-habilitado="{{ $transcriptor['habilitado'] ? '1' : '0' }}"
+        data-transcribir-mensaje="{{ $transcriptor['mensaje'] ?? '' }}"
+    @endif
     @if(!empty($conHistorial))
         data-borrador-url="{{ route('programa.toque.editor.borrador', $programaRitmo) }}"
         data-versiones-url="{{ route('programa.toque.editor.versiones', $programaRitmo) }}"

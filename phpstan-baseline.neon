@@ -301,36 +301,6 @@ parameters:
 			path: app/Http/Controllers/AccesosController.php
 
 		-
-			message: '#^Call to function array_key_exists\(\) with ''admin\.alumnos''\|''admin\.asistencias''\|''admin\.bloques''\|''admin\.cuotas''\|''admin\.disenos''\|''admin\.eventos''\|''admin\.facturacion…''\|''admin\.gastos''\|''admin\.importar''\|''admin\.inventarios''\|''admin\.ordenes_compra''\|''admin\.pagos''\|''admin\.plan_compras''\|''admin\.profesores''\|''admin\.reportes''\|''admin\.sedes''\|''admin\.shows''\|''admin\.villa_gesell''\|''ayuda''\|''calendario''\|''comprobantes''\|''profesor\.asistencia''\|''profesor\.mis_alumnos''\|''profesor\.mis_bloques''\|''profesor\.mis_eventos''\|''profesor\.pagos…''\|''programa'' and array\{\} will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Http/Controllers/AccesosController.php
-
-		-
-			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Http/Controllers/AccesosController.php
-
-		-
-			message: '#^Offset 0 on array\{''Administración'', ''Alumnos''\|''Asistencias''\|''Bloques''\|''Cuotas''\|''Diseño''\|''Eventos''\|''Facturación mensual''\|''Gastos''\|''Importar alumnos''\|''Inventarios''\|''Pagos''\|''Plan de compras''\|''Profesores''\|''Reportes''\|''Sedes''\|''Shows''\|''Órdenes de compra''\}\|array\{''Calendario''\}\|array\{''Comprobantes''\}\|array\{''Guía de uso''\}\|array\{''Profesor'', ''Asistencia''\|''Mis alumnos''\|''Mis bloques''\|''Mis eventos''\|''Pagos de cuotas''\}\|array\{''Programa''\}\|array\{''Villa Gesell'', ''Gira costa''\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Http/Controllers/AccesosController.php
-
-		-
-			message: '#^Offset 0 on array\{''Calendario''\}\|array\{''Comprobantes''\}\|array\{''Guía de uso''\}\|array\{''Programa''\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Http/Controllers/AccesosController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AccesosController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\AlumnoController\:\:alumnoPerteneceABloquesDelProfesor\(\) is unused\.$#'
 			identifier: method.unused
 			count: 1
@@ -1111,20 +1081,8 @@ parameters:
 			path: app/Models/User.php
 
 		-
-			message: '#^Call to function array_key_exists\(\) with string and array\{\} will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Models/User.php
-
-		-
 			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
 			identifier: function.impossibleType
-			count: 2
-			path: app/Models/User.php
-
-		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
 			count: 1
 			path: app/Models/User.php
 

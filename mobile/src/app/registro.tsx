@@ -10,21 +10,24 @@ import { C, E } from '@/lib/theme';
 /**
  * Un alumno que la escuela ya tiene cargado crea su cuenta: DNI y fecha de nacimiento (tienen que
  * coincidir con su ficha) y una contraseña que elige él. Después entra con su DNI.
+ * Si la escuela le pasó un código de alta (6 letras o números), lo escribe; si la escuela lo exige,
+ * sin código no se crea la cuenta. Los menores de 13 no se registran solos: les da acceso la escuela.
  */
 export default function Registro() {
   const { registrarse } = useAuth();
   const insets = useSafeAreaInsets();
-  const f = useFormulario({ dni: '', fecha_nacimiento: '', email: '', password: '', password_confirmation: '' });
+  const f = useFormulario({ dni: '', fecha_nacimiento: '', codigo: '', email: '', password: '', password_confirmation: '' });
   const v = f.valores;
 
   const enviar = () =>
     f.enviar(
-      (d) => registrarse({ ...d, email: d.email.trim() || undefined }),
+      (d) => registrarse({ ...d, email: d.email.trim() || undefined, codigo: d.codigo.trim().toUpperCase() || undefined }),
       (d) => ({
         ...(!d.dni.trim() ? { dni: 'Escribí tu DNI.' } : {}),
         ...(!d.fecha_nacimiento ? { fecha_nacimiento: 'Elegí tu fecha de nacimiento.' } : {}),
         ...(!d.password ? { password: 'Elegí una contraseña.' } : {}),
-        ...(d.password && d.password.length < 6 ? { password: 'Al menos 6 letras o números.' } : {}),
+        ...(d.password && d.password.length < 8 ? { password: 'Al menos 8 letras o números.' } : {}),
+        ...(d.codigo.trim() && d.codigo.replace(/[^A-Za-z0-9]/g, '').length !== 6 ? { codigo: 'El código tiene 6 letras o números.' } : {}),
         ...(d.password && d.password !== d.password_confirmation ? { password_confirmation: 'Las dos contraseñas no coinciden.' } : {}),
         ...(d.password && d.password.replace(/\D/g, '') === d.dni.replace(/\D/g, '') && /^\d+$/.test(d.password) ? { password: 'No uses tu DNI como contraseña.' } : {}),
       }),
@@ -38,13 +41,14 @@ export default function Registro() {
           <Tenue>Si ya estás anotado en La Chilinga, con tu DNI y tu fecha de nacimiento (los mismos de tu ficha) creás tu cuenta en un minuto.</Tenue>
           <Campo etiqueta="Tu DNI" valor={v.dni} onChange={(x) => f.set('dni', x)} error={f.errores.dni} teclado="number-pad" requerido placeholder="30123456" />
           <CampoFecha etiqueta="Tu fecha de nacimiento" valor={v.fecha_nacimiento} onChange={(x) => f.set('fecha_nacimiento', x)} error={f.errores.fecha_nacimiento} requerido maximo={new Date().toISOString().slice(0, 10)} />
-          <Campo etiqueta="Elegí una contraseña" valor={v.password} onChange={(x) => f.set('password', x)} error={f.errores.password} secreto requerido autoCapitalize="none" ayuda="Al menos 6 letras o números. No uses tu DNI." />
+          <Campo etiqueta="Código de alta (si te dieron uno)" valor={v.codigo} onChange={(x) => f.set('codigo', x)} error={f.errores.codigo} autoCapitalize="characters" ayuda="6 letras o números que te pasa tu profe o administración. Vence a los 7 días." />
+          <Campo etiqueta="Elegí una contraseña" valor={v.password} onChange={(x) => f.set('password', x)} error={f.errores.password} secreto requerido autoCapitalize="none" ayuda="Al menos 8 letras o números. No uses tu DNI." />
           <Campo etiqueta="Repetila" valor={v.password_confirmation} onChange={(x) => f.set('password_confirmation', x)} error={f.errores.password_confirmation} secreto requerido autoCapitalize="none" />
           <Campo etiqueta="Tu correo (opcional)" valor={v.email} onChange={(x) => f.set('email', x)} error={f.errores.email} teclado="email-address" autoCapitalize="none" />
           <ErrorFormulario mensaje={f.errorGeneral} />
           <Boton titulo="Crear mi cuenta" icono="check" grande cargando={f.enviando} onPress={() => void enviar()} />
           <Boton titulo="Ya tengo cuenta" variante="secundario" onPress={() => router.back()} />
-          <Tenue style={{ textAlign: 'center' }}>¿No te deja? Pedile a tu profe o a administración que revisen tu DNI y tu fecha de nacimiento, o que te den acceso con una contraseña provisoria.</Tenue>
+          <Tenue style={{ textAlign: 'center' }}>¿No te deja? Pedile a tu profe o a administración que revisen tu DNI y tu fecha de nacimiento, o que te den un código de alta o acceso con una contraseña provisoria. Si tenés menos de 13 años, la cuenta te la da la escuela.</Tenue>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

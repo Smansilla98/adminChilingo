@@ -45,8 +45,23 @@ export interface InstrumentoScore {
   visible?: boolean;
 }
 
+/** Grabación de referencia sincronizada con la partitura (audio_ref del servidor). */
+export interface AudioRef {
+  path?: string | null;
+  url?: string | null;
+  nombre?: string | null;
+  offset_seg: number;
+  beats: number[];
+  tempo_origen?: number | null;
+}
+
+/** Tempo permitido en la app y en el editor web (igual que TEMPO_MIN/TEMPO_MAX de model.js). */
+export const TEMPO_MIN = 30;
+export const TEMPO_MAX = 260;
+
 export interface Score {
   version?: number;
+  audio_ref?: AudioRef | null;
   title?: string;
   autor?: string;
   tempo?: number;
@@ -205,7 +220,11 @@ export interface PlanAudio {
   conteo: number;
 }
 
-export function planificar(score: Score, opts: { bpm?: number; soloSeccion?: number | null; conteo?: boolean; metronomo?: boolean } = {}): PlanAudio {
+export function planificar(score: Score, opts: { bpm?: number; soloSeccion?: number | null; conteo?: boolean; metronomo?: boolean; rango?: { sectionIdx: number; desde: number; hasta: number } | null } = {}): PlanAudio {
+  if (opts.rango) {
+    const recorte = recortarRango(score, opts.rango);
+    return planificar(recorte, { ...opts, rango: null, soloSeccion: 0 });
+  }
   const bpm = opts.bpm || score.tempo || 88;
   const cap = ticksDeCompas(score.timeSignature);
   let timeline = expandirTimeline(score);
@@ -384,8 +403,21 @@ export function renombrarSeccion(score: Score, seccion: number, nombre: string):
 
 export function tempoDe(score: Score, bpm: number): Score {
   const next = clonar(score);
-  next.tempo = Math.max(60, Math.min(100, Math.round(bpm)));
+  next.tempo = Math.max(TEMPO_MIN, Math.min(TEMPO_MAX, Math.round(bpm)));
   return next;
+}
+
+/**
+ * Recorta una sección a un tramo de compases (loop por rango). Devuelve una partitura de una
+ * sola sección y una pasada, con los compases [desde, hasta] (índices base 0, incluidos).
+ */
+export function recortarRango(score: Score, rango: { sectionIdx: number; desde: number; hasta: number }): Score {
+  const sec = score.sections[rango.sectionIdx];
+  if (!sec) return score;
+  const a = Math.max(0, Math.min(rango.desde, rango.hasta));
+  const b = Math.min(sec.measures.length - 1, Math.max(rango.desde, rango.hasta));
+  const medidas = sec.measures.slice(a, b + 1).map((m) => ({ ...m, repeatBegin: false, repeatEnd: false, ending: null }));
+  return { ...clonar(score), sections: [{ ...sec, repeatX: 1, measures: medidas.length ? medidas : [compasVacio(idsDe(score), score.timeSignature)] }] };
 }
 
 export function conInstrumento(score: Score, instId: string, poner: boolean): Score {

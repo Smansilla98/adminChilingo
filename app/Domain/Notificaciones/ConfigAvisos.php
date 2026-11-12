@@ -26,6 +26,7 @@ class ConfigAvisos
         '{fecha}' => 'Fecha del evento (ej. sáb 24/03)',
         '{lugar}' => 'Sede o lugar',
         '{descripcion}' => 'Descripción del evento',
+        '{instrumento}' => 'Instrumento prestado',
     ];
 
     private const VARS_CUOTA = ['{alumno}', '{cuota}', '{monto}', '{vencimiento}', '{dias}', '{alias}'];
@@ -125,6 +126,37 @@ class ConfigAvisos
                 'canales' => ['interna', 'push'],
                 'titulo' => 'Convocatoria: {evento}',
                 'mensaje' => '{fecha} {hora} · {lugar}. {descripcion}',
+            ],
+            'show_convocatoria' => [
+                'nombre' => 'Convocatoria a un show',
+                'descripcion' => 'Cuando se convoca a un bloque a un show: a cada alumno, para que confirme si va (se revisa cada 5 minutos).',
+                'variables' => self::VARS_EVENTO,
+                'para' => 'Alumnos convocados',
+                'activo' => true,
+                'canales' => ['interna', 'push'],
+                'titulo' => 'Te convocaron: {evento}',
+                'mensaje' => '{fecha} {hora} · {lugar}. Contanos si vas: tocá para confirmar.',
+            ],
+            'show_recordatorio' => [
+                'nombre' => 'Recordatorio de show',
+                'descripcion' => 'Unos días antes del show, a los convocados que no dijeron que no van (y a quienes todavía no respondieron, para que confirmen).',
+                'variables' => self::VARS_EVENTO,
+                'para' => 'Alumnos convocados',
+                'activo' => true,
+                'canales' => ['interna', 'push'],
+                'titulo' => 'Se viene el show: {evento}',
+                'mensaje' => '{fecha} {hora} · {lugar}. Si todavía no confirmaste, avisanos si vas.',
+                'dias' => 2,
+            ],
+            'prestamo_vencido' => [
+                'nombre' => 'Préstamo de instrumento vencido',
+                'descripcion' => 'Cuando pasó la fecha de devolución de un instrumento prestado: a quien lo tiene y a quien lo entregó (una vez por préstamo).',
+                'variables' => ['{alumno}', '{instrumento}', '{vencimiento}'],
+                'para' => 'Alumnos y administración',
+                'activo' => true,
+                'canales' => ['interna', 'push'],
+                'titulo' => 'Devolución pendiente: {instrumento}',
+                'mensaje' => 'El préstamo de {instrumento} a {alumno} venció el {vencimiento}. Coordiná la devolución con la escuela.',
             ],
         ];
     }

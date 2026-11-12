@@ -820,3 +820,16 @@
     .pt-section { break-inside: avoid; }
     .pt-line { break-inside: avoid; }
 }
+
+/* === Grabación de referencia (panel estilo Klangio) === */
+.pt-grab-host[hidden] { display: none !important; }
+.pt-grab { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--pt-line, #ddd); background: var(--pt-panel, #fafaf7); font-size: 13px; }
+.pt-grab-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.pt-grab-head strong { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--pt-muted, #666); }
+.pt-grab-nombre { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 50%; }
+.pt-grab-tiempo { color: var(--pt-muted, #666); font-variant-numeric: tabular-nums; }
+.pt-grab-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pt-grab-barra { flex: 1 1 200px; min-width: 120px; }
+.pt-grab-row .pt-input-num { width: 4.5em; }
+.pt-grab-estado { color: var(--pt-muted, #666); }
+.pt-grab-ayuda { margin: 0; color: var(--pt-muted, #666); font-size: 12px; }

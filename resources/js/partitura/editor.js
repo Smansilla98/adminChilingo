@@ -24,6 +24,7 @@ import {
 import { bpmDeToques, registrarToque, cuantizar } from './practica.js';
 import { scoreDesdeMIDI, escucharMIDI, instrumentoDeMidi } from './midi.js';
 import { mostrarAyuda, mostrarVersiones, menuGolpe, feedbackTecla } from './paneles.js';
+import { PanelGrabacion } from './grabacion.js';
 
 const TEMPO_MIN = 40;
 const TEMPO_MAX = 180;
@@ -53,6 +54,11 @@ export class EditorPartitura {
         this.borradorUrl = opts.borradorUrl || null;
         this.versionesUrl = opts.versionesUrl || null;
         this.borradorPendiente = opts.borrador || null;
+        // Grabación de referencia y transcripción automática.
+        this.audioBase = opts.audioBase || null;
+        this.audioSubirUrl = opts.audioSubirUrl || null;
+        this.transcribir = opts.transcribir || null;
+        this.panelGrabacion = null;
 
         this.score = normalizarPartitura(opts.score || crearPartitura());
         // Ritmo: vistas, foco, grilla, modos y práctica.
@@ -114,8 +120,43 @@ export class EditorPartitura {
         this.render();
         this.seleccionInicial();
         this.ofrecerBorrador();
+        if (this.score.audio_ref && this.audioBase) this.toggleGrabacion(true);
         this._reloj = setInterval(() => { if (this.estadoGuardado === 'borrador') this.pintarStatus(); }, 15000);
         this.tour.maybeStart();
+    }
+
+    /** ------------------------------------------------------------- grabación de referencia */
+
+    toggleGrabacion(abrir = null) {
+        const host = this.root.querySelector('[data-zone="grabacion"]');
+        if (!host) return;
+        const on = abrir === null ? host.hidden : abrir;
+        host.hidden = !on;
+        const btn = this.root.querySelector('[data-a="grabacion"]');
+        btn?.classList.toggle('on', on);
+        btn?.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (on && !this.panelGrabacion) {
+            this.panelGrabacion = new PanelGrabacion(host, {
+                score: () => this.score,
+                motor: this.audio,
+                audioBase: this.audioBase,
+                puedeEditar: !this.readonly && !!this.audioSubirUrl,
+                subirUrl: this.audioSubirUrl,
+                editorNombre: () => this.editorNombre || this.root.dataset.editorNombre || '',
+                onCambioRef: (ref) => this.editar(() => { this.score.audio_ref = ref || undefined; }),
+                onPos: (pos) => this.marcarPlayhead(pos),
+                onFin: () => this.finTransporte(),
+                aviso: (msg) => this.aviso(msg),
+                transcribir: this.transcribir,
+                onTranscripcion: (t) => {
+                    if (t.estado !== 'listo') return;
+                    const r = t.resumen || {};
+                    const msg = `Se escribió un borrador con ${r.compases ?? '?'} compases${r.dudosos ? ` y ${r.dudosos} golpes para revisar` : ''}. ¿Lo abrimos ahora? (No se publica hasta que lo revises.)`;
+                    if (window.confirm(msg)) window.location.reload();
+                },
+            });
+        }
+        if (!on) this.panelGrabacion?.pausar();
     }
 
     /** ------------------------------------------------------------- construcción UI */
@@ -223,6 +264,7 @@ export class EditorPartitura {
                             <button data-a="import-midi">MIDI (.mid)</button>
                         </div>
                     </div>`}
+                    ${this.audioBase ? '<button class="pt-btn pt-toggle" data-a="grabacion" title="Escuchar la grabación original con la partitura" aria-pressed="false">Grabación</button>' : ''}
                     <button class="pt-btn pt-toggle ${this.refUrl ? 'on' : ''}" data-a="toggle-ref" title="Ver original" ${this.refUrl ? '' : 'hidden'}>Original</button>
                     <div class="pt-dropdown">
                         <button class="pt-btn" data-a="export-menu">Exportar ▾</button>
@@ -264,6 +306,7 @@ export class EditorPartitura {
                     ${botonesFigura('silencios')}
                 </div>
             </div>
+            <section class="pt-grab-host" data-zone="grabacion" hidden></section>
             <input type="file" hidden data-import="ref" accept=".pdf,.jpg,.jpeg,.png,.webp,image/*,application/pdf">
             <input type="file" hidden data-import="xml" accept=".musicxml,.xml,application/xml,text/xml">
             <input type="file" hidden data-import="json" accept=".json,application/json">
@@ -395,6 +438,7 @@ export class EditorPartitura {
     /** ------------------------------------------------------------- render */
 
     render() {
+        this.panelGrabacion?.cargar();
         this.aplicarVista();
         if (this.vista !== 'grilla' || this.modoPantalla === 'presentacion') this.renderPartitura();
         else { this.hits = []; this.measureBoxes = []; }
@@ -698,6 +742,7 @@ export class EditorPartitura {
             case 'tour': return this.tour.start(0);
             case 'atajos': return mostrarAyuda(this);
             case 'versiones': return mostrarVersiones(this);
+            case 'grabacion': return this.toggleGrabacion();
             case 'pantalla-completa': return this.pantallaCompleta();
             case 'play': return this.togglePlay();
             case 'stop': return this.audio.stop();

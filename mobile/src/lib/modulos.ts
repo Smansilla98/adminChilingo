@@ -38,6 +38,8 @@ export const RUTAS: Record<string, { ruta: string; icono: Icono; grupo: Grupo }>
   avisos_config: { ruta: '/avisos-config', icono: 'notifications-active', grupo: 'Administración' },
   progreso: { ruta: '/progreso', icono: 'trending-up', grupo: 'Académico' },
   mis_liquidaciones: { ruta: '/mis-liquidaciones', icono: 'request-quote', grupo: 'Mi espacio' },
+  difusion: { ruta: '/difusion', icono: 'campaign', grupo: 'Comunidad' },
+  mis_shows: { ruta: '/shows/mios', icono: 'theater-comedy', grupo: 'Mi espacio' },
 };
 
 export const ORDEN_GRUPOS: Grupo[] = ['Mi espacio', 'Académico', 'Finanzas', 'Operación', 'Comunidad', 'Administración'];

@@ -4,12 +4,13 @@ import { View } from 'react-native';
 
 import { FiltrosChips, ItemLista } from '@/components/lista';
 import { Boton, Cargando, Chip, ErrorVista, Pantalla, Subtitulo, Tarjeta, Tenue, Texto, Vacio } from '@/components/ui';
+import { MiAsistenciaVista, MiHorario } from '@/features/asistencia/MiAsistencia';
 import { ESTADO_CUOTA, formatearFecha } from '@/lib/formato';
 import { useMiEstadoCuenta, usePartituras } from '@/lib/queries';
 import { C, E, moneda } from '@/lib/theme';
 import type { ItemCuenta } from '@/lib/types';
 
-type Seccion = 'pendientes' | 'pagadas' | 'material';
+type Seccion = 'pendientes' | 'pagadas' | 'asistencia' | 'material';
 
 const pendiente = (i: ItemCuenta) => i.saldo > 0;
 
@@ -40,6 +41,7 @@ export default function MiActividad() {
       </Tarjeta>
 
       <Boton titulo="Mi progreso en los toques" icono="trending-up" variante="secundario" onPress={() => router.push('/mi-progreso' as never)} />
+      <Boton titulo="Mis préstamos de instrumentos" icono="inventory-2" variante="secundario" onPress={() => router.push('/mis-prestamos' as never)} />
 
       <FiltrosChips<Seccion>
         todos={false}
@@ -48,6 +50,7 @@ export default function MiActividad() {
         opciones={[
           { valor: 'pendientes', etiqueta: `Pendientes (${pendientes.length})` },
           { valor: 'pagadas', etiqueta: `Pagadas (${pagadas.length})` },
+          { valor: 'asistencia', etiqueta: 'Asistencia' },
           { valor: 'material', etiqueta: 'Material de estudio' },
         ]}
       />
@@ -83,6 +86,13 @@ export default function MiActividad() {
               derecha={<Chip texto={ESTADO_CUOTA[i.estado].texto} color={ESTADO_CUOTA[i.estado].color} />}
             />
           ))}
+        </View>
+      )}
+
+      {seccion === 'asistencia' && (
+        <View style={{ gap: E.m }}>
+          <MiHorario />
+          <MiAsistenciaVista />
         </View>
       )}
 
