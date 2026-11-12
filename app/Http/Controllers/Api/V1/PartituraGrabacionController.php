@@ -50,6 +50,12 @@ class PartituraGrabacionController extends Controller
         $toque = ProgramaRitmo::query()->where('slug', $slug)->firstOrFail();
         $request->validate(['audio' => PartituraAudio::reglas(), 'transcribir' => 'sometimes|boolean'], PartituraAudio::mensajes());
         $ref = PartituraAudio::guardar($request->file('audio'), $toque);
+        // La grabación queda como parte de la partitura publicada (sin crear versión: la música no cambia).
+        $medios = $toque->mediosNormalizados();
+        if (is_array($medios['partitura_score'] ?? null)) {
+            $medios['partitura_score']['audio_ref'] = $ref;
+            $toque->update(['medios' => $medios]);
+        }
         $out = ['ok' => true, 'audio_ref' => $ref, 'transcripcion' => null];
         if ($request->boolean('transcribir')) {
             if (! $cliente->habilitado() || ! $servicio->disponible()) {
