@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import { useDeferredValue, useState } from 'react';
-import { View } from 'react-native';
+import { FlatList, RefreshControl, View } from 'react-native';
 
 import { BotonFlotante, Buscador, Esqueleto, FiltrosChips, ItemLista } from '@/components/lista';
 import { Chip, ErrorVista, Pantalla, Tenue, Vacio } from '@/components/ui';
@@ -20,23 +20,34 @@ export default function InscriptosGira() {
     queryKey: ['villa-gesell', 'inscriptos', estado, lista, buscar],
     queryFn: () => api<{ data: Inscripto[] }>(`villa-gesell/inscriptos${qs({ estado, lista, q: buscar.length >= 2 ? buscar : undefined })}`).then((r) => r.data),
   });
-  const total = (q.data ?? []).reduce((s, i) => s + i.saldo, 0);
+  const datos = q.data ?? [];
+  const total = datos.reduce((s, i) => s + i.saldo, 0);
 
   return (
     <View style={{ flex: 1 }}>
       <Stack.Screen options={{ title: 'Inscriptos a la gira' }} />
-      <Pantalla refrescando={q.isRefetching} onRefrescar={() => q.refetch()}>
-        <Buscador valor={texto} onChange={setTexto} placeholder="Buscar alumno" />
-        <FiltrosChips opciones={Object.entries(cat.data?.estados_pago ?? {}).map(([valor, etiqueta]) => ({ valor, etiqueta }))} valor={estado} onChange={setEstado} todos="Todo pago" />
-        <FiltrosChips opciones={[{ valor: 'plaza', etiqueta: 'Con plaza' }, { valor: 'espera', etiqueta: 'Lista de espera' }]} valor={lista} onChange={setLista} />
-        {q.isPending && <Esqueleto />}
-        {q.isError && <ErrorVista error={q.error} onReintentar={() => q.refetch()} />}
-        {q.data?.length === 0 && <Vacio icono="beach-access" texto="Sin inscriptos con esos filtros." />}
-        {!!q.data?.length && <Tenue>{q.data.length} inscriptos · saldo pendiente {moneda(total)}</Tenue>}
-        <View style={{ gap: E.s }}>
-          {q.data?.map((i) => (
+      <Pantalla scroll={false}>
+        <FlatList
+          style={{ flex: 1 }}
+          data={datos}
+          keyExtractor={(i) => String(i.id)}
+          contentContainerStyle={{ padding: E.l, gap: E.s, paddingBottom: E.xxl * 3 }}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={<RefreshControl refreshing={q.isRefetching} onRefresh={() => void q.refetch()} tintColor={C.acento} />}
+          ListHeaderComponent={
+            <View style={{ gap: E.m, marginBottom: E.s }}>
+              <Buscador valor={texto} onChange={setTexto} placeholder="Buscar alumno" />
+              <FiltrosChips opciones={Object.entries(cat.data?.estados_pago ?? {}).map(([valor, etiqueta]) => ({ valor, etiqueta }))} valor={estado} onChange={setEstado} todos="Todo pago" />
+              <FiltrosChips opciones={[{ valor: 'plaza', etiqueta: 'Con plaza' }, { valor: 'espera', etiqueta: 'Lista de espera' }]} valor={lista} onChange={setLista} />
+              {!!datos.length && <Tenue>{datos.length} inscriptos · saldo pendiente {moneda(total)}</Tenue>}
+              {q.isError && datos.length > 0 && <Tenue>No se pudo actualizar la lista. Mostramos lo último guardado.</Tenue>}
+            </View>
+          }
+          ListEmptyComponent={
+            q.isPending ? <Esqueleto /> : q.isError ? <ErrorVista error={q.error} onReintentar={() => q.refetch()} /> : <Vacio icono="beach-access" texto="Sin inscriptos con esos filtros." />
+          }
+          renderItem={({ item: i }) => (
             <ItemLista
-              key={i.id}
               icono={i.lista_espera ? 'hourglass-empty' : 'event-seat'}
               colorIcono={i.lista_espera ? C.alerta : C.acento}
               titulo={`${i.plaza ? `#${i.plaza} · ` : ''}${i.alumno?.nombre ?? 'Alumno'}`}
@@ -45,8 +56,8 @@ export default function InscriptosGira() {
               derecha={<Chip texto={i.lista_espera ? 'En espera' : i.estado_pago_nombre} color={i.lista_espera ? C.alerta : COLOR_PAGO[i.estado_pago] ?? C.tenue} />}
               onPress={() => router.push({ pathname: '/villa-gesell/inscripcion', params: { id: String(i.id) } } as never)}
             />
-          ))}
-        </View>
+          )}
+        />
       </Pantalla>
       <BotonFlotante icono="person-add" texto="Inscribir" onPress={() => router.push('/villa-gesell/inscripcion' as never)} />
     </View>

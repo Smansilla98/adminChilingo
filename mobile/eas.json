@@ -19,7 +19,6 @@
       "channel": "staging",
       "env": {
         "APP_VARIANT": "staging",
-        "EXPO_PUBLIC_API_URL": "https://staging.ejemplo-chilinga.invalid/api/v1",
         "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
         "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
       },
@@ -37,7 +36,8 @@
       },
       "android": {
         "buildType": "apk"
-      }
+      },
+      "channel": "preview"
     },
     "production": {
       "channel": "production",

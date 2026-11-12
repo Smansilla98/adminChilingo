@@ -21,6 +21,21 @@ const nombre = VARIANT === 'production' ? 'ITO' : `ITO (${VARIANT === 'developme
 const { existsSync } = require('fs') as { existsSync: (ruta: string) => boolean };
 const googleServices = process.env.GOOGLE_SERVICES_JSON ?? (existsSync('./google-services.json') ? './google-services.json' : undefined);
 
+/**
+ * Staging no tiene URL por defecto: se define en EAS como variable de entorno del proyecto
+ * (EXPO_PUBLIC_API_URL, ver .env.example). Si falta, el build corta con un mensaje claro
+ * en vez de compilar una app que apunta a una dirección inventada.
+ */
+if (VARIANT === 'staging') {
+  const url = process.env.EXPO_PUBLIC_API_URL ?? '';
+  if (!/^https:\/\/[^/\s]+\.[^/\s]+\/api\/v1\/?$/.test(url)) {
+    throw new Error('Falta EXPO_PUBLIC_API_URL para el build de staging (https://<host>/api/v1). Definila con `eas env:create` (ver mobile/.env.example).');
+  }
+}
+
+/** Proyecto EAS para las actualizaciones OTA (expo-updates). No se publica nada desde esta configuración. */
+const PROYECTO_EAS = process.env.EAS_PROJECT_ID ?? '92097bd6-c5a8-43fd-b41e-87e6981b6891';
+
 const config: ExpoConfig = {
   name: nombre,
   // Slug técnico del proyecto EAS existente; no es el nombre visible de la app.
@@ -97,6 +112,15 @@ const config: ExpoConfig = {
       },
     ],
   ],
+  // OTA (eas update): la versión de runtime es la versión de la app, así una actualización
+  // solo llega a builds con el mismo código nativo. Cambiar dependencias nativas => nueva versión.
+  runtimeVersion: { policy: 'appVersion' },
+  updates: {
+    url: `https://u.expo.dev/${PROYECTO_EAS}`,
+    enabled: VARIANT !== 'development',
+    checkAutomatically: 'ON_LOAD',
+    fallbackToCacheTimeout: 0,
+  },
   experiments: {
     typedRoutes: false,
     reactCompiler: true,
@@ -105,7 +129,7 @@ const config: ExpoConfig = {
   extra: {
     variante: VARIANT,
     // Proyecto de EAS (cuenta smansilla). Necesario para builds y notificaciones push. No es secreto.
-    eas: { projectId: process.env.EAS_PROJECT_ID ?? '92097bd6-c5a8-43fd-b41e-87e6981b6891' },
+    eas: { projectId: PROYECTO_EAS },
   },
 };
 
