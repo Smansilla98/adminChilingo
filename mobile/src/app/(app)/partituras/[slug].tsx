@@ -16,6 +16,7 @@ import {
   type Score,
 } from '@/lib/partitura/modelo';
 import { posicionEnGrabacion } from '@/lib/partitura/sincro';
+import { PanelTranscripcion } from '@/features/partituras/PanelTranscripcion';
 import { usePuede } from '@/lib/permisos';
 import { C, E } from '@/lib/theme';
 
@@ -381,6 +382,7 @@ export default function Partitura() {
 
       {admin && (
         <>
+          <PanelTranscripcion slug={slug} tieneAudio={Boolean(partitura?.audio_ref?.path)} />
           <Boton titulo={editando ? 'Ver lectura' : 'Escribir'} icono="edit" variante="secundario" onPress={() => setEditando((v) => !v)} />
           <Boton
             titulo={t.publicado === false ? 'Publicar toque' : 'Ocultar toque'}
