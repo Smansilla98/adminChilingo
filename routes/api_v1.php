@@ -306,6 +306,7 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::get('partituras/{slug}/exportar/{formato}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'exportar'])->whereIn('formato', ['midi', 'musicxml'])->name('partituras.exportar');
     Route::get('partituras/{slug}/audio/{archivo}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'audio'])->where('archivo', '[0-9]+-[a-z0-9]{16}\.(mp3|wav|m4a|ogg)')->name('partituras.audio');
     Route::post('partituras/{slug}/audio', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'subirAudio'])->middleware(['permiso:partituras.admin', 'throttle:20,1'])->name('partituras.audio.subir');
+    Route::put('partituras/{slug}/audio/inicio', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'ajustarInicio'])->middleware('permiso:partituras.admin')->name('partituras.audio.inicio');
     Route::post('partituras/{slug}/transcripciones', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'transcribir'])->middleware(['permiso:partituras.admin', 'throttle:20,1'])->name('partituras.transcribir');
     Route::get('partituras/{slug}/transcripciones/{id}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'transcripcion'])->whereNumber('id')->middleware('permiso:partituras.admin')->name('partituras.transcripcion');
 

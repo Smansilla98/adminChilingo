@@ -11,6 +11,7 @@ use App\Models\ProgramaRitmo;
 use App\Services\PartituraExportador;
 use App\Support\AccesoMaterial;
 use App\Support\PartituraAudio;
+use App\Support\PartituraScore;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -50,6 +51,12 @@ class PartituraGrabacionController extends Controller
         $toque = ProgramaRitmo::query()->where('slug', $slug)->firstOrFail();
         $request->validate(['audio' => PartituraAudio::reglas(), 'transcribir' => 'sometimes|boolean'], PartituraAudio::mensajes());
         $ref = PartituraAudio::guardar($request->file('audio'), $toque);
+        // La grabación queda como parte de la partitura publicada (sin crear versión: la música no cambia).
+        $medios = $toque->mediosNormalizados();
+        if (is_array($medios['partitura_score'] ?? null)) {
+            $medios['partitura_score']['audio_ref'] = $ref;
+            $toque->update(['medios' => $medios]);
+        }
         $out = ['ok' => true, 'audio_ref' => $ref, 'transcripcion' => null];
         if ($request->boolean('transcribir')) {
             if (! $cliente->habilitado() || ! $servicio->disponible()) {
@@ -61,6 +68,29 @@ class PartituraGrabacionController extends Controller
         }
 
         return response()->json($out, 201);
+    }
+
+    /** Ajusta dónde cae el primer tiempo de la grabación (y sus pulsos). No crea versión: la música no cambia. */
+    public function ajustarInicio(Request $request, string $slug): JsonResponse
+    {
+        abort_unless($request->user()->acceso()->puede('partituras.admin'), 403);
+        $toque = ProgramaRitmo::query()->where('slug', $slug)->firstOrFail();
+        $data = $request->validate([
+            'offset_seg' => 'required|numeric|min:0|max:600',
+            'beats' => 'nullable|array|max:'.PartituraScore::AUDIO_MAX_BEATS,
+            'beats.*' => 'numeric|min:0|max:7200',
+        ]);
+        $medios = $toque->mediosNormalizados();
+        $actual = $medios['partitura_score']['audio_ref'] ?? null;
+        abort_unless(is_array($actual) && ! empty($actual['path']), 422, 'Primero subí la grabación del toque.');
+        $ref = PartituraScore::normalizarAudioRef(array_merge($actual, [
+            'offset_seg' => $data['offset_seg'],
+            'beats' => $data['beats'] ?? [],
+        ]));
+        $medios['partitura_score']['audio_ref'] = $ref;
+        $toque->update(['medios' => $medios]);
+
+        return response()->json(['ok' => true, 'audio_ref' => $ref]);
     }
 
     public function transcribir(Request $request, string $slug, Transcripciones $servicio, TranscriptorClient $cliente): JsonResponse

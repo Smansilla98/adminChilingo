@@ -83,3 +83,22 @@ export function tempoDeGrabacion(score: Score): number | null {
   if (seg <= 0) return null;
   return Math.round((60 / seg) * (ticksDePulso(score.timeSignature) / TPQ));
 }
+
+/**
+ * «Ajustar inicio»: el primer tiempo cae en el segundo `t`. Con pulsos, se descartan los anteriores
+ * (anacrusa o conteo) y el más cercano a `t` pasa a ser el primero. Devuelve una grabación nueva.
+ */
+export function ajustarInicio(ref: AudioRef, t: number): AudioRef {
+  const tt = Math.max(0, Math.round(t * 1000) / 1000);
+  let beats = [...(ref.beats ?? [])];
+  if (beats.length >= 2) {
+    let mejor = 0;
+    beats.forEach((b, i) => {
+      if (Math.abs(b - tt) < Math.abs(beats[mejor] - tt)) mejor = i;
+    });
+    beats = beats.slice(mejor);
+    beats[0] = tt;
+    if (beats.length > 1 && beats[1] <= tt) beats = [tt];
+  }
+  return { ...ref, beats, offset_seg: tt };
+}

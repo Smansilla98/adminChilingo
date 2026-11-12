@@ -1,5 +1,5 @@
 import { expandirTimeline, planificar, recortarRango, tempoDe, TEMPO_MAX, TEMPO_MIN, type Score } from '../modelo';
-import { posicionEnGrabacion, pulsoDeTiempo, tiempoDeCompas, tempoDeGrabacion } from '../sincro';
+import { ajustarInicio, posicionEnGrabacion, pulsoDeTiempo, tiempoDeCompas, tempoDeGrabacion } from '../sincro';
 
 const compas = (surdo: string[]) => ({
   voces: {
@@ -74,3 +74,18 @@ describe('sincro con la grabación', () => {
     expect(tempoDeGrabacion(s)).toBe(Math.round(60 / ((3.1 - 1) / 4)));
   });
 });
+
+describe('ajustar inicio', () => {
+  it('descarta la anacrusa y deja el primer tiempo en el segundo marcado', () => {
+    const r = ajustarInicio({ path: 'partituras/audio/1-abcdefghijklmnop.mp3', offset_seg: 0, beats: [0.4, 1, 1.5, 2, 2.5] }, 1.02);
+    expect(r.beats).toEqual([1.02, 1.5, 2, 2.5]);
+    expect(r.offset_seg).toBe(1.02);
+  });
+
+  it('sin pulsos solo mueve el inicio', () => {
+    const r = ajustarInicio({ path: 'partituras/audio/1-abcdefghijklmnop.mp3', offset_seg: 0, beats: [], tempo_origen: 100 }, 3.5);
+    expect(r.beats).toEqual([]);
+    expect(r.offset_seg).toBe(3.5);
+  });
+});
+

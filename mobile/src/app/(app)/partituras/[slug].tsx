@@ -12,12 +12,22 @@ import { GrabacionRef, VELOCIDADES } from '@/lib/partitura/grabacion';
 import { cicloGolpe, ETIQUETA_GOLPE, golpesDe, INSTRUMENTOS, nombreDe, SIMBOLOS } from '@/lib/partitura/catalogo';
 import {
   agregarCompas, agregarSeccion, conInstrumento, cuantizarVoz, escribirCelda, grillaDeVoz,
-  expandirTimeline, paraGuardar, partituraVacia, renombrarSeccion, repeticion, TEMPO_MAX, TEMPO_MIN, tempoDe, ticksDeCompas,
+  expandirTimeline, paraGuardar, partituraVacia, renombrarSeccion, repeticion, segundosDeTicks, TEMPO_MAX, TEMPO_MIN, tempoDe, ticksDeCompas,
   type Score,
 } from '@/lib/partitura/modelo';
-import { posicionEnGrabacion } from '@/lib/partitura/sincro';
+import { ajustarInicio, posicionEnGrabacion, pulsoDeTiempo, tempoDeGrabacion, ticksDePulso } from '@/lib/partitura/sincro';
+import { PanelTranscripcion } from '@/features/partituras/PanelTranscripcion';
+import { subirGrabacion } from '@/features/partituras/transcripcion';
 import { usePuede } from '@/lib/permisos';
 import { C, E } from '@/lib/theme';
+
+type ModoGrab = 'grabacion' | 'sintetizado' | 'ambos';
+
+const MODOS_GRAB: { id: ModoGrab; titulo: string }[] = [
+  { id: 'grabacion', titulo: 'Grabación' },
+  { id: 'sintetizado', titulo: 'Sintetizado' },
+  { id: 'ambos', titulo: 'Ambos' },
+];
 
 interface Lectura {
   tempo: number;
@@ -67,11 +77,14 @@ export default function Partitura() {
   const [grabando, setGrabando] = useState(false);
   const [velocidadGrab, setVelocidadGrab] = useState(100);
   const [marcaGrab, setMarcaGrab] = useState<{ s: number; m: number } | null>(null);
+  const [modoGrab, setModoGrab] = useState<ModoGrab>('grabacion');
+  const modoGrabRef = useRef<ModoGrab>('grabacion');
+  const syncRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const m = motor.current;
     const g = grabacion.current;
-    return () => { m.soltar(); g.soltar(); };
+    return () => { m.soltar(); g.soltar(); if (syncRef.current) clearInterval(syncRef.current); };
   }, []);
 
   // Al pasar a segundo plano se corta todo: el audio no puede seguir sonando sin la pantalla.
@@ -80,6 +93,8 @@ export default function Partitura() {
       if (estado === 'active') return;
       motor.current.parar(false);
       grabacion.current.pausar();
+      if (syncRef.current) clearInterval(syncRef.current);
+      syncRef.current = null;
       setSonando(false);
       setEnConteo(false);
       setMarca(null);
@@ -141,39 +156,90 @@ export default function Partitura() {
     }
   };
 
-  /** Escucha la grabación de referencia con el cursor de la partitura sincronizado. */
+  const refActual = () => partitura?.audio_ref ?? t.score?.audio_ref ?? null;
+  const scoreActual = () => partitura ?? partituraVacia(t.nombre, t.autor ?? '');
+
+  const detenerSincro = () => {
+    if (syncRef.current) clearInterval(syncRef.current);
+    syncRef.current = null;
+  };
+
+  /** Sonido sintetizado desde el mismo pulso que la grabación, al tempo de la grabación × velocidad. */
+  const arrancarSintetico = (desdeGrabSeg: number, velocidad: number) => {
+    const sc = scoreActual();
+    const bpmBase = tempoDeGrabacion(sc) || sc.tempo || 100;
+    const bpm = Math.min(TEMPO_MAX, Math.max(TEMPO_MIN, Math.round((bpmBase * velocidad) / 100)));
+    const pulso = Math.max(0, pulsoDeTiempo(sc, desdeGrabSeg));
+    const desdeSeg = segundosDeTicks(pulso * ticksDePulso(sc.timeSignature), bpm);
+    motor.current.onFin = () => { setSonando(false); setGrabando(false); setMarcaGrab(null); };
+    motor.current.tocar(sc, { bpm, soloSeccion: null, rango: null, conteo: false, metronomo: false, loop: false, desdeSeg }, (p) => {
+      if (modoGrabRef.current !== 'sintetizado' || p.sectionIdx === null || p.measureIdx === null) return;
+      setMarcaGrab({ s: p.sectionIdx, m: p.measureIdx });
+    });
+  };
+
+  /** Escucha la grabación con el cursor sincronizado (solo grabación, sintetizado o ambos). */
   const escucharGrabacion = async () => {
-    const ref = partitura?.audio_ref ?? t.score?.audio_ref ?? null;
+    const ref = refActual();
     if (!ref) return;
     setAviso(null);
+    const modo = modoGrab;
+    const g = grabacion.current;
     try {
-      const ok = await grabacion.current.cargar(slug, ref);
-      if (!ok) return setAviso('La grabación de este toque no está disponible.');
-      grabacion.current.setVelocidad(velocidadGrab);
-      grabacion.current.play();
+      const ok = await g.cargar(slug, ref);
+      if (!ok && modo !== 'sintetizado') return setAviso('La grabación de este toque no está disponible.');
+      g.setVelocidad(velocidadGrab);
+      const desde = g.tiempo;
+      if (modo !== 'sintetizado' && ok) {
+        g.setSilenciada(false);
+        g.play();
+      }
+      if (modo !== 'grabacion') {
+        await motor.current.preparar((listos, total) => setProgreso(listos < total ? `Cargando sonidos ${listos} de ${total}…` : null));
+        setProgreso(null);
+        arrancarSintetico(desde, velocidadGrab);
+      }
       setGrabando(true);
-      const cant = expandirTimeline(partitura ?? partituraVacia(t.nombre, t.autor ?? '')).length;
-      const tic = setInterval(() => {
-        if (!grabacion.current.sonando) { clearInterval(tic); return; }
-        const pos = posicionEnGrabacion(partitura ?? partituraVacia(t.nombre, t.autor ?? ''), grabacion.current.tiempo, cant);
-        if (pos.antes || pos.despues) { setMarcaGrab(null); return; }
-        const tl = expandirTimeline(partitura ?? partituraVacia(t.nombre, t.autor ?? ''))[pos.orden];
-        if (tl) setMarcaGrab({ s: tl.sectionIdx, m: tl.measureIdx });
-        if (grabacion.current.tiempo >= grabacion.current.duracion - 0.05 && grabacion.current.duracion > 0) {
-          clearInterval(tic);
-          grabacion.current.pausar();
-          setGrabando(false);
-          setMarcaGrab(null);
-        }
-      }, 120);
+      setSonando(true);
+      if (modo !== 'sintetizado' && ok) {
+        // La grabación manda el cursor. En «ambos» el sintetizado se vuelve a alinear cada 8 s.
+        let ticks = 0;
+        const cant = expandirTimeline(scoreActual()).length;
+        detenerSincro();
+        syncRef.current = setInterval(() => {
+          if (!g.sonando) return;
+          if (g.duracion > 0 && g.tiempo >= g.duracion - 0.05) {
+            detenerSincro();
+            pararGrabacion();
+            return;
+          }
+          const sc = scoreActual();
+          const pos = posicionEnGrabacion(sc, g.tiempo, cant);
+          if (pos.antes || pos.despues) setMarcaGrab(null);
+          else {
+            const tl = expandirTimeline(sc)[pos.orden];
+            if (tl) setMarcaGrab({ s: tl.sectionIdx, m: tl.measureIdx });
+          }
+          ticks += 1;
+          // 67 ticks de 120 ms ≈ 8 s.
+          if (modo === 'ambos' && ticks >= 67) {
+            ticks = 0;
+            motor.current.parar(false);
+            arrancarSintetico(g.tiempo, velocidadGrab);
+          }
+        }, 120);
+      }
     } catch (e) {
       setAviso(e instanceof Error ? e.message : 'No se pudo cargar la grabación.');
     }
   };
 
   const pararGrabacion = () => {
+    detenerSincro();
     grabacion.current.pausar();
+    motor.current.parar(false);
     setGrabando(false);
+    setSonando(false);
     setMarcaGrab(null);
   };
 
@@ -182,6 +248,34 @@ export default function Partitura() {
     const siguiente = VELOCIDADES[(i + 1) % VELOCIDADES.length];
     setVelocidadGrab(siguiente);
     grabacion.current.setVelocidad(siguiente);
+    if (grabando && modoGrab !== 'grabacion') {
+      motor.current.parar(false);
+      arrancarSintetico(grabacion.current.tiempo, siguiente);
+    }
+  };
+
+  const cambiarModo = () => {
+    const i = MODOS_GRAB.findIndex((m) => m.id === modoGrab);
+    const siguiente = MODOS_GRAB[(i + 1) % MODOS_GRAB.length].id;
+    setModoGrab(siguiente);
+    modoGrabRef.current = siguiente;
+    if (grabando) pararGrabacion();
+  };
+
+  /** «Ajustar inicio»: el primer tiempo queda en el punto donde está la grabación ahora. */
+  const ajustarInicioAqui = async () => {
+    const ref = refActual();
+    if (!ref) return;
+    const nuevo = ajustarInicio(ref, grabacion.current.tiempo);
+    setAviso(null);
+    try {
+      await api(`partituras/${slug}/audio/inicio`, { method: 'PUT', body: { offset_seg: nuevo.offset_seg, beats: nuevo.beats } });
+      setScore((sc) => (sc ? { ...sc, audio_ref: nuevo } : sc));
+      await qc.invalidateQueries({ queryKey: ['partitura', slug] });
+      setAviso(`El primer tiempo queda en ${nuevo.offset_seg.toFixed(2)} s.`);
+    } catch (e) {
+      setAviso(e instanceof Error ? e.message : 'No se pudo ajustar el inicio.');
+    }
   };
 
   /** Marcar el loop: primer toque = A, segundo = B (en la misma parte). */
@@ -281,6 +375,7 @@ export default function Partitura() {
         <View style={s.transporte}>
           <Boton titulo={grabando ? 'Pausar grabación' : 'Escuchar grabación'} icono={grabando ? 'pause' : 'graphic-eq'} onPress={() => (grabando ? pararGrabacion() : void escucharGrabacion())} />
           <Boton titulo={`${velocidadGrab}%`} variante="secundario" onPress={cambiarVelocidad} />
+          <Boton titulo={MODOS_GRAB.find((m) => m.id === modoGrab)?.titulo ?? 'Grabación'} variante="secundario" onPress={cambiarModo} />
         </View>
       )}
       <View style={s.transporte}>
@@ -381,6 +476,16 @@ export default function Partitura() {
 
       {admin && (
         <>
+          <PanelTranscripcion slug={slug} tieneAudio={Boolean(partitura?.audio_ref?.path)} />
+          <Boton titulo="Subir grabación" icono="graphic-eq" variante="secundario" onPress={() => void elegirDocumento(['audio/*']).then((archivo) => {
+            if (!archivo) return;
+            return subirGrabacion(slug, archivo, false)
+              .then(() => qc.invalidateQueries({ queryKey: ['partitura', slug] }))
+              .catch((e) => setAviso(e instanceof Error ? e.message : 'No se pudo subir la grabación.'));
+          })} />
+          {partitura?.audio_ref?.path && (
+            <Boton titulo="Ajustar inicio aquí" icono="flag" variante="secundario" onPress={() => void ajustarInicioAqui()} />
+          )}
           <Boton titulo={editando ? 'Ver lectura' : 'Escribir'} icono="edit" variante="secundario" onPress={() => setEditando((v) => !v)} />
           <Boton
             titulo={t.publicado === false ? 'Publicar toque' : 'Ocultar toque'}
