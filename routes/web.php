@@ -498,6 +498,18 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permiso:alumnos.update')->group(function () {
         Route::put('/personas/{persona}/legajo', [\App\Http\Controllers\LegajoMenorController::class, 'update'])->name('personas.legajo.update');
     });
+    // Ciclo lectivo y reinscripción anual: abrir el ciclo, ver quién se reinscribió y dar de baja.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('/ciclos-lectivos', [\App\Http\Controllers\CicloLectivoController::class, 'index'])->name('ciclos.index');
+        Route::get('/ciclos-lectivos/{ciclo}', [\App\Http\Controllers\CicloLectivoController::class, 'show'])->name('ciclos.show');
+    });
+    Route::middleware('permiso:alumnos.update')->group(function () {
+        Route::post('/ciclos-lectivos', [\App\Http\Controllers\CicloLectivoController::class, 'store'])->name('ciclos.store');
+        Route::post('/reinscripciones/{reinscripcion}/baja', [\App\Http\Controllers\CicloLectivoController::class, 'baja'])->name('reinscripciones.baja');
+    });
+    // El alumno se reinscribe desde su cuenta.
+    Route::get('/mi-reinscripcion', [\App\Http\Controllers\CicloLectivoController::class, 'miReinscripcion'])->name('mi-reinscripcion.show');
+    Route::post('/mi-reinscripcion', [\App\Http\Controllers\CicloLectivoController::class, 'confirmar'])->name('mi-reinscripcion.confirmar');
     // === Fin Equipo C (con sesión) ===
     // === Equipo B: Finanzas ===
     Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');

@@ -427,6 +427,17 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::middleware('permiso:alumnos.update')->group(function () {
         Route::post('personas/{persona}/legajo', [\App\Http\Controllers\Api\V1\LegajoMenorController::class, 'update'])->name('personas.legajo.update.api');
     });
+    // Ciclo lectivo y reinscripción (app y administración).
+    Route::get('mi/reinscripcion', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'miReinscripcion'])->name('mi.reinscripcion');
+    Route::post('mi/reinscripcion', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'confirmar'])->name('mi.reinscripcion.confirmar');
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('ciclos-lectivos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'index'])->name('ciclos.api.index');
+        Route::get('ciclos-lectivos/{ciclo}/reinscripciones', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'reinscripciones'])->name('ciclos.api.reinscripciones');
+    });
+    Route::middleware('permiso:alumnos.update')->group(function () {
+        Route::post('ciclos-lectivos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'store'])->name('ciclos.api.store');
+        Route::post('reinscripciones/{reinscripcion}/baja', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'baja'])->name('reinscripciones.api.baja');
+    });
     // === Fin Equipo C (con sesión) ===
     // === Equipo D: app móvil ===
     // Asistencia propia del alumno (porcentaje por bloque y mes, últimas clases y horario semanal).
