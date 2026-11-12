@@ -42,7 +42,8 @@ class PrestamosInventarioTest extends TestCase
             'devolucion_prevista' => now()->addWeek()->toDateString(), 'deposito' => 5000, 'condicion_entrega' => 'bueno',
         ])->assertCreated()->assertJsonPath('data.estado', 'prestado')->assertJsonPath('data.responsable', 'Ana')->json('data.id');
 
-        $this->getJson("/api/v1/inventario/{$item->id}")->assertOk()->assertJsonPath('data.prestado', true)->assertJsonPath('data.prestamo', 'Ana');
+        $this->getJson("/api/v1/inventario/{$item->id}")->assertOk()->assertJsonPath('data.prestado', true)->assertJsonPath('data.prestamo', 'Ana')
+            ->assertJsonPath('data.prestamo_id', $id)->assertJsonPath('data.prestamo_deposito', 5000);
         $this->postJson("/api/v1/inventario/{$item->id}/prestamos", [
             'alumno_id' => $alumna->id, 'entregado_el' => now()->toDateString(), 'devolucion_prevista' => now()->addDay()->toDateString(), 'condicion_entrega' => 'bueno',
         ])->assertStatus(422);
