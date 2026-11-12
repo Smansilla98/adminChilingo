@@ -36,7 +36,8 @@ class TableroDireccionController extends Controller
 
         return view('direccion.imprimible', [
             'd' => $this->tablero->datos($request->user(), $sedeId),
-            'sede' => $sedeId ? $this->tablero->sedesDisponibles($request->user())->firstWhere('id', $sedeId)?->nombre : null,
+            'sedes' => $this->tablero->sedesDisponibles($request->user()),
+            'sedeId' => $sedeId,
             'imprimir' => true,
         ]);
     }

@@ -20,10 +20,14 @@
 @php
     $plata = fn ($n) => '$ '.number_format((float) $n, 0, ',', '.');
     $pct = fn ($n) => $n === null ? '—' : number_format((float) $n, 1, ',', '.').' %';
+    // Mismo alcance explícito que la pantalla web (direccion/index).
+    $alcanceTexto = $d['alcance'] === 'global'
+        ? 'Toda la escuela.'
+        : 'Solo '.($sedeId ? $sedes->firstWhere('id', $sedeId)?->nombre : $sedes->pluck('nombre')->join(', ')).'.';
 @endphp
     @if($imprimir ?? false)<div class="actions"><button type="button" onclick="window.print()">Imprimir / Guardar como PDF</button></div>@endif
     <h1>La Chilinga · Tablero de dirección</h1>
-    <p class="muted">{{ $sede ?? ($d['alcance'] === 'global' ? 'Toda la escuela' : 'Sedes de tu alcance') }} · últimos 12 meses · generado {{ now()->format('d/m/Y H:i') }}</p>
+    <p class="muted">{{ $alcanceTexto }} · últimos 12 meses · generado {{ now()->format('d/m/Y H:i') }}</p>
 
     <h2>Resumen</h2>
     <table>
