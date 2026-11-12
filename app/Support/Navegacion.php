@@ -125,6 +125,7 @@ class Navegacion
                 $mod('admin.gastos') ? self::link('gastos.index', 'Gastos', 'bi-wallet2', 'gastos.*') : null,
                 $u->can('liquidaciones.view') ? self::link('liquidaciones.index', 'Liquidación docente', 'bi-person-workspace', 'liquidaciones.index') : null,
                 $mod('admin.reportes') ? self::link('reportes.index', 'Reportes', 'bi-graph-up', 'reportes.*') : null,
+                $u->can('reportes.direccion') ? self::link('direccion.index', 'Tablero de dirección', 'bi-speedometer2', 'direccion.*') : null,
                 $u->can('facturacion.view') ? self::link('operativo.cierre-mes', 'Cierre de mes', 'bi-calendar-check', 'operativo.cierre-mes') : null,
             ]);
             $grupos[] = self::grupo('inventario', 'Inventario', [

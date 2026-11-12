@@ -475,6 +475,11 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/promociones/{promocion}/descartar', [\App\Http\Controllers\ProgresoController::class, 'descartar'])->name('promociones.descartar');
         });
     });
+    Route::middleware('permiso:reportes.direccion')->prefix('direccion')->name('direccion.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\TableroDireccionController::class, 'index'])->name('index');
+        Route::get('/excel', [\App\Http\Controllers\TableroDireccionController::class, 'excel'])->middleware('throttle:10,1')->name('excel');
+        Route::get('/imprimible', [\App\Http\Controllers\TableroDireccionController::class, 'imprimible'])->middleware('throttle:10,1')->name('imprimible');
+    });
     Route::get('/mis-liquidaciones', [\App\Http\Controllers\LiquidacionDocenteController::class, 'mias'])->name('liquidaciones.mias');
     Route::get('/liquidaciones/{liquidacion}/recibo', [\App\Http\Controllers\LiquidacionDocenteController::class, 'recibo'])->whereNumber('liquidacion')->name('liquidaciones.recibo');
     Route::middleware('permiso:liquidaciones.view')->prefix('liquidaciones')->name('liquidaciones.')->group(function () {
