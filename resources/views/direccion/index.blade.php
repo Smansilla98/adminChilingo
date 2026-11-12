@@ -22,7 +22,13 @@
 @endpush
 
 @section('content')
-<x-ito.shell-page title="Tablero de dirección" eyebrow="Reportes" subtitle="Los últimos 12 meses: plata, alumnos, ocupación y asistencia. {{ $d['alcance'] === 'global' ? 'Toda la escuela.' : 'Solo las sedes elegidas.' }}">
+@php
+    // Alcance explícito: toda la escuela, o solo las sedes que tiene (o la sede elegida).
+    $alcanceTexto = $d['alcance'] === 'global'
+        ? 'Toda la escuela.'
+        : 'Solo '.($sedeId ? $sedes->firstWhere('id', $sedeId)?->nombre : $sedes->pluck('nombre')->join(', ')).'.';
+@endphp
+<x-ito.shell-page title="Tablero de dirección" eyebrow="Reportes" subtitle="Los últimos 12 meses: plata, alumnos, ocupación y asistencia. {{ $alcanceTexto }}">
     <x-slot:actions>
         <a href="{{ route('direccion.excel', array_filter(['sede_id' => $sedeId])) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-excel"></i> Excel</a>
         <a href="{{ route('direccion.imprimible', array_filter(['sede_id' => $sedeId])) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"><i class="bi bi-printer"></i> PDF</a>
