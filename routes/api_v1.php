@@ -243,6 +243,9 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
         Route::get('reportes/profesores', [ReporteController::class, 'profesores'])->name('reportes.profesores');
     });
 
+    // Tablero de dirección (Equipo G)
+    Route::get('direccion', [\App\Http\Controllers\Api\V1\DireccionController::class, 'index'])->middleware('permiso:reportes.direccion')->name('api.direccion.index');
+
     // Gastos
     Route::get('gastos/catalogo', [GastoController::class, 'catalogo'])->name('gastos.catalogo');
     Route::get('gastos', [GastoController::class, 'index'])->name('gastos.index');
@@ -427,4 +430,21 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::post('morosos/recordatorios', [\App\Http\Controllers\Api\V1\MorosoController::class, 'recordarMasivo'])->name('morosos.recordatorios');
     Route::post('morosos/{alumno}/recordatorio', [\App\Http\Controllers\Api\V1\MorosoController::class, 'recordar'])->whereNumber('alumno')->name('morosos.recordar');
     // === Fin Equipo B ===
+    // === Equipo G: progreso por toque, liquidación docente y tablero de dirección ===
+    Route::get('mi/progreso', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'mio'])->name('mi.progreso');
+    Route::get('mi/liquidaciones', [\App\Http\Controllers\Api\V1\LiquidacionController::class, 'mias'])->name('mi.liquidaciones');
+    Route::get('liquidaciones/{liquidacion}', [\App\Http\Controllers\Api\V1\LiquidacionController::class, 'show'])->whereNumber('liquidacion')->name('liquidaciones.show');
+    Route::get('liquidaciones/{liquidacion}/recibo', [\App\Http\Controllers\Api\V1\LiquidacionController::class, 'recibo'])->whereNumber('liquidacion')->middleware('throttle:20,1')->name('liquidaciones.recibo');
+    Route::middleware('permiso:seguimiento.view')->prefix('progreso')->name('progreso.')->group(function () {
+        Route::get('bloques', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'bloques'])->name('bloques');
+        Route::get('bloques/{bloque}', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'bloque'])->whereNumber('bloque')->name('bloque');
+        Route::get('alumnos/{alumno}', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'alumno'])->whereNumber('alumno')->name('alumno');
+        Route::get('reporte', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'reporte'])->name('reporte');
+        Route::middleware('permiso:seguimiento.create')->group(function () {
+            Route::post('bloques/{bloque}/estado', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'estado'])->whereNumber('bloque')->name('estado');
+            Route::post('evaluaciones', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'evaluacion'])->name('evaluaciones');
+            Route::post('promociones/{promocion}/confirmar', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'confirmar'])->whereNumber('promocion')->name('promociones.confirmar');
+            Route::post('promociones/{promocion}/descartar', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'descartar'])->whereNumber('promocion')->name('promociones.descartar');
+        });
+    });
 });

@@ -540,4 +540,38 @@ Route::middleware(['auth'])->group(function () {
         Route::post('inventario-prestamos/{prestamo}/devolucion', [\App\Http\Controllers\PrestamoController::class, 'devolver'])->whereNumber('prestamo')->name('inventario-prestamos.devolucion');
     });
     // === Fin Equipo F ===
+    // === Equipo G: progreso por toque, liquidación docente y tablero de dirección ===
+    Route::middleware('permiso:seguimiento.view')->prefix('progreso')->name('progreso.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProgresoController::class, 'index'])->name('index');
+        Route::get('/reporte', [\App\Http\Controllers\ProgresoController::class, 'reporte'])->name('reporte');
+        Route::get('/bloques/{bloque}', [\App\Http\Controllers\ProgresoController::class, 'bloque'])->name('bloque');
+        Route::get('/alumnos/{alumno}', [\App\Http\Controllers\ProgresoController::class, 'alumno'])->name('alumno');
+        Route::middleware('permiso:seguimiento.create')->group(function () {
+            Route::post('/bloques/{bloque}', [\App\Http\Controllers\ProgresoController::class, 'guardar'])->name('bloque.guardar');
+            Route::post('/evaluaciones', [\App\Http\Controllers\ProgresoController::class, 'evaluacion'])->name('evaluaciones.store');
+            Route::post('/promociones/{promocion}/confirmar', [\App\Http\Controllers\ProgresoController::class, 'confirmar'])->name('promociones.confirmar');
+            Route::post('/promociones/{promocion}/descartar', [\App\Http\Controllers\ProgresoController::class, 'descartar'])->name('promociones.descartar');
+        });
+    });
+    Route::middleware('permiso:reportes.direccion')->prefix('direccion')->name('direccion.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\TableroDireccionController::class, 'index'])->name('index');
+        Route::get('/excel', [\App\Http\Controllers\TableroDireccionController::class, 'excel'])->middleware('throttle:10,1')->name('excel');
+        Route::get('/imprimible', [\App\Http\Controllers\TableroDireccionController::class, 'imprimible'])->middleware('throttle:10,1')->name('imprimible');
+    });
+    Route::get('/mis-liquidaciones', [\App\Http\Controllers\LiquidacionDocenteController::class, 'mias'])->name('liquidaciones.mias');
+    Route::get('/liquidaciones/{liquidacion}/recibo', [\App\Http\Controllers\LiquidacionDocenteController::class, 'recibo'])->whereNumber('liquidacion')->name('liquidaciones.recibo');
+    Route::middleware('permiso:liquidaciones.view')->prefix('liquidaciones')->name('liquidaciones.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\LiquidacionDocenteController::class, 'index'])->name('index');
+        Route::get('/{liquidacion}', [\App\Http\Controllers\LiquidacionDocenteController::class, 'show'])->whereNumber('liquidacion')->name('show');
+        Route::middleware('permiso:liquidaciones.manage')->group(function () {
+            Route::post('/generar', [\App\Http\Controllers\LiquidacionDocenteController::class, 'generar'])->name('generar');
+            Route::post('/{liquidacion}/aprobar', [\App\Http\Controllers\LiquidacionDocenteController::class, 'aprobar'])->whereNumber('liquidacion')->name('aprobar');
+            Route::post('/{liquidacion}/reabrir', [\App\Http\Controllers\LiquidacionDocenteController::class, 'reabrir'])->whereNumber('liquidacion')->name('reabrir');
+            Route::post('/{liquidacion}/pagar', [\App\Http\Controllers\LiquidacionDocenteController::class, 'pagar'])->whereNumber('liquidacion')->name('pagar');
+            Route::get('/docentes/{profesor}/valor-hora', [\App\Http\Controllers\LiquidacionDocenteController::class, 'tarifa'])->name('tarifa');
+            Route::put('/docentes/{profesor}/valor-hora', [\App\Http\Controllers\LiquidacionDocenteController::class, 'guardarTarifa'])->name('tarifa.update');
+            Route::post('/ajustes', [\App\Http\Controllers\LiquidacionDocenteController::class, 'ajuste'])->name('ajustes.store');
+            Route::delete('/ajustes/{ajuste}', [\App\Http\Controllers\LiquidacionDocenteController::class, 'eliminarAjuste'])->name('ajustes.destroy');
+        });
+    });
 });

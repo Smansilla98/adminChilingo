@@ -36,6 +36,9 @@ export const RUTAS: Record<string, { ruta: string; icono: Icono; grupo: Grupo }>
   usuarios: { ruta: '/usuarios', icono: 'admin-panel-settings', grupo: 'Administración' },
   auditoria: { ruta: '/auditoria', icono: 'history', grupo: 'Administración' },
   avisos_config: { ruta: '/avisos-config', icono: 'notifications-active', grupo: 'Administración' },
+  progreso: { ruta: '/progreso', icono: 'trending-up', grupo: 'Académico' },
+  mis_liquidaciones: { ruta: '/mis-liquidaciones', icono: 'request-quote', grupo: 'Mi espacio' },
+  direccion: { ruta: '/direccion', icono: 'insights', grupo: 'Finanzas' },
   difusion: { ruta: '/difusion', icono: 'campaign', grupo: 'Comunidad' },
   mis_shows: { ruta: '/shows/mios', icono: 'theater-comedy', grupo: 'Mi espacio' },
 };
