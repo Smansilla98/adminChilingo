@@ -295,7 +295,7 @@ class ArchivoService
     public function ordenar(array $ids): void
     {
         DB::transaction(function () use ($ids) {
-            foreach (array_values($ids) as $i => $id) {
+            foreach ($ids as $i => $id) {
                 ArchivoFoto::query()->whereKey($id)->update(['orden' => $i + 1]);
             }
         });

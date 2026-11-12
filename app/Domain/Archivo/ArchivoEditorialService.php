@@ -148,7 +148,7 @@ class ArchivoEditorialService
     public function ordenar(string $modelo, array $ids): void
     {
         DB::transaction(function () use ($modelo, $ids) {
-            foreach (array_values($ids) as $i => $id) {
+            foreach ($ids as $i => $id) {
                 $modelo::query()->whereKey($id)->update(['orden' => $i + 1]);
             }
         });

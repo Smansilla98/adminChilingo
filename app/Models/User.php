@@ -16,6 +16,7 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * @property int|null $persona_id identidad única (tabla personas); la agregó una migración posterior
  * @property-read \App\Models\Profesor|null $profesor
+ * @property-read \App\Models\Alumno|null $alumno
  */
 class User extends Authenticatable
 {

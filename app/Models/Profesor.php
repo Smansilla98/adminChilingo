@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $sedes_str sedes de sus bloques, separadas por «·»
  * @property string|null $initials iniciales para el avatar
  * @property string|null $avatar_class clase CSS del avatar
+ * @property int|null $persona_id vínculo con la tabla personas (columna agregada después)
+ * @property int|null $user_id usuario de acceso (columna agregada después)
  */
 class Profesor extends Model
 {
