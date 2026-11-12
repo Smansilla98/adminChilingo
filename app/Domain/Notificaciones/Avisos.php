@@ -161,7 +161,9 @@ class Avisos
             return 0;
         }
         $eventos = Evento::query()->with(['sede', 'bloque.sede'])
-            ->whereBetween('fecha', [now()->addDay()->toDateString(), now()->addDays((int) $config['dias'])->toDateString()])->get();
+            // whereDate: compara solo la fecha en MySQL y SQLite (en SQLite el cast date guarda «Y-m-d 00:00:00»).
+            ->whereDate('fecha', '>=', now()->addDay()->toDateString())
+            ->whereDate('fecha', '<=', now()->addDays((int) $config['dias'])->toDateString())->get();
 
         return $this->avisarEventos($eventos, 'evento_proximo', 'evento', $config['canales']);
     }
