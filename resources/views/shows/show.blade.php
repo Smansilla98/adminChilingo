@@ -45,5 +45,7 @@
             @endif
         </x-ito.detail-section>
     </div>
+
+    @include('shows._plan')
 </x-ito.shell-page>
 @endsection

@@ -196,7 +196,7 @@ return [
                 'asistencias.view', 'asistencias.create', 'asistencias.update',
                 'seguimiento.view', 'seguimiento.create',
                 'comprobantes.view', 'comprobantes.create', 'pagos.view',
-                'eventos.view', 'calendario.view', 'partituras.view',
+                'eventos.view', 'calendario.view', 'partituras.view', 'shows.view',
             ],
         ],
         'alumno' => [

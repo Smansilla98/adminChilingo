@@ -61,6 +61,7 @@ class Navegacion
             self::link('biblioteca.index', 'Biblioteca', 'bi-images', 'biblioteca.*'),
             self::link('archivo.index', 'Archivo histórico', 'bi-camera', 'archivo.*'),
             self::link('alumno.cuota', 'Pagar mi cuota', 'bi-credit-card', 'alumno.cuota*'),
+            self::link('alumno.shows', 'Mis shows', 'bi-mic', 'alumno.shows*'),
             $mod('calendario') ? self::link('calendario.index', 'Calendario', 'bi-calendar3', 'calendario.*') : null,
         ];
 

@@ -369,5 +369,22 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
         Route::get('{difusion}', [\App\Http\Controllers\Api\V1\DifusionController::class, 'show'])->whereNumber('difusion')->name('show');
         Route::post('{difusion}/cancelar', [\App\Http\Controllers\Api\V1\DifusionController::class, 'cancelar'])->whereNumber('difusion')->name('cancelar');
     });
+    Route::get('shows/plan-catalogo', [\App\Http\Controllers\Api\V1\ShowPlanController::class, 'catalogo'])->middleware('permiso:shows.view')->name('shows.plan-catalogo');
+    Route::middleware('permiso:shows.view')->group(function () {
+        $plan = \App\Http\Controllers\Api\V1\ShowPlanController::class;
+        Route::get('shows/{show}/convocados', [$plan, 'convocados'])->whereNumber('show')->name('shows.convocados');
+        Route::put('shows/{show}/asistencia', [$plan, 'asistencia'])->whereNumber('show')->name('shows.asistencia');
+        Route::put('shows/{show}/logistica', [$plan, 'logistica'])->whereNumber('show')->name('shows.logistica');
+        Route::put('shows/{show}/temas', [$plan, 'temas'])->whereNumber('show')->name('shows.temas');
+        Route::put('shows/{show}/instrumentos', [$plan, 'instrumentos'])->whereNumber('show')->name('shows.instrumentos');
+        Route::post('shows/{show}/ensayos', [$plan, 'crearEnsayo'])->whereNumber('show')->name('shows.ensayos.store');
+        Route::get('show-ensayos/{ensayo}', [$plan, 'verEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.show');
+        Route::put('show-ensayos/{ensayo}', [$plan, 'actualizarEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.update');
+        Route::delete('show-ensayos/{ensayo}', [$plan, 'eliminarEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.destroy');
+        Route::put('show-ensayos/{ensayo}/asistencia', [$plan, 'asistenciaEnsayo'])->whereNumber('ensayo')->name('shows.ensayos.asistencia');
+    });
+    Route::get('mi/shows', [\App\Http\Controllers\Api\V1\MiShowController::class, 'index'])->name('mi.shows');
+    Route::get('mi/shows/{show}', [\App\Http\Controllers\Api\V1\MiShowController::class, 'show'])->whereNumber('show')->name('mi.shows.show');
+    Route::post('mi/shows/{show}/confirmacion', [\App\Http\Controllers\Api\V1\MiShowController::class, 'confirmar'])->whereNumber('show')->middleware('throttle:30,1')->name('mi.shows.confirmar');
     // === Fin Equipo F ===
 });
