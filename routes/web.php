@@ -49,6 +49,7 @@ use App\Http\Controllers\RecordatorioWhatsAppController;
 use App\Http\Controllers\RecuperarClaveController;
 use App\Http\Controllers\RegistroAlumnoController;
 use App\Http\Controllers\ReportesController;
+use App\Http\Controllers\SaludController;
 use App\Http\Controllers\SedeController;
 use App\Http\Controllers\SedesMapaController;
 use App\Http\Controllers\SeguimientoPedagogicoController;
@@ -92,20 +93,7 @@ Route::post('/webhooks/twilio/whatsapp-status', TwilioWhatsAppStatusController::
     ->middleware('throttle:120,1')
     ->name('webhooks.twilio.whatsapp-status');
 
-Route::get('/salud', function () {
-    $db = true;
-    try {
-        \Illuminate\Support\Facades\DB::connection()->getPdo();
-    } catch (\Throwable) {
-        $db = false;
-    }
-
-    return response()->json([
-        'ok' => $db,
-        'app' => config('app.name'),
-        'time' => now()->toIso8601String(),
-    ], $db ? 200 : 503);
-})->name('salud');
+Route::get('/salud', SaludController::class)->name('salud');
 
 Route::view('/privacidad', 'legal.privacy')
     ->middleware('throttle:60,1')
