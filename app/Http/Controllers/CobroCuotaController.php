@@ -49,12 +49,14 @@ class CobroCuotaController extends Controller
             'alumno_id' => ['required', 'integer'],
             'cuota_ids' => ['required', 'array', 'min:1'],
             'cuota_ids.*' => ['integer'],
+            'montos' => ['nullable', 'array'],
+            'montos.*' => ['nullable', 'numeric', 'min:0.01'],
             'medio' => ['required', 'in:'.implode(',', CobroCuotasService::MEDIOS)],
         ], ['cuota_ids.required' => 'Marcá qué cuotas vas a pagar.', 'medio.required' => 'Elegí cómo vas a pagar.']);
         $alumno = $this->fichas($request)->firstWhere('id', (int) $datos['alumno_id']);
         abort_unless($alumno instanceof Alumno, 403);
 
-        $pago = $cobros->iniciar($request->user(), $alumno, $datos['cuota_ids'], $datos['medio']);
+        $pago = $cobros->iniciar($request->user(), $alumno, $datos['cuota_ids'], $datos['medio'], $datos['montos'] ?? []);
 
         return $this->continuar($pago, $datos['medio'], $request, $cobros);
     }
