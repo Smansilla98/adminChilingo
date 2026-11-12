@@ -243,6 +243,9 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
         Route::get('reportes/profesores', [ReporteController::class, 'profesores'])->name('reportes.profesores');
     });
 
+    // Tablero de dirección (Equipo G)
+    Route::get('direccion', [\App\Http\Controllers\Api\V1\DireccionController::class, 'index'])->middleware('permiso:reportes.direccion')->name('api.direccion.index');
+
     // Gastos
     Route::get('gastos/catalogo', [GastoController::class, 'catalogo'])->name('gastos.catalogo');
     Route::get('gastos', [GastoController::class, 'index'])->name('gastos.index');
