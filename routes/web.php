@@ -178,6 +178,9 @@ Route::get('/olvide-mi-clave', [RecuperarClaveController::class, 'create'])->nam
 Route::post('/olvide-mi-clave', [RecuperarClaveController::class, 'store'])->middleware('throttle:recuperar-clave')->name('recuperar.store');
 Route::get('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmarCreate'])->name('recuperar.confirmar');
 Route::post('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmar'])->middleware('throttle:recuperar-clave')->name('recuperar.confirmar.store');
+// === Equipo C: preinscripción pública (lista de espera) ===
+Route::get('/inscripcion', [\App\Http\Controllers\PreinscripcionPublicController::class, 'create'])->name('inscripcion.create');
+Route::post('/inscripcion', [\App\Http\Controllers\PreinscripcionPublicController::class, 'store'])->middleware('throttle:preinscripcion')->name('inscripcion.store');
 // === Fin Equipo C: recuperar contraseña ===
 
 /*
@@ -478,6 +481,35 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'ajustes'])->name('edit');
         Route::put('/', [\App\Http\Controllers\CuentasAlumnosController::class, 'guardarAjustes'])->name('update');
     });
+    // Bandeja de preinscripciones: ver, y aprobar o rechazar.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('/preinscripciones', [\App\Http\Controllers\PreinscripcionController::class, 'index'])->name('preinscripciones.index');
+        Route::get('/preinscripciones/{preinscripcion}', [\App\Http\Controllers\PreinscripcionController::class, 'show'])->name('preinscripciones.show');
+    });
+    Route::middleware('permiso:alumnos.create')->group(function () {
+        Route::post('/preinscripciones/{preinscripcion}/aprobar', [\App\Http\Controllers\PreinscripcionController::class, 'aprobar'])->name('preinscripciones.aprobar');
+        Route::post('/preinscripciones/{preinscripcion}/rechazar', [\App\Http\Controllers\PreinscripcionController::class, 'rechazar'])->name('preinscripciones.rechazar');
+    });
+    // Legajo de menor: tutor, uso de imagen y apto médico.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('/personas/{persona}/legajo', [\App\Http\Controllers\LegajoMenorController::class, 'show'])->name('personas.legajo');
+        Route::get('/personas/{persona}/legajo/apto', [\App\Http\Controllers\LegajoMenorController::class, 'apto'])->name('personas.legajo.apto');
+    });
+    Route::middleware('permiso:alumnos.update')->group(function () {
+        Route::put('/personas/{persona}/legajo', [\App\Http\Controllers\LegajoMenorController::class, 'update'])->name('personas.legajo.update');
+    });
+    // Ciclo lectivo y reinscripción anual: abrir el ciclo, ver quién se reinscribió y dar de baja.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('/ciclos-lectivos', [\App\Http\Controllers\CicloLectivoController::class, 'index'])->name('ciclos.index');
+        Route::get('/ciclos-lectivos/{ciclo}', [\App\Http\Controllers\CicloLectivoController::class, 'show'])->name('ciclos.show');
+    });
+    Route::middleware('permiso:alumnos.update')->group(function () {
+        Route::post('/ciclos-lectivos', [\App\Http\Controllers\CicloLectivoController::class, 'store'])->name('ciclos.store');
+        Route::post('/reinscripciones/{reinscripcion}/baja', [\App\Http\Controllers\CicloLectivoController::class, 'baja'])->name('reinscripciones.baja');
+    });
+    // El alumno se reinscribe desde su cuenta.
+    Route::get('/mi-reinscripcion', [\App\Http\Controllers\CicloLectivoController::class, 'miReinscripcion'])->name('mi-reinscripcion.show');
+    Route::post('/mi-reinscripcion', [\App\Http\Controllers\CicloLectivoController::class, 'confirmar'])->name('mi-reinscripcion.confirmar');
     // === Fin Equipo C (con sesión) ===
     // === Equipo B: Finanzas ===
     Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');

@@ -411,6 +411,33 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
         Route::get('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'ajustes'])->name('configuracion.cuentas');
         Route::put('configuracion/cuentas', [\App\Http\Controllers\Api\V1\CuentasController::class, 'guardarAjustes'])->name('configuracion.cuentas.update');
     });
+    // Bandeja de preinscripciones (app).
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('preinscripciones', [\App\Http\Controllers\Api\V1\PreinscripcionController::class, 'index'])->name('preinscripciones.api.index');
+    });
+    Route::middleware('permiso:alumnos.create')->group(function () {
+        Route::post('preinscripciones/{preinscripcion}/aprobar', [\App\Http\Controllers\Api\V1\PreinscripcionController::class, 'aprobar'])->name('preinscripciones.api.aprobar');
+        Route::post('preinscripciones/{preinscripcion}/rechazar', [\App\Http\Controllers\Api\V1\PreinscripcionController::class, 'rechazar'])->name('preinscripciones.api.rechazar');
+    });
+    // Legajo de menor (app): la carga del apto es POST multipart.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('personas/{persona}/legajo', [\App\Http\Controllers\Api\V1\LegajoMenorController::class, 'show'])->name('personas.legajo.api');
+        Route::get('personas/{persona}/legajo/apto', [\App\Http\Controllers\Api\V1\LegajoMenorController::class, 'apto'])->name('personas.legajo.apto.api');
+    });
+    Route::middleware('permiso:alumnos.update')->group(function () {
+        Route::post('personas/{persona}/legajo', [\App\Http\Controllers\Api\V1\LegajoMenorController::class, 'update'])->name('personas.legajo.update.api');
+    });
+    // Ciclo lectivo y reinscripción (app y administración).
+    Route::get('mi/reinscripcion', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'miReinscripcion'])->name('mi.reinscripcion');
+    Route::post('mi/reinscripcion', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'confirmar'])->name('mi.reinscripcion.confirmar');
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('ciclos-lectivos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'index'])->name('ciclos.api.index');
+        Route::get('ciclos-lectivos/{ciclo}/reinscripciones', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'reinscripciones'])->name('ciclos.api.reinscripciones');
+    });
+    Route::middleware('permiso:alumnos.update')->group(function () {
+        Route::post('ciclos-lectivos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'store'])->name('ciclos.api.store');
+        Route::post('reinscripciones/{reinscripcion}/baja', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'baja'])->name('reinscripciones.api.baja');
+    });
     // === Fin Equipo C (con sesión) ===
     // === Equipo D: app móvil ===
     // Asistencia propia del alumno (porcentaje por bloque y mes, últimas clases y horario semanal).
