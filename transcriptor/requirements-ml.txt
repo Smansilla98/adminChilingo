@@ -1,0 +1,9 @@
+# Opcionales (CPU). Solo con CON_ML=1 en el build: suman ~1 GB a la imagen.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1
+onnxruntime==1.20.1
+# Beat This! (CPJKU, licencia MIT): pulsos y primer tiempo de compás.
+# Fijar un commit concreto al activarlo (no publica versiones en PyPI).
+beat_this @ git+https://github.com/CPJKU/beat_this.git
+# Demucs (MIT): separar la percusión cuando hay voces. Solo se usa con separar_fuentes.
+demucs==4.0.1

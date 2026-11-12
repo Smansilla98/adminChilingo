@@ -3,6 +3,7 @@
 namespace App\Domain\Finanzas;
 
 use App\Models\Alumno;
+use App\Models\Auditoria;
 use App\Models\Bloque;
 use App\Models\ComprobanteCuotaAlumno;
 use App\Models\ComprobanteCuotaAlumnoItem;
@@ -16,7 +17,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -337,7 +337,12 @@ class CobroCuotasService
             throw ValidationException::withMessages(['pago' => 'Este pago ya no se puede cancelar.']);
         }
         DB::transaction(function () use ($c) {
-            $c->items()->delete();
+            Auditoria::registrar('cancelado', $c, [
+                'referencia' => $c->referencia,
+                'monto_total' => (string) $c->monto_total,
+                'items' => $c->items()->get(['cuota_id', 'bloque_id', 'monto', 'anio', 'mes'])->toArray(),
+            ], null);
+            $c->items()->get()->each(fn (ComprobanteCuotaAlumnoItem $i) => $i->delete());
             $c->delete();
         });
     }
@@ -393,7 +398,7 @@ class CobroCuotasService
      */
     public function conciliarMercadoPago(int $dias = 7): array
     {
-        if (! $this->mercadoPago->configurado() || ! Schema::hasColumn('comprobantes_cuota_alumnos', 'mp_preference_id')) {
+        if (! $this->mercadoPago->configurado()) {
             return ['revisados' => 0, 'registrados' => 0];
         }
 

@@ -7,6 +7,11 @@
 <x-ito.list-page title="Gastos" subtitle="Registro de gastos operativos">
     <x-slot:actions>
         <a href="{{ route('gastos.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nuevo gasto</a>
+        @if(request()->boolean('papelera'))
+            <a href="{{ route('gastos.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Volver a los gastos</a>
+        @else
+            <a href="{{ route('gastos.index', ['papelera' => 1]) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-trash"></i> Papelera</a>
+        @endif
     </x-slot:actions>
 
     <x-slot:toolbar>
@@ -37,6 +42,7 @@
                 <label>Hasta</label>
                 <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}">
             </div>
+            @if(request()->boolean('papelera'))<input type="hidden" name="papelera" value="1">@endif
             <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
         </form>
     </x-slot:toolbar>
@@ -84,17 +90,28 @@
                     </td>
                     <td class="ito-mono text-end">$ {{ number_format($g->monto, 2, ',', '.') }}</td>
                     <td>
+                        @if($g->trashed())
+                            <small class="d-block text-muted">Borrado {{ $g->deleted_at?->format('d/m/Y') }}{{ $g->eliminadoPor ? ' por '.$g->eliminadoPor->name : '' }}{{ $g->motivo_eliminacion ? ': '.$g->motivo_eliminacion : '' }}</small>
+                            @can('delete', $g)
+                                <form action="{{ route('gastos.restaurar', $g->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Restaurar</button>
+                                </form>
+                            @endcan
+                        @else
                         <x-ito.actions :id="'gasto-'.$g->id">
                             <li><a class="dropdown-item" href="{{ route('gastos.show', $g) }}"><i class="bi bi-eye"></i> Ver</a></li>
                             <li><a class="dropdown-item" href="{{ route('gastos.edit', $g) }}"><i class="bi bi-pencil"></i> Editar</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form action="{{ route('gastos.destroy', $g) }}" method="POST" data-confirm="¿Eliminar este gasto?">
+                                <form action="{{ route('gastos.destroy', $g) }}" method="POST" data-confirm="¿Mandar este gasto a la papelera?" class="px-3 py-1">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash"></i> Eliminar</button>
+                                    <input type="text" name="motivo" class="form-control form-control-sm mb-1" maxlength="500" placeholder="Motivo (opcional)">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100"><i class="bi bi-trash"></i> Eliminar</button>
                                 </form>
                             </li>
                         </x-ito.actions>
+                        @endif
                     </td>
                 </tr>
             @empty

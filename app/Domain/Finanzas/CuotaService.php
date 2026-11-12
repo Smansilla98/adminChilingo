@@ -6,7 +6,6 @@ use App\Models\Cuota;
 use App\Models\User;
 use App\Policies\CuotaPolicy;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -23,11 +22,6 @@ class CuotaService
         Cuota::ALCANCE_BLOQUE => 'Un bloque',
     ];
 
-    public function tieneAlcance(): bool
-    {
-        return Schema::hasColumn('cuotas', 'alcance');
-    }
-
     /** @return array<string, mixed> */
     public function reglas(?string $alcance): array
     {
@@ -41,15 +35,10 @@ class CuotaService
             'alumno_ids' => 'nullable|array',
             'alumno_ids.*' => 'exists:alumnos,id',
         ];
-        if ($this->tieneAlcance()) {
-            $rules['mes'] = 'required|integer|min:1|max:12';
-            $rules['alcance'] = 'required|in:bloque,sede,general';
-            $rules['bloque_id'] = [Rule::requiredIf(fn () => $alcance === Cuota::ALCANCE_BLOQUE), 'nullable', 'exists:bloques,id'];
-            $rules['sede_id'] = [Rule::requiredIf(fn () => $alcance === Cuota::ALCANCE_SEDE), 'nullable', 'exists:sedes,id'];
-        } else {
-            $rules['bloque_id'] = 'required|exists:bloques,id';
-            $rules['mes'] = 'nullable|integer|min:1|max:12';
-        }
+        $rules['mes'] = 'required|integer|min:1|max:12';
+        $rules['alcance'] = 'required|in:bloque,sede,general';
+        $rules['bloque_id'] = [Rule::requiredIf(fn () => $alcance === Cuota::ALCANCE_BLOQUE), 'nullable', 'exists:bloques,id'];
+        $rules['sede_id'] = [Rule::requiredIf(fn () => $alcance === Cuota::ALCANCE_SEDE), 'nullable', 'exists:sedes,id'];
 
         return $rules;
     }
@@ -64,23 +53,21 @@ class CuotaService
         $alumnoIds = array_values(array_filter((array) ($datos['alumno_ids'] ?? [])));
         unset($datos['alumno_ids']);
 
-        if ($this->tieneAlcance()) {
-            $alcance = $datos['alcance'];
-            if ($alcance === Cuota::ALCANCE_GENERAL) {
-                $datos['bloque_id'] = null;
-                $datos['sede_id'] = null;
-            } elseif ($alcance === Cuota::ALCANCE_SEDE) {
-                $datos['bloque_id'] = null;
-            } else {
-                $datos['sede_id'] = null;
-            }
-
-            $permiso = $cuota ? 'cuotas.update' : 'cuotas.create';
-            if (! CuotaPolicy::puedeDefinir($por, $permiso, $alcance, isset($datos['sede_id']) ? (int) $datos['sede_id'] : null, isset($datos['bloque_id']) ? (int) $datos['bloque_id'] : null)) {
-                abort(403, 'No podés definir cuotas con ese alcance.');
-            }
-            $this->asegurarUnicaEnPeriodo((int) $datos['año'], (int) ($datos['mes'] ?? 0), $alcance, $datos['bloque_id'] ?? null, $datos['sede_id'] ?? null, $cuota?->id);
+        $alcance = $datos['alcance'];
+        if ($alcance === Cuota::ALCANCE_GENERAL) {
+            $datos['bloque_id'] = null;
+            $datos['sede_id'] = null;
+        } elseif ($alcance === Cuota::ALCANCE_SEDE) {
+            $datos['bloque_id'] = null;
+        } else {
+            $datos['sede_id'] = null;
         }
+
+        $permiso = $cuota ? 'cuotas.update' : 'cuotas.create';
+        if (! CuotaPolicy::puedeDefinir($por, $permiso, $alcance, isset($datos['sede_id']) ? (int) $datos['sede_id'] : null, isset($datos['bloque_id']) ? (int) $datos['bloque_id'] : null)) {
+            abort(403, 'No podés definir cuotas con ese alcance.');
+        }
+        $this->asegurarUnicaEnPeriodo((int) $datos['año'], (int) ($datos['mes'] ?? 0), $alcance, $datos['bloque_id'] ?? null, $datos['sede_id'] ?? null, $cuota?->id);
 
         return DB::transaction(function () use ($cuota, $datos, $alumnoIds) {
             if ($cuota) {

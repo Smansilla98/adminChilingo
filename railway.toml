@@ -1,9 +1,14 @@
-# Railway: usar Dockerfile y arrancar con start.sh (espera DB, migra, sirve)
+# Railway · servicio WEB (FrankenPHP). Los servicios scheduler y worker usan el mismo Dockerfile
+# con railway.scheduler.toml / railway.worker.toml (ver docs/DEPLOY_RAILWAY.md).
 [build]
-builder = "dockerfile"
+builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "/var/www/html/start.sh"
-restartPolicyType = "on_failure"
+startCommand = "/var/www/html/start.sh web"
+# /salud responde 200 solo si la app levantó y conecta a la base. Si el deploy nuevo no responde
+# a tiempo (p. ej. fallaron las migraciones), Railway mantiene el deploy anterior.
+healthcheckPath = "/salud"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3

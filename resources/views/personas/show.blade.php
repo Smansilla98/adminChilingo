@@ -136,6 +136,20 @@
                                 <div class="form-text">Usuario: su DNI. Contraseña: 6 números que le pasás vos; la cambia al entrar.</div>
                             </form>
                         @endif
+                        @if(session('codigo_alta'))
+                            @php $cod = session('codigo_alta'); @endphp
+                            <div class="alert alert-success mt-3 mb-0" role="status">
+                                <strong>Código de alta:</strong> <strong class="ito-mono fs-5">{{ $cod['codigo'] }}</strong>
+                                <div class="small mt-1">Se muestra una sola vez. Vence el {{ \Illuminate\Support\Carbon::parse($cod['vence'])->format('d/m/Y') }}. Con este código, su DNI y su fecha de nacimiento crea su cuenta en la app o en la web («Crear mi cuenta»).</div>
+                            </div>
+                        @endif
+                        @if($puedeCodigoAlta ?? false)
+                            <form method="POST" action="{{ route('personas.codigo-alta', $persona) }}" class="mt-2">
+                                @csrf
+                                <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-key" aria-hidden="true"></i> Código de alta</button>
+                                <div class="form-text">Para que cree su propia cuenta. Si generás otro, el anterior deja de servir.</div>
+                            </form>
+                        @endif
                     </x-ito.detail-section>
 
                     <x-ito.detail-section title="Próximos eventos" icon="bi-calendar-event">

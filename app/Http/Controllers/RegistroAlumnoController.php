@@ -6,7 +6,6 @@ use App\Domain\Personas\RegistroAlumnoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 /** Registro de alumnos que la escuela ya tiene cargados (DNI + fecha de nacimiento). */
@@ -18,17 +17,12 @@ class RegistroAlumnoController extends Controller
             return redirect()->route('dashboard');
         }
 
-        return view('auth.registro-alumno');
+        return view('auth.registro-alumno', ['requiereCodigo' => \App\Domain\Acceso\AjustesCuentas::registroRequiereCodigo()]);
     }
 
     public function store(Request $request, RegistroAlumnoService $registro): RedirectResponse
     {
-        $datos = $request->validate([
-            'dni' => ['required', 'string', 'max:20'],
-            'fecha_nacimiento' => ['required', 'date', 'before:today'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'password' => ['required', 'confirmed', Password::min(6)],
-        ], RegistroAlumnoService::mensajes());
+        $datos = $request->validate(RegistroAlumnoService::reglas(), RegistroAlumnoService::mensajes());
 
         $user = $registro->registrar($datos);
 

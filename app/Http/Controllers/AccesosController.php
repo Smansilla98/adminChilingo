@@ -15,114 +15,18 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 
+/**
+ * Alta rápida de cuentas (formulario heredado). La matriz de visibilidad de módulos
+ * (users.modulos_access) se retiró: qué ve cada uno lo deciden roles y permisos.
+ */
 class AccesosController extends Controller
 {
-    /**
-     * Definición de módulos/submódulos para la matriz de accesos.
-     * Clave => Etiqueta (grupo).
-     *
-     * Nota: esta matriz controla visibilidad + bloqueo por middleware "modulo".
-     */
-    private const MODULOS = [
-        'programa' => ['Programa'],
-        'calendario' => ['Calendario'],
-        'ayuda' => ['Guía de uso'],
-        'comprobantes' => ['Comprobantes'],
-
-        // Profesor
-        'profesor.mis_bloques' => ['Profesor', 'Mis bloques'],
-        'profesor.asistencia' => ['Profesor', 'Asistencia'],
-        'profesor.mis_alumnos' => ['Profesor', 'Mis alumnos'],
-        'profesor.pagos_cuotas' => ['Profesor', 'Pagos de cuotas'],
-        'profesor.mis_eventos' => ['Profesor', 'Mis eventos'],
-
-        // Admin (módulos grandes)
-        'admin.alumnos' => ['Administración', 'Alumnos'],
-        'admin.importar' => ['Administración', 'Importar alumnos'],
-        'admin.profesores' => ['Administración', 'Profesores'],
-        'admin.bloques' => ['Administración', 'Bloques'],
-        'admin.sedes' => ['Administración', 'Sedes'],
-        'admin.cuotas' => ['Administración', 'Cuotas'],
-        'admin.pagos' => ['Administración', 'Pagos'],
-        'admin.eventos' => ['Administración', 'Eventos'],
-        'admin.asistencias' => ['Administración', 'Asistencias'],
-        'admin.reportes' => ['Administración', 'Reportes'],
-        'admin.facturacion_mensual' => ['Administración', 'Facturación mensual'],
-        'admin.inventarios' => ['Administración', 'Inventarios'],
-        'admin.plan_compras' => ['Administración', 'Plan de compras'],
-        'admin.ordenes_compra' => ['Administración', 'Órdenes de compra'],
-        'admin.gastos' => ['Administración', 'Gastos'],
-        'admin.shows' => ['Administración', 'Shows'],
-        'admin.villa_gesell' => ['Villa Gesell', 'Gira costa'],
-        'admin.disenos' => ['Administración', 'Diseño'],
-    ];
-
     public const ROLES_ALTA = [
         'profesor' => 'Profesor',
         'admin' => 'Administración',
         'direccion' => 'Dirección',
         'alumno' => 'Alumno (login)',
     ];
-
-    public function index(Request $request)
-    {
-        $users = User::query()->orderBy('name')->orderBy('username')->get();
-        $userId = $request->integer('user_id') ?: ($users->first()?->id ?? null);
-        $usuario = $userId ? $users->firstWhere('id', $userId) : null;
-
-        $map = $usuario && is_array($usuario->modulos_access) ? $usuario->modulos_access : [];
-
-        // Agrupar por "grupo" (primer elemento del array etiqueta)
-        $agrupado = [];
-        foreach (self::MODULOS as $clave => $labelParts) {
-            $grupo = $labelParts[0] ?? 'General';
-            $etiqueta = $labelParts[1] ?? ($labelParts[0] ?? $clave);
-            $agrupado[$grupo][] = [
-                'clave' => $clave,
-                'etiqueta' => $etiqueta,
-                'valor' => array_key_exists($clave, $map) ? (bool) $map[$clave] : true, // default permitido
-            ];
-        }
-        ksort($agrupado);
-
-        return view('accesos.index', compact('users', 'usuario', 'agrupado'));
-    }
-
-    public function update(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'access' => 'nullable|array',
-            'telefono' => 'nullable|string|max:20',
-        ]);
-
-        $usuario = User::query()->findOrFail($request->integer('user_id'));
-
-        $incoming = $request->input('access', []);
-        if (! is_array($incoming)) {
-            $incoming = [];
-        }
-
-        // Guardamos solo claves conocidas, para evitar basura.
-        $out = [];
-        foreach (array_keys(self::MODULOS) as $clave) {
-            if (array_key_exists($clave, $incoming)) {
-                $out[$clave] = (bool) $incoming[$clave];
-            }
-        }
-
-        $usuario->forceFill(['modulos_access' => $out]);
-
-        if ($usuario->isAdmin() && $request->has('telefono')) {
-            $usuario->telefono = trim((string) $request->input('telefono')) ?: null;
-        }
-
-        $usuario->saveQuietly();
-
-        return redirect()
-            ->route('accesos.index', ['user_id' => $usuario->id])
-            ->with('success', 'Accesos actualizados.');
-    }
 
     public function create(): View
     {
@@ -216,7 +120,7 @@ class AccesosController extends Controller
         }
 
         return redirect()
-            ->route('accesos.index', ['user_id' => $user->id])
+            ->route('usuarios.show', $user)
             ->with('success', $aviso);
     }
 

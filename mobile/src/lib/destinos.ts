@@ -9,6 +9,9 @@ export function destinoDe(enlace: unknown): string | undefined {
   // Recordatorio de pasar lista: abre la planilla de ese bloque.
   const lista = enlace.match(/^app:\/\/asistencia\/(\d+)$/);
   if (lista) return `/asistencia/${lista[1]}`;
+  // Aviso de ausencias seguidas (route('profesor.alumnos.show') en la web): ficha del alumno en la app.
+  const alumno = enlace.match(/\/profesor\/alumnos\/(\d+)(?:[/?#]|$)/);
+  if (alumno) return `/alumnos/${alumno[1]}`;
   // Shows a los que está convocado el alumno y sus préstamos de instrumentos.
   const show = enlace.match(/^app:\/\/mis-shows\/(\d+)$/);
   if (show) return `/shows/mios/${show[1]}`;

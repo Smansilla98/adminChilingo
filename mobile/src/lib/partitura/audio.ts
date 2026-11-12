@@ -7,7 +7,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 
 import { api, headersSesion, urlApi } from '../api';
 import { archivoDe, DESFASE_UNISONO, GANANCIA_TIMBRE, resolverGolpe } from './catalogo';
-import { planificar, realesDe, type Score } from './modelo';
+import { planificar, realesDe, type EventoPlan, type Score } from './modelo';
 
 export interface Mezcla {
   /** null = todas las cuerdas. 'todos' = solo la voz de unísono. */
@@ -62,7 +62,8 @@ export class MotorAudio {
   mezcla: Mezcla = { solo: null, mudas: [] };
   onFin: (() => void) | null = null;
 
-  async preparar(): Promise<void> {
+  /** Baja y prepara los sonidos. `onProgreso` recibe (listos, total) para mostrar la carga. */
+  async preparar(onProgreso?: (listos: number, total: number) => void): Promise<void> {
     if (this.listo) return;
     await setAudioModeAsync({ playsInSilentMode: true, interruptionMode: 'doNotMix', allowsRecording: false });
     const dir = new Directory(Paths.cache, 'perc-chilinga');
@@ -71,22 +72,30 @@ export class MotorAudio {
     this.clickDebil = await this.click(dir, 'click-debil.wav', 1100);
     const cat = await api<{ data: { archivo: string; presente: boolean; bytes: number; mtime: number }[] }>('partituras/muestras');
     const faltan: string[] = [];
-    await Promise.all(cat.data.map(async (m) => {
-      if (!m.presente || m.bytes < 1) {
-        faltan.push(m.archivo);
-        return;
-      }
-      const dest = new File(dir, `${m.mtime}-${m.bytes}-${m.archivo}`);
-      if (!dest.exists) {
-        try {
-          await File.downloadFileAsync(urlApi(`partituras/muestras/${m.archivo}`), dest, { headers: headersSesion() });
-        } catch {
+    let listos = 0;
+    const total = cat.data.length;
+    onProgreso?.(0, total);
+    // De a 4 descargas: no saturar la red del teléfono con 27 archivos a la vez.
+    for (let i = 0; i < cat.data.length; i += 4) {
+      await Promise.all(cat.data.slice(i, i + 4).map(async (m) => {
+        if (!m.presente || m.bytes < 1) {
           faltan.push(m.archivo);
           return;
         }
-      }
-      this.uris.set(m.archivo, dest.uri);
-    }));
+        const dest = new File(dir, `${m.mtime}-${m.bytes}-${m.archivo}`);
+        if (!dest.exists) {
+          try {
+            await File.downloadFileAsync(urlApi(`partituras/muestras/${m.archivo}`), dest, { headers: headersSesion() });
+          } catch {
+            faltan.push(m.archivo);
+            return;
+          }
+        }
+        this.uris.set(m.archivo, dest.uri);
+        listos += 1;
+        onProgreso?.(listos + faltan.length, total);
+      }));
+    }
     this.faltan = faltan;
     this.listo = true;
   }
@@ -149,23 +158,31 @@ export class MotorAudio {
     });
   }
 
-  tocar(score: Score, opts: { bpm: number; soloSeccion?: number | null; conteo: boolean; metronomo: boolean; loop: boolean }, onClock: (p: PosicionPlay) => void) {
+  /**
+   * Reproduce el plan con un planificador por anticipación: cada tick dispara solo los eventos
+   * que caen en los próximos 90 ms, avanzando un puntero (no recorre toda la lista).
+   */
+  tocar(score: Score, opts: { bpm: number; soloSeccion?: number | null; rango?: { sectionIdx: number; desde: number; hasta: number } | null; conteo: boolean; metronomo: boolean; loop: boolean }, onClock: (p: PosicionPlay) => void) {
     this.parar(false);
     const plan = planificar(score, opts);
     const ids = realesDe(score);
+    const eventos: EventoPlan[] = plan.eventos;
+    const compases = plan.compases;
     const t0 = performance.now() + 80;
-    const hechos = new Set<number>();
+    let siguiente = 0;
+    let compasActual = -1;
     this.sonando = true;
     this.timer = setInterval(() => {
       const ahora = (performance.now() - t0) / 1000;
-      const compas = plan.compases.find((c) => ahora >= c.t && ahora < c.t + c.dur);
-      onClock({ conteo: ahora < plan.conteo, sectionIdx: compas?.sectionIdx ?? null, measureIdx: compas?.measureIdx ?? null });
-      plan.eventos.forEach((ev, i) => {
-        if (hechos.has(i) || ev.t > ahora + 0.09) return;
-        hechos.add(i);
+      while (compasActual + 1 < compases.length && ahora >= compases[compasActual + 1].t) compasActual += 1;
+      const c = compasActual >= 0 && ahora < compases[compasActual].t + compases[compasActual].dur ? compases[compasActual] : null;
+      onClock({ conteo: ahora < plan.conteo, sectionIdx: c?.sectionIdx ?? null, measureIdx: c?.measureIdx ?? null });
+      while (siguiente < eventos.length && eventos[siguiente].t <= ahora + 0.09) {
+        const ev = eventos[siguiente];
+        siguiente += 1;
         if (ev.tipo === 'click') this.lanzar(ev.fuerte ? this.clickFuerte : this.clickDebil, ev.fuerte ? 0.7 : 0.45);
         else if (ev.inst && ev.stroke) this.disparar(ev.inst, ev.stroke, ev.vel ?? 1, ids);
-      });
+      }
       if (ahora > plan.duracion + 0.05) {
         if (opts.loop) this.tocar(score, { ...opts, conteo: false }, onClock);
         else this.parar(true);
