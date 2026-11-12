@@ -41,6 +41,7 @@ export const RUTAS: Record<string, { ruta: string; icono: Icono; grupo: Grupo }>
   progreso: { ruta: '/progreso', icono: 'trending-up', grupo: 'Académico' },
   mis_liquidaciones: { ruta: '/mis-liquidaciones', icono: 'request-quote', grupo: 'Mi espacio' },
   direccion: { ruta: '/direccion', icono: 'insights', grupo: 'Finanzas' },
+  liquidaciones: { ruta: '/liquidaciones', icono: 'request-quote', grupo: 'Finanzas' },
   difusion: { ruta: '/difusion', icono: 'campaign', grupo: 'Comunidad' },
   mis_shows: { ruta: '/shows/mios', icono: 'theater-comedy', grupo: 'Mi espacio' },
 };

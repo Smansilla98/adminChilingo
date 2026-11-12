@@ -345,5 +345,10 @@ return [
         'biblioteca' => ['etiqueta' => 'Biblioteca', 'icono' => 'local_library', 'permisos' => []],
         'notificaciones' => ['etiqueta' => 'Avisos', 'icono' => 'notifications', 'permisos' => []],
         'avisos_config' => ['etiqueta' => 'Avisos y cobro', 'icono' => 'notifications_active', 'permisos' => ['notificaciones.send']],
+        // Equipo G: pedagogía y dirección
+        'progreso' => ['etiqueta' => 'Progreso por toque', 'icono' => 'trending_up', 'permisos' => ['seguimiento.view']],
+        'mis_liquidaciones' => ['etiqueta' => 'Mis liquidaciones', 'icono' => 'request_quote', 'permisos' => ['@profesor']],
+        'liquidaciones' => ['etiqueta' => 'Liquidación docente', 'icono' => 'request_quote', 'permisos' => ['liquidaciones.view']],
+        'direccion' => ['etiqueta' => 'Tablero de dirección', 'icono' => 'insights', 'permisos' => ['reportes.direccion']],
     ],
 ];

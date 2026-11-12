@@ -28,6 +28,8 @@ class TableroDireccionAlcanceTest extends TestCase
 
         $this->actingAs($coord->fresh())->get('/direccion')->assertOk()
             ->assertSee('Solo Palomar.')->assertDontSee('Varela');
+        $this->actingAs($coord->fresh())->get('/direccion/imprimible')->assertOk()
+            ->assertSee('Solo Palomar.')->assertDontSee('Varela');
         Sanctum::actingAs($coord->fresh());
         $this->getJson('/api/v1/direccion')->assertOk()
             ->assertJsonPath('alcance', 'sedes')
