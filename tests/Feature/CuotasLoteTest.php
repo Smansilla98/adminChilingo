@@ -85,4 +85,15 @@ class CuotasLoteTest extends TestCase
             ->assertRedirect(route('cuotas.index'));
         $this->assertSame(6, Cuota::query()->count());
     }
+
+    public function test_cobranza_aparece_en_el_menu_solo_con_su_permiso(): void
+    {
+        $this->actingAs($this->admin())->get(route('cuotas.index'))->assertOk()
+            ->assertSee(route('morosos.index'), false)->assertSee(route('cuotas.lote.create'), false);
+
+        $contador = $this->usuario('Contadora');
+        $this->asignarRol($contador->persona, 'contador');
+        $html = $this->actingAs($contador->fresh())->get(route('pagos.index'))->assertOk()->getContent();
+        $this->assertStringNotContainsString(route('cuotas.lote.create'), $html, 'el contador no puede crear cuotas');
+    }
 }

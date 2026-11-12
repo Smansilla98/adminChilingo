@@ -17,6 +17,8 @@ export const RUTAS: Record<string, { ruta: string; icono: Icono; grupo: Grupo }>
   partituras: { ruta: '/partituras', icono: 'music-note', grupo: 'Académico' },
   cuotas: { ruta: '/cuotas', icono: 'receipt-long', grupo: 'Finanzas' },
   pagos: { ruta: '/pagos', icono: 'payments', grupo: 'Finanzas' },
+  morosos: { ruta: '/cobranzas/morosos', icono: 'warning', grupo: 'Finanzas' },
+  cuotas_lote: { ruta: '/cobranzas/lote', icono: 'date-range', grupo: 'Finanzas' },
   comprobantes: { ruta: '/comprobantes', icono: 'fact-check', grupo: 'Finanzas' },
   becas: { ruta: '/becas', icono: 'volunteer-activism', grupo: 'Finanzas' },
   facturacion: { ruta: '/facturacion', icono: 'request-quote', grupo: 'Finanzas' },
