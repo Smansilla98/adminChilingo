@@ -102,5 +102,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/biblioteca-share.js') }}?v=1"></script>
+@vite('resources/js/legacy/biblioteca-share.js')
 @endpush

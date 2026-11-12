@@ -68,7 +68,7 @@ jobs:
         run: |
           grep -q 'ito-skip' resources/views/layouts/app.blade.php
           grep -q 'contenido-principal' resources/views/layouts/app.blade.php
-          grep -q 'prefers-reduced-motion' public/css/chilinga-admin.css
+          grep -q 'prefers-reduced-motion' resources/css/chilinga-admin.css
 
       - name: Validar rutas (web + API v1)
         run: |
@@ -120,6 +120,17 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
+
+      # Las vistas cargan los CSS/JS con @vite: el manifest de public/build tiene que existir para renderizarlas.
+      - name: Setup Node (assets para las vistas)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Compilar assets (Vite)
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
 
       - name: Migrar base vacía (instalación nueva)
         run: php artisan migrate --force

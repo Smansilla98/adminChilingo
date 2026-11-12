@@ -57,3 +57,7 @@ se prueba es el esquema de producción. (Antes existía un esquema armado a mano
 | Backend (SQLite) | `composer audit`, build Vite, tests JS, Pint, Larastan, `npm audit` (producción), a11y, validación de rutas API, suite completa |
 | MySQL | migra base vacía, revierte y re-aplica la migración de plataforma, `chilinga:diagnose`, suite completa sobre MySQL |
 | App móvil | `npm ci`, typecheck, lint, tests (jest), bundle Android + iOS |
+
+## Assets (Vite)
+
+Las vistas cargan CSS y JS con `@vite(...)`: los archivos viven en `resources/css/` y `resources/js/legacy/`. Para renderizar páginas en los tests hace falta el manifest: corré `npm run build` (o `npm run dev` en desarrollo) antes de `php artisan test`. El CI lo hace en los jobs de backend y MySQL.

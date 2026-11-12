@@ -28,7 +28,7 @@ class AccesibilidadLayoutsTest extends TestCase
 
     public function test_css_respeta_reduced_motion(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2).'/public/css/chilinga-admin.css');
+        $css = file_get_contents(dirname(__DIR__, 2).'/resources/css/chilinga-admin.css');
         $this->assertStringContainsString('prefers-reduced-motion', $css);
         $this->assertStringContainsString('.ito-skip', $css);
     }

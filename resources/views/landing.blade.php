@@ -3,7 +3,7 @@
 <head>
     @include('layouts.partials.head-ito', ['headTitle' => 'La Chilinga · Sistema de gestión de la escuela'])
     <meta name="description" content="El sistema de La Chilinga reúne alumnos, bloques, asistencias, cuotas, eventos, inventario, programa y partituras de todas las sedes de la escuela en un mismo lugar.">
-    <link rel="stylesheet" href="{{ asset('css/landing.css') }}?v=1">
+    @vite('resources/css/landing.css')
 </head>
 <body class="landing-body">
 <a class="ito-skip" href="#contenido-principal">Ir al contenido</a>
@@ -139,6 +139,6 @@
 <footer class="landing-footer">
     © {{ date('Y') }} La Chilinga · Escuela de percusión · <a href="{{ route('privacy') }}">Privacidad</a>
 </footer>
-<script src="{{ asset('js/ito-a11y.js') }}?v=1"></script>
+@vite('resources/js/legacy/ito-a11y.js')
 </body>
 </html>

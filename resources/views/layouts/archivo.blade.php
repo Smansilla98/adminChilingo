@@ -41,7 +41,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/archivo.css') }}?v=1">
+    @vite('resources/css/archivo.css')
     <script>
         // Con JS, las fotos aparecen al cargar; este listener temprano no se pierde ninguna carga.
         document.documentElement.classList.add('ar-js');
@@ -111,7 +111,7 @@
 @if(isset($visor))
     <script type="application/json" id="archivo-datos">{!! json_encode($visor, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
 @endif
-<script src="{{ asset('js/archivo.js') }}?v=1" defer></script>
+@vite('resources/js/legacy/archivo.js')
 @stack('scripts')
 </body>
 </html>

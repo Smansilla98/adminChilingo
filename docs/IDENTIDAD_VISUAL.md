@@ -72,7 +72,7 @@ redondas como parches de tambor; ritmo en la propia tipografía. Nada corporativ
 
 ## 3. Color
 
-| Token (`public/css/chilinga-admin.css`) | Sistema | Medido en el logo 30 años | Sobre negro | Sobre blanco | Uso |
+| Token (`resources/css/chilinga-admin.css`) | Sistema | Medido en el logo 30 años | Sobre negro | Sobre blanco | Uso |
 |---|---|---|---|---|---|
 | `--ch-negro` | `#000000` | fondo | — | — | Fondo de marca. Las piezas de comunidad funcionan mejor sobre negro |
 | `--ch-blanco` | `#ffffff` | nombre | 21:1 | — | Nombre y textos sobre negro |

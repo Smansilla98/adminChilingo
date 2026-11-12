@@ -81,5 +81,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/archivo-carga.js') }}?v=1" defer></script>
+@vite('resources/js/legacy/archivo-carga.js')
 @endpush
