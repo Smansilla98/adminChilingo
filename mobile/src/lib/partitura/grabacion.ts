@@ -75,6 +75,11 @@ export class GrabacionRef {
     await this.player.seekTo(Math.max(0, segundos));
   }
 
+  /** Silencia la grabación (modo «sonido sintetizado»: la línea de tiempo sigue siendo la grabación). */
+  setSilenciada(on: boolean) {
+    if (this.player) this.player.muted = on;
+  }
+
   setVelocidad(v: number) {
     this.velocidad = Math.min(150, Math.max(50, v));
     if (this.player) this.player.setPlaybackRate(this.velocidad / 100, 'high');
