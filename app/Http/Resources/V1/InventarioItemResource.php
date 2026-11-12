@@ -51,6 +51,8 @@ class InventarioItemResource extends JsonResource
             // Con un préstamo abierto el instrumento no figura disponible.
             'prestado' => $this->prestamoAbierto() !== null,
             'prestamo' => $this->prestamoAbierto()?->responsable(),
+            'prestamo_id' => $this->prestamoAbierto()?->id,
+            'prestamo_deposito' => $this->prestamoAbierto()?->deposito !== null ? (float) $this->prestamoAbierto()->deposito : null,
             'puede_editar' => $request->user()?->can('update', $this->resource) ?? false,
             'puede_eliminar' => $request->user()?->can('delete', $this->resource) ?? false,
         ];

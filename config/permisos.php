@@ -178,10 +178,8 @@ return [
                 'comprobantes.view', 'comprobantes.create',
                 'eventos.view', 'eventos.create', 'eventos.update', 'eventos.delete',
                 'shows.view', 'shows.manage', 'calendario.view', 'villa_gesell.manage',
-                'partituras.view', 'reportes.view', 'inventario.view', 'becas.view',
-                'reportes.direccion',
                 'partituras.view', 'partituras.edit', 'reportes.view', 'inventario.view', 'becas.view',
-                'difusion.send',
+                'reportes.direccion', 'difusion.send',
             ],
         ],
         'coordinador_area' => [
@@ -347,7 +345,5 @@ return [
         'biblioteca' => ['etiqueta' => 'Biblioteca', 'icono' => 'local_library', 'permisos' => []],
         'notificaciones' => ['etiqueta' => 'Avisos', 'icono' => 'notifications', 'permisos' => []],
         'avisos_config' => ['etiqueta' => 'Avisos y cobro', 'icono' => 'notifications_active', 'permisos' => ['notificaciones.send']],
-        'partituras.view', 'partituras.edit', 'reportes.view', 'inventario.view', 'becas.view',
-        'reportes.direccion', 'difusion.send',
     ],
 ];

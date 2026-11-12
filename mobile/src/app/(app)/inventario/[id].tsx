@@ -50,7 +50,15 @@ export default function ItemDetalle() {
         <Chip texto={i.estado_nombre} color={COLOR_ESTADO_ITEM[i.estado] ?? C.tenue} />
         {i.codigo && <Chip texto={i.codigo} />}
         <Chip texto={i.tipo_nombre} />
+        {i.prestado && <Chip texto={`Prestado a ${i.prestamo ?? 'alguien'}`} color={C.alerta} />}
       </Fila>
+      {i.puede_editar && !i.es_consumible && i.estado !== 'baja' && (
+        <Acciones>
+          {i.prestado
+            ? <Boton titulo="Registrar devolución" icono="assignment-return" onPress={() => router.push({ pathname: '/inventario/prestamo', params: { item: String(i.id), modo: 'devolver' } } as never)} />
+            : <Boton titulo="Prestar" icono="handshake" variante="secundario" onPress={() => router.push({ pathname: '/inventario/prestamo', params: { item: String(i.id), modo: 'prestar' } } as never)} />}
+        </Acciones>
+      )}
       <Acciones>
         {i.puede_editar && <Boton titulo="Editar" icono="edit" variante="secundario" onPress={() => router.push({ pathname: '/inventario/nuevo', params: { id: String(i.id) } } as never)} />}
         {i.puede_eliminar && (

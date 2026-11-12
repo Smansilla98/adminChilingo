@@ -24,3 +24,31 @@ export const COLOR_PRESTAMO: Record<EstadoPrestamo, string> = {
   vencido: '#e31b23',
   devuelto: '#3daf3a',
 };
+
+export type TipoResponsable = 'alumno' | 'persona' | 'nombre';
+
+/** Formulario de alta de préstamo (los importes van como texto hasta mandarlos). */
+export interface DatosPrestamo {
+  responsable_tipo: TipoResponsable;
+  alumno_id: number | null;
+  persona_id: number | null;
+  responsable_nombre: string;
+  entregado_el: string;
+  devolucion_prevista: string;
+  deposito: string;
+  condicion_entrega: string;
+  notas: string;
+}
+
+/** Formulario de devolución. */
+export interface DatosDevolucion {
+  devuelto_el: string;
+  condicion_devolucion: string;
+  deposito_devuelto: boolean;
+  notas: string;
+}
+
+/** Catálogo de inventario (GET inventario/catalogos): estados con su nombre. */
+export interface CatalogoEstadosItem {
+  estados: Record<string, string>;
+}

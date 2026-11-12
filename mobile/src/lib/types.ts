@@ -138,6 +138,12 @@ export interface InventarioItem {
   notas: string | null;
   puede_editar: boolean;
   puede_eliminar?: boolean;
+  es_consumible?: boolean;
+  /** Préstamo en curso: mientras esté prestado no figura disponible. */
+  prestado?: boolean;
+  prestamo?: string | null;
+  prestamo_id?: number | null;
+  prestamo_deposito?: number | null;
   movimientos?: { id: number; tipo: string; tipo_nombre: string; nota: string | null; sede: string | null; autor: string | null; fecha: string }[];
 }
 
