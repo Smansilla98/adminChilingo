@@ -39,12 +39,13 @@ return [
     'almacenamiento_persistente' => filled(env('PERSISTENT_STORAGE_PATH')),
 
     /*
-    | Calendario académico: qué es cada mes del ciclo fuera de las clases regulares (marzo a diciembre).
-    | Mes (1-12) => tipo: taller_verano | gira_gesell. Los meses que no figuran son clases.
+    | Calendario académico: actividades de cada mes del ciclo además de las clases (marzo a diciembre).
+    | Mes (1-12) => lista de actividades: taller_verano | gira_gesell. Un mes puede tener varias
+    | (enero y febrero: taller de verano y, en paralelo, la gira a Villa Gesell). Sin entrada = solo clases.
     */
     'calendario_academico' => [
-        '1' => 'taller_verano',
-        '2' => 'gira_gesell',
+        '1' => ['taller_verano', 'gira_gesell'],
+        '2' => ['taller_verano', 'gira_gesell'],
     ],
 
     'cobro' => [

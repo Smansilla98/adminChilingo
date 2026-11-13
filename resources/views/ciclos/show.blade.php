@@ -54,12 +54,16 @@
             @foreach($calendario as $m)
                 <tr>
                     <td>{{ $m['nombre'] }}</td>
-                    <td><span class="badge {{ $m['tipo'] === 'clases' ? 'bg-secondary' : 'bg-info text-dark' }}">{{ $m['etiqueta'] }}</span></td>
+                    <td>
+                        @foreach($m['actividades'] as $act)
+                            <span class="badge {{ $act['tipo'] === 'clases' ? 'bg-secondary' : 'bg-info text-dark' }} me-1">{{ $act['etiqueta'] }}</span>
+                        @endforeach
+                    </td>
                 </tr>
             @endforeach
             </tbody>
         </table>
-        <p class="small text-muted">Enero y febrero no son clases regulares: son taller de verano y gira a Villa Gesell. Las cuotas se cobran igual todos los meses del ciclo.</p>
+        <p class="small text-muted">Enero y febrero no son clases regulares: son taller de verano, y en paralelo la gira a Villa Gesell. Las cuotas se cobran igual todos los meses del ciclo.</p>
     </div>
     <div class="col-lg-6">
         <h2 class="h6">Módulos</h2>
