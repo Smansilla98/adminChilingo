@@ -7,13 +7,16 @@
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #1f2937; }
         h1 { font-size: 18px; margin: 0 0 4px 0; }
         .muted { color: #6b7280; }
-        .cabecera { width: 100%; border-bottom: 2px solid #1f2937; padding-bottom: 8px; margin-bottom: 14px; }
+        .cabecera { width: 100%; border-bottom: 3px solid #2BA8E0; padding-bottom: 8px; margin-bottom: 14px; }
+        .logo { height: 40px; }
+        .escuela { color: #15110E; font-size: 10px; margin-top: 4px; }
         .num { font-size: 14px; font-weight: bold; text-align: right; }
         table { width: 100%; border-collapse: collapse; margin-top: 8px; }
         th, td { border-bottom: 1px solid #e5e7eb; padding: 6px 4px; text-align: left; }
-        th { background: #f3f4f6; font-size: 10px; text-transform: uppercase; }
+        th { background: #F5ECDD; color: #15110E; font-size: 10px; text-transform: uppercase; }
         .der { text-align: right; }
-        .total { font-size: 14px; font-weight: bold; }
+        .total { font-size: 14px; font-weight: bold; color: #15110E; }
+        .acento { color: #F26A1B; }
         .anulado { color: #b91c1c; font-weight: bold; margin-top: 10px; }
         .notas { margin-top: 14px; white-space: pre-line; }
     </style>
@@ -22,10 +25,14 @@
     <table class="cabecera">
         <tr>
             <td style="border: 0; padding: 0;">
+                @if($logo)<img src="{{ $logo }}" class="logo" alt="La Chilinga">@endif
+                <div class="escuela">Escuela Popular del Tambor · Asociación Civil La Chilinga</div>
+            </td>
+            <td style="border: 0; padding: 0; text-align: right;">
                 <h1>Recibo de pago</h1>
                 <div class="muted">Pago del {{ $pago->fecha_pago->format('d/m/Y') }}</div>
+                <div class="num acento">{{ $numero }}</div>
             </td>
-            <td style="border: 0; padding: 0;" class="num">{{ $numero }}</td>
         </tr>
     </table>
 

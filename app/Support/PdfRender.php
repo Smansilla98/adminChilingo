@@ -16,6 +16,10 @@ class PdfRender
      */
     public static function desdeVista(string $vista, array $datos, string $titulo): string
     {
+        // Marca de la escuela en todos los PDF: logo oscuro (sobre papel blanco) y colores del manual.
+        $datos += [
+            'logo' => MarcaChilinga::logoDataUri('logotipo-tinta'),
+        ];
         $html = view($vista, $datos)->render();
 
         $opciones = new Options;

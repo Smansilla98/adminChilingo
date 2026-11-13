@@ -49,6 +49,14 @@ class PdfTest extends TestCase
         $this->assertPdfConRecibo($api->getContent(), $numero);
     }
 
+    public function test_el_recibo_lleva_el_logo_de_la_escuela(): void
+    {
+        $pago = $this->pago();
+        $contenido = $this->actingAs($this->admin())->get(route('pagos.recibo', $pago))->assertOk()->getContent();
+        // El logo se incrusta como imagen en el PDF (objeto XObject sin comprimir en el diccionario).
+        $this->assertTrue(str_contains($contenido, '/Subtype /Image'), 'el PDF no lleva el logo de la escuela');
+    }
+
     public function test_recibo_sin_permiso_es_403(): void
     {
         $pago = $this->pago();
