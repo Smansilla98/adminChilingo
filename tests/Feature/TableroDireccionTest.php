@@ -25,10 +25,14 @@ class TableroDireccionTest extends TestCase
         $this->asignarPermiso($dir->persona, 'reportes.direccion');
         $this->actingAs($dir->fresh())->get('/direccion')->assertOk()->assertSee('Tablero de dirección')->assertSee('Ocupación');
 
+        // El coordinador ve toda la escuela (config permisos.alcance_global); un contador, solo su sede.
         $coord = $this->usuario('Coord');
         $this->asignarRol($coord->persona, 'coordinador', 'sede', $palomar);
-        $this->actingAs($coord->fresh())->get('/direccion')->assertOk()->assertSee('Palomar')->assertDontSee('Varela');
-        $this->actingAs($coord->fresh())->get('/direccion?sede_id='.$varela->id)->assertForbidden();
+        $this->actingAs($coord->fresh())->get('/direccion')->assertOk()->assertSee('Varela');
+        $contador = $this->usuario('Contador');
+        $this->asignarRol($contador->persona, 'contador', 'sede', $palomar);
+        $this->actingAs($contador->fresh())->get('/direccion')->assertOk()->assertSee('Palomar')->assertDontSee('Varela');
+        $this->actingAs($contador->fresh())->get('/direccion?sede_id='.$varela->id)->assertForbidden();
 
         $this->actingAs($dir->fresh())->get('/direccion/excel')->assertOk();
         $this->actingAs($dir->fresh())->get('/direccion/imprimible')->assertOk()->assertSee('Mes a mes');
