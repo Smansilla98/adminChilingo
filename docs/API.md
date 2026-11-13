@@ -209,6 +209,7 @@ Detalle: `{ data: {...} }`. En los campos de año se usa `anio`.
 | Reportes | `GET /reportes`, `GET /reportes/excel`, `GET /reportes/imprimible`, `GET /reportes/profesores` |
 | Usuarios | `POST /usuarios`, `PUT /usuarios/{id}`, `POST /usuarios/{id}/estado`, `POST /usuarios/{id}/resetear-acceso`, `GET /usuarios/catalogo` |
 | Auditoría | `GET /auditoria`, `GET /auditoria/{id}`, `GET /auditoria/catalogo` |
+| Ciclo lectivo | `GET/POST ciclos-lectivos`, `GET ciclos-lectivos/{ciclo}/reinscripciones`, `GET ciclos-lectivos/{ciclo}/calendario` (12 meses con sus actividades), `POST ciclos-lectivos/{ciclo}/cuotas`, `POST reinscripciones/{id}/baja`, `GET/POST mi/reinscripcion` (ver `CICLO_LECTIVO.md`) |
 | Villa Gesell | `GET /villa-gesell`, `PUT /villa-gesell/config`, inscriptos (`GET/POST`, `GET/PUT/DELETE {id}`, `GET nueva`, `GET alumnos-disponibles`), `POST alumnos-rapidos\|profesores-rapidos\|bloques-rapidos`, calendario (`GET calendario`, `POST dias/generar`, `PUT dias/{id}`, `POST dias/{id}/slots\|tocadas`, `PUT/DELETE tocadas/{id}`), gastos e insumos (`GET/POST`, `PUT/DELETE {id}`) |
 | Diseño | `GET/POST /disenos`, `GET/PUT/DELETE /disenos/{id}`, `POST /disenos/{id}/paginas`, `PUT/DELETE /disenos/paginas/{id}`, `POST /disenos/paginas/{id}/duplicar`, `GET /disenos/plantillas[/{id}]`, `POST /disenos/imagenes`, `GET /disenos/marca`, `POST/DELETE /disenos/marca/kit[/{id}]` |
 | Partituras | `GET /partituras/{slug}/versiones`, `GET /partituras/{slug}/versiones/{n}` (cada `PUT /partituras/{slug}/score` publica una versión nueva si la música cambió) |

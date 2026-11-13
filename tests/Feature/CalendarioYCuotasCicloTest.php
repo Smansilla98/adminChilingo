@@ -45,19 +45,28 @@ class CalendarioYCuotasCicloTest extends TestCase
         $this->assertSame('2027-03-01', $ciclo->inicio->toDateString(), 'el ciclo guarda el periodo de cuotas');
     }
 
-    public function test_el_calendario_marca_enero_como_taller_y_febrero_como_gira(): void
+    public function test_enero_y_febrero_tienen_taller_de_verano_y_gira_en_paralelo(): void
     {
         $cal = CalendarioAcademico::para($this->ciclo());
 
         $porMes = collect($cal)->keyBy('mes');
-        $this->assertSame(CalendarioAcademico::TALLER_VERANO, $porMes[1]['tipo']);
-        $this->assertSame('Taller de verano', $porMes[1]['etiqueta']);
-        $this->assertSame(CalendarioAcademico::GIRA_GESELL, $porMes[2]['tipo']);
-        $this->assertSame('Gira a Villa Gesell', $porMes[2]['etiqueta']);
-        $this->assertSame(CalendarioAcademico::CLASES, $porMes[3]['tipo']);
-        $this->assertSame(CalendarioAcademico::CLASES, $porMes[12]['tipo']);
+        $tipos = fn (int $mes) => collect($porMes[$mes]['actividades'])->pluck('tipo')->all();
+        $this->assertSame([CalendarioAcademico::TALLER_VERANO, CalendarioAcademico::GIRA_GESELL], $tipos(1));
+        $this->assertSame([CalendarioAcademico::TALLER_VERANO, CalendarioAcademico::GIRA_GESELL], $tipos(2));
+        $this->assertSame(['Taller de verano', 'Gira a Villa Gesell'], collect($porMes[1]['actividades'])->pluck('etiqueta')->all());
+        $this->assertSame([CalendarioAcademico::CLASES], $tipos(3));
+        $this->assertSame([CalendarioAcademico::CLASES], $tipos(12));
         $this->assertTrue(collect($cal)->every(fn ($m) => $m['cuotas'] === true), 'las cuotas siguen todos los meses');
         $this->assertSame('Enero 2028', $cal[10]['nombre']);
+    }
+
+    public function test_un_mes_sin_configuracion_es_solo_clases(): void
+    {
+        config(['chilinga.calendario_academico' => ['1' => ['taller_verano']]]);
+        $porMes = collect(CalendarioAcademico::para($this->ciclo()))->keyBy('mes');
+
+        $this->assertSame([['tipo' => 'taller_verano', 'etiqueta' => 'Taller de verano']], $porMes[1]['actividades']);
+        $this->assertSame([['tipo' => 'clases', 'etiqueta' => 'Clases']], $porMes[2]['actividades']);
     }
 
     public function test_la_api_y_la_pantalla_muestran_el_calendario(): void
@@ -66,7 +75,8 @@ class CalendarioYCuotasCicloTest extends TestCase
 
         Sanctum::actingAs($this->admin());
         $this->getJson('/api/v1/ciclos-lectivos/'.$ciclo->id.'/calendario')->assertOk()
-            ->assertJsonCount(12, 'data')->assertJsonPath('data.0.tipo', 'clases')->assertJsonPath('data.10.tipo', 'taller_verano');
+            ->assertJsonCount(12, 'data')->assertJsonPath('data.0.actividades.0.tipo', 'clases')
+            ->assertJsonPath('data.10.actividades.0.tipo', 'taller_verano')->assertJsonPath('data.10.actividades.1.tipo', 'gira_gesell');
 
         $this->actingAs($this->admin())->get(route('ciclos.show', $ciclo))->assertOk()
             ->assertSee('Taller de verano')->assertSee('Gira a Villa Gesell');

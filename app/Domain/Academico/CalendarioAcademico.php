@@ -7,8 +7,9 @@ use App\Models\CicloLectivo;
 /**
  * Calendario académico de un ciclo, mes por mes (marzo N a febrero N+1).
  *
- * Marzo a diciembre son clases regulares. Enero es taller de verano y febrero, gira a Villa Gesell
- * (config chilinga.calendario_academico). Las cuotas siguen cobrándose todos los meses del ciclo.
+ * Cada mes tiene una lista de actividades. Marzo a diciembre son clases; enero y febrero son
+ * taller de verano y, en paralelo, la gira a Villa Gesell (config chilinga.calendario_academico).
+ * Las cuotas siguen cobrándose todos los meses del ciclo.
  */
 final class CalendarioAcademico
 {
@@ -25,20 +26,18 @@ final class CalendarioAcademico
     ];
 
     /**
-     * @return list<array{anio: int, mes: int, nombre: string, tipo: string, etiqueta: string, cuotas: bool}>
+     * @return list<array{anio: int, mes: int, nombre: string, actividades: list<array{tipo: string, etiqueta: string}>, cuotas: bool}>
      */
     public static function para(CicloLectivo $ciclo): array
     {
-        $dias = config('chilinga.calendario_academico', []);
+        $config = config('chilinga.calendario_academico', []);
         $salida = [];
         foreach (CicloLectivo::periodoCuotas((int) $ciclo->anio) as ['anio' => $anio, 'mes' => $mes]) {
-            $tipo = self::tipoDelMes($mes, $dias);
             $salida[] = [
                 'anio' => $anio,
                 'mes' => $mes,
                 'nombre' => self::NOMBRES[$mes].' '.$anio,
-                'tipo' => $tipo,
-                'etiqueta' => self::etiqueta($tipo),
+                'actividades' => self::actividadesDelMes($mes, $config),
                 'cuotas' => true,
             ];
         }
@@ -46,10 +45,17 @@ final class CalendarioAcademico
         return $salida;
     }
 
-    /** @param  array<int|string, string>  $config  mes (1-12) => tipo; las claves numéricas en texto también valen */
-    public static function tipoDelMes(int $mes, array $config): string
+    /**
+     * Actividades de un mes. Sin configuración para ese mes, es solo clases.
+     *
+     * @param  array<int|string, list<string>>  $config  mes (1-12) => tipos
+     * @return list<array{tipo: string, etiqueta: string}>
+     */
+    public static function actividadesDelMes(int $mes, array $config): array
     {
-        return $config[$mes] ?? self::CLASES;
+        $tipos = $config[$mes] ?? [self::CLASES];
+
+        return array_map(fn (string $tipo) => ['tipo' => $tipo, 'etiqueta' => self::etiqueta($tipo)], $tipos);
     }
 
     public static function etiqueta(string $tipo): string

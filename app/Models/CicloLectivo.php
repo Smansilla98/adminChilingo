@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Ciclo lectivo de un año (N). Sus cuotas van de marzo N a febrero N+1; el académico, de marzo a
- * diciembre N (enero y febrero son de taller de verano y gira, ver CalendarioAcademico).
+ * diciembre N. Enero y febrero son taller de verano, con la gira a Villa Gesell en paralelo (ver CalendarioAcademico).
  *
  * @property int $id
  * @property int $anio
