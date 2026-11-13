@@ -439,6 +439,13 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
         Route::post('ciclos-lectivos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'store'])->name('ciclos.api.store');
         Route::post('reinscripciones/{reinscripcion}/baja', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'baja'])->name('reinscripciones.api.baja');
     });
+    // Calendario académico y cuotas del ciclo.
+    Route::middleware('permiso:alumnos.view')->group(function () {
+        Route::get('ciclos-lectivos/{ciclo}/calendario', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'calendario'])->name('ciclos.api.calendario');
+    });
+    Route::middleware('permiso:cuotas.create')->group(function () {
+        Route::post('ciclos-lectivos/{ciclo}/cuotas', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'cuotas'])->name('ciclos.api.cuotas');
+    });
     // === Fin Equipo C (con sesión) ===
     // === Equipo D: app móvil ===
     // Asistencia propia del alumno (porcentaje por bloque y mes, últimas clases y horario semanal).

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\Academico\CalendarioAcademico;
+use App\Domain\Academico\CuotasDelCicloService;
 use App\Domain\Personas\CicloLectivoService;
 use App\Http\Controllers\Controller;
 use App\Models\Alumno;
@@ -52,8 +54,6 @@ class CicloLectivoController extends Controller
         $datos = $request->validate([
             'anio' => ['required', 'integer', 'between:2000,2100', 'unique:ciclos_lectivos,anio'],
             'nombre' => ['nullable', 'string', 'max:80'],
-            'inicio' => ['required', 'date'],
-            'fin' => ['required', 'date'],
         ]);
         $ciclo = $servicio->abrir($datos, $request->user());
         $avisos = $servicio->avisar($ciclo);
@@ -87,5 +87,24 @@ class CicloLectivoController extends Controller
         $servicio->darDeBaja($reinscripcion, $request->user());
 
         return response()->json(['estado' => Reinscripcion::BAJA]);
+    }
+
+    /** Calendario académico del ciclo: mes por mes (clases, taller de verano o gira a Villa Gesell). */
+    public function calendario(CicloLectivo $ciclo): JsonResponse
+    {
+        return response()->json(['data' => CalendarioAcademico::para($ciclo)]);
+    }
+
+    /** Genera las cuotas marzo–febrero de cada bloque activo. */
+    public function cuotas(Request $request, CicloLectivo $ciclo, CuotasDelCicloService $cuotas): JsonResponse
+    {
+        $datos = $request->validate([
+            'monto' => ['required', 'numeric', 'min:0'],
+            'montos' => ['nullable', 'array'],
+            'montos.*' => ['nullable', 'numeric', 'min:0'],
+        ]);
+        $r = $cuotas->generar($ciclo, (float) $datos['monto'], array_filter((array) ($datos['montos'] ?? []), fn ($v) => $v !== null && $v !== ''), $request->user());
+
+        return response()->json($r, 201);
     }
 }

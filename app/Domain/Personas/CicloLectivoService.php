@@ -6,6 +6,7 @@ use App\Domain\Notificaciones\NotificacionService;
 use App\Models\Alumno;
 use App\Models\Auditoria;
 use App\Models\CicloLectivo;
+use App\Models\CicloModulo;
 use App\Models\Reinscripcion;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -18,21 +19,27 @@ use Illuminate\Validation\ValidationException;
  */
 class CicloLectivoService
 {
-    /** @param  array{anio: int, nombre?: string|null, inicio: string, fin: string}  $datos */
+    /**
+     * Abre el ciclo N: sus módulos tienen fechas por defecto (cuotas marzo N a febrero N+1, académico
+     * marzo a diciembre N, reinscripción febrero-marzo). Crea una reinscripción pendiente por alumno activo.
+     *
+     * @param  array{anio: int, nombre?: string|null}  $datos
+     */
     public function abrir(array $datos, User $por): CicloLectivo
     {
-        if ($datos['fin'] < $datos['inicio']) {
-            throw ValidationException::withMessages(['fin' => 'La fecha de fin tiene que ser posterior al inicio.']);
-        }
-
         return DB::transaction(function () use ($datos, $por) {
+            $anio = (int) $datos['anio'];
+            $fechas = CicloLectivo::fechasModulos($anio);
             $ciclo = CicloLectivo::query()->create([
-                'anio' => $datos['anio'],
-                'nombre' => $datos['nombre'] ?: 'Ciclo '.$datos['anio'],
-                'inicio' => $datos['inicio'],
-                'fin' => $datos['fin'],
+                'anio' => $anio,
+                'nombre' => ($datos['nombre'] ?? null) ?: 'Ciclo '.$anio,
+                'inicio' => $fechas[CicloModulo::CUOTAS]['inicio'],
+                'fin' => $fechas[CicloModulo::CUOTAS]['fin'],
                 'abierto_por' => $por->id,
             ]);
+            foreach ($fechas as $clave => $f) {
+                CicloModulo::query()->create(['ciclo_lectivo_id' => $ciclo->id, 'clave' => $clave] + $f);
+            }
 
             Alumno::query()->where('activo', true)->orderBy('id')->chunkById(200, function ($alumnos) use ($ciclo) {
                 foreach ($alumnos as $alumno) {
