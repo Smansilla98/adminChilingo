@@ -9,3 +9,5 @@ librosa==0.10.2.post1
 soundfile==0.12.1
 numba==0.60.0
 llvmlite==0.43.0
+# Corre el clasificador propio (modelos/clasificador.onnx) si el archivo existe.
+onnxruntime==1.20.1
