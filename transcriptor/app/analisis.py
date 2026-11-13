@@ -264,30 +264,52 @@ def golpes(y: np.ndarray, clasificador: Clasificador | None = None) -> list[dict
     return out
 
 
+def demucs_disponible() -> bool:
+    """¿Está instalado Demucs? Sin la dependencia, la separación se apaga sola (no falla el trabajo)."""
+    import importlib.util
+
+    return importlib.util.find_spec("demucs") is not None
+
+
 def separar_bateria(ruta: str) -> str | None:
-    """Pista de percusión con Demucs (opcional, solo si hay voces). Devuelve la ruta del WAV o None."""
-    try:  # pragma: no cover - demucs es opcional y muy pesado
+    """Pista de percusión con Demucs (opcional, con flag). Devuelve la ruta del WAV o None.
+
+    Nunca lanza: si falta la dependencia, si el proceso falla o si no aparece la pista de batería,
+    devuelve None y el análisis sigue con la grabación completa.
+    """
+    if not demucs_disponible():
+        return None
+    try:
         import subprocess
+        import sys
         import tempfile
 
         salida = tempfile.mkdtemp(prefix="demucs-")
-        subprocess.run(["python", "-m", "demucs", "--two-stems", "drums", "-n", "htdemucs", "-o", salida, ruta], check=True, timeout=1800)
+        subprocess.run(
+            [sys.executable, "-m", "demucs", "--two-stems", "drums", "-n", "htdemucs", "-o", salida, ruta],
+            check=True, timeout=1800, capture_output=True,
+        )
         for raiz, _, archivos in os.walk(salida):
             for a in archivos:
                 if a == "drums.wav":
                     return os.path.join(raiz, a)
-    except Exception:
+    except Exception:  # noqa: BLE001 - la separación es opcional
         return None
     return None
 
 
 def transcribir(ruta: str, num: int = 4, den: int = 4, separar: bool = False, clasificador: Clasificador | None = None) -> Resultado:
-    metodo = {"separacion": False}
+    metodo: dict = {"separacion": False}
     if separar:
-        pista = separar_bateria(ruta)
-        if pista:
-            ruta = pista
-            metodo["separacion"] = True
+        if not demucs_disponible():
+            metodo["separacion"] = "no_disponible"
+        else:
+            pista = separar_bateria(ruta)
+            if pista:
+                ruta = pista
+                metodo["separacion"] = True
+            else:
+                metodo["separacion"] = "fallo"
     y = cargar(ruta)
     tempo, beats, downbeats, m_pulsos = pulsos(y, num)
     clasificador = clasificador or Clasificador()
