@@ -2,6 +2,9 @@
 <html lang="es">
 <head>
     @include('layouts.partials.head-ito')
+    @unless($__env->hasSection('og-propio'))
+        @include('layouts.partials.og-default')
+    @endunless
     <meta name="chilinga-samples" content="{{ parse_url(asset('sounds/perc'), PHP_URL_PATH) ?: '/sounds/perc' }}">
     @vite('resources/css/biblioteca.css')
     @vite('resources/css/programa.css')

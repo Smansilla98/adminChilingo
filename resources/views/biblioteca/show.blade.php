@@ -1,6 +1,7 @@
 @extends('layouts.publico')
 
 @section('title', $item->titulo)
+@section('og-propio', '1')
 @section('publico-brand', 'Biblioteca')
 
 @php
