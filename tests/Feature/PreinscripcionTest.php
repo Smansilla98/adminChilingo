@@ -148,4 +148,12 @@ class PreinscripcionTest extends TestCase
         $this->datos();
         $this->get(route('inscripcion.create'))->assertOk()->assertSee('Quiero inscribirme');
     }
+
+    public function test_el_formulario_se_puede_incrustar_y_el_resto_de_la_app_no(): void
+    {
+        $this->datos();
+        $this->get(route('inscripcion.create'))->assertOk()->assertHeaderMissing('X-Frame-Options')
+            ->assertHeader('Content-Security-Policy', 'frame-ancestors *; object-src \'none\'; base-uri \'self\'');
+        $this->get(route('login'))->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+    }
 }
