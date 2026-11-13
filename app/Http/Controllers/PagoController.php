@@ -218,6 +218,17 @@ class PagoController extends Controller
         return redirect()->route('pagos.show', $pago)->with('success', 'Pago anulado. Ya no cuenta para saldos ni reportes.');
     }
 
+    /** Recibo del pago en PDF (se ve en el navegador y se puede descargar). */
+    public function recibo(Pago $pago)
+    {
+        $this->authorize('view', $pago);
+
+        return response(\App\Domain\Finanzas\ReciboPago::pdf($pago), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.\App\Domain\Finanzas\ReciboPago::nombreArchivo($pago).'"',
+        ]);
+    }
+
     public function downloadComprobante(Pago $pago)
     {
         $this->authorize('view', $pago);
