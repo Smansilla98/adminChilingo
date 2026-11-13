@@ -61,4 +61,26 @@ class PdfTest extends TestCase
         $pago = $this->pago();
         $this->actingAs($this->admin())->get(route('pagos.show', $pago))->assertOk()->assertSee(route('pagos.recibo', $pago), false);
     }
+
+    public function test_recibo_de_liquidacion_docente_en_pdf_web_y_api(): void
+    {
+        $bloque = $this->bloque($this->sede('Palomar'), 'Bloque lunes');
+        $profeUser = $this->usuario('Profe Lunes');
+        $profesor = $this->asignarDocente($profeUser->persona, $bloque);
+        $tesorero = $this->usuario('Tesorera');
+        $this->asignarRol($tesorero->persona, 'tesorero');
+        $liq = app(\App\Domain\Docentes\LiquidacionService::class)->generar($tesorero->fresh(), $profesor, 2026, 10);
+        $numero = $liq->numeroRecibo();
+
+        $web = $this->actingAs($tesorero->fresh())->get(route('liquidaciones.recibo.pdf', $liq))->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->assertPdfConRecibo($web->getContent(), $numero);
+
+        Sanctum::actingAs($tesorero->fresh());
+        $api = $this->get("/api/v1/liquidaciones/{$liq->id}/recibo.pdf")->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->assertPdfConRecibo($api->getContent(), $numero);
+
+        // El docente no ve el borrador: tampoco su PDF.
+        Sanctum::actingAs($profeUser->fresh());
+        $this->get("/api/v1/liquidaciones/{$liq->id}/recibo.pdf")->assertForbidden();
+    }
 }

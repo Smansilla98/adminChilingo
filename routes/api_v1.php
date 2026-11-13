@@ -465,6 +465,7 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::post('morosos/recordatorios', [\App\Http\Controllers\Api\V1\MorosoController::class, 'recordarMasivo'])->name('morosos.recordatorios');
     Route::post('morosos/{alumno}/recordatorio', [\App\Http\Controllers\Api\V1\MorosoController::class, 'recordar'])->whereNumber('alumno')->name('morosos.recordar');
     Route::get('pagos/{pago}/recibo', [\App\Http\Controllers\Api\V1\PagoController::class, 'recibo'])->whereNumber('pago')->name('pagos.recibo');
+    Route::get('liquidaciones/{liquidacion}/recibo.pdf', [\App\Http\Controllers\Api\V1\LiquidacionController::class, 'reciboPdf'])->whereNumber('liquidacion')->middleware('throttle:20,1')->name('liquidaciones.recibo.pdf');
     // === Fin Equipo B ===
     // === Equipo G: progreso por toque, liquidación docente y tablero de dirección ===
     Route::get('mi/progreso', [\App\Http\Controllers\Api\V1\ProgresoController::class, 'mio'])->name('mi.progreso');

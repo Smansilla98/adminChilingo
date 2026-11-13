@@ -99,6 +99,17 @@ class LiquidacionDocenteController extends Controller
         return view('liquidaciones.recibo', ['l' => $liquidacion->load('profesor', 'aprobadaPor', 'pagadaPor'), 'imprimir' => true]);
     }
 
+    /** Recibo en PDF (descarga). */
+    public function reciboPdf(Request $request, LiquidacionDocenteMensual $liquidacion)
+    {
+        abort_unless($this->liquidaciones->puedeVer($request->user(), $liquidacion), 403);
+
+        return response(\App\Domain\Docentes\ReciboLiquidacionPdf::pdf($liquidacion), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.\App\Domain\Docentes\ReciboLiquidacionPdf::nombreArchivo($liquidacion).'"',
+        ]);
+    }
+
     public function tarifa(Request $request, Profesor $profesor)
     {
         abort_unless($this->liquidaciones->puede($request->user(), 'liquidaciones.manage', $profesor), 403);
