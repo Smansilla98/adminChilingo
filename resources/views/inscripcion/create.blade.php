@@ -68,3 +68,18 @@
     <button type="submit" class="btn btn-primary">Enviar preinscripción</button>
 </form>
 @endsection
+
+@push('scripts')
+<script>
+// Embebido en otra web (iframe): avisa la altura al sitio que lo contiene para que el marco no tenga barra.
+(function () {
+    if (window.parent === window) return;
+    function avisarAltura() {
+        window.parent.postMessage({ tipo: 'chilinga:inscripcion:altura', altura: document.documentElement.scrollHeight }, '*');
+    }
+    window.addEventListener('load', avisarAltura);
+    window.addEventListener('resize', avisarAltura);
+    if ('ResizeObserver' in window) new ResizeObserver(avisarAltura).observe(document.body);
+})();
+</script>
+@endpush

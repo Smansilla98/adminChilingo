@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Academico\CalendarioAcademico;
+use App\Domain\Academico\CuotasDelCicloService;
 use App\Domain\Personas\CicloLectivoService;
 use App\Models\Alumno;
 use App\Models\CicloLectivo;
@@ -26,8 +28,6 @@ class CicloLectivoController extends Controller
         $datos = $request->validate([
             'anio' => ['required', 'integer', 'between:2000,2100', 'unique:ciclos_lectivos,anio'],
             'nombre' => ['nullable', 'string', 'max:80'],
-            'inicio' => ['required', 'date'],
-            'fin' => ['required', 'date'],
         ]);
         $ciclo = $servicio->abrir($datos, $request->user());
         $avisos = $servicio->avisar($ciclo);
@@ -52,7 +52,22 @@ class CicloLectivoController extends Controller
             'reinscripciones' => $reinscripciones,
             'resumen' => $servicio->resumen($ciclo),
             'estado' => $estado,
+            'calendario' => CalendarioAcademico::para($ciclo),
+            'modulos' => $ciclo->modulos()->orderBy('id')->get(),
         ]);
+    }
+
+    /** Genera las cuotas mensuales marzo–febrero de cada bloque activo (no toca las que ya existen). */
+    public function generarCuotas(Request $request, CicloLectivo $ciclo, CuotasDelCicloService $cuotas): RedirectResponse
+    {
+        $datos = $request->validate([
+            'monto' => ['required', 'numeric', 'min:0'],
+            'montos' => ['nullable', 'array'],
+            'montos.*' => ['nullable', 'numeric', 'min:0'],
+        ]);
+        $r = $cuotas->generar($ciclo, (float) $datos['monto'], array_filter((array) ($datos['montos'] ?? []), fn ($v) => $v !== null && $v !== ''), $request->user());
+
+        return back()->with('success', 'Cuotas del ciclo: se crearon '.$r['creadas'].' y ya había '.$r['existentes'].' (no se tocaron).');
     }
 
     public function baja(Reinscripcion $reinscripcion, Request $request, CicloLectivoService $servicio): RedirectResponse

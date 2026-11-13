@@ -512,6 +512,10 @@ Route::middleware(['auth'])->group(function () {
     // El alumno se reinscribe desde su cuenta.
     Route::get('/mi-reinscripcion', [\App\Http\Controllers\CicloLectivoController::class, 'miReinscripcion'])->name('mi-reinscripcion.show');
     Route::post('/mi-reinscripcion', [\App\Http\Controllers\CicloLectivoController::class, 'confirmar'])->name('mi-reinscripcion.confirmar');
+    // Cuotas del ciclo (marzo a febrero) y calendario académico.
+    Route::middleware('permiso:cuotas.create')->group(function () {
+        Route::post('/ciclos-lectivos/{ciclo}/cuotas', [\App\Http\Controllers\CicloLectivoController::class, 'generarCuotas'])->name('ciclos.cuotas');
+    });
     // === Fin Equipo C (con sesión) ===
     // === Equipo B: Finanzas ===
     Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');

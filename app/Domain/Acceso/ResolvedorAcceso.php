@@ -86,6 +86,15 @@ final class ResolvedorAcceso
             $aplicar($d['permiso'], $d['rol'], 'permiso:'.$d['rol']->clave());
         }
 
+        // Alcance global por rol (config permisos.alcance_global): el rol que otorga el permiso lo ve en toda la escuela.
+        foreach ($roles as $r) {
+            foreach (config('permisos.alcance_global', []) as $permiso => $rolesGlobal) {
+                if (in_array($r->rol, $rolesGlobal, true) && in_array($permiso, CatalogoPermisos::permisosDeRol($r->rol), true)) {
+                    ($permisos[$permiso] ??= Alcance::vacio())->agregarGlobal();
+                }
+            }
+        }
+
         foreach ($origenes as $p => $lista) {
             $origenes[$p] = array_values(array_unique($lista));
         }

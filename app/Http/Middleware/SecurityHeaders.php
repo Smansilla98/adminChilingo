@@ -26,7 +26,11 @@ class SecurityHeaders
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        // Las rutas de INCRUSTABLES (formularios para embeber en otra web) se pueden mostrar en un iframe.
+        $embebible = $request->is(...self::INCRUSTABLES);
+        if (! $embebible) {
+            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        }
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
         if ($request->isSecure()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
@@ -37,22 +41,25 @@ class SecurityHeaders
         $html = str_contains((string) $response->headers->get('Content-Type'), 'text/html');
         if ($html && ! $response->headers->has('Content-Security-Policy')) {
             $estricta = (bool) config('chilinga.csp_estricta', false);
-            $response->headers->set('Content-Security-Policy', $estricta ? self::politicaCompleta() : self::politicaMinima());
+            $response->headers->set('Content-Security-Policy', $estricta ? self::politicaCompleta($embebible) : self::politicaMinima($embebible));
             // En local, Vite sirve los assets desde otro puerto: la completa solo se informa fuera de local.
             if (! $estricta && ! app()->environment('local')) {
-                $response->headers->set('Content-Security-Policy-Report-Only', self::politicaCompleta());
+                $response->headers->set('Content-Security-Policy-Report-Only', self::politicaCompleta($embebible));
             }
         }
 
         return $response;
     }
 
-    public static function politicaMinima(): string
+    /** Rutas públicas que se pueden incrustar en un iframe de otra web (ver docs/INSCRIPCION_EMBEBIDA.md). */
+    public const INCRUSTABLES = ['inscripcion'];
+
+    public static function politicaMinima(bool $embebible = false): string
     {
-        return "frame-ancestors 'self'; object-src 'none'; base-uri 'self'";
+        return 'frame-ancestors '.($embebible ? '*' : "'self'")."; object-src 'none'; base-uri 'self'";
     }
 
-    public static function politicaCompleta(): string
+    public static function politicaCompleta(bool $embebible = false): string
     {
         $directivas = [
             'default-src' => ["'self'"],
@@ -67,7 +74,7 @@ class SecurityHeaders
             'worker-src' => ["'self'", 'blob:'],
             'object-src' => ["'none'"],
             'base-uri' => ["'self'"],
-            'frame-ancestors' => ["'self'"],
+            'frame-ancestors' => [$embebible ? '*' : "'self'"],
         ];
 
         return implode('; ', array_map(fn ($k, $v) => $k.' '.implode(' ', $v), array_keys($directivas), $directivas));

@@ -94,12 +94,6 @@ class CicloLectivoTest extends TestCase
             ->assertSessionHasErrors('anio');
     }
 
-    public function test_fin_anterior_al_inicio_no_se_acepta(): void
-    {
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
-        app(CicloLectivoService::class)->abrir(['anio' => 2029, 'inicio' => '2029-12-01', 'fin' => '2029-03-01'], $this->admin());
-    }
-
     public function test_sin_permiso_no_se_abre_el_ciclo(): void
     {
         [, $user] = $this->alumnoConCuenta('Ana');

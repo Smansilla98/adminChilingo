@@ -46,5 +46,38 @@
         </tbody>
     </table>
 </div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <h2 class="h6">Calendario académico</h2>
+        <table class="table table-sm align-middle">
+            <tbody>
+            @foreach($calendario as $m)
+                <tr>
+                    <td>{{ $m['nombre'] }}</td>
+                    <td><span class="badge {{ $m['tipo'] === 'clases' ? 'bg-secondary' : 'bg-info text-dark' }}">{{ $m['etiqueta'] }}</span></td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+        <p class="small text-muted">Enero y febrero no son clases regulares: son taller de verano y gira a Villa Gesell. Las cuotas se cobran igual todos los meses del ciclo.</p>
+    </div>
+    <div class="col-lg-6">
+        <h2 class="h6">Módulos</h2>
+        <ul class="small">
+            @foreach($modulos as $mod)
+                <li>{{ ['cuotas' => 'Cuotas', 'academico' => 'Académico', 'reinscripcion' => 'Reinscripción'][$mod->clave] ?? $mod->clave }}: del {{ $mod->inicio->format('d/m/Y') }} al {{ $mod->fin->format('d/m/Y') }}</li>
+            @endforeach
+        </ul>
+        @can('cuotas.create')
+            <h2 class="h6 mt-3">Generar cuotas del ciclo</h2>
+            <p class="small text-muted">Crea las cuotas de marzo a febrero para cada bloque activo que no las tenga. Las cuotas que ya existen no se tocan.</p>
+            <form method="POST" action="{{ route('ciclos.cuotas', $ciclo) }}" class="row g-2 align-items-end">
+                @csrf
+                <div class="col-sm-6"><label class="form-label small" for="monto">Monto base</label><input id="monto" type="number" step="0.01" min="0" name="monto" class="form-control" required></div>
+                <div class="col-12"><button class="btn btn-outline-primary">Generar cuotas que falten</button></div>
+            </form>
+        @endcan
+    </div>
+</div>
 <a href="{{ route('ciclos.index') }}">Volver a ciclos</a>
 @endsection

@@ -310,6 +310,15 @@ return [
     ],
 
     /*
+    | Alcance global de un permiso para ciertos roles, sin importar en qué sede estén asignados.
+    | Formato: permiso => roles. Solo aplica si el rol otorga ese permiso. Hoy: el tablero de
+    | dirección muestra toda la escuela a coordinación y tesorería.
+    */
+    'alcance_global' => [
+        'reportes.direccion' => ['coordinador', 'tesorero'],
+    ],
+
+    /*
     | Módulos de navegación (web y app). Un módulo es visible si la persona
     | tiene alguno de los permisos listados.
     */

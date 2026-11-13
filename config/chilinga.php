@@ -38,6 +38,15 @@ return [
     // Si hay un volumen persistente para archivos (lo lee Estado del sistema).
     'almacenamiento_persistente' => filled(env('PERSISTENT_STORAGE_PATH')),
 
+    /*
+    | Calendario académico: qué es cada mes del ciclo fuera de las clases regulares (marzo a diciembre).
+    | Mes (1-12) => tipo: taller_verano | gira_gesell. Los meses que no figuran son clases.
+    */
+    'calendario_academico' => [
+        '1' => 'taller_verano',
+        '2' => 'gira_gesell',
+    ],
+
     'cobro' => [
         'alias' => env('COBRO_ALIAS'),
         'cbu' => env('COBRO_CBU'),
