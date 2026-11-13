@@ -29,6 +29,17 @@ class LiquidacionController extends Controller
         return response()->json(['data' => $this->liquidaciones->aJson($liquidacion, true)]);
     }
 
+    /** Recibo en PDF generado en el servidor (mismos datos que el HTML). */
+    public function reciboPdf(Request $request, LiquidacionDocenteMensual $liquidacion): \Illuminate\Http\Response
+    {
+        abort_unless($this->liquidaciones->puedeVer($request->user(), $liquidacion), 403);
+
+        return response(\App\Domain\Docentes\ReciboLiquidacionPdf::pdf($liquidacion), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.\App\Domain\Docentes\ReciboLiquidacionPdf::nombreArchivo($liquidacion).'"',
+        ]);
+    }
+
     /** HTML imprimible del recibo (la app lo convierte en PDF en el teléfono). */
     public function recibo(Request $request, LiquidacionDocenteMensual $liquidacion): JsonResponse
     {

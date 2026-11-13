@@ -45,6 +45,20 @@ final class MarcaChilinga
         'chilingo-tinta' => 'Chilingo oscuro',
     ];
 
+    /** Logo como data URI (PNG en base64): se incrusta en los PDF sin depender de rutas ni de red. */
+    public static function logoDataUri(string $clave = 'logotipo-tinta'): ?string
+    {
+        if (! array_key_exists($clave, self::LOGOS)) {
+            return null;
+        }
+        $ruta = public_path('images/brand/v3/'.$clave.'.png');
+        if (! is_file($ruta)) {
+            return null;
+        }
+
+        return 'data:image/png;base64,'.base64_encode((string) file_get_contents($ruta));
+    }
+
     public static function manualPath(): string
     {
         return resource_path(self::MANUAL);

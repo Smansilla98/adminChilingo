@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Finanzas\PagosDocenteService;
 use App\Domain\Finanzas\PagoService;
+use App\Domain\Finanzas\ReciboPago;
 use App\Domain\Finanzas\RegistrarPago;
 use App\Domain\Finanzas\RegistroPagoService;
 use App\Http\Controllers\Controller;
@@ -15,6 +16,7 @@ use App\Services\AmbitoSedeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -112,6 +114,17 @@ class PagoController extends Controller
         abort_unless($disk->exists($pago->comprobante_path), 404, 'El archivo ya no está disponible.');
 
         return $disk->response($pago->comprobante_path, 'comprobante-pago-'.$pago->id.'.'.$ext);
+    }
+
+    /** Recibo del pago en PDF. */
+    public function recibo(Pago $pago): Response
+    {
+        $this->authorize('view', $pago);
+
+        return response(ReciboPago::pdf($pago), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.ReciboPago::nombreArchivo($pago).'"',
+        ]);
     }
 
     /** Cuotas que puede cobrar, con el abono docente de referencia. */

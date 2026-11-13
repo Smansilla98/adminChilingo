@@ -27,6 +27,7 @@
     @if($imprimir ?? false)
         <div class="actions"><button type="button" onclick="window.print()">Imprimir / Guardar como PDF</button></div>
     @endif
+    @if($logo ?? null)<img src="{{ $logo }}" alt="La Chilinga" style="height: 40px; margin-bottom: 6px;">@endif
     <h1>La Chilinga · Recibo de liquidación docente</h1>
     <p class="muted">N° {{ $l->numeroRecibo() }} · Período {{ $l->periodo() }} · {{ $l->etiquetaEstado() }}@if($l->pagada_at) el {{ $l->pagada_at->format('d/m/Y') }}@endif</p>
 

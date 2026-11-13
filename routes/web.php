@@ -535,6 +535,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/configuracion/reglas-cobro', [\App\Http\Controllers\ReglasCobroController::class, 'edit'])->name('configuracion.reglas-cobro.edit');
         Route::put('/configuracion/reglas-cobro', [\App\Http\Controllers\ReglasCobroController::class, 'update'])->name('configuracion.reglas-cobro.update');
     });
+    Route::get('/pagos/{pago}/recibo', [PagoController::class, 'recibo'])->middleware('permiso:pagos.view')->name('pagos.recibo');
+    Route::get('/liquidaciones/{liquidacion}/recibo.pdf', [\App\Http\Controllers\LiquidacionDocenteController::class, 'reciboPdf'])->whereNumber('liquidacion')->name('liquidaciones.recibo.pdf');
     // === Fin Equipo B ===
 
     // === Equipo F: Comunidad (difusión, shows y ensayos, préstamos) ===

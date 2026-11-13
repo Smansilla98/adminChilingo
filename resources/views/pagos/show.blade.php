@@ -20,6 +20,7 @@
             <x-ito.status tone="success" label="Registrado" />
         @endif
         <a href="{{ route('pagos.index') }}" class="btn btn-outline-secondary">Volver</a>
+        <a href="{{ route('pagos.recibo', $pago) }}" target="_blank" rel="noopener" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Recibo PDF</a>
         @can('reverse', $pago)
             <button type="button" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#anular-pago" aria-expanded="false" aria-controls="anular-pago"><i class="bi bi-x-octagon" aria-hidden="true"></i> Anular</button>
         @endcan
