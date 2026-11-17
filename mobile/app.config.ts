@@ -71,6 +71,8 @@ const config: ExpoConfig = {
   },
   plugins: [
     'expo-router',
+    // Sentry: sube símbolos y configura el nativo. Sin token de subida solo se configura, no se sube nada.
+    '@sentry/react-native/expo',
     'expo-secure-store',
     [
       'expo-audio',
