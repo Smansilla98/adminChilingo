@@ -105,16 +105,16 @@ function Leyenda() {
 export function MesCard({ mes }: { mes: MesCalendario }) {
   return (
     <View accessible accessibilityLabel={`${mes.nombre}: ${mes.actividades.map((a) => a.etiqueta).join(', ')}`}>
-    <Tarjeta>
-      <Texto style={{ fontWeight: '800', fontSize: 17 }}>{mes.nombre}</Texto>
-      <Fila style={{ flexWrap: 'wrap' }}>
-        {mes.actividades.map((a) => (
-          <Chip key={a.tipo} texto={a.etiqueta} color={COLOR_ACTIVIDAD[a.tipo] ?? C.tenue} fondo={C.superficie2} />
-        ))}
-        {mes.cuotas && <Chip texto="Cuota mensual" color={C.tenue} fondo={C.superficie2} />}
-      </Fila>
-      {mes.actividades.length > 1 && <Aviso tono="info" texto="Actividades en paralelo: se pueden cursar a la vez." />}
-    </Tarjeta>
+      <Tarjeta>
+        <Texto style={{ fontWeight: '800', fontSize: 17 }}>{mes.nombre}</Texto>
+        <Fila style={{ flexWrap: 'wrap' }}>
+          {mes.actividades.map((a) => (
+            <Chip key={a.tipo} texto={a.etiqueta} color={COLOR_ACTIVIDAD[a.tipo] ?? C.tenue} fondo={C.superficie2} />
+          ))}
+          {mes.cuotas && <Chip texto="Cuota mensual" color={C.tenue} fondo={C.superficie2} />}
+        </Fila>
+        {mes.actividades.length > 1 && <Aviso tono="info" texto="Actividades en paralelo: se pueden cursar a la vez." />}
+      </Tarjeta>
     </View>
   );
 }

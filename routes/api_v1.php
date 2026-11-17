@@ -431,18 +431,17 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     // Ciclo lectivo y reinscripción (app y administración).
     Route::get('mi/reinscripcion', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'miReinscripcion'])->name('mi.reinscripcion');
     Route::post('mi/reinscripcion', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'confirmar'])->name('mi.reinscripcion.confirmar');
+    // Calendario de ciclos: lectura para cualquier cuenta logueada (no tiene datos personales).
+    Route::get('ciclos-lectivos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'index'])->name('ciclos.api.index');
+    Route::get('ciclos-lectivos/{ciclo}/calendario', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'calendario'])->whereNumber('ciclo')->name('ciclos.api.calendario');
     Route::middleware('permiso:alumnos.view')->group(function () {
-        Route::get('ciclos-lectivos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'index'])->name('ciclos.api.index');
         Route::get('ciclos-lectivos/{ciclo}/reinscripciones', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'reinscripciones'])->name('ciclos.api.reinscripciones');
     });
     Route::middleware('permiso:alumnos.update')->group(function () {
         Route::post('ciclos-lectivos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'store'])->name('ciclos.api.store');
         Route::post('reinscripciones/{reinscripcion}/baja', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'baja'])->name('reinscripciones.api.baja');
     });
-    // Calendario académico y cuotas del ciclo.
-    Route::middleware('permiso:alumnos.view')->group(function () {
-        Route::get('ciclos-lectivos/{ciclo}/calendario', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'calendario'])->name('ciclos.api.calendario');
-    });
+    // Montos y cuotas del ciclo (escritura).
     Route::middleware('permiso:cuotas.update')->group(function () {
         Route::post('ciclos-lectivos/{ciclo}/montos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'montos'])->whereNumber('ciclo')->name('ciclos.api.montos');
     });
