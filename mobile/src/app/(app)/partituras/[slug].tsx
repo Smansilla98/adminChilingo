@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -8,7 +9,9 @@ import { api } from '@/lib/api';
 import { descargarYAbrir, elegirDocumento, subirArchivo } from '@/lib/archivos';
 import { esEnlaceExterno } from '@/lib/enlaces';
 import { MotorAudio } from '@/lib/partitura/audio';
+import { CLAVE_PRESETS, LIMITES, normalizarPreset, type NombrePreset, parsearPresets, PRESETS, PRESETS_DEFAULT, type Preset, type Presets, tempoDeVuelta } from '@/lib/partitura/entrenamiento';
 import { GrabacionRef, VELOCIDADES } from '@/lib/partitura/grabacion';
+import { bpmDeToques, registrarToque } from '@/lib/partitura/practica';
 import { cicloGolpe, ETIQUETA_GOLPE, golpesDe, INSTRUMENTOS, nombreDe, SIMBOLOS } from '@/lib/partitura/catalogo';
 import {
   agregarCompas, agregarSeccion, conInstrumento, cuantizarVoz, escribirCelda, grillaDeVoz,
@@ -77,6 +80,23 @@ export default function Partitura() {
   const [grabando, setGrabando] = useState(false);
   const [velocidadGrab, setVelocidadGrab] = useState(100);
   const [marcaGrab, setMarcaGrab] = useState<{ s: number; m: number } | null>(null);
+  const [entrena, setEntrena] = useState(false);
+  const [presets, setPresets] = useState<Presets>(PRESETS_DEFAULT);
+  const [presetActivo, setPresetActivo] = useState<NombrePreset>('medio');
+  const [ajustes, setAjustes] = useState(false);
+  const tapsRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    void AsyncStorage.getItem(CLAVE_PRESETS).then((t) => setPresets(parsearPresets(t))).catch(() => undefined);
+  }, []);
+
+  const cambiarPreset = (campo: keyof Preset, delta: number) => {
+    const actual = presets[presetActivo];
+    const nuevo = normalizarPreset({ ...actual, [campo]: actual[campo] + delta }, presetActivo);
+    const siguiente = { ...presets, [presetActivo]: nuevo };
+    setPresets(siguiente);
+    void AsyncStorage.setItem(CLAVE_PRESETS, JSON.stringify(siguiente)).catch(() => undefined);
+  };
   const [modoGrab, setModoGrab] = useState<ModoGrab>('grabacion');
   const modoGrabRef = useRef<ModoGrab>('grabacion');
   const syncRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -137,12 +157,23 @@ export default function Partitura() {
   const tocar = async (seccion: number | null, tramo: { sectionIdx: number; desde: number; hasta: number } | null = null) => {
     const actual = partitura ?? partituraVacia(t.nombre, t.autor ?? '');
     setAviso(null);
+    // Entrenamiento: solo con loop (una pasada no tiene vueltas). Cada vuelta usa su tempo.
+    const conEntreno = entrena && (seccion !== null || tramo !== null);
+    const porVuelta = (k: number) => tempoDeVuelta(tempo, k, presets[presetActivo]);
     try {
       await motor.current.preparar((listos, total) => setProgreso(listos < total ? `Cargando sonidos ${listos} de ${total}…` : null));
       setProgreso(null);
       if (motor.current.faltan.length) setAviso(`Faltan ${motor.current.faltan.length} sonidos. Lo demás suena igual.`);
       motor.current.onFin = () => { setSonando(false); setEnConteo(false); setMarca(null); };
-      motor.current.tocar(actual, { bpm: tempo, soloSeccion: tramo ? null : seccion, rango: tramo, conteo, metronomo, loop: seccion !== null || tramo !== null }, (p) => {
+      motor.current.tocar(actual, {
+        bpm: conEntreno ? porVuelta(0) : tempo,
+        soloSeccion: tramo ? null : seccion,
+        rango: tramo,
+        conteo,
+        metronomo,
+        loop: seccion !== null || tramo !== null,
+        tempoPorVuelta: conEntreno ? porVuelta : undefined,
+      }, (p) => {
         const clave = `${p.conteo}:${p.sectionIdx}:${p.measureIdx}`;
         if (clave === marcaPrevia.current) return;
         marcaPrevia.current = clave;
@@ -369,6 +400,43 @@ export default function Partitura() {
           onPress={() => elegido && setMudas((xs) => (xs.includes(elegido) ? xs.filter((x) => x !== elegido) : [...xs, elegido]))}
         />
       </View>
+      <View style={s.transporte}>
+        <Boton titulo="Subir tempo" icono="trending-up" variante={entrena ? 'primario' : 'secundario'} onPress={() => setEntrena((v) => !v)} />
+        <Boton titulo="Ajustes" icono="tune" variante="secundario" onPress={() => setAjustes((v) => !v)} />
+        <Boton
+          titulo="TAP"
+          icono="touch-app"
+          variante="secundario"
+          onPress={() => {
+            tapsRef.current = registrarToque(tapsRef.current, Date.now());
+            const bpm = bpmDeToques(tapsRef.current);
+            if (bpm) setTempo(bpm);
+          }}
+        />
+      </View>
+      {entrena && <Tenue>Con loop activo, el tempo arranca a {presets[presetActivo].inicio}% y sube {presets[presetActivo].subida}% cada {presets[presetActivo].cada} vueltas, hasta el {presets[presetActivo].tope}%.</Tenue>}
+      {ajustes && (
+        <View style={{ gap: E.s }}>
+          <View style={s.transporte}>
+            {PRESETS.map((p) => (
+              <Pressable key={p} accessibilityRole="button" accessibilityState={{ selected: p === presetActivo }} onPress={() => setPresetActivo(p)}>
+                <Chip texto={p} color={p === presetActivo ? C.fondo : C.texto} fondo={p === presetActivo ? C.acento : C.superficie} />
+              </Pressable>
+            ))}
+          </View>
+          {(['inicio', 'subida', 'cada', 'tope'] as const).map((campo) => {
+            const paso = campo === 'cada' ? 1 : campo === 'subida' ? 1 : 5;
+            const etiqueta = { inicio: 'Arranca al %', subida: 'Sube el %', cada: 'Cada vueltas', tope: 'Tope %' }[campo];
+            return (
+              <View key={campo} style={s.transporte}>
+                <Tenue>{etiqueta}: {presets[presetActivo][campo]} (límites {LIMITES[campo][0]}–{LIMITES[campo][1]})</Tenue>
+                <Boton titulo="−" variante="secundario" onPress={() => cambiarPreset(campo, -paso)} />
+                <Boton titulo="+" variante="secundario" onPress={() => cambiarPreset(campo, paso)} />
+              </View>
+            );
+          })}
+        </View>
+      )}
       <Tenue>El tempo va de {TEMPO_MIN} a {TEMPO_MAX} bpm. Tocá el número para subirlo de a 1. Solo escucha la cuerda elegida. Silenciar la saca del conjunto.</Tenue>
       {progreso && <Tenue>{progreso}</Tenue>}
       {(partitura?.audio_ref ?? t.score?.audio_ref) && (
