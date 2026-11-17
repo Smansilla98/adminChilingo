@@ -25,6 +25,7 @@ import { bpmDeToques, registrarToque, cuantizar } from './practica.js';
 import { scoreDesdeMIDI, escucharMIDI, instrumentoDeMidi } from './midi.js';
 import { mostrarAyuda, mostrarVersiones, menuGolpe, feedbackTecla } from './paneles.js';
 import { PanelGrabacion } from './grabacion.js';
+import { PRESETS, LIMITES, cargarPresets, guardarPresets, normalizarPreset, tempoDeVuelta } from './entrenamiento.js';
 
 const TEMPO_MIN = 40;
 const TEMPO_MAX = 180;
@@ -77,6 +78,7 @@ export class EditorPartitura {
         this.toques = [];
         this.loopModo = 'todo';
         this.countInCompases = 1;
+        this.entrena = { on: false, preset: 'medio', presets: cargarPresets(typeof localStorage !== 'undefined' ? localStorage : null) };
         this.seguirReproduccion = true;
         this.estadoGuardado = 'guardado'; // guardado | sucio | guardando | borrador | error
         this.borradorAt = null;
@@ -198,6 +200,20 @@ export class EditorPartitura {
                             </label>
                             <label>Volumen <input type="range" min="0" max="1" step="0.05" value="0.5" data-f="metro-vol"></label>
                             <label class="pt-check"><input type="checkbox" data-f="metro-acento" checked> Acento en el 1</label>
+                        </div>
+                    </div>
+                    <div class="pt-dropdown pt-entrena">
+                        <button class="pt-btn pt-toggle" data-a="entrena" aria-pressed="false" title="Sube el tempo solo entre vueltas del loop (requiere Loop)">Subir tempo</button>
+                        <button class="pt-btn pt-btn-ghost" data-a="entrena-menu" aria-label="Ajustes del entrenamiento">▾</button>
+                        <div class="pt-dropdown-menu pt-entrena-menu">
+                            <label>Preset
+                                <select class="pt-input pt-select" data-f="entrena-preset">${PRESETS.map((p) => `<option value="${p}">${p[0].toUpperCase() + p.slice(1)}</option>`).join('')}</select>
+                            </label>
+                            <label>Arranca al % del tempo <input class="pt-input pt-input-num" type="number" data-f="entrena-inicio" min="${LIMITES.inicio[0]}" max="${LIMITES.inicio[1]}"></label>
+                            <label>Sube el % del tempo <input class="pt-input pt-input-num" type="number" data-f="entrena-subida" min="${LIMITES.subida[0]}" max="${LIMITES.subida[1]}"></label>
+                            <label>Cada cuántas vueltas <input class="pt-input pt-input-num" type="number" data-f="entrena-cada" min="${LIMITES.cada[0]}" max="${LIMITES.cada[1]}"></label>
+                            <label>Tope (% del tempo) <input class="pt-input pt-input-num" type="number" data-f="entrena-tope" min="${LIMITES.tope[0]}" max="${LIMITES.tope[1]}"></label>
+                            <p class="pt-ayuda">Requiere Loop activo. Cada preset se guarda en este navegador.</p>
                         </div>
                     </div>
                     <label class="pt-field pt-field-tempo" title="Tempo (+ / −)">
@@ -748,8 +764,10 @@ export class EditorPartitura {
             case 'stop': return this.audio.stop();
             case 'metro': return this.toggleMetronomo();
             case 'metro-menu':
+            case 'entrena-menu':
                 this.root.querySelectorAll('.pt-dropdown').forEach((d) => { if (d !== btn.closest('.pt-dropdown')) d.classList.remove('open'); });
                 return btn.closest('.pt-dropdown').classList.toggle('open');
+            case 'entrena': return this.toggleEntrenamiento();
             case 'tap': return this.tapTempo();
             case 'tempo-mas': return this.setTempo(this.score.tempo + 1);
             case 'tempo-menos': return this.setTempo(this.score.tempo - 1);
@@ -881,6 +899,7 @@ export class EditorPartitura {
         }
         if (f === 'pan' && mixRow) return this.mixer(mixRow, (cfg) => { cfg.pan = Number(e.target.value); });
         if (f === 'pitch' && mixRow) return this.mixer(mixRow, (cfg) => { cfg.pitch = Math.max(-12, Math.min(12, parseInt(e.target.value, 10) || 0)); });
+        if (f && f.startsWith('entrena-')) return this.onEntrenaCambio(f, e.target);
         if (f === 'loop') { this.loopModo = e.target.value; return this.aviso(this.loopModo === 'off' ? 'Sin loop' : `Loop: ${e.target.selectedOptions[0].textContent}`); }
         if (f === 'countin') { this.countInCompases = Number(e.target.value) || 0; return; }
         if (f === 'metro-sub') { this.audio.metroSub = Number(e.target.value) || 1; return; }
@@ -1237,6 +1256,49 @@ export class EditorPartitura {
         if (this.audio.playing) this._retempo = setTimeout(() => this.audio.cambiarTempo(this.score).catch(() => {}), 120);
     }
 
+    /** Entrenamiento de velocidad: el tempo de cada vuelta del loop, según el preset activo. */
+    funcionEntrenamiento() {
+        const base = this.score.tempo;
+        const preset = this.entrena.presets[this.entrena.preset];
+        return (vuelta) => tempoDeVuelta(base, vuelta, preset);
+    }
+
+    toggleEntrenamiento(forzar = null) {
+        this.entrena.on = forzar ?? !this.entrena.on;
+        const btn = this.root.querySelector('[data-a="entrena"]');
+        btn?.classList.toggle('on', this.entrena.on);
+        btn?.setAttribute('aria-pressed', this.entrena.on ? 'true' : 'false');
+        if (this.entrena.on && this.loopModo === 'off') this.aviso('Activá el Loop: el tempo sube entre vueltas.');
+        else if (this.entrena.on) this.aviso(`Subir tempo: preset ${this.entrena.preset}`);
+        this.pintarEntrena();
+    }
+
+    /** Muestra en el menú los valores del preset elegido. */
+    pintarEntrena() {
+        const menu = this.root.querySelector('.pt-entrena-menu');
+        if (!menu) return;
+        const preset = this.entrena.presets[this.entrena.preset];
+        menu.querySelector('[data-f="entrena-preset"]').value = this.entrena.preset;
+        ['inicio', 'subida', 'cada', 'tope'].forEach((c) => {
+            menu.querySelector(`[data-f="entrena-${c}"]`).value = String(preset[c]);
+        });
+    }
+
+    onEntrenaCambio(f, el) {
+        if (f === 'entrena-preset') {
+            this.entrena.preset = PRESETS.includes(el.value) ? el.value : 'medio';
+            return this.pintarEntrena();
+        }
+        const campo = f.replace('entrena-', '');
+        const actual = this.entrena.presets[this.entrena.preset];
+        this.entrena.presets = {
+            ...this.entrena.presets,
+            [this.entrena.preset]: normalizarPreset({ ...actual, [campo]: el.value }, this.entrena.preset),
+        };
+        guardarPresets(typeof localStorage !== 'undefined' ? localStorage : null, this.entrena.presets);
+        this.pintarEntrena();
+    }
+
     /** Tramo a repetir según el modo de loop (null = toda la obra). */
     rangoDeLoop() {
         const pos = this.gsel || this.sel;
@@ -1269,6 +1331,7 @@ export class EditorPartitura {
             soloSeccion: opts.soloSeccion ?? null,
             rango,
             countInCompases: this.countInCompases,
+            tempoPorVuelta: this.entrena.on && this.loopModo !== 'off' ? this.funcionEntrenamiento() : undefined,
         };
         try {
             if (this.audio.paused) {
