@@ -539,6 +539,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/configuracion/reglas-cobro', [\App\Http\Controllers\ReglasCobroController::class, 'update'])->name('configuracion.reglas-cobro.update');
     });
     Route::get('/pagos/{pago}/recibo', [PagoController::class, 'recibo'])->middleware('permiso:pagos.view')->name('pagos.recibo');
+    Route::get('/comprobantes-cuota-alumnos/{id}/pdf', [\App\Http\Controllers\ComprobanteCuotaAlumnoGestionController::class, 'pdf'])->whereNumber('id')->middleware('permiso:comprobantes.view')->name('comprobantes-cuota-alumnos.pdf');
     Route::get('/liquidaciones/{liquidacion}/recibo.pdf', [\App\Http\Controllers\LiquidacionDocenteController::class, 'reciboPdf'])->whereNumber('liquidacion')->name('liquidaciones.recibo.pdf');
     // === Fin Equipo B ===
 

@@ -14,6 +14,7 @@
     <x-slot:actions>
         <x-ito.status :tone="$tono" :label="$c->etiquetaEstado()" />
         <a href="{{ route('comprobantes-cuota-alumnos.index') }}" class="btn btn-outline-secondary">Volver</a>
+        <a href="{{ route('comprobantes-cuota-alumnos.pdf', $c->id) }}" target="_blank" rel="noopener" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Comprobante PDF</a>
         @if($c->pago_id)
             <a href="{{ route('pagos.show', $c->pago_id) }}" class="btn btn-outline-secondary"><i class="bi bi-receipt" aria-hidden="true"></i> Ver pago #{{ $c->pago_id }}</a>
         @endif

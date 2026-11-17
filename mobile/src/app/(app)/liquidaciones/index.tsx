@@ -8,7 +8,7 @@ import { FiltrosChips } from '@/components/lista';
 import { Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Pantalla, Tarjeta, Tenue, Texto, Vacio } from '@/components/ui';
 import { MESES } from '@/features/finanzas/tipos';
 import { api, qs } from '@/lib/api';
-import { pdfDesdeServidor } from '@/lib/archivos';
+import { descargarYAbrir } from '@/lib/archivos';
 import { useOperacion } from '@/lib/recursos';
 import { C, E, moneda } from '@/lib/theme';
 
@@ -37,7 +37,7 @@ export default function LiquidacionesGestion() {
     setError(null);
     setRecibo(id);
     try {
-      await pdfDesdeServidor(`liquidaciones/${id}/recibo`);
+      await descargarYAbrir(`liquidaciones/${id}/recibo.pdf`, { nombre: `recibo-liquidacion-${id}.pdf` });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo armar el recibo.');
     } finally {

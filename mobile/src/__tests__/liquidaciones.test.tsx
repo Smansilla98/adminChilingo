@@ -1,12 +1,12 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 
 import MisLiquidaciones from '@/app/(app)/mis-liquidaciones';
-import { pdfDesdeServidor } from '@/lib/archivos';
+import { descargarYAbrir } from '@/lib/archivos';
 
 import { renderizar, simularApi } from './utils';
 
 jest.mock('@/lib/api', () => require('./utils').mockApi());
-jest.mock('@/lib/archivos', () => ({ pdfDesdeServidor: jest.fn(async () => undefined) }));
+jest.mock('@/lib/archivos', () => ({ descargarYAbrir: jest.fn(async () => undefined) }));
 jest.mock('expo-router', () => ({ router: { push: jest.fn() }, Stack: { Screen: () => null } }));
 
 it('muestra las liquidaciones del docente con ambas modalidades y baja el recibo', async () => {
@@ -17,5 +17,5 @@ it('muestra las liquidaciones del docente con ambas modalidades y baja el recibo
   expect(await screen.findByText('Octubre 2026')).toBeTruthy();
   expect(screen.getByText('Por horas: 6 h dictadas')).toBeTruthy();
   await fireEvent.press(screen.getByText('Recibo en PDF'));
-  await waitFor(() => expect(pdfDesdeServidor).toHaveBeenCalledWith('liquidaciones/3/recibo'));
+  await waitFor(() => expect(descargarYAbrir).toHaveBeenCalledWith('liquidaciones/3/recibo.pdf', expect.objectContaining({ nombre: 'recibo-liquidacion-3.pdf' })));
 });

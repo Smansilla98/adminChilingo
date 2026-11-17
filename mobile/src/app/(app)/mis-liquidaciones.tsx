@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { Aviso, Boton, Cargando, Chip, ErrorVista, Fila, Pantalla, Tarjeta, Tenue, Texto, Vacio } from '@/components/ui';
 import { api } from '@/lib/api';
-import { pdfDesdeServidor } from '@/lib/archivos';
+import { descargarYAbrir } from '@/lib/archivos';
 import { C, moneda } from '@/lib/theme';
 
 interface Liquidacion {
@@ -30,7 +30,7 @@ export default function MisLiquidaciones() {
     setError(null);
     setBajando(id);
     try {
-      await pdfDesdeServidor(`liquidaciones/${id}/recibo`);
+      await descargarYAbrir(`liquidaciones/${id}/recibo.pdf`, { nombre: `recibo-liquidacion-${id}.pdf` });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo armar el recibo.');
     } finally {

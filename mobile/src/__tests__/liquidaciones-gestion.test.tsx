@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 import { renderizar, simularApi } from './utils';
 
 jest.mock('@/lib/api', () => require('./utils').mockApi());
-jest.mock('@/lib/archivos', () => ({ pdfDesdeServidor: jest.fn(async () => undefined) }));
+jest.mock('@/lib/archivos', () => ({ descargarYAbrir: jest.fn(async () => undefined) }));
 jest.mock('expo-router', () => ({ Stack: { Screen: () => null } }));
 
 const fila = (estado: string | null) => ({
