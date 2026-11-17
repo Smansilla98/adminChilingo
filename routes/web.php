@@ -182,7 +182,7 @@ Route::get('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'conf
 Route::post('/olvide-mi-clave/confirmar', [RecuperarClaveController::class, 'confirmar'])->middleware('throttle:recuperar-clave')->name('recuperar.confirmar.store');
 // === Equipo C: preinscripción pública (lista de espera) ===
 Route::get('/inscripcion', [\App\Http\Controllers\PreinscripcionPublicController::class, 'create'])->name('inscripcion.create');
-Route::post('/inscripcion', [\App\Http\Controllers\PreinscripcionPublicController::class, 'store'])->middleware('throttle:preinscripcion')->name('inscripcion.store');
+Route::post('/inscripcion/paso/{paso}', [\App\Http\Controllers\PreinscripcionPublicController::class, 'paso'])->whereNumber('paso')->middleware('throttle:preinscripcion')->name('inscripcion.paso');
 // === Fin Equipo C: recuperar contraseña ===
 
 /*

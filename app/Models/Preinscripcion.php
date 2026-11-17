@@ -8,37 +8,44 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property string|null $token
  * @property string $nombre
  * @property string $apellido
  * @property string|null $dni
- * @property Carbon $fecha_nacimiento
- * @property string $telefono
+ * @property Carbon|null $fecha_nacimiento
+ * @property string|null $telefono
  * @property string|null $email
  * @property int $sede_id
  * @property int|null $bloque_id
  * @property string $estado
+ * @property int $paso
  */
 class Preinscripcion extends Model
 {
+    public const EN_CURSO = 'en_curso';
+
     public const PENDIENTE = 'pendiente';
 
     public const APROBADA = 'aprobada';
 
     public const RECHAZADA = 'rechazada';
 
+    /** Pasos del formulario: el último deja la preinscripción en lista de espera. */
+    public const PASOS = 4;
+
     protected $table = 'preinscripciones';
 
     protected $fillable = [
-        'nombre', 'apellido', 'dni', 'fecha_nacimiento', 'telefono', 'email', 'sede_id', 'bloque_id',
+        'token', 'paso', 'nombre', 'apellido', 'dni', 'fecha_nacimiento', 'telefono', 'email', 'sede_id', 'bloque_id',
         'tutor_nombre', 'tutor_dni', 'tutor_telefono', 'tutor_vinculo', 'notas',
         'estado', 'motivo_rechazo', 'alumno_id', 'resuelto_por', 'resuelto_at',
     ];
 
-    protected $casts = ['fecha_nacimiento' => 'date', 'resuelto_at' => 'datetime'];
+    protected $casts = ['fecha_nacimiento' => 'date', 'resuelto_at' => 'datetime', 'paso' => 'integer'];
 
     public function esMenor(): bool
     {
-        return $this->fecha_nacimiento->diffInYears(now()) < 18;
+        return $this->fecha_nacimiento !== null && $this->fecha_nacimiento->diffInYears(now()) < 18;
     }
 
     /** Teléfono al que se le avisa: el del tutor si es menor. */

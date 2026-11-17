@@ -52,7 +52,7 @@ class SecurityHeaders
     }
 
     /** Rutas públicas que se pueden incrustar en un iframe de otra web (ver docs/INSCRIPCION_EMBEBIDA.md). */
-    public const INCRUSTABLES = ['inscripcion'];
+    public const INCRUSTABLES = ['inscripcion', 'inscripcion/*'];
 
     public static function politicaMinima(bool $embebible = false): string
     {
