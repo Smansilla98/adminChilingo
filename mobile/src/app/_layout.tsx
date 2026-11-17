@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { BannerSinConexion, ToastProvider } from '@/components/feedback';
 import { AuthProvider, leerUsuarioGuardado, useAuth } from '@/lib/auth';
-import { busterPara, debePersistir, DIA, persister, queryClient } from '@/lib/cache';
+import { busterPara, debePersistir, DIA, limpiarCacheAnterior, persister, queryClient } from '@/lib/cache';
 import { useSincronizacionAutomatica } from '@/lib/offline';
 import { registrarPush, useNotificacionesPush } from '@/lib/push';
 import { C } from '@/lib/theme';
@@ -21,6 +21,7 @@ function RootLayout() {
   // La caché guardada es de una cuenta: se restaura solo si es de la misma que tiene la sesión.
   const [buster, setBuster] = useState<string | null>(null);
   useEffect(() => {
+    void limpiarCacheAnterior();
     void leerUsuarioGuardado().then((id) => setBuster(busterPara(id)));
   }, []);
   if (!buster) return null; // el splash sigue visible

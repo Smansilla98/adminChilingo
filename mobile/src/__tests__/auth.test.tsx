@@ -77,7 +77,7 @@ it('al salir manda el token de push, borra la sesión y vacía la caché', async
   expect(usuarioCola()).toBeNull();
   expect(qc.getQueryData(['personas', 'detalle', '1'])).toBeUndefined();
   expect(await AsyncStorage.getItem('ito.cache.v2')).toBeNull();
-  expect(await AsyncStorage.getItem('ito.push_token')).toBeNull();
+  expect(mockGuardado.has('ito.push_token')).toBe(false);
 });
 
 it('si el logout falla, igual intenta quitar el dispositivo y cierra la sesión local', async () => {
