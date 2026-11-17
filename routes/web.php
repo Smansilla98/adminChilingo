@@ -516,6 +516,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permiso:cuotas.create')->group(function () {
         Route::post('/ciclos-lectivos/{ciclo}/cuotas', [\App\Http\Controllers\CicloLectivoController::class, 'generarCuotas'])->name('ciclos.cuotas');
     });
+    Route::middleware('permiso:cuotas.update')->group(function () {
+        Route::post('/ciclos-lectivos/{ciclo}/montos', [\App\Http\Controllers\CicloLectivoController::class, 'montos'])->name('ciclos.montos');
+    });
     // === Fin Equipo C (con sesión) ===
     // === Equipo B: Finanzas ===
     Route::post('/gastos/{gasto}/restaurar', [GastoController::class, 'restaurar'])->withTrashed()->middleware('permiso:gastos.delete')->name('gastos.restaurar');

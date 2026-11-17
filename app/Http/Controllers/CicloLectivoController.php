@@ -6,6 +6,7 @@ use App\Domain\Academico\CalendarioAcademico;
 use App\Domain\Academico\CuotasDelCicloService;
 use App\Domain\Personas\CicloLectivoService;
 use App\Models\Alumno;
+use App\Models\Bloque;
 use App\Models\CicloLectivo;
 use App\Models\Reinscripcion;
 use Illuminate\Http\RedirectResponse;
@@ -54,6 +55,7 @@ class CicloLectivoController extends Controller
             'estado' => $estado,
             'calendario' => CalendarioAcademico::para($ciclo),
             'modulos' => $ciclo->modulos()->orderBy('id')->get(),
+            'bloques' => Bloque::query()->where('activo', true)->with('sede:id,nombre')->orderBy('nombre')->get(['id', 'nombre', 'sede_id']),
         ]);
     }
 
@@ -68,6 +70,25 @@ class CicloLectivoController extends Controller
         $r = $cuotas->generar($ciclo, (float) $datos['monto'], array_filter((array) ($datos['montos'] ?? []), fn ($v) => $v !== null && $v !== ''), $request->user());
 
         return back()->with('success', 'Cuotas del ciclo: se crearon '.$r['creadas'].' y ya había '.$r['existentes'].' (no se tocaron).');
+    }
+
+    /** Cambia el valor de las cuotas del ciclo por bloque: primero vista previa, después aplicar. */
+    public function montos(Request $request, CicloLectivo $ciclo, CuotasDelCicloService $cuotas): RedirectResponse
+    {
+        $datos = $request->validate([
+            'accion' => ['required', 'in:previa,aplicar'],
+            'monto' => ['required', 'numeric', 'min:0'],
+            'montos' => ['nullable', 'array'],
+            'montos.*' => ['nullable', 'numeric', 'min:0'],
+        ]);
+        $montos = array_filter((array) ($datos['montos'] ?? []), fn ($v) => $v !== null && $v !== '');
+
+        if ($datos['accion'] === 'previa') {
+            return back()->withInput()->with('previa_montos', $cuotas->vistaPreviaMonto($ciclo, (float) $datos['monto'], $montos));
+        }
+        $r = $cuotas->actualizarMonto($ciclo, (float) $datos['monto'], $montos, $request->user());
+
+        return back()->with('success', "Valor de las cuotas actualizado: cambiaron {$r['actualizadas']} y {$r['sin_cambio']} ya tenían ese valor. Los pagos registrados no se tocaron.");
     }
 
     public function baja(Reinscripcion $reinscripcion, Request $request, CicloLectivoService $servicio): RedirectResponse

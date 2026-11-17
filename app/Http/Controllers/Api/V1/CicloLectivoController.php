@@ -90,6 +90,23 @@ class CicloLectivoController extends Controller
     }
 
     /** Calendario académico del ciclo: mes por mes (clases, taller de verano o gira a Villa Gesell). */
+    /** Valor de las cuotas del ciclo por bloque: accion «previa» (no escribe) o «aplicar». */
+    public function montos(Request $request, CicloLectivo $ciclo, CuotasDelCicloService $cuotas): JsonResponse
+    {
+        $datos = $request->validate([
+            'accion' => ['required', 'in:previa,aplicar'],
+            'monto' => ['required', 'numeric', 'min:0'],
+            'montos' => ['nullable', 'array'],
+            'montos.*' => ['nullable', 'numeric', 'min:0'],
+        ]);
+        $montos = array_filter((array) ($datos['montos'] ?? []), fn ($v) => $v !== null && $v !== '');
+        if ($datos['accion'] === 'previa') {
+            return response()->json(['data' => $cuotas->vistaPreviaMonto($ciclo, (float) $datos['monto'], $montos)]);
+        }
+
+        return response()->json(['data' => $cuotas->actualizarMonto($ciclo, (float) $datos['monto'], $montos, $request->user())]);
+    }
+
     public function calendario(CicloLectivo $ciclo): JsonResponse
     {
         return response()->json(['data' => CalendarioAcademico::para($ciclo)]);
