@@ -249,7 +249,7 @@ class VillaGesellAdmin
         if ($bloque && Schema::hasTable('alumno_bloque')) {
             $alumno->bloques()->sync([$bloque->id => ['es_principal' => true]]);
         }
-        $profesor = $bloque?->profesor?->nombre ?? (! empty($datos['profesor_id']) ? Profesor::query()->find((int) $datos['profesor_id'])?->nombre : null);
+        $profesor = $bloque->profesor->nombre ?? (! empty($datos['profesor_id']) ? Profesor::query()->find((int) $datos['profesor_id'])?->nombre : null);
 
         return ['alumno' => $alumno, 'bloque' => $bloque, 'profesor' => $profesor];
     }

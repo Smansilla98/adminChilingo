@@ -120,8 +120,8 @@ class PersonaController extends Controller
             'profesor' => $profesor ? [
                 'id' => $profesor->id,
                 'activo' => (bool) $profesor->activo,
-                'bloques' => $profesor->bloques->map(fn ($b) => ['id' => $b->id, 'nombre' => $b->nombre, 'sede' => $b->sede?->nombre, 'rol' => $b->pivot->rol])->values(),
-                'sedes' => $profesor->sedesConRol->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre, 'rol' => $s->pivot->rol])->values(),
+                'bloques' => $profesor->bloques->map(fn ($b) => ['id' => $b->id, 'nombre' => $b->nombre, 'sede' => $b->sede?->nombre, 'rol' => $b->pivot->getAttribute('rol')])->values(),
+                'sedes' => $profesor->sedesConRol->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre, 'rol' => $s->pivot->getAttribute('rol')])->values(),
             ] : null,
             'asistencias' => $datos['asistencias']->map(fn (Asistencia $x) => [
                 'id' => $x->id,

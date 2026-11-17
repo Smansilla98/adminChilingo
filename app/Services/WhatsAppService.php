@@ -156,7 +156,7 @@ class WhatsAppService
         return [
             'success' => true,
             'sid' => $sid,
-            'status' => $row?->status ?? $status,
+            'status' => $row->status ?? $status,
             'accepted_by_provider' => true,
             'delivered_to_recipient' => $row?->isDeliveredToRecipient() ?? false,
         ];

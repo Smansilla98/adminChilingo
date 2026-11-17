@@ -90,8 +90,8 @@ class Asignacion extends Model
     public function etiquetaAmbito(): string
     {
         return match ($this->ambito_tipo) {
-            self::AMBITO_SEDE => $this->sede?->nombre ?? 'Sede #'.$this->sede_id,
-            self::AMBITO_BLOQUE => $this->bloque?->nombre ?? 'Bloque #'.$this->bloque_id,
+            self::AMBITO_SEDE => $this->sede->nombre ?? 'Sede #'.$this->sede_id,
+            self::AMBITO_BLOQUE => $this->bloque->nombre ?? 'Bloque #'.$this->bloque_id,
             default => 'Global',
         };
     }

@@ -177,7 +177,7 @@ class ArchivoFoto extends Model
     {
         $acontecimiento = $this->relationLoaded('acontecimiento') ? $this->acontecimiento : null;
 
-        return $this->titulo ?: ($acontecimiento?->titulo ?? 'Fotografía sin título');
+        return $this->titulo ?: ($acontecimiento->titulo ?? 'Fotografía sin título');
     }
 
     public function textoAlternativo(): string

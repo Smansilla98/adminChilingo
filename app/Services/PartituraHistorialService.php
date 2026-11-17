@@ -39,7 +39,7 @@ class PartituraHistorialService
 
             return PartituraVersion::query()->create([
                 'programa_ritmo_id' => $toque->id,
-                'numero' => ($ultima?->numero ?? 0) + 1,
+                'numero' => ($ultima->numero ?? 0) + 1,
                 'score' => $score,
                 'autor' => $autor ? mb_substr($autor, 0, 80) : null,
                 'nota' => $nota ? mb_substr(trim($nota), 0, 200) : null,
@@ -47,7 +47,7 @@ class PartituraHistorialService
         });
     }
 
-    /** @return Collection<int, array<string, mixed>> */
+    /** @return Collection<int, array{numero: int<0, max>, autor: string|null, nota: string|null, fecha: string|null, resumen: array{partes: int, compases: int, golpes: int, instrumentos: int}}> */
     public function listar(ProgramaRitmo $toque, int $limite = 50): Collection
     {
         if (! $this->disponible()) {

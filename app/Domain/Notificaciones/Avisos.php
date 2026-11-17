@@ -36,7 +36,7 @@ class Avisos
         $this->notificaciones->enviar($user, "pago:{$detalle->pago_id}:alumno:{$alumno->id}:cuota:{$detalle->cuota_id}", [
             'tipo' => 'pago_registrado',
             ...ConfigAvisos::texto('pago_registrado', [
-                'alumno' => $alumno->nombre_apellido, 'cuota' => $detalle->cuota?->nombre ?? 'la cuota', 'monto' => self::pesos((float) $detalle->monto),
+                'alumno' => $alumno->nombre_apellido, 'cuota' => $detalle->cuota->nombre ?? 'la cuota', 'monto' => self::pesos((float) $detalle->monto),
             ]),
             'enlace' => 'app://mi-cuenta',
         ], $config['canales']);

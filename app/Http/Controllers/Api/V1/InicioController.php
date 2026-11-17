@@ -111,7 +111,7 @@ class InicioController extends Controller
         }
 
         return response()->json([
-            'saludo' => 'Hola, '.($user->persona?->nombre ?? $user->name),
+            'saludo' => 'Hola, '.($user->persona->nombre ?? $user->name),
             'avisos_no_leidos' => $user->unreadNotifications()->count(),
             'modulos' => $acceso->modulos(),
             'tarjetas' => $tarjetas,

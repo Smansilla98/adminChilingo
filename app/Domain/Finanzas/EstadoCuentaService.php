@@ -69,7 +69,7 @@ class EstadoCuentaService
             $bruto = round((float) $cuota->monto, 2);
             $descuento = $beca ? $beca->descuentoSobre($bruto) : 0.0;
             $netoBase = round($bruto - $descuento, 2);
-            $montoPagado = round((float) ($pagado->get($cuota->id)?->total ?? 0), 2);
+            $montoPagado = round((float) ($pagado->get($cuota->id)->total ?? 0), 2);
             $ultimoPagoId = $pagado->get($cuota->id)?->ultimo_pago_id;
             $pagadoEl = ($f = $fechasPago->get($ultimoPagoId)) ? Carbon::parse($f)->startOfDay() : null;
             $vencida = $cuota->fecha_vencimiento && $cuota->fecha_vencimiento->lt($hoy);

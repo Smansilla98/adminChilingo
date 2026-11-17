@@ -230,7 +230,6 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         foreach ($alumnosPorBloque as $ids) {
             $interseccion = $interseccion === null ? collect($ids) : $interseccion->intersect($ids);
         }
-        $interseccion = $interseccion ?? collect();
 
         $cuotasPorBloque = [];
         foreach ($bloqueIds as $bid) {
