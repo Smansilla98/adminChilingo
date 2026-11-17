@@ -10,6 +10,73 @@
         : [];
 @endphp
 
+    @php
+        $ficha = $programaRitmo->mediosNormalizados()['ficha'] ?? null;
+        $puedeEditarFicha = (bool) auth()->user()?->can('partituras.admin');
+        $instrumentosFicha = \App\Support\PartituraScore::INSTRUMENTOS;
+    @endphp
+    @if($ficha || $puedeEditarFicha)
+    <section class="prog-ficha mb-3" aria-label="Ficha del toque">
+        @if($ficha)
+        <dl class="row small mb-2">
+            @if(!empty($ficha['origen']))
+                <dt class="col-sm-3">Origen</dt><dd class="col-sm-9">{{ $ficha['origen'] }}</dd>
+            @endif
+            @if(!empty($ficha['compas']))
+                <dt class="col-sm-3">Compás</dt><dd class="col-sm-9">{{ $ficha['compas'] }}</dd>
+            @endif
+            @if(!empty($ficha['tempo_sugerido']))
+                <dt class="col-sm-3">Tempo sugerido</dt><dd class="col-sm-9">{{ $ficha['tempo_sugerido'] }} bpm</dd>
+            @endif
+            @if(!empty($ficha['instrumentos']))
+                <dt class="col-sm-3">Instrumentos</dt>
+                <dd class="col-sm-9">{{ collect($ficha['instrumentos'])->map(fn ($id) => $instrumentosFicha[$id] ?? $id)->implode(', ') }}</dd>
+            @endif
+            @if(!empty($ficha['nota']))
+                <dt class="col-sm-3">Nota de la escuela</dt><dd class="col-sm-9">{{ $ficha['nota'] }}</dd>
+            @endif
+        </dl>
+        @endif
+        @if($puedeEditarFicha)
+        <details>
+            <summary class="small">Editar la ficha del toque</summary>
+            <form method="POST" action="{{ route('programa.toque.ficha', $programaRitmo) }}" class="mt-2">
+                @csrf
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label small" for="ficha-origen">Origen</label>
+                        <input id="ficha-origen" class="form-control form-control-sm" name="origen" maxlength="120" value="{{ $ficha['origen'] ?? '' }}" placeholder="Ej. Ensayo de Ciudad Jardín, 2019">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small" for="ficha-compas">Compás</label>
+                        <input id="ficha-compas" class="form-control form-control-sm" name="compas" maxlength="8" value="{{ $ficha['compas'] ?? '' }}" placeholder="4/4">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small" for="ficha-tempo">Tempo sugerido (bpm)</label>
+                        <input id="ficha-tempo" class="form-control form-control-sm" type="number" min="30" max="260" name="tempo_sugerido" value="{{ $ficha['tempo_sugerido'] ?? '' }}">
+                    </div>
+                    <div class="col-12">
+                        <span class="form-label small d-block">Instrumentos que tocan</span>
+                        @foreach($instrumentosFicha as $idInst => $nombreInst)
+                            @if($idInst !== 'todos')
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="instrumentos[]" value="{{ $idInst }}" id="ficha-inst-{{ $idInst }}" @checked(in_array($idInst, $ficha['instrumentos'] ?? [], true))>
+                                <label class="form-check-label small" for="ficha-inst-{{ $idInst }}">{{ $nombreInst }}</label>
+                            </div>
+                            @endif
+                        @endforeach
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small" for="ficha-nota">Nota de la escuela</label>
+                        <textarea id="ficha-nota" class="form-control form-control-sm" name="nota" rows="2" maxlength="500">{{ $ficha['nota'] ?? '' }}</textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary mt-2">Guardar ficha</button>
+            </form>
+        </details>
+        @endif
+    </section>
+    @endif
 @if($tieneScore)
 <div class="prog-score-card">
     <div class="prog-score-card__head">

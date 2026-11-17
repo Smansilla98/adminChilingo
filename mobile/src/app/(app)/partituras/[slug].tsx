@@ -49,6 +49,8 @@ interface Toque {
   lectura: Lectura | null;
   score: Score | null;
   videos: { clave: string; url: string }[];
+  /** Ficha redactada por la escuela (origen, compás, tempo sugerido, instrumentos, nota). */
+  ficha?: { origen: string | null; compas: string | null; tempo_sugerido: number | null; instrumentos: string[]; nota: string | null } | null;
 }
 
 /** Leer, escribir y escuchar el toque. El audio y el PDF salen de la API. */
@@ -383,6 +385,16 @@ export default function Partitura() {
       <Titulo>{t.nombre}</Titulo>
       <Tenue>{t.anio}° año{t.autor ? ` · ${t.autor}` : ''}{lectura ? ` · ${lectura.compas}` : ''}{t.publicado === false ? ' · oculto' : ''}</Tenue>
       {t.resumen && <Tenue>{t.resumen}</Tenue>}
+      {t.ficha && (
+        <View style={{ gap: 4 }}>
+          <Subtitulo>Ficha</Subtitulo>
+          {t.ficha.origen && <Tenue>Origen: {t.ficha.origen}</Tenue>}
+          {t.ficha.compas && <Tenue>Compás: {t.ficha.compas}</Tenue>}
+          {t.ficha.tempo_sugerido && <Tenue>Tempo sugerido: {t.ficha.tempo_sugerido} bpm</Tenue>}
+          {t.ficha.instrumentos.length > 0 && <Tenue>Instrumentos: {t.ficha.instrumentos.map((id) => nombreDe(id)).join(', ')}</Tenue>}
+          {t.ficha.nota && <Tenue>Nota de la escuela: {t.ficha.nota}</Tenue>}
+        </View>
+      )}
       {enConteo && <Aviso texto="Conteo…" />}
       {aviso && <Tenue>{aviso}</Tenue>}
 

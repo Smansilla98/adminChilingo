@@ -364,6 +364,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/programa/discografia/{disco}/editar', [DiscografiaController::class, 'edit'])->name('programa.discos.edit');
         Route::put('/programa/discografia/{disco}', [DiscografiaController::class, 'update'])->name('programa.discos.update');
         Route::get('/programa/gestion', [ProgramaGestionController::class, 'index'])->name('programa.gestion');
+        Route::post('/programa/toque/{programaRitmo:slug}/ficha', [\App\Http\Controllers\PartituraFichaController::class, 'guardar'])
+            ->name('programa.toque.ficha');
         Route::get('/programa/revision', [\App\Http\Controllers\PartituraRevisionController::class, 'index'])->name('programa.revision');
         Route::post('/programa/revision/{programaRitmo:id}', [\App\Http\Controllers\PartituraRevisionController::class, 'validar'])
             ->whereNumber('programaRitmo')->middleware('throttle:60,1')->name('programa.revision.validar');
