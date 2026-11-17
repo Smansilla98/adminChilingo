@@ -84,6 +84,18 @@ class ComprobanteCuotaAlumnoGestionController extends Controller
         return view('comprobante_cuota_gestion.show', compact('comprobanteCuotaAlumno'));
     }
 
+    /** Comprobante de pago de cuota en PDF (mismo alcance que la ficha). */
+    public function pdf(int $id)
+    {
+        $comprobanteCuotaAlumno = ComprobanteCuotaAlumno::query()->findOrFail($id);
+        $this->authorizeVer($comprobanteCuotaAlumno);
+
+        return response(\App\Domain\Finanzas\ComprobanteCuotaPdf::pdf($comprobanteCuotaAlumno), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.\App\Domain\Finanzas\ComprobanteCuotaPdf::nombreArchivo($comprobanteCuotaAlumno).'"',
+        ]);
+    }
+
     public function comprobante(int $id)
     {
         $comprobanteCuotaAlumno = ComprobanteCuotaAlumno::query()->findOrFail($id);

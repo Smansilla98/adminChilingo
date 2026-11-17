@@ -156,6 +156,17 @@ class ComprobanteController extends Controller
         return $propio || ($user->acceso()->puede('comprobantes.view') && $servicio->puedeVer($user, $c));
     }
 
+    /** Comprobante de pago de cuota en PDF (descarga). Mismo alcance que el detalle. */
+    public function pdf(Request $request, ComprobanteCuotaAlumno $comprobante, ComprobanteService $servicio): \Illuminate\Http\Response
+    {
+        abort_unless($request->user()->acceso()->puede('comprobantes.view') && $servicio->puedeVer($request->user(), $comprobante), 403);
+
+        return response(\App\Domain\Finanzas\ComprobanteCuotaPdf::pdf($comprobante), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.\App\Domain\Finanzas\ComprobanteCuotaPdf::nombreArchivo($comprobante).'"',
+        ]);
+    }
+
     /** @return array<string, mixed> */
     private function comprobante(Request $request, ComprobanteCuotaAlumno $c, bool $detalle): array
     {
