@@ -33,41 +33,6 @@ class PreinscripcionTest extends TestCase
         return Preinscripcion::query()->create(array_merge($datos, ['estado' => 'pendiente', 'fecha_nacimiento' => $datos['fecha_nacimiento']]));
     }
 
-    public function test_el_publico_deja_la_preinscripcion_en_lista_de_espera(): void
-    {
-        $this->post(route('inscripcion.store'), $this->datos())->assertRedirect()->assertSessionHas('success');
-
-        $pre = Preinscripcion::query()->sole();
-        $this->assertSame('pendiente', $pre->estado);
-        $this->assertSame('30555111', $pre->dni, 'el DNI se guarda sin puntos');
-        $this->assertSame(0, Alumno::query()->count(), 'no crea el alumno hasta que administración lo apruebe');
-    }
-
-    public function test_el_trampa_para_robots_no_guarda_nada(): void
-    {
-        $this->post(route('inscripcion.store'), $this->datos(['sitio_web' => 'spam']))->assertRedirect();
-        $this->assertSame(0, Preinscripcion::query()->count());
-    }
-
-    public function test_un_menor_tiene_que_dejar_datos_del_tutor(): void
-    {
-        $nacimiento = now()->subYears(12)->toDateString();
-        $this->post(route('inscripcion.store'), $this->datos(['fecha_nacimiento' => $nacimiento]))->assertSessionHasErrors('tutor_nombre');
-        $this->assertSame(0, Preinscripcion::query()->count());
-
-        $this->post(route('inscripcion.store'), $this->datos([
-            'fecha_nacimiento' => $nacimiento, 'tutor_nombre' => 'Marta Ríos', 'tutor_vinculo' => 'Madre', 'tutor_telefono' => '1166660000',
-        ]))->assertRedirect();
-        $this->assertSame(1, Preinscripcion::query()->count());
-    }
-
-    public function test_el_bloque_tiene_que_ser_de_la_sede(): void
-    {
-        $otraSede = $this->sede('Otra');
-        $otroBloque = $this->bloque($otraSede);
-        $this->post(route('inscripcion.store'), $this->datos(['bloque_id' => $otroBloque->id]))->assertSessionHasErrors('bloque_id');
-    }
-
     public function test_aprobar_crea_alumno_inscripto_y_avisa(): void
     {
         $admin = $this->admin();
@@ -141,12 +106,6 @@ class PreinscripcionTest extends TestCase
         $this->getJson('/api/v1/preinscripciones')->assertOk()->assertJsonPath('data.0.nombre', 'Lucía');
         $this->postJson("/api/v1/preinscripciones/{$pre->id}/aprobar")->assertOk()->assertJsonPath('estado', 'aprobada');
         $this->getJson('/api/v1/preinscripciones?estado=aprobada')->assertOk()->assertJsonCount(1, 'data');
-    }
-
-    public function test_formulario_publico_se_muestra(): void
-    {
-        $this->datos();
-        $this->get(route('inscripcion.create'))->assertOk()->assertSee('Quiero inscribirme');
     }
 
     public function test_el_formulario_se_puede_incrustar_y_el_resto_de_la_app_no(): void

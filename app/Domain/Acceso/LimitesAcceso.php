@@ -30,8 +30,8 @@ final class LimitesAcceso
         });
 
         RateLimiter::for('preinscripcion', fn (Request $request) => [
-            Limit::perMinute(3)->by('pre:'.$request->ip()),
-            Limit::perDay(20)->by('pre-dia:'.$request->ip()),
+            Limit::perMinute(12)->by('pre:'.$request->ip()),
+            Limit::perDay(60)->by('pre-dia:'.$request->ip()),
         ]);
     }
 }

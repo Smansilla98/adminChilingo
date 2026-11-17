@@ -7,7 +7,6 @@ use App\Models\Auditoria;
 use App\Models\Bloque;
 use App\Models\Persona;
 use App\Models\Preinscripcion;
-use App\Models\Sede;
 use App\Models\User;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\DB;
@@ -21,28 +20,6 @@ use Illuminate\Validation\ValidationException;
  */
 class PreinscripcionService
 {
-    /** @param  array<string, mixed>  $datos */
-    public function crear(array $datos): Preinscripcion
-    {
-        $sede = Sede::query()->where('activo', true)->findOrFail($datos['sede_id']);
-        $bloqueId = $datos['bloque_id'] ?? null;
-        if ($bloqueId !== null) {
-            $bloque = Bloque::query()->where('activo', true)->where('sede_id', $sede->id)->find($bloqueId);
-            if (! $bloque) {
-                throw ValidationException::withMessages(['bloque_id' => 'Ese bloque no es de la sede elegida.']);
-            }
-        }
-
-        $pre = Preinscripcion::query()->create(array_merge($datos, [
-            'sede_id' => $sede->id,
-            'bloque_id' => $bloqueId,
-            'estado' => Preinscripcion::PENDIENTE,
-        ]));
-        Auditoria::registrar('preinscripcion.crear', $pre, null, ['sede_id' => $sede->id]);
-
-        return $pre;
-    }
-
     /**
      * @return Alumno el alumno inscripto
      */
