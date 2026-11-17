@@ -44,6 +44,7 @@ export default function MiActividad() {
       <Boton titulo="Mis préstamos de instrumentos" icono="inventory-2" variante="secundario" onPress={() => router.push('/mis-prestamos' as never)} />
 
       <Boton titulo="Reinscripción del ciclo" icono="how-to-reg" variante="secundario" onPress={() => router.push('/mi-reinscripcion' as never)} />
+      <Boton titulo="Calendario académico" icono="event-note" variante="secundario" onPress={() => router.push('/ciclo' as never)} />
 
       <FiltrosChips<Seccion>
         todos={false}
