@@ -13,8 +13,6 @@
         .num { text-align: right; }
         .total { font-size: 16px; font-weight: bold; }
         .muted { color: #555; }
-        .firma { margin-top: 48px; display: flex; gap: 48px; }
-        .firma div { flex: 1; border-top: 1px solid #333; padding-top: 4px; text-align: center; }
         .actions { margin-bottom: 16px; }
         @media print { .actions { display: none; } body { margin: 12px; } }
     </style>
@@ -55,7 +53,6 @@
     <p class="total">Total: {{ $plata($l->monto_total) }}</p>
     @if($l->aprobadaPor)<p class="muted">Aprobó: {{ $l->aprobadaPor->name }}{{ $l->aprobada_at ? ' el '.$l->aprobada_at->format('d/m/Y') : '' }}</p>@endif
 
-    <div class="firma"><div>Firma del docente</div><div>Por La Chilinga</div></div>
     <p class="muted" style="margin-top:16px">Generado {{ now()->format('d/m/Y H:i') }}</p>
 </body>
 </html>
