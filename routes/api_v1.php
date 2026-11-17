@@ -443,6 +443,9 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::middleware('permiso:alumnos.view')->group(function () {
         Route::get('ciclos-lectivos/{ciclo}/calendario', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'calendario'])->name('ciclos.api.calendario');
     });
+    Route::middleware('permiso:cuotas.update')->group(function () {
+        Route::post('ciclos-lectivos/{ciclo}/montos', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'montos'])->whereNumber('ciclo')->name('ciclos.api.montos');
+    });
     Route::middleware('permiso:cuotas.create')->group(function () {
         Route::post('ciclos-lectivos/{ciclo}/cuotas', [\App\Http\Controllers\Api\V1\CicloLectivoController::class, 'cuotas'])->name('ciclos.api.cuotas');
     });

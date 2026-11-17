@@ -81,6 +81,45 @@
                 <div class="col-12"><button class="btn btn-outline-primary">Generar cuotas que falten</button></div>
             </form>
         @endcan
+        @can('cuotas.update')
+            <h2 class="h6 mt-4">Valor de las cuotas del ciclo</h2>
+            <p class="small text-muted">Cambia el monto de las cuotas de marzo a febrero que ya existen. Primero mirá la vista previa. Los pagos ya registrados no se tocan. Si dejás vacío el monto de un bloque, usa el monto base.</p>
+            <form method="POST" action="{{ route('ciclos.montos', $ciclo) }}">
+                @csrf
+                <div class="row g-2 align-items-end mb-2">
+                    <div class="col-sm-6"><label class="form-label small" for="monto-base-ciclo">Monto base</label><input id="monto-base-ciclo" type="number" step="0.01" min="0" name="monto" class="form-control" value="{{ old('monto') }}" required></div>
+                </div>
+                <div class="row g-2 mb-2">
+                    @foreach($bloques as $b)
+                        <div class="col-sm-6"><label class="form-label small" for="monto-b{{ $b->id }}">{{ $b->nombre }} <span class="text-muted">({{ $b->sede?->nombre ?? '—' }})</span></label><input id="monto-b{{ $b->id }}" type="number" step="0.01" min="0" name="montos[{{ $b->id }}]" class="form-control form-control-sm" value="{{ old('montos.'.$b->id) }}" placeholder="Monto base"></div>
+                    @endforeach
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" name="accion" value="previa">Ver vista previa</button>
+                    @if(session('previa_montos'))
+                        <button class="btn btn-primary" name="accion" value="aplicar" data-confirm="¿Cambiar el valor de las cuotas? Los pagos no se tocan.">Aplicar cambios</button>
+                    @endif
+                </div>
+            </form>
+            @if($previa = session('previa_montos'))
+                <h3 class="h6 mt-3">Vista previa: {{ $previa['total'] }} cuotas</h3>
+                <p class="small text-muted">Cambian {{ $previa['cambian'] }} · ya tienen ese valor {{ $previa['iguales'] }} · con pagos registrados {{ $previa['con_pagos'] }}</p>
+                <table class="table table-sm">
+                    <thead><tr><th>Bloque</th><th>Mes</th><th class="text-end">Hoy</th><th class="text-end">Nuevo</th><th class="text-end">Pagos</th></tr></thead>
+                    <tbody>
+                        @foreach($previa['items'] as $it)
+                            <tr class="{{ $it['cambia'] ? '' : 'text-muted' }}">
+                                <td>{{ $it['bloque'] }}</td>
+                                <td class="ito-mono">{{ $it['periodo'] }}</td>
+                                <td class="text-end">$ {{ number_format($it['monto_actual'], 2, ',', '.') }}</td>
+                                <td class="text-end">$ {{ number_format($it['monto_nuevo'], 2, ',', '.') }}</td>
+                                <td class="text-end">{{ $it['pagos'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        @endcan
     </div>
 </div>
 <a href="{{ route('ciclos.index') }}">Volver a ciclos</a>

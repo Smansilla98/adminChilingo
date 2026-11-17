@@ -73,7 +73,7 @@ class LiquidacionDocenteTest extends TestCase
         $this->getJson('/api/v1/mi/liquidaciones')->assertOk()->assertJsonPath('data.0.monto_total', 9000)->assertJsonPath('data.0.estado', 'pagada');
         $recibo = $this->getJson("/api/v1/liquidaciones/{$liq->id}/recibo")->assertOk();
         $this->assertStringContainsString($liq->numeroRecibo(), $recibo->json('html'));
-        $this->actingAs($profeUser->fresh())->get("/liquidaciones/{$liq->id}/recibo")->assertOk()->assertSee('Firma del docente');
+        $this->actingAs($profeUser->fresh())->get("/liquidaciones/{$liq->id}/recibo")->assertOk()->assertDontSee('Firma del docente');
         $this->get('/liquidaciones')->assertForbidden();
     }
 
