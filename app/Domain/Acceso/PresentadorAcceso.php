@@ -100,7 +100,7 @@ class PresentadorAcceso
             $via = [];
             foreach ($acceso->origenesDe($permiso) as $origen) {
                 [$tipo, $clave] = explode(':', $origen, 2) + [1 => ''];
-                $rol = explode(':', $clave)[0] ?? '';
+                $rol = explode(':', $clave)[0];
                 $via[] = $tipo === 'permiso' ? 'Permiso adicional' : CatalogoPermisos::nombreRol($rol);
             }
             if ($acceso->esSuperadmin() && $via === []) {

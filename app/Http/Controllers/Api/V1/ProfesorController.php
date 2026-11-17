@@ -54,7 +54,7 @@ class ProfesorController extends Controller
                 'persona_id' => $p->persona_id,
                 'cantidad_bloques' => $p->bloques_count,
                 'bloques' => $p->bloques->pluck('nombre')->values(),
-                'sedes' => $p->sedesConRol->map(fn ($s) => $s->nombre.' ('.(Profesor::ROLES_SEDE[$s->pivot->rol] ?? $s->pivot->rol).')')->values(),
+                'sedes' => $p->sedesConRol->map(fn ($s) => $s->nombre.' ('.(Profesor::ROLES_SEDE[$s->pivot->getAttribute('rol')] ?? $s->pivot->getAttribute('rol')).')')->values(),
                 'usuario' => $p->user?->username,
             ])->values(),
             'meta' => ['current_page' => $pagina->currentPage(), 'last_page' => $pagina->lastPage(), 'total' => $pagina->total()],
@@ -89,8 +89,8 @@ class ProfesorController extends Controller
         $servicio->actualizar(
             $profesor,
             $datos,
-            array_key_exists('bloques', $datos) ? $this->bloques($datos) : $profesor->bloques->map(fn ($b) => ['bloque_id' => $b->id, 'rol' => $b->pivot->rol])->all(),
-            array_key_exists('sedes', $datos) ? $this->sedes($datos) : $profesor->sedesConRol->map(fn ($s) => ['sede_id' => $s->id, 'rol' => $s->pivot->rol])->all(),
+            array_key_exists('bloques', $datos) ? $this->bloques($datos) : $profesor->bloques->map(fn ($b) => ['bloque_id' => $b->id, 'rol' => $b->pivot->getAttribute('rol')])->all(),
+            array_key_exists('sedes', $datos) ? $this->sedes($datos) : $profesor->sedesConRol->map(fn ($s) => ['sede_id' => $s->id, 'rol' => $s->pivot->getAttribute('rol')])->all(),
         );
 
         return response()->json(['data' => $this->ficha($request, $profesor->fresh())]);
@@ -180,10 +180,10 @@ class ProfesorController extends Controller
                 'id' => $b->id,
                 'nombre' => $b->nombre,
                 'sede' => $b->sede?->nombre,
-                'rol' => $b->pivot->rol,
+                'rol' => $b->pivot->getAttribute('rol'),
                 'cantidad_alumnos' => $b->cantidad_alumnos,
             ])->values(),
-            'sedes' => $profesor->sedesConRol->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre, 'rol' => $s->pivot->rol, 'rol_nombre' => Profesor::ROLES_SEDE[$s->pivot->rol] ?? $s->pivot->rol])->values(),
+            'sedes' => $profesor->sedesConRol->map(fn ($s) => ['id' => $s->id, 'nombre' => $s->nombre, 'rol' => $s->pivot->getAttribute('rol'), 'rol_nombre' => Profesor::ROLES_SEDE[$s->pivot->getAttribute('rol')] ?? $s->pivot->getAttribute('rol')])->values(),
             'areas' => $profesor->coordinadorAreas->pluck('area')->values(),
             'eventos' => $profesor->eventos->map(fn ($e) => ['id' => $e->id, 'titulo' => $e->titulo, 'fecha' => $e->fecha?->toDateString()])->values(),
             'alumno_id' => $alumno?->id,

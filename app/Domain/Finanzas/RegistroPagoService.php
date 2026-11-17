@@ -238,8 +238,8 @@ class RegistroPagoService
             $alumnoId = (int) $linea['alumno_id'];
             $cuotaRef = (float) $cuota->monto;
             $sede = LiquidacionDocente::sedeParaCuota($cuota);
-            $sedeNombre = $sede?->nombre ?? $cuota->bloque?->sede?->nombre ?? $cuota->sede?->nombre
-                ?? Alumno::query()->with('sede')->find($alumnoId)?->sede?->nombre ?? '—';
+            $sedeNombre = $sede->nombre ?? $cuota->bloque->sede->nombre ?? $cuota->sede?->nombre
+                ?? Alumno::query()->with('sede')->find($alumnoId)->sede->nombre ?? '—';
 
             $det = ['pago_id' => $pago->id, 'alumno_id' => $alumnoId, 'cuota_id' => (int) $linea['cuota_id'], 'monto' => round((float) $linea['monto'], 2)];
             if ($conAbono) {
@@ -351,14 +351,14 @@ class RegistroPagoService
             }
             $bid = (int) $cuota->bloque_id;
             $query->where(fn ($q) => $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))->orWhere('bloque_id', $bid));
-            $ctx = $cuota->bloque?->nombre ?? '';
+            $ctx = $cuota->bloque->nombre ?? '';
         } elseif ($alcance === Cuota::ALCANCE_GENERAL) {
             $query->where(fn ($q) => $q->whereHas('bloques')->orWhereNotNull('bloque_id'));
             $ctx = 'Cuota general';
         } elseif ($alcance === Cuota::ALCANCE_SEDE && $cuota->sede_id) {
             $sid = (int) $cuota->sede_id;
             $query->where(fn ($q) => $q->whereHas('bloques', fn ($b) => $b->where('bloques.sede_id', $sid))->orWhere('sede_id', $sid));
-            $ctx = $cuota->sede?->nombre ?? 'Sede';
+            $ctx = $cuota->sede->nombre ?? 'Sede';
         } else {
             return [];
         }

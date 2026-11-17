@@ -19,24 +19,6 @@ parameters:
 			path: app/Console/Commands/ImportChilingaExcelCommand.php
 
 		-
-			message: '#^Offset ''errores'' on array\{ok\: bool, enviados\: int, errores\: int, mensaje\: string, detalles\: array\<int, array\<string, mixed\>\>\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Console/Commands/MailResumenAdminCommand.php
-
-		-
-			message: '#^Offset ''errores'' on array\{ok\: bool, enviados\: int, errores\: int, mensaje\: string, detalles\: array\<int, array\<string, mixed\>\>\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Console/Commands/WhatsAppResumenAdminCommand.php
-
-		-
-			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Domain/Acceso/PresentadorAcceso.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:cronologico\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -51,12 +33,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\<\*, \*, \*\>\:\:publicados\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: app/Domain/Archivo/ArchivoConsultas.php
-
-		-
-			message: '#^Method App\\Domain\\Archivo\\ArchivoConsultas\:\:personasPublicas\(\) should return Illuminate\\Support\\Collection\<int, array\{clave\: string, nombre\: string, fotos\: int\}\> but returns Illuminate\\Support\\Collection\<int, array\{clave\: string, persona_id\: int\<0, max\>\|null, nombre\: non\-empty\-string, fotos\: int\<0, max\>\}\>\.$#'
-			identifier: return.type
 			count: 1
 			path: app/Domain/Archivo/ArchivoConsultas.php
 
@@ -91,12 +67,6 @@ parameters:
 			path: app/Domain/Finanzas/CobroCuotasService.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>total" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Domain/Finanzas/EstadoCuentaService.php
-
-		-
 			message: '#^Method App\\Domain\\Finanzas\\RegistroPagoService\:\:cuotasParaCobrar\(\) should return Illuminate\\Support\\Collection\<int, array\<string, mixed\>\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int\<0, max\>, monto\: float, label\: non\-falsy\-string, nombre\: string, anio\: int\<0, max\>, mes\: int\<0, max\>\|null, alcance\: string, bloque_id\: int\<0, max\>\|null, \.\.\.\}\>\.$#'
 			identifier: return.type
 			count: 1
@@ -105,26 +75,8 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 6
+			count: 1
 			path: app/Domain/Finanzas/RegistroPagoService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Domain/Notificaciones/Avisos.php
-
-		-
-			message: '#^Offset ''success'' on array\{success\: bool, sid\?\: string, status\?\: string, accepted_by_provider\?\: bool, delivered_to_recipient\?\: bool, error\?\: string\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Domain/Notificaciones/NotificacionService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>persona_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Domain/Personas/BackfillPersonas.php
 
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
@@ -145,18 +97,6 @@ parameters:
 			path: app/Domain/Reportes/ReportesService.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Domain/Reportes/ReportesService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 3
-			path: app/Domain/Reportes/ReportesService.php
-
-		-
 			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Bloque\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -165,12 +105,6 @@ parameters:
 		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Domain/VillaGesell/VillaGesellAdmin.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Domain/VillaGesell/VillaGesellAdmin.php
 
@@ -197,12 +131,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 4
 			path: app/Http/Controllers/Api/V1/AgendaController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Bloque\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AlumnoController.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\<\*, \*, \*\>\:\:publicadas\(\)\.$#'
@@ -247,18 +175,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/BecaController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>nombre_completo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Api/V1/BibliotecaController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Profesor\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/BloqueController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 3
@@ -301,18 +217,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/InicioController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Api/V1/InicioController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>nombre_completo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Api/V1/MeController.php
-
-		-
 			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -331,18 +235,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/PartituraController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Bloque\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Sede\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/PersonaController.php
-
-		-
 			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -355,34 +247,10 @@ parameters:
 			path: app/Http/Controllers/Api/V1/PersonaController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Bloque\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Sede\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/ProfesorController.php
-
-		-
-			message: '#^Offset ''mensajes'' on array\{saludo\: string, mensajes\: array\<int, array\<string, mixed\>\>, resumen\: array\<string, int\>, todo_ok\: bool\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Http/Controllers/Api/V1/RecordatorioController.php
-
-		-
-			message: '#^Offset ''ok'' on array\{ok\: bool, enviados\: int, errores\: int, mensaje\: string, detalles\: array\<int, array\<string, mixed\>\>\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 2
-			path: app/Http/Controllers/Api/V1/RecordatorioController.php
 
 		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
@@ -421,12 +289,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/UsuarioController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>nombre_completo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Http/Controllers/Api/V1/UsuarioController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 3
@@ -451,46 +313,10 @@ parameters:
 			path: app/Http/Controllers/Archivo/PublicoController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>portada" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Archivo/PublicoController.php
-
-		-
 			message: '#^Instanceof between Carbon\\Carbon and Carbon\\Carbon will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
 			count: 2
 			path: app/Http/Controllers/CalendarioController.php
-
-		-
-			message: '#^Variable \$interseccion on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Http/Controllers/ComprobanteCuotaAlumnoPublicController.php
-
-		-
-			message: '#^Expression on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.expr
-			count: 1
-			path: app/Http/Controllers/HubSearchController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Http/Controllers/HubSearchController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>nombre_apellido" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/HubSearchController.php
-
-		-
-			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Bloque\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/HubSearchController.php
 
 		-
 			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
@@ -571,24 +397,6 @@ parameters:
 			path: app/Models/Alumno.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>titulo" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Models/ArchivoFoto.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>nombre" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Models/Asignacion.php
-
-		-
-			message: '#^Offset 1 on array\{list\<string\>, list\<non\-falsy\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Models/BibliotecaTag.php
-
-		-
 			message: '#^Offset ''bloque_id'' on array\{bloque_id\: int, rol\: string\} in isset\(\) always exists and is not nullable\.$#'
 			identifier: isset.offset
 			count: 1
@@ -611,12 +419,6 @@ parameters:
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Models/Profesor.php
-
-		-
-			message: '#^Offset ''contenido'' on array\{titulo\: string, contenido\: string\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Models/ProgramaRitmo.php
 
 		-
 			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
@@ -667,45 +469,9 @@ parameters:
 			path: app/Models/WhatsappMensaje.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>sede_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/AmbitoSedeService.php
-
-		-
 			message: '#^Comparison operation "\<" between int\<1, max\> and 1 is always false\.$#'
 			identifier: smaller.alwaysFalse
 			count: 2
-			path: app/Services/BibliotecaShareMiniatura.php
-
-		-
-			message: '#^Method App\\Services\\BibliotecaShareMiniatura\:\:cargarLogo\(\) never returns resource so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: app/Services/BibliotecaShareMiniatura.php
-
-		-
-			message: '#^Method App\\Services\\BibliotecaShareMiniatura\:\:fotogramaVideo\(\) never returns resource so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: app/Services/BibliotecaShareMiniatura.php
-
-		-
-			message: '#^Method App\\Services\\BibliotecaShareMiniatura\:\:lienzoBase\(\) never returns resource so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: app/Services/BibliotecaShareMiniatura.php
-
-		-
-			message: '#^Offset 0 on array\{0\: int\<0, max\>, 1\: int\<0, max\>, 2\: int, 3\: string, mime\: string, channels\?\: int, bits\?\: int\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/BibliotecaShareMiniatura.php
-
-		-
-			message: '#^Offset 1 on array\{0\: int\<0, max\>, 1\: int\<0, max\>, 2\: int, 3\: string, mime\: string, channels\?\: int, bits\?\: int\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
 			path: app/Services/BibliotecaShareMiniatura.php
 
 		-
@@ -751,18 +517,6 @@ parameters:
 			path: app/Services/PagoDesdeComprobanteService.php
 
 		-
-			message: '#^Method App\\Services\\PartituraHistorialService\:\:listar\(\) should return Illuminate\\Support\\Collection\<int, array\<string, mixed\>\> but returns Illuminate\\Support\\Collection\<int, array\{numero\: int\<0, max\>, autor\: string\|null, nota\: string\|null, fecha\: string\|null, resumen\: array\{partes\: int, compases\: int, golpes\: int, instrumentos\: int\}\}\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/PartituraHistorialService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>numero" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/PartituraHistorialService.php
-
-		-
 			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -793,36 +547,6 @@ parameters:
 			path: app/Services/RecordatorioChatbotService.php
 
 		-
-			message: '#^Offset ''mensajes'' on array\{saludo\: string, mensajes\: array\<int, array\<string, mixed\>\>, resumen\: array\<string, int\>, todo_ok\: bool\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/RecordatorioChatbotService.php
-
-		-
-			message: '#^Offset ''resumen'' on array\{saludo\: string, mensajes\: array\<int, array\<string, mixed\>\>, resumen\: array\<string, int\>, todo_ok\: bool\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/RecordatorioChatbotService.php
-
-		-
-			message: '#^Offset ''saludo'' on array\{saludo\: string, mensajes\: array\<int, array\<string, mixed\>\>, resumen\: array\<string, int\>, todo_ok\: bool\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/RecordatorioChatbotService.php
-
-		-
-			message: '#^Offset ''todo_ok'' on array\{saludo\: string, mensajes\: array\<int, array\<string, mixed\>\>, resumen\: array\<string, int\>, todo_ok\: bool\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/RecordatorioChatbotService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/WhatsAppService.php
-
-		-
 			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1
@@ -845,12 +569,6 @@ parameters:
 			identifier: deadCode.unreachable
 			count: 1
 			path: app/Support/AparienciaTema.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>sede" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Support/LiquidacionDocente.php
 
 		-
 			message: '#^Offset ''den'' on array\{num\: int, den\: int\} on left side of \?\? always exists and is not nullable\.$#'

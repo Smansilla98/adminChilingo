@@ -18,7 +18,7 @@ class RecordatorioController extends Controller
     {
         abort_unless($request->user()->acceso()->puede('notificaciones.send') || $request->user()->isAdmin(), 403);
         $data = $servicio->build($request->user());
-        $data['mensajes'] = collect($data['mensajes'] ?? [])->map(function ($m) {
+        $data['mensajes'] = collect($data['mensajes'])->map(function ($m) {
             unset($m['accion_url']);
 
             return $m;
@@ -36,7 +36,7 @@ class RecordatorioController extends Controller
         }
         $resultado = $servicio->enviar($preview);
 
-        return response()->json($resultado, ($resultado['ok'] ?? false) ? 200 : 422);
+        return response()->json($resultado, $resultado['ok'] ? 200 : 422);
     }
 
     public function mail(Request $request, MailResumenAdminService $servicio): JsonResponse
@@ -45,6 +45,6 @@ class RecordatorioController extends Controller
         $destino = trim($request->string('to')->toString());
         $resultado = $servicio->enviar($destino !== '' ? $destino : null, $request->boolean('preview'));
 
-        return response()->json($resultado, ($resultado['ok'] ?? false) ? 200 : 422);
+        return response()->json($resultado, $resultado['ok'] ? 200 : 422);
     }
 }

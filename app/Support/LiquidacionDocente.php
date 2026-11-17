@@ -12,7 +12,7 @@ class LiquidacionDocente
      */
     public static function sedeParaCuota(Cuota $cuota): ?Sede
     {
-        $sede = $cuota->bloque?->sede ?? $cuota->sede;
+        $sede = $cuota->bloque->sede ?? $cuota->sede;
         if ($sede) {
             return $sede;
         }

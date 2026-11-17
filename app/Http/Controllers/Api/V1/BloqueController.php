@@ -59,7 +59,7 @@ class BloqueController extends Controller
             'cantidad_max_alumnos' => (int) $bloque->cantidad_max_alumnos,
             'tambores' => $bloque->tambores ?? [],
             'profesor' => $bloque->profesor ? ['id' => $bloque->profesor->id, 'nombre' => $bloque->profesor->nombre] : null,
-            'profesores' => $bloque->profesores->map(fn ($p) => ['id' => $p->id, 'nombre' => $p->nombre, 'rol' => $p->pivot->rol])->values(),
+            'profesores' => $bloque->profesores->map(fn ($p) => ['id' => $p->id, 'nombre' => $p->nombre, 'rol' => $p->pivot->getAttribute('rol')])->values(),
             'horarios_detalle' => $bloque->horarios->map(fn (BloqueHorario $h) => [
                 'id' => $h->id,
                 'dia' => (int) $h->dia_semana,

@@ -352,7 +352,7 @@ class ReportesService
         // Scope por sede: filtrar bloques / profesores
         if ($sedeScope !== null) {
             $alumnosPorBloque = $alumnosPorBloque->filter(
-                fn ($r) => in_array((int) ($r['sede']?->id ?? 0), $sedeScope, true)
+                fn ($r) => in_array((int) ($r['sede']->id ?? 0), $sedeScope, true)
             )->values();
             $alumnosPorProfesor = $alumnosPorProfesor->filter(function ($r) use ($sedeScope) {
                 $sedeNombres = Sede::query()->whereIn('id', $sedeScope)->pluck('nombre')->all();
@@ -451,13 +451,13 @@ class ReportesService
                 $r['profesor_nombre'],
                 $r['clases_dictadas'],
                 $r['alumnos_promedio_presentes'],
-                $r['ultimo_bloque']?->nombre ?? '—',
+                $r['ultimo_bloque']->nombre ?? '—',
                 $r['ultima_fecha'] ?? '—',
             ])->all(),
             'alumnos_bloque' => collect($data['alumnosPorBloque'])->map(fn ($r) => [
-                $r['sede']?->nombre ?? '—',
+                $r['sede']->nombre ?? '—',
                 $r['bloque']->nombre,
-                $r['profesor']?->nombre ?? '—',
+                $r['profesor']->nombre ?? '—',
                 $r['alumnos_count'],
                 round((float) ($data['ingresosPorBloque'][$r['bloque']->id] ?? 0), 2),
             ])->all(),

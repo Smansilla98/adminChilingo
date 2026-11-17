@@ -171,6 +171,6 @@ class NotificacionService
             return false;
         }
 
-        return (bool) ($this->whatsapp->send($contenido['titulo']."\n".$contenido['mensaje'], $telefono, ['tipo' => $contenido['tipo']])['success'] ?? false);
+        return (bool) ($this->whatsapp->send($contenido['titulo']."\n".$contenido['mensaje'], $telefono, ['tipo' => $contenido['tipo']])['success']);
     }
 }

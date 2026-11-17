@@ -92,13 +92,13 @@ class BibliotecaShareMiniatura
         return $bin !== '' ? $bin : $this->jpegRespaldoPlano($item);
     }
 
-    /** @return \GdImage|resource|null */
+    /** @return \GdImage|null */
     private function cargarFoto(BibliotecaItem $item)
     {
         if ($item->path && $item->esImagen() && Storage::disk('comprobantes')->exists($item->path)) {
             $raw = Storage::disk('comprobantes')->get($item->path);
             $info = @getimagesizefromstring($raw);
-            if ($info && (($info[0] ?? 0) * ($info[1] ?? 0) > 20000000)) {
+            if ($info && ($info[0] * $info[1] > 20000000)) {
                 $raw = null;
             }
             $img = $raw ? @imagecreatefromstring($raw) : false;
@@ -117,7 +117,7 @@ class BibliotecaShareMiniatura
         return null;
     }
 
-    /** @return \GdImage|resource|null */
+    /** @return \GdImage|null */
     private function fotogramaVideo(string $absPath)
     {
         if (! function_exists('shell_exec') || ! function_exists('exec') || ! is_file($absPath)) {
@@ -149,7 +149,7 @@ class BibliotecaShareMiniatura
         return $img ?: null;
     }
 
-    /** @return \GdImage|resource */
+    /** @return \GdImage */
     private function lienzoBase()
     {
         $im = imagecreatetruecolor(self::ANCHO, self::ALTO);
@@ -222,7 +222,7 @@ class BibliotecaShareMiniatura
         }
     }
 
-    /** @return \GdImage|resource|null */
+    /** @return \GdImage|null */
     private function cargarLogo()
     {
         $path = public_path('images/brand/logo.png');

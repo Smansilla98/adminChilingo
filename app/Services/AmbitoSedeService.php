@@ -129,7 +129,7 @@ class AmbitoSedeService
             return in_array((int) $cuota->sede_id, $ids, true);
         }
 
-        $sid = (int) ($cuota->bloque?->sede_id ?? $cuota->sede_id ?? 0);
+        $sid = (int) ($cuota->bloque->sede_id ?? $cuota->sede_id ?? 0);
 
         return in_array($sid, $ids, true);
     }

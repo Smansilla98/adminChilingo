@@ -92,7 +92,7 @@ class RecordatorioChatbotService
 
         $asistencias = [];
         $cuotas = [];
-        foreach ($data['mensajes'] ?? [] as $mensaje) {
+        foreach ($data['mensajes'] as $mensaje) {
             if (($mensaje['tipo'] ?? '') === 'ok') {
                 continue;
             }
@@ -109,13 +109,13 @@ class RecordatorioChatbotService
             }
         }
 
-        $resumen = $data['resumen'] ?? ['asistencias' => 0, 'cuotas' => 0, 'total' => 0];
+        $resumen = $data['resumen'];
 
         return [
             'fecha_larga' => ucfirst($hoy->locale('es')->isoFormat('dddd D [de] MMMM [de] YYYY')),
             'fecha_corta' => $hoy->format('d/m/Y'),
-            'saludo' => preg_replace('/hoy:?/i', 'hoy:', trim($data['saludo'] ?? '')),
-            'todo_ok' => (bool) ($data['todo_ok'] ?? false),
+            'saludo' => preg_replace('/hoy:?/i', 'hoy:', trim($data['saludo'])),
+            'todo_ok' => (bool) $data['todo_ok'],
             'resumen' => $resumen,
             'asistencias' => $asistencias,
             'cuotas' => $cuotas,

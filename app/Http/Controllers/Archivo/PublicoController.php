@@ -85,7 +85,7 @@ class PublicoController extends Controller
             'siguiente' => $i !== false && $i < $anios->count() - 1 ? $anios[$i + 1] : null,
             'linea' => $this->consultas->linea(),
             'visor' => $fotos->map(fn ($f) => PresentadorArchivo::foto($f))->values(),
-            'seo' => $this->seo("{$anio} en el archivo de La Chilinga", $fotos->count()." fotografías y {$acontecimientos->count()} acontecimientos de {$anio}.", $acontecimientos->first()?->portada ?? $fotos->first(), route('archivo.anio', $anio)),
+            'seo' => $this->seo("{$anio} en el archivo de La Chilinga", $fotos->count()." fotografías y {$acontecimientos->count()} acontecimientos de {$anio}.", $acontecimientos->first()->portada ?? $fotos->first(), route('archivo.anio', $anio)),
         ]);
     }
 

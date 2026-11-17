@@ -46,9 +46,9 @@ class HubSearchController extends Controller
                     ? $alumno->bloques
                     : collect([$alumno->bloque])->filter();
                 $meta = $bloques->map(function ($b) {
-                    $sede = $b?->sede?->nombre;
+                    $sede = $b->sede?->nombre;
 
-                    return trim(($b?->nombre ?? '').($sede ? ' · '.$sede : ''));
+                    return trim(($b->nombre ?? '').($sede ? ' · '.$sede : ''));
                 })->filter()->take(2)->implode(', ');
 
                 $href = ($esAdmin || $user->puedeGestionarOperativo())
@@ -57,7 +57,7 @@ class HubSearchController extends Controller
 
                 $results[] = [
                     'label' => $alumno->nombre_apellido,
-                    'meta' => $meta ?: ($alumno->sede?->nombre ?? 'Alumno'),
+                    'meta' => $meta ?: ($alumno->sede->nombre ?? 'Alumno'),
                     'href' => $href,
                     'icon' => 'bi-person',
                     'group' => 'Alumnos',
@@ -76,7 +76,7 @@ class HubSearchController extends Controller
 
                 $results[] = [
                     'label' => $bloque->nombre,
-                    'meta' => ($bloque->sede?->nombre ?? 'Bloque').' · Abrir matriz',
+                    'meta' => ($bloque->sede->nombre ?? 'Bloque').' · Abrir matriz',
                     'href' => $hrefMatrix,
                     'icon' => 'bi-collection',
                     'group' => 'Bloques',
@@ -105,7 +105,7 @@ class HubSearchController extends Controller
 
             foreach ($cq->get() as $c) {
                 $results[] = [
-                    'label' => 'Comprobante #'.$c->id.' · '.($c->alumno?->nombre_apellido ?? 'Alumno'),
+                    'label' => 'Comprobante #'.$c->id.' · '.($c->alumno->nombre_apellido ?? 'Alumno'),
                     'meta' => 'Pendiente · $'.number_format((float) $c->monto_total, 2, ',', '.'),
                     'href' => route('comprobantes-cuota-alumnos.show', $c->id),
                     'icon' => 'bi-receipt',

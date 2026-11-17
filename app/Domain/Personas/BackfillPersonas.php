@@ -51,7 +51,7 @@ class BackfillPersonas
             foreach ($users as $u) {
                 $prof = DB::table('profesores')->where('user_id', $u->id)->orderBy('id')->first();
                 $alums = DB::table('alumnos')->where('user_id', $u->id)->orderBy('id')->get();
-                $existente = $prof?->persona_id ?? $alums->firstWhere('persona_id', '!=', null)?->persona_id;
+                $existente = $prof->persona_id ?? $alums->firstWhere('persona_id', '!=', null)?->persona_id;
                 $alum = $alums->first();
 
                 $personaId = $existente ? (int) $existente : $crear([

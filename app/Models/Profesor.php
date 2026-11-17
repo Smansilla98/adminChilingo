@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $avatar_class clase CSS del avatar
  * @property int|null $persona_id vínculo con la tabla personas (columna agregada después)
  * @property int|null $user_id usuario de acceso (columna agregada después)
+ * @property-read \Illuminate\Database\Eloquent\Relations\Pivot $pivot tabla pivot (solo existe en consultas por belongsToMany; leer columnas con getAttribute)
  */
 class Profesor extends Model
 {

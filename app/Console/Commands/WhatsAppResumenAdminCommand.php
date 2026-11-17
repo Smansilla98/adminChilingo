@@ -41,6 +41,6 @@ class WhatsAppResumenAdminCommand extends Command
 
         $this->info($resultado['mensaje']);
 
-        return ($resultado['errores'] ?? 0) > 0 ? self::FAILURE : self::SUCCESS;
+        return $resultado['errores'] > 0 ? self::FAILURE : self::SUCCESS;
     }
 }

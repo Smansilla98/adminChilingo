@@ -31,7 +31,7 @@ class MeController extends Controller
                 'id' => $user->id,
                 'username' => $user->username,
                 'email' => $user->email,
-                'nombre' => $user->persona?->nombre_completo ?? $user->name,
+                'nombre' => $user->persona->nombre_completo ?? $user->name,
             ],
             'persona' => $user->persona ? [
                 'id' => $user->persona->id,

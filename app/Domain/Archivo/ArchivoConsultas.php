@@ -183,7 +183,7 @@ class ArchivoConsultas
     /**
      * Personas que aparecen en fotos publicadas, con cuántas veces. Solo el nombre.
      *
-     * @return Collection<int, array{clave: string, nombre: string, fotos: int}>
+     * @return Collection<int, array{clave: string, persona_id: int<0, max>|null, nombre: non-empty-string, fotos: int<0, max>}>
      */
     public function personasPublicas(?string $q = null, int $limite = 40): Collection
     {

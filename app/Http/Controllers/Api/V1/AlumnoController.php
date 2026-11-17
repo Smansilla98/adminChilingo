@@ -117,7 +117,7 @@ class AlumnoController extends Controller
             'tipo_tambor' => $alumno->tipo_tambor,
             'tambor_procedencia' => $alumno->tambor_procedencia,
             'bloque_principal_id' => $alumno->bloque_id,
-            'bloques_detalle' => $alumno->bloques->map(fn ($b) => ['id' => $b->id, 'nombre' => $b->nombre, 'sede' => $b->sede?->nombre, 'principal' => (bool) $b->pivot->es_principal])->values(),
+            'bloques_detalle' => $alumno->bloques->map(fn ($b) => ['id' => $b->id, 'nombre' => $b->nombre, 'sede' => $b->sede?->nombre, 'principal' => (bool) $b->pivot->getAttribute('es_principal')])->values(),
             'es_docente' => $alumno->profesorPerfil() !== null,
             'acciones' => [
                 'editar' => $puedeEditar,

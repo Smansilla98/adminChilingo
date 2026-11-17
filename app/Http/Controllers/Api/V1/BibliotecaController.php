@@ -79,7 +79,7 @@ class BibliotecaController extends Controller
     public function store(Request $request, BibliotecaService $servicio): JsonResponse
     {
         $datos = $request->validate($servicio->reglas(), $servicio->mensajes());
-        $datos['autor_nombre'] ??= $request->user()->persona?->nombre_completo ?? $request->user()->name;
+        $datos['autor_nombre'] ??= $request->user()->persona->nombre_completo ?? $request->user()->name;
         $item = $servicio->publicar($datos, $request->file('archivo'), $request->ip());
 
         return response()->json(['data' => $this->item($item->load(['tags', 'toque']), $this->modera($request))], 201);

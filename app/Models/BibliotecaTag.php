@@ -62,7 +62,7 @@ class BibliotecaTag extends Model
     {
         if (is_string($raw)) {
             preg_match_all('/#?([\p{L}\p{N}_-]{2,40})/u', $raw, $m);
-            $parts = $m[1] ?? [];
+            $parts = $m[1];
         } else {
             $parts = $raw;
         }

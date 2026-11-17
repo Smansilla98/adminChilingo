@@ -185,7 +185,7 @@ class ProgramaRitmo extends Model
             return true;
         }
         foreach ($this->seccionesProfundizacion() as $s) {
-            if (filled($s['contenido'] ?? null)) {
+            if (filled($s['contenido'])) {
                 return true;
             }
         }
