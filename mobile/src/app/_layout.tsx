@@ -10,12 +10,14 @@ import { busterPara, debePersistir, DIA, persister, queryClient } from '@/lib/ca
 import { useSincronizacionAutomatica } from '@/lib/offline';
 import { registrarPush, useNotificacionesPush } from '@/lib/push';
 import { C } from '@/lib/theme';
+import { envolverRaiz, iniciarSentry } from '@/lib/sentry';
 
 SplashScreen.preventAutoHideAsync();
+iniciarSentry();
 
 const tema = { ...DarkTheme, colors: { ...DarkTheme.colors, background: C.fondo, card: C.fondo, primary: C.acento, text: C.texto, border: C.borde } };
 
-export default function RootLayout() {
+function RootLayout() {
   // La caché guardada es de una cuenta: se restaura solo si es de la misma que tiene la sesión.
   const [buster, setBuster] = useState<string | null>(null);
   useEffect(() => {
@@ -70,3 +72,7 @@ function Navegacion() {
     </Stack>
   );
 }
+
+
+/** Errores de la app al reporte de Sentry (solo si hay EXPO_PUBLIC_SENTRY_DSN). */
+export default envolverRaiz(RootLayout);
