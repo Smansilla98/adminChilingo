@@ -8,6 +8,7 @@ use App\Services\PartituraHistorialService;
 use App\Services\ProgramaRitmoMediosService;
 use App\Support\AccesoMaterial;
 use App\Support\ArchivoSeguro;
+use App\Support\FichaToque;
 use App\Support\PartituraMuestras;
 use App\Support\PartituraScore;
 use App\Support\ProgramaRitmoMedios;
@@ -226,6 +227,7 @@ class PartituraController extends Controller
             'resumen' => $toque->resumen,
             'publicado' => (bool) $toque->publicado,
             'tiene_pdf' => ! empty($medios['partitura']['path']),
+            'ficha' => $medios['ficha'] ?? null,
             'lectura' => PartituraScore::lectura($normalizado ?? $score),
             'score' => $normalizado,
             'videos' => collect($medios['videos_base'] ?? [])
@@ -233,6 +235,23 @@ class PartituraController extends Controller
                 ->map(fn ($v, $k) => ['clave' => $k, 'url' => $v['url']])
                 ->values(),
         ]);
+    }
+
+    /** Ficha del toque (origen, compás, tempo sugerido, instrumentos y nota). Solo administración. */
+    public function guardarFicha(Request $request, string $slug): JsonResponse
+    {
+        abort_unless($request->user()->acceso()->puede('partituras.admin'), 403);
+        $toque = ProgramaRitmo::query()->where('slug', $slug)->firstOrFail();
+        $data = $request->validate([
+            'origen' => 'nullable|string|max:120',
+            'compas' => 'nullable|string|max:8',
+            'tempo_sugerido' => 'nullable|integer|min:30|max:260',
+            'instrumentos' => 'nullable|array|max:9',
+            'instrumentos.*' => 'string|max:40',
+            'nota' => 'nullable|string|max:500',
+        ]);
+
+        return response()->json(['ok' => true, 'ficha' => FichaToque::guardar($toque, $data)]);
     }
 
     /** PDF original del toque. Misma autorización que el listado; no usa la ruta web. */

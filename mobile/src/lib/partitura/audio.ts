@@ -162,7 +162,7 @@ export class MotorAudio {
    * Reproduce el plan con un planificador por anticipación: cada tick dispara solo los eventos
    * que caen en los próximos 90 ms, avanzando un puntero (no recorre toda la lista).
    */
-  tocar(score: Score, opts: { bpm: number; soloSeccion?: number | null; rango?: { sectionIdx: number; desde: number; hasta: number } | null; conteo: boolean; metronomo: boolean; loop: boolean; desdeSeg?: number }, onClock: (p: PosicionPlay) => void) {
+  tocar(score: Score, opts: { bpm: number; soloSeccion?: number | null; rango?: { sectionIdx: number; desde: number; hasta: number } | null; conteo: boolean; metronomo: boolean; loop: boolean; desdeSeg?: number; /** Tempo de cada vuelta del loop (entrenamiento de velocidad). */ tempoPorVuelta?: (vuelta: number) => number; vuelta?: number }, onClock: (p: PosicionPlay) => void) {
     this.parar(false);
     const plan = planificar(score, opts);
     const ids = realesDe(score);
@@ -187,7 +187,12 @@ export class MotorAudio {
         else if (ev.inst && ev.stroke) this.disparar(ev.inst, ev.stroke, ev.vel ?? 1, ids);
       }
       if (ahora > plan.duracion + 0.05) {
-        if (opts.loop) this.tocar(score, { ...opts, conteo: false, desdeSeg: undefined }, onClock);
+        if (opts.loop) {
+          // Cada vuelta completa cuenta; el entrenamiento cambia el tempo entre vueltas.
+          const vuelta = (opts.vuelta ?? 0) + 1;
+          const bpm = opts.tempoPorVuelta ? opts.tempoPorVuelta(vuelta) : opts.bpm;
+          this.tocar(score, { ...opts, bpm, vuelta, conteo: false, desdeSeg: undefined }, onClock);
+        }
         else this.parar(true);
       }
     }, 25);

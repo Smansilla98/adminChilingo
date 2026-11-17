@@ -178,6 +178,13 @@ export class MotorAudio {
      * @param {{ desde?: {sectionIdx:number, measureIdx:number}, soloSeccion?: number|null, loop?: boolean, offsetSec?: number, countIn?: boolean }} [opts]
      */
     async play(score, opts = {}) {
+        // Entrenamiento de velocidad: solo en un inicio nuevo (no al reanudar ni al repetir el loop).
+        if (!opts._reanudar) {
+            this._scoreBase = score;
+            this._vuelta = 0;
+            this._tempoPorVuelta = typeof opts.tempoPorVuelta === 'function' ? opts.tempoPorVuelta : null;
+            if (this._tempoPorVuelta) score = { ...score, tempo: this._tempoPorVuelta(0) };
+        }
         this._score = score;
         await this.asegurarContexto();
         this._cortarFuentes();
@@ -333,7 +340,8 @@ export class MotorAudio {
         const musical = Math.max(0, this.musicalAhora() - (this._countInSec || 0));
         const ticks = (musical * TPQ * bpmAnterior) / 60;
         const offsetSec = segundosDeTicks(ticks, score.tempo);
-        await this.play(score, { ...this._playOpts, offsetSec, countIn: false });
+        // Un cambio de tempo a mano manda sobre el entrenamiento: se corta la subida automática.
+        await this.play(score, { ...this._playOpts, offsetSec, countIn: false, tempoPorVuelta: null, _reanudar: false });
     }
 
     /**
@@ -394,7 +402,11 @@ export class MotorAudio {
             if (this.onClock) this.onClock({ musicalSec, ...pos });
             if (musicalSec >= this._duration) {
                 if (this._loop && this._score) {
-                    this.play(this._score, { ...this._playOpts, offsetSec: 0, countIn: false });
+                    // Cada vuelta completa del loop cuenta; el entrenamiento cambia el tempo entre vueltas.
+                    this._vuelta = (this._vuelta || 0) + 1;
+                    const base = this._scoreBase || this._score;
+                    const sc = this._tempoPorVuelta ? { ...base, tempo: this._tempoPorVuelta(this._vuelta) } : this._score;
+                    this.play(sc, { ...this._playOpts, offsetSec: 0, countIn: false, _reanudar: true });
                     return;
                 }
                 this.playing = false;

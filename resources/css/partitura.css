@@ -833,3 +833,8 @@
 .pt-grab-row .pt-input-num { width: 4.5em; }
 .pt-grab-estado { color: var(--pt-muted, #666); }
 .pt-grab-ayuda { margin: 0; color: var(--pt-muted, #666); font-size: 12px; }
+
+/* === Entrenamiento de velocidad (subir tempo entre vueltas del loop) === */
+.pt-entrena-menu { min-width: 260px; padding: 0.6rem; gap: 0.5rem; font-size: 13px; }
+.pt-entrena-menu label { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.pt-ayuda { margin: 0; font-size: 12px; color: var(--pt-muted, #666); }
