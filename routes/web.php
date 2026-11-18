@@ -145,6 +145,19 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
         Route::match(['put', 'post'], '/toque/{programaRitmo:slug}', [ProgramaEdicionController::class, 'updateToque'])
             ->middleware(['throttle:20,1', 'edicion.programa'])
             ->name('programa.toque.update');
+        // === Equipo E: videos multipista (edición con permiso partituras.edit) ===
+        Route::post('/toque/{programaRitmo:slug}/videos', [\App\Http\Controllers\PartituraVideosController::class, 'store'])
+            ->middleware('throttle:10,1')
+            ->name('programa.toque.videos.store');
+        Route::put('/toque/{programaRitmo:slug}/videos/{id}', [\App\Http\Controllers\PartituraVideosController::class, 'update'])
+            ->where('id', 'v[a-z0-9]{8}')
+            ->name('programa.toque.videos.update');
+        Route::post('/toque/{programaRitmo:slug}/videos/{id}/mover', [\App\Http\Controllers\PartituraVideosController::class, 'mover'])
+            ->where('id', 'v[a-z0-9]{8}')
+            ->name('programa.toque.videos.mover');
+        Route::delete('/toque/{programaRitmo:slug}/videos/{id}', [\App\Http\Controllers\PartituraVideosController::class, 'destroy'])
+            ->where('id', 'v[a-z0-9]{8}')
+            ->name('programa.toque.videos.destroy');
         // === Equipo E: grabación de referencia, exportación y transcripción ===
         Route::get('/toque/{programaRitmo:slug}/video/{archivo}', [\App\Http\Controllers\PartituraVideoController::class, 'ver'])
             ->where('archivo', '[0-9]+-[a-z0-9]{16}\\.(mp4|webm|mov)')

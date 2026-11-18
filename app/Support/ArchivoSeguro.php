@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 final class ArchivoSeguro
 {
+    /** Nombres alternativos que dan algunos detectores para el mismo formato. */
+    private const ALIAS_MIME = ['application/mp4' => 'video/mp4', 'application/x-mp4' => 'video/mp4'];
+
     /** Extensión → tipo con que se muestra en el navegador. */
     public const TIPOS = [
         'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp', 'gif' => 'image/gif',
@@ -36,6 +39,8 @@ final class ArchivoSeguro
             return false;
         }
         $detectado = strtolower((string) $archivo->getMimeType());
+        // Algunos detectores dan «application/mp4» para un MP4 real: es video.
+        $detectado = self::ALIAS_MIME[$detectado] ?? $detectado;
         if ($detectado === '' || $detectado === 'application/octet-stream') {
             // Algunos audios y videos no se reconocen; se aceptan, pero se servirán con el tipo de la lista.
             return ! str_starts_with($esperado, 'image/') && $esperado !== 'application/pdf';
