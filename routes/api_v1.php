@@ -306,6 +306,14 @@ Route::middleware(['auth:sanctum', 'activo', 'clave', 'throttle:api'])->group(fu
     Route::get('partituras/{slug}/exportar/{formato}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'exportar'])->whereIn('formato', ['midi', 'musicxml'])->name('partituras.exportar');
     Route::get('partituras/{slug}/audio/{archivo}', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'audio'])->where('archivo', '[0-9]+-[a-z0-9]{16}\.(mp3|wav|m4a|ogg)')->name('partituras.audio');
     Route::post('partituras/{slug}/audio', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'subirAudio'])->middleware(['permiso:partituras.admin', 'throttle:20,1'])->name('partituras.audio.subir');
+    // === Equipo E: videos multipista (lectura y edición para la app) ===
+    Route::get('partituras/{slug}/video/{archivo}', [\App\Http\Controllers\Api\V1\PartituraVideosController::class, 'ver'])
+        ->where('archivo', '[0-9]+-[a-z0-9]{16}\\.(mp4|webm|mov)')
+        ->name('partituras.video');
+    Route::post('partituras/{slug}/videos', [\App\Http\Controllers\Api\V1\PartituraVideosController::class, 'store'])->middleware('throttle:10,1')->name('partituras.videos.store');
+    Route::put('partituras/{slug}/videos/{id}', [\App\Http\Controllers\Api\V1\PartituraVideosController::class, 'update'])->where('id', 'v[a-z0-9]{8}')->name('partituras.videos.update');
+    Route::post('partituras/{slug}/videos/{id}/mover', [\App\Http\Controllers\Api\V1\PartituraVideosController::class, 'mover'])->where('id', 'v[a-z0-9]{8}')->name('partituras.videos.mover');
+    Route::delete('partituras/{slug}/videos/{id}', [\App\Http\Controllers\Api\V1\PartituraVideosController::class, 'destroy'])->where('id', 'v[a-z0-9]{8}')->name('partituras.videos.destroy');
     Route::put('partituras/{slug}/ficha', [PartituraController::class, 'guardarFicha'])->middleware('permiso:partituras.admin')->name('partituras.ficha');
     Route::put('partituras/{slug}/audio/inicio', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'ajustarInicio'])->middleware('permiso:partituras.admin')->name('partituras.audio.inicio');
     Route::post('partituras/{slug}/transcripciones', [\App\Http\Controllers\Api\V1\PartituraGrabacionController::class, 'transcribir'])->middleware(['permiso:partituras.admin', 'throttle:20,1'])->name('partituras.transcribir');

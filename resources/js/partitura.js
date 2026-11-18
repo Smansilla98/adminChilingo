@@ -5,6 +5,7 @@
 import '../css/partitura.css';
 import { EditorPartitura } from './partitura/editor.js';
 import { VisorPartitura } from './partitura/viewer.js';
+import { ReproductorVideos } from './partitura/videos-multipista.js';
 
 function leerJson(el, attr) {
     const raw = el.getAttribute(attr);
@@ -43,6 +44,13 @@ function montar() {
                 : null,
         });
         window.partituraEditor = editor;
+    });
+
+    document.querySelectorAll('[data-videos-multipista]').forEach((el) => {
+        if (el.dataset.ptMounted) return;
+        el.dataset.ptMounted = '1';
+        const videos = leerJson(el, 'data-videos') || [];
+        if (videos.length) new ReproductorVideos(el, { videos });
     });
 
     document.querySelectorAll('[data-partitura-viewer]').forEach((el) => {

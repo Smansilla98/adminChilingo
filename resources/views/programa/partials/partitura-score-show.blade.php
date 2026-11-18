@@ -77,6 +77,107 @@
         @endif
     </section>
     @endif
+@php
+    $videosReproducir = collect($programaRitmo->mediosNormalizados()['videos_multipista'] ?? [])
+        ->map(fn ($v) => [
+            'id' => $v['id'],
+            'titulo' => $v['titulo'],
+            'instrumento' => $v['instrumento'],
+            'orden' => $v['orden'],
+            'offset_seg' => $v['offset_seg'],
+            'url' => route('programa.toque.video', [$programaRitmo, basename($v['archivo'])]),
+        ])->values()->all();
+@endphp
+@php
+    $puedeEditarVideos = \App\Domain\Acceso\EdicionPrograma::puedeEditar(auth()->user());
+    $instrumentosVideo = \App\Support\PartituraScore::INSTRUMENTOS;
+    $listaVideos = collect($programaRitmo->mediosNormalizados()['videos_multipista'] ?? []);
+@endphp
+@if(count($videosReproducir) > 0 || $puedeEditarVideos)
+<section class="prog-videos mb-3" aria-label="Videos del toque">
+    <h3 class="h6 mb-2">Videos por instrumento</h3>
+    @if(count($videosReproducir) > 0)
+    <div data-videos-multipista data-videos="{{ json_encode($videosReproducir, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}"></div>
+    @endif
+    @if($puedeEditarVideos)
+    <details class="mt-2">
+        <summary class="small">Editar los videos (agregar, nombrar, ordenar, offset, quitar)</summary>
+        @foreach($listaVideos as $idx => $video)
+        <div class="border rounded p-2 mt-2">
+            <form method="POST" action="{{ route('programa.toque.videos.update', [$programaRitmo, $video['id']]) }}" class="row g-2 align-items-end">
+                @csrf @method('PUT')
+                <div class="col-md-4">
+                    <label class="form-label small" for="v-{{ $video['id'] }}-titulo">Título</label>
+                    <input id="v-{{ $video['id'] }}-titulo" class="form-control form-control-sm" name="titulo" maxlength="80" value="{{ $video['titulo'] }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small" for="v-{{ $video['id'] }}-inst">Instrumento o voz</label>
+                    <select id="v-{{ $video['id'] }}-inst" class="form-select form-select-sm" name="instrumento">
+                        <option value="voz" @selected($video['instrumento'] === 'voz')>Voz</option>
+                        @foreach($instrumentosVideo as $idInst => $nombreInst)
+                            @if($idInst !== 'todos')
+                            <option value="{{ $idInst }}" @selected($video['instrumento'] === $idInst)>{{ $nombreInst }}</option>
+                            @endif
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small" for="v-{{ $video['id'] }}-off">Offset (s)</label>
+                    <input id="v-{{ $video['id'] }}-off" class="form-control form-control-sm" type="number" step="0.05" min="-10" max="10" name="offset_seg" value="{{ $video['offset_seg'] }}">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Guardar cambios</button>
+                </div>
+            </form>
+            <div class="d-flex gap-1 mt-2">
+                <form method="POST" action="{{ route('programa.toque.videos.mover', [$programaRitmo, $video['id']]) }}">
+                    @csrf
+                    <input type="hidden" name="direccion" value="arriba">
+                    <button class="btn btn-sm btn-outline-secondary" @disabled($idx === 0) aria-label="Subir en el orden">Subir</button>
+                </form>
+                <form method="POST" action="{{ route('programa.toque.videos.mover', [$programaRitmo, $video['id']]) }}">
+                    @csrf
+                    <input type="hidden" name="direccion" value="abajo">
+                    <button class="btn btn-sm btn-outline-secondary" @disabled($idx === $listaVideos->count() - 1) aria-label="Bajar en el orden">Bajar</button>
+                </form>
+                <form method="POST" action="{{ route('programa.toque.videos.destroy', [$programaRitmo, $video['id']]) }}" onsubmit="return confirm('¿Quitar este video del toque?')">
+                    @csrf @method('DELETE')
+                    <button class="btn btn-sm btn-outline-danger">Quitar</button>
+                </form>
+            </div>
+        </div>
+        @endforeach
+        @if($listaVideos->count() < \App\Support\VideosMultipista::MAX)
+        <form method="POST" action="{{ route('programa.toque.videos.store', $programaRitmo) }}" enctype="multipart/form-data" class="row g-2 align-items-end mt-2">
+            @csrf
+            <div class="col-md-4">
+                <label class="form-label small" for="v-nuevo-archivo">Video (MP4, WebM o MOV, hasta 100 MB)</label>
+                <input id="v-nuevo-archivo" class="form-control form-control-sm" type="file" name="archivo" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small" for="v-nuevo-inst">Instrumento o voz</label>
+                <select id="v-nuevo-inst" class="form-select form-select-sm" name="instrumento">
+                    <option value="voz">Voz</option>
+                    @foreach($instrumentosVideo as $idInst => $nombreInst)
+                        @if($idInst !== 'todos')
+                        <option value="{{ $idInst }}">{{ $nombreInst }}</option>
+                        @endif
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small" for="v-nuevo-titulo">Título</label>
+                <input id="v-nuevo-titulo" class="form-control form-control-sm" name="titulo" maxlength="80">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-primary">Agregar video</button>
+            </div>
+        </form>
+        @endif
+    </details>
+    @endif
+</section>
+@endif
 @if($tieneScore)
 <div class="prog-score-card">
     <div class="prog-score-card__head">

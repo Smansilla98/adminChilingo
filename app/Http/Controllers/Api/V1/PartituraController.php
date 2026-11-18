@@ -228,6 +228,7 @@ class PartituraController extends Controller
             'publicado' => (bool) $toque->publicado,
             'tiene_pdf' => ! empty($medios['partitura']['path']),
             'ficha' => $medios['ficha'] ?? null,
+            'videos_multipista' => app(PartituraVideosController::class)->listado($toque),
             'lectura' => PartituraScore::lectura($normalizado ?? $score),
             'score' => $normalizado,
             'videos' => collect($medios['videos_base'] ?? [])
