@@ -77,6 +77,23 @@
         @endif
     </section>
     @endif
+@php
+    $videosReproducir = collect($programaRitmo->mediosNormalizados()['videos_multipista'] ?? [])
+        ->map(fn ($v) => [
+            'id' => $v['id'],
+            'titulo' => $v['titulo'],
+            'instrumento' => $v['instrumento'],
+            'orden' => $v['orden'],
+            'offset_seg' => $v['offset_seg'],
+            'url' => route('programa.toque.video', [$programaRitmo, basename($v['archivo'])]),
+        ])->values()->all();
+@endphp
+@if(count($videosReproducir) > 0)
+<section class="prog-videos mb-3" aria-label="Videos del toque">
+    <h3 class="h6 mb-2">Videos por instrumento</h3>
+    <div data-videos-multipista data-videos="{{ json_encode($videosReproducir, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}"></div>
+</section>
+@endif
 @if($tieneScore)
 <div class="prog-score-card">
     <div class="prog-score-card__head">

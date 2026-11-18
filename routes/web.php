@@ -146,6 +146,9 @@ Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
             ->middleware(['throttle:20,1', 'edicion.programa'])
             ->name('programa.toque.update');
         // === Equipo E: grabación de referencia, exportación y transcripción ===
+        Route::get('/toque/{programaRitmo:slug}/video/{archivo}', [\App\Http\Controllers\PartituraVideoController::class, 'ver'])
+            ->where('archivo', '[0-9]+-[a-z0-9]{16}\\.(mp4|webm|mov)')
+            ->name('programa.toque.video');
         Route::get('/toque/{programaRitmo:slug}/audio/{archivo}', [\App\Http\Controllers\PartituraGrabacionController::class, 'audio'])
             ->where('archivo', '[0-9]+-[a-z0-9]{16}\.(mp3|wav|m4a|ogg)')
             ->name('programa.toque.audio');
