@@ -6,6 +6,7 @@ import '../css/partitura.css';
 import { EditorPartitura } from './partitura/editor.js';
 import { VisorPartitura } from './partitura/viewer.js';
 import { ReproductorVideos } from './partitura/videos-multipista.js';
+import { filtrarRecursos } from './partitura/recursos-filtro.js';
 
 function leerJson(el, attr) {
     const raw = el.getAttribute(attr);
@@ -16,6 +17,23 @@ function leerJson(el, attr) {
         console.error('Partitura: JSON inválido en', attr, e);
         return null;
     }
+}
+
+/** «Toques y recursos»: oculta las tarjetas que no cumplen el año y el tipo elegidos. */
+function montarFiltroRecursos(el) {
+    const tarjetas = [...el.querySelectorAll('[data-recurso]')];
+    const items = tarjetas.map((t) => ({ ...t.dataset }));
+    const aplicar = () => {
+        const anio = el.querySelector('[data-filtro="anio"]')?.value || '';
+        const tipo = el.querySelector('[data-filtro="tipo"]')?.value || '';
+        const visibles = new Set(filtrarRecursos(items, { anio, tipo }));
+        tarjetas.forEach((t, k) => { t.hidden = !visibles.has(items[k]); });
+        const cuenta = el.querySelector('[data-filtro-cuenta]');
+        if (cuenta) cuenta.textContent = `${visibles.size} ${visibles.size === 1 ? 'toque' : 'toques'}`;
+        const vacio = el.querySelector('[data-filtro-vacio]');
+        if (vacio) vacio.hidden = visibles.size > 0;
+    };
+    el.querySelectorAll('[data-filtro]').forEach((sel) => sel.addEventListener('change', aplicar));
 }
 
 function montar() {
@@ -44,6 +62,12 @@ function montar() {
                 : null,
         });
         window.partituraEditor = editor;
+    });
+
+    document.querySelectorAll('[data-recursos-filtro]').forEach((el) => {
+        if (el.dataset.ptMounted) return;
+        el.dataset.ptMounted = '1';
+        montarFiltroRecursos(el);
     });
 
     document.querySelectorAll('[data-videos-multipista]').forEach((el) => {

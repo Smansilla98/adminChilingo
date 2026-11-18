@@ -117,6 +117,7 @@ require __DIR__.'/archivo.php';
 Route::prefix('programa')->middleware('throttle:60,1')->group(function () {
     Route::get('/', [ProgramaController::class, 'index'])->name('programa.index');
     Route::get('/partituras', [ProgramaPartiturasController::class, 'partiturasIndex'])->name('programa.partituras.index');
+    Route::get('/recursos', [\App\Http\Controllers\ProgramaRecursosController::class, 'index'])->name('programa.recursos.index');
     Route::get('/discografia', [DiscografiaController::class, 'index'])->name('programa.discos.index');
     Route::get('/discografia/{disco}', [DiscografiaController::class, 'show'])->name('programa.discos.show');
     Route::get('/discografia/{disco}/portada', [DiscografiaController::class, 'portada'])->name('programa.discos.portada');
