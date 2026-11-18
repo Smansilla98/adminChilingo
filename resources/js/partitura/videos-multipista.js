@@ -6,7 +6,7 @@
  */
 import {
     ajustarOffset, debeResincronizar, desfase, disposicionGrilla, relojMaestro,
-    tiempoEsperado, tiempoGrupo, videoConAudio,
+    tiempoEsperado, tiempoGrupo, videoConAudio, videosActivos,
 } from './sincronizador-videos.js';
 
 export class ReproductorVideos {
@@ -21,6 +21,8 @@ export class ReproductorVideos {
         this.audioId = this.maestroId;
         this.solos = [];
         this.mudos = [];
+        this.modo = 'todos';
+        this.separadoId = this.videos[0]?.id ?? null;
         this.el = new Map();
         this.tiempo = 0;
         this.sonando = false;
@@ -42,6 +44,13 @@ export class ReproductorVideos {
                 <button type="button" class="pt-btn" data-v="pausa" aria-label="Pausar todos">❚❚</button>
                 <button type="button" class="pt-btn" data-v="atras" title="Atrás 5 segundos">−5 s</button>
                 <button type="button" class="pt-btn" data-v="adelante" title="Adelante 5 segundos">+5 s</button>
+                <button type="button" class="pt-btn" data-v="modo-todos" aria-pressed="true" title="Todos los videos juntos y sincronizados">Ejecutar todos</button>
+                <button type="button" class="pt-btn" data-v="modo-separado" aria-pressed="false" title="Un solo video a la vez">Ejecutar por separado</button>
+                <label class="pt-field" data-v="elegir-wrap" hidden><span>Video</span>
+                    <select class="pt-input pt-select" data-v="elegir" aria-label="Video a ejecutar">
+                        ${this.videos.map((v) => `<option value="${esc(v.id)}">${esc(v.titulo)}</option>`).join('')}
+                    </select>
+                </label>
                 <input type="range" class="pt-videos-barra" data-v="barra" min="0" max="1000" value="0" aria-label="Posición del grupo">
                 <span class="pt-videos-tiempo" data-v="tiempo">0:00</span>
                 <label class="pt-field"><span>Reloj</span>
@@ -50,7 +59,7 @@ export class ReproductorVideos {
                     </select>
                 </label>
             </div>
-            <div class="pt-videos-grid" style="grid-template-columns: repeat(${columnas}, minmax(0, 1fr)); --pt-filas: ${filas}">
+            <div class="pt-videos-grid" data-columnas="${columnas}" style="grid-template-columns: repeat(${columnas}, minmax(0, 1fr)); --pt-filas: ${filas}">
                 ${this.videos.map((v) => `
                     <figure class="pt-videos-tile" data-id="${esc(v.id)}">
                         <video src="${esc(v.url)}" preload="metadata" playsinline></video>
@@ -84,6 +93,10 @@ export class ReproductorVideos {
             if (dur > 0) this.seek((Number(e.target.value) / 1000) * dur);
         });
         this.root.querySelector('[data-v="reloj"]').value = this.maestroId;
+        this.root.querySelector('[data-v="elegir"]').addEventListener('change', (e) => {
+            this.separadoId = e.target.value;
+            this.aplicarModo();
+        });
     }
 
     onClick(e) {
@@ -92,6 +105,8 @@ export class ReproductorVideos {
         const id = fig?.dataset.id;
         switch (btn?.dataset.v) {
             case 'play': return this.play();
+            case 'modo-todos': return this.setModo('todos');
+            case 'modo-separado': return this.setModo('separado');
             case 'pausa': return this.pausar();
             case 'atras': return this.seek(this.tiempo - 5);
             case 'adelante': return this.seek(this.tiempo + 5);
@@ -102,6 +117,40 @@ export class ReproductorVideos {
             case 'off-mas': return this.cambiarOffset(id, 1);
             default: return undefined;
         }
+    }
+
+    /** «todos»: la grilla completa. «separado»: un solo video, el elegido (play, audio y reloj). */
+    setModo(modo) {
+        this.pausar();
+        this.modo = modo === 'separado' ? 'separado' : 'todos';
+        this.aplicarModo();
+        this.seek(this.tiempo);
+    }
+
+    aplicarModo() {
+        const separado = this.modo === 'separado';
+        if (separado) {
+            this.maestroId = this.separadoId;
+            this.audioId = this.separadoId;
+            this.root.querySelector('[data-v="reloj"]').value = this.maestroId;
+        }
+        this.el.forEach((item, id) => {
+            item.fig.hidden = separado && id !== this.separadoId;
+        });
+        const grid = this.root.querySelector('.pt-videos-grid');
+        if (grid) grid.style.gridTemplateColumns = separado ? 'minmax(0, 1fr)' : `repeat(${grid.dataset.columnas}, minmax(0, 1fr))`;
+        this.root.querySelector('[data-v="modo-todos"]')?.setAttribute('aria-pressed', separado ? 'false' : 'true');
+        this.root.querySelector('[data-v="modo-separado"]')?.setAttribute('aria-pressed', separado ? 'true' : 'false');
+        const wrap = this.root.querySelector('[data-v="elegir-wrap"]');
+        if (wrap) wrap.hidden = !separado;
+        this.aplicarAudio();
+    }
+
+    /** Videos que suenan en el modo actual. */
+    activos() {
+        return videosActivos(this.videos, { modo: this.modo, elegido: this.separadoId })
+            .map((v) => this.el.get(v.id))
+            .filter(Boolean);
     }
 
     alternar(lista, id, btn) {
@@ -140,7 +189,7 @@ export class ReproductorVideos {
 
     async play() {
         this.sonando = true;
-        await Promise.allSettled([...this.el.values()].map((i) => i.video.play()));
+        await Promise.allSettled(this.activos().map((i) => i.video.play()));
         this.bucle();
     }
 
@@ -157,7 +206,7 @@ export class ReproductorVideos {
             if (!this.sonando) return;
             const m = this.el.get(this.maestro.id);
             this.tiempo = tiempoGrupo(this.maestro, m.video.currentTime);
-            this.el.forEach((item) => {
+            this.activos().forEach((item) => {
                 if (item.data.id === this.maestro.id) return;
                 const dur = Number.isFinite(item.video.duration) ? item.video.duration : Infinity;
                 const esperado = tiempoEsperado(item.data, this.tiempo, dur);

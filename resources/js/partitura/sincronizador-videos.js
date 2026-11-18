@@ -64,3 +64,15 @@ export function ajustarOffset(offset, pasos) {
     const n = redondear3((Number(offset) || 0) + Math.round(Number(pasos) || 0) * OFFSET_PASO_S);
     return Math.max(-OFFSET_LIMITE_S, Math.min(OFFSET_LIMITE_S, n));
 }
+
+/** Modos de ejecución: todos juntos y sincronizados, o un solo video a la vez. */
+export const MODOS = ['todos', 'separado'];
+
+/** Qué videos se reproducen en el modo elegido. «separado» usa solo el video indicado. */
+export function videosActivos(videos, { modo = 'todos', elegido = null } = {}) {
+    if (modo === 'separado') {
+        const v = videos.find((x) => x.id === elegido) || videos[0];
+        return v ? [v] : [];
+    }
+    return [...videos];
+}
