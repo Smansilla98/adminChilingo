@@ -60,6 +60,7 @@ class ProgramaRitmoMedios
             'partitura_flat' => null,
             'partitura_score' => null,
             'ficha' => null,
+            'videos_multipista' => [],
             'videos_base' => $bases,
             'videos_grupo' => $grupo,
             'cortes' => [],
@@ -89,6 +90,7 @@ class ProgramaRitmoMedios
 
         $out['partitura_score'] = PartituraScore::normalizar($medios['partitura_score'] ?? null);
         $out['ficha'] = FichaToque::normalizar($medios['ficha'] ?? null);
+        $out['videos_multipista'] = VideosMultipista::normalizar($medios['videos_multipista'] ?? null);
         $out['partitura_flat'] = self::normalizarPartituraFlat($medios['partitura_flat'] ?? null);
 
         if (isset($medios['videos_base']) && is_array($medios['videos_base'])) {
