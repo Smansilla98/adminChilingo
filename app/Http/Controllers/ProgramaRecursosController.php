@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProgramaRitmo;
+use App\Support\AccesoMaterial;
 use App\Support\PartituraScore;
 use App\Support\VideosMultipista;
 use Illuminate\Http\Request;
@@ -58,5 +59,41 @@ class ProgramaRecursosController extends Controller
             'partitura' => ($score !== null && PartituraScore::tieneGolpes($score)) || ! empty($medios['partitura']['path']),
             'audio' => ! empty($score['audio_ref']['path'] ?? null),
         ];
+    }
+
+    /** Página de un toque: reproductor de videos si el visitante puede ver ese material. */
+    public function show(Request $request, ProgramaRitmo $programaRitmo)
+    {
+        abort_unless($this->esPublicado($programaRitmo), 404);
+        $resumen = self::resumen($programaRitmo);
+        $puedeVer = $request->user() !== null && AccesoMaterial::puedeVer($request->user(), $programaRitmo);
+        $videos = collect(VideosMultipista::normalizar($programaRitmo->mediosNormalizados()['videos_multipista'] ?? []))
+            ->sortBy('orden')->values();
+
+        return view('programa.recurso-toque', [
+            'toque' => $programaRitmo,
+            'resumen' => $resumen,
+            'puedeVer' => $puedeVer,
+            'videosReproducir' => $puedeVer
+                ? $videos->map(fn (array $v) => [
+                    'id' => $v['id'],
+                    'titulo' => $v['titulo'],
+                    'instrumento' => $v['instrumento'],
+                    'orden' => $v['orden'],
+                    'offset_seg' => $v['offset_seg'],
+                    'url' => route('programa.toque.video', [$programaRitmo, basename($v['archivo'])]),
+                ])->all()
+                : [],
+            'totalVideos' => $videos->count(),
+        ]);
+    }
+
+    private function esPublicado(ProgramaRitmo $toque): bool
+    {
+        if (Schema::hasColumn('programa_ritmos', 'publicado') && ! $toque->publicado) {
+            return false;
+        }
+
+        return ! Schema::hasColumn('programa_ritmos', 'en_programa') || (bool) $toque->en_programa;
     }
 }

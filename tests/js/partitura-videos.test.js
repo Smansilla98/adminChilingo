@@ -89,3 +89,24 @@ describe('offset por video', () => {
         assert.equal(o, 0.35);
     });
 });
+
+import { videosActivos } from '../../resources/js/partitura/sincronizador-videos.js';
+
+describe('modos de ejecución', () => {
+    it('«todos» reproduce todos los videos', () => {
+        assert.deepEqual(videosActivos(videos, { modo: 'todos' }).map((v) => v.id), ['a', 'b', 'c']);
+    });
+
+    it('«separado» reproduce solo el elegido', () => {
+        assert.deepEqual(videosActivos(videos, { modo: 'separado', elegido: 'b' }).map((v) => v.id), ['b']);
+    });
+
+    it('«separado» sin elegido, o con uno que no existe, usa el primero', () => {
+        assert.deepEqual(videosActivos(videos, { modo: 'separado' }).map((v) => v.id), ['a']);
+        assert.deepEqual(videosActivos(videos, { modo: 'separado', elegido: 'zz' }).map((v) => v.id), ['a']);
+    });
+
+    it('sin videos no hay nada que reproducir', () => {
+        assert.deepEqual(videosActivos([], { modo: 'separado' }), []);
+    });
+});
