@@ -15,10 +15,16 @@ final class LimitesAcceso
 {
     public static function registrar(): void
     {
-        RateLimiter::for('comprobante-publico-dni', fn (Request $request) => [
-            Limit::perMinute(5)->by('cp-dni:'.$request->ip()),
-            Limit::perDay(40)->by('cp-dni-dia:'.$request->ip()),
-        ]);
+        RateLimiter::for('comprobante-publico-dni', function (Request $request) {
+            // Por IP (evita barridos) y por DNI consultado (una IP distinta no sirve para seguir preguntando por la misma persona).
+            $dni = preg_replace('/\D+/', '', (string) $request->input('dni'));
+
+            return [
+                Limit::perMinute(5)->by('cp-dni:'.$request->ip()),
+                Limit::perDay(40)->by('cp-dni-dia:'.$request->ip()),
+                Limit::perHour(10)->by('cp-dni-persona:'.$dni),
+            ];
+        });
 
         RateLimiter::for('recuperar-clave', function (Request $request) {
             $quien = mb_strtolower(trim((string) $request->input('usuario')));

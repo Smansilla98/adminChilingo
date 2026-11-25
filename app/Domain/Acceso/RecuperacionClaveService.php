@@ -2,6 +2,7 @@
 
 namespace App\Domain\Acceso;
 
+use App\Domain\Notificaciones\NotificacionService;
 use App\Domain\Personas\RegistroAlumnoService;
 use App\Models\Auditoria;
 use App\Models\User;
@@ -9,6 +10,7 @@ use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -49,6 +51,10 @@ final class RecuperacionClaveService
     public function iniciar(string $usuario): array
     {
         $user = $this->buscarCuenta($usuario);
+        // Toda solicitud avisa a administración: la recuperación automática no siempre llega (sin correo o sin WhatsApp),
+        // así que administración restaura la clave. Se avisa con o sin cuenta, sin revelar nada al solicitante.
+        $this->avisarAdministracion($user, trim($usuario));
+
         if (! $user || ! $user->activo) {
             return ['canal' => null];
         }
@@ -118,6 +124,39 @@ final class RecuperacionClaveService
         });
 
         Auditoria::registrar('acceso.recuperar_clave.confirmada', $user, null, []);
+    }
+
+    /**
+     * Aviso interno y por correo a los administradores: alguien pidió recuperar una contraseña.
+     */
+    private function avisarAdministracion(?User $user, string $identificador): void
+    {
+        $cuenta = $user
+            ? 'la cuenta de '.$user->name.' (usuario '.$user->username.')'
+            : 'un identificador que no corresponde a ninguna cuenta activa';
+
+        $contenido = [
+            'tipo' => 'aviso',
+            'titulo' => 'Pedido de recuperación de contraseña: '.$identificador,
+            'mensaje' => 'Se pidió recuperar la contraseña de '.$cuenta.'. Administración tiene que restaurarla: '
+                .'desde la ficha de la persona, dar una clave provisoria y avisarle a la persona.',
+            'enlace' => $user?->persona_id ? '/personas/'.$user->persona_id : null,
+            'datos' => ['usuario_id' => $user?->id],
+        ];
+
+        $clave = 'recuperacion-clave:'.Str::uuid();
+        $notificaciones = app(NotificacionService::class);
+        foreach ($this->administradores() as $admin) {
+            $notificaciones->enviar($admin, $clave.':'.$admin->id, $contenido, ['interna', 'mail']);
+        }
+    }
+
+    /** @return list<User> */
+    private function administradores(): array
+    {
+        return User::query()->where('activo', true)->get()
+            ->filter(fn (User $u) => $u->acceso()->esAdministrador())
+            ->values()->all();
     }
 
     /** Correo que sirve para mandar el código (no las direcciones «.invalid» de cuentas sin correo). */
