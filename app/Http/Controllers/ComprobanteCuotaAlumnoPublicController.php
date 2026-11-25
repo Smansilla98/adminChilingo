@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Pagos\BuscadorCuotaPublica;
 use App\Models\Alumno;
 use App\Models\Bloque;
 use App\Models\Cuota;
-use App\Models\PagoDetalle;
 use App\Models\Sede;
 use App\Services\ComprobanteCuotaRegistroService;
 use App\Support\PagoCuotaToken;
@@ -33,9 +33,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
     /** "Juan Pérez" → "J*** P***". */
     public static function enmascarar(string $nombre): string
     {
-        $partes = preg_split('/\s+/u', trim($nombre), -1, PREG_SPLIT_NO_EMPTY) ?: [];
-
-        return implode(' ', array_map(fn (string $p) => mb_strtoupper(mb_substr($p, 0, 1)).'***', $partes));
+        return BuscadorCuotaPublica::enmascarar($nombre);
     }
 
     private function asegurarActivo(): void
@@ -168,7 +166,7 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         return response()->json(['bloques' => $data]);
     }
 
-    public function apiAlumnos(Request $request): JsonResponse
+    public function apiAlumnos(Request $request, BuscadorCuotaPublica $buscador): JsonResponse
     {
         $this->asegurarActivo();
         $request->validate([
@@ -181,9 +179,6 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         ]);
 
         $bloqueIds = array_map('intval', $request->input('bloque_ids', []));
-        $año = $request->integer('año');
-        $mes = $request->integer('mes');
-        $sedeId = $request->integer('sede_id');
 
         // Robot: misma respuesta que "no encontrado", sin consultar el padrón.
         if ($this->esRobot($request)) {
@@ -194,88 +189,18 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
             ]);
         }
 
-        $bloques = Bloque::query()
-            ->whereIn('id', $bloqueIds)
-            ->where('sede_id', $sedeId)
-            ->where('activo', true)
-            ->get();
-        if ($bloques->count() !== count(array_unique($bloqueIds))) {
-            return response()->json(['error' => 'Bloques inválidos para la sede.'], 422);
-        }
+        $resultado = $buscador->alumnosConDeuda(
+            $request->integer('sede_id'),
+            $request->integer('año'),
+            $request->integer('mes'),
+            $bloqueIds,
+            (string) $request->input('dni'),
+        );
 
-        foreach ($bloqueIds as $bid) {
-            if (! $this->cuotaParaBloqueMes($bid, $año, $mes)) {
-                return response()->json(['error' => 'No hay cuota cargada para uno de los bloques en ese mes.'], 422);
-            }
-        }
-
-        $alumnosPorBloque = [];
-        foreach ($bloqueIds as $bid) {
-            $ids = Alumno::query()
-                ->where('activo', true)
-                ->where(function ($q) use ($bid) {
-                    $q->whereHas('bloques', fn ($sub) => $sub->where('bloques.id', $bid))
-                        ->orWhere('bloque_id', $bid);
-                })
-                ->pluck('id')
-                ->all();
-            $alumnosPorBloque[$bid] = $ids;
-        }
-
-        if ($alumnosPorBloque === []) {
-            return response()->json(['alumnos' => []]);
-        }
-
-        $interseccion = null;
-        foreach ($alumnosPorBloque as $ids) {
-            $interseccion = $interseccion === null ? collect($ids) : $interseccion->intersect($ids);
-        }
-
-        $cuotasPorBloque = [];
-        foreach ($bloqueIds as $bid) {
-            $cuotasPorBloque[$bid] = $this->cuotaParaBloqueMes((int) $bid, $año, $mes);
-        }
-
-        $dni = preg_replace('/\D+/', '', (string) $request->input('dni'));
-        if (strlen($dni) < 6) {
-            return response()->json(['error' => 'Ingresá el DNI completo (solo números).'], 422);
-        }
-
-        $alumnos = Alumno::query()
-            ->whereIn('id', $interseccion->all())
-            ->where('activo', true)
-            ->whereRaw("REPLACE(REPLACE(REPLACE(dni, '.', ''), '-', ''), ' ', '') = ?", [$dni])
-            ->orderBy('nombre_apellido')
-            ->get(['id', 'nombre_apellido']);
-
-        $data = $alumnos->filter(function (Alumno $a) use ($cuotasPorBloque) {
-            foreach ($cuotasPorBloque as $cuota) {
-                if ($cuota && ! $cuota->aplicaAAlumno($a)) {
-                    return false;
-                }
-                if ($cuota && $this->alumnoYaPagoCuota((int) $a->id, (int) $cuota->id)) {
-                    return false;
-                }
-            }
-
-            return true;
-        })->values()->map(fn (Alumno $a) => [
-            'id' => $a->id,
-            // Sin cuenta no se revela el nombre: solo las iniciales para confirmar.
-            'nombre_apellido' => self::enmascarar((string) $a->nombre_apellido),
-            'lookup_token' => PagoCuotaToken::emitir((int) $a->id, $sedeId),
-        ]);
-
-        return response()->json([
-            'alumnos' => $data,
-            'puede_multibloque' => count($bloqueIds) > 1,
-            'nota_multibloque' => $data->isEmpty()
-                ? 'No encontramos un alumno activo con ese DNI en los bloques elegidos (o la cuota ya figura paga).'
-                : null,
-        ]);
+        return response()->json($resultado['body'], $resultado['status']);
     }
 
-    public function apiOtrosBloquesAlumno(Request $request): JsonResponse
+    public function apiOtrosBloquesAlumno(Request $request, BuscadorCuotaPublica $buscador): JsonResponse
     {
         $this->asegurarActivo();
         $request->validate([
@@ -291,46 +216,13 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
         }
 
         $alumno = Alumno::query()->findOrFail($request->integer('alumno_id'));
-        $año = $request->integer('año');
-        $mes = $request->integer('mes');
-        $sedeId = $request->integer('sede_id');
 
-        $bloqueIds = $alumno->bloques()
-            ->where('bloques.sede_id', $sedeId)
-            ->where('bloques.activo', true)
-            ->pluck('bloques.id');
-        if ($alumno->bloque_id) {
-            $bid = (int) $alumno->bloque_id;
-            $b = Bloque::query()->whereKey($bid)->where('sede_id', $sedeId)->where('activo', true)->first();
-            if ($b) {
-                $bloqueIds = $bloqueIds->push($bid);
-            }
-        }
-        $bloqueIds = $bloqueIds->unique()->values();
-
-        $extra = [];
-        foreach ($bloqueIds as $bid) {
-            $cuota = $this->cuotaParaBloqueMes((int) $bid, $año, $mes);
-            if (! $cuota || ! $cuota->aplicaAAlumno($alumno)) {
-                continue;
-            }
-            $bloque = $cuota->bloque;
-            if (! $bloque || (int) $bloque->sede_id !== $sedeId) {
-                continue;
-            }
-            if ($this->alumnoYaPagoCuota((int) $alumno->id, (int) $cuota->id)) {
-                continue;
-            }
-            $extra[] = [
-                'bloque_id' => (int) $bid,
-                'bloque_nombre' => $bloque->nombre,
-                'cuota_id' => $cuota->id,
-                'monto' => (float) $cuota->monto,
-                'cuota_nombre' => $cuota->nombre,
-            ];
-        }
-
-        return response()->json(['bloques_cuotas' => $extra]);
+        return response()->json($buscador->otrosBloques(
+            $alumno,
+            $request->integer('sede_id'),
+            $request->integer('año'),
+            $request->integer('mes'),
+        ));
     }
 
     public function store(Request $request, ComprobanteCuotaRegistroService $registro)
@@ -382,22 +274,5 @@ class ComprobanteCuotaAlumnoPublicController extends Controller
 
         return redirect()->route('comprobante-cuota-public.create')
             ->with('success', 'Recibimos tu comprobante. Tu profesor o la administración lo verá en el panel.');
-    }
-
-    private function cuotaParaBloqueMes(int $bloqueId, int $año, int $mes): ?Cuota
-    {
-        return Cuota::resolveForBloque($bloqueId, $año, $mes);
-    }
-
-    private function alumnoYaPagoCuota(int $alumnoId, int $cuotaId): bool
-    {
-        if (! Schema::hasTable('pago_detalles')) {
-            return false;
-        }
-
-        return PagoDetalle::query()
-            ->where('alumno_id', $alumnoId)
-            ->where('cuota_id', $cuotaId)
-            ->exists();
     }
 }
