@@ -189,5 +189,20 @@ if [ "${SCHEDULER_EN_WEB:-1}" = "1" ] && [ "${SCHEDULER_ENABLED:-1}" != "0" ]; t
     php artisan schedule:work --no-interaction 2>&1 &
 fi
 
+# Notificación de prueba de WhatsApp (una sola vez): si WHATSAPP_TEST_NUMERO está definida se envía
+# php artisan whatsapp:test a ese número. La marca en storage evita repetirla en cada arranque.
+# Cuando llegue el mensaje, borrá WHATSAPP_TEST_NUMERO en Railway.
+if [ "$PROCESO" = "web" ] && [ -n "${WHATSAPP_TEST_NUMERO:-}" ]; then
+    MARCA="${PERSISTENTE:-storage}/whatsapp-test-enviado"
+    if [ -f "$MARCA" ]; then
+        echo "(WhatsApp de prueba ya enviado; podés borrar WHATSAPP_TEST_NUMERO)"
+    elif php artisan whatsapp:test "$WHATSAPP_TEST_NUMERO" --no-interaction; then
+        date -u > "$MARCA" 2>/dev/null || true
+        echo "✓ WhatsApp de prueba enviado a $WHATSAPP_TEST_NUMERO"
+    else
+        echo "⚠️  WhatsApp de prueba falló; se reintenta en el próximo arranque."
+    fi
+fi
+
 echo "=== Servidor FrankenPHP en 0.0.0.0:${PORT:-8080} ==="
 exec frankenphp run --config /etc/frankenphp/Caddyfile --adapter caddyfile
