@@ -56,21 +56,7 @@ class ArchivoGestionController extends Controller
     public function fotos(Request $request): JsonResponse
     {
         $this->authorize('viewAny', ArchivoFoto::class);
-        $query = $this->consultas->gestionables($request->user())->with(['acontecimiento:id,titulo,slug,publicado', 'sede:id,nombre']);
-        $this->consultas->filtrar($query, $request->only(['q', 'decada', 'anio', 'capitulo', 'acontecimiento', 'sede', 'tipo']) + ['tags' => array_filter([$request->query('tag')])]);
-        if ($request->filled('estado') && array_key_exists($request->query('estado'), ArchivoFoto::ESTADOS)) {
-            $query->where('estado', $request->query('estado'));
-        }
-        match ($request->query('sin')) {
-            'fecha' => $query->whereNull('anio'),
-            'credito' => $query->whereNull('fotografo')->whereNull('credito'),
-            'descripcion' => $query->whereNull('descripcion'),
-            'personas' => $query->whereDoesntHave('personas'),
-            default => null,
-        };
-        $ordenable = $request->filled('acontecimiento') || $request->filled('capitulo');
-        $ordenable ? $query->orderBy('orden')->orderBy('id') : $query->latest('id');
-        $pagina = $query->paginate(40);
+        ['pagina' => $pagina, 'ordenable' => $ordenable] = $this->consultas->fotosBackoffice($request->user(), $request->all());
 
         return response()->json([
             'data' => collect($pagina->items())->map(fn (ArchivoFoto $f) => PresentadorArchivo::foto($f, false, true) + [

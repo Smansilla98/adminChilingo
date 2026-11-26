@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -97,37 +96,14 @@ class VistaAsistenciaService
      *
      * @param  array<string, array<string, string|null>>  $cells
      */
-    public function guardarPlanilla(Bloque $bloque, int $año, int $mes, array $cells): void
+    /**
+     * Planilla web del mes. Usa el mismo camino que la API (AsistenciaService::guardarMatriz):
+     * valida tipos, registra quién cargó y reconoce a los alumnos del bloque por bloque_id o por pivote.
+     *
+     * @param  array<int|string, array<string, string|null>>  $cells
+     */
+    public function guardarPlanilla(Bloque $bloque, int $año, int $mes, array $cells, ?User $por = null): void
     {
-        $fechasPermitidas = app(AsistenciaService::class)->fechasClaseDelMes($bloque, $año, $mes)->flip();
-        $alumnoIdsPermitidos = $bloque->alumnos()->where('alumnos.activo', true)->pluck('alumnos.id')->flip();
-
-        DB::transaction(function () use ($bloque, $cells, $fechasPermitidas, $alumnoIdsPermitidos) {
-            foreach ($cells as $alumnoIdStr => $porFecha) {
-                $alumnoId = (int) $alumnoIdStr;
-                if (! $alumnoIdsPermitidos->has($alumnoId)) {
-                    continue;
-                }
-                foreach ($porFecha as $fechaStr => $tipo) {
-                    if (! $fechasPermitidas->has($fechaStr)) {
-                        continue;
-                    }
-                    if ($tipo === null || $tipo === '') {
-                        Asistencia::query()
-                            ->where('bloque_id', $bloque->id)
-                            ->where('alumno_id', $alumnoId)
-                            ->whereDate('fecha', $fechaStr)
-                            ->delete();
-
-                        continue;
-                    }
-
-                    Asistencia::updateOrCreate(
-                        ['alumno_id' => $alumnoId, 'bloque_id' => $bloque->id, 'fecha' => $fechaStr],
-                        ['tipo_asistencia' => $tipo, 'presente' => Asistencia::esPresente($tipo)]
-                    );
-                }
-            }
-        });
+        app(AsistenciaService::class)->guardarMatriz($bloque, $año, $mes, $cells, $por);
     }
 }

@@ -108,7 +108,7 @@ class AsistenciaController extends Controller
             abort(403);
         }
 
-        $vista->guardarPlanilla($bloque, (int) $validated['año'], (int) $validated['mes'], $validated['cells'] ?? []);
+        $vista->guardarPlanilla($bloque, (int) $validated['año'], (int) $validated['mes'], $validated['cells'] ?? [], $user);
 
         return redirect()->route(
             ($user && $user->isProfesor() && ! $user->isAdmin())

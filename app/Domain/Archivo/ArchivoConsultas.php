@@ -302,4 +302,30 @@ class ArchivoConsultas
         return $hashes->isEmpty() ? collect() : ArchivoFoto::query()->whereIn('hash', $hashes)
             ->select('hash', DB::raw('count(*) as n'))->groupBy('hash')->having('n', '>', 1)->pluck('n', 'hash');
     }
+
+    /**
+     * Listado paginado del backoffice de fotos: filtros, estado, "sin datos" y orden.
+     *
+     * @param  array<string, mixed>  $entrada  query params (q, decada, anio, capitulo, acontecimiento, sede, tipo, tag, estado, sin)
+     * @return array{pagina: LengthAwarePaginator, ordenable: bool}
+     */
+    public function fotosBackoffice(User $user, array $entrada): array
+    {
+        $query = $this->gestionables($user)->with(['acontecimiento:id,titulo,slug,publicado', 'sede:id,nombre']);
+        $this->filtrar($query, array_intersect_key($entrada, array_flip(['q', 'decada', 'anio', 'capitulo', 'acontecimiento', 'sede', 'tipo'])) + ['tags' => array_filter([$entrada['tag'] ?? null])]);
+        if (! empty($entrada['estado']) && array_key_exists($entrada['estado'], ArchivoFoto::ESTADOS)) {
+            $query->where('estado', $entrada['estado']);
+        }
+        match ($entrada['sin'] ?? null) {
+            'fecha' => $query->whereNull('anio'),
+            'credito' => $query->whereNull('fotografo')->whereNull('credito'),
+            'descripcion' => $query->whereNull('descripcion'),
+            'personas' => $query->whereDoesntHave('personas'),
+            default => null,
+        };
+        $ordenable = ! empty($entrada['acontecimiento']) || ! empty($entrada['capitulo']);
+        $ordenable ? $query->orderBy('orden')->orderBy('id') : $query->latest('id');
+
+        return ['pagina' => $query->paginate(40), 'ordenable' => $ordenable];
+    }
 }
