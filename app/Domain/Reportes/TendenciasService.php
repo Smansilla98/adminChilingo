@@ -47,6 +47,7 @@ class TendenciasService
             ->map(fn ($g) => (float) $g->sum('monto'));
 
         $gastos = Gasto::query()
+            ->where('estado', '!=', 'rechazado')
             ->whereBetween('fecha', [$inicio->toDateString(), $fin->toDateString()])
             ->when($sedes !== null, fn ($q) => $q->whereIn('sede_id', $sedes ?: [0]))
             ->get(['fecha', 'monto'])

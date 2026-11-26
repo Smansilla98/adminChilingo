@@ -52,7 +52,7 @@ class RecaudacionService
             }
             $chartIngresos[] = (float) $ingQ->sum('monto_total');
             if (Schema::hasTable('gastos')) {
-                $gasQ = Gasto::query()->whereYear('fecha', $d->year)->whereMonth('fecha', $d->month);
+                $gasQ = Gasto::query()->where('estado', '!=', 'rechazado')->whereYear('fecha', $d->year)->whereMonth('fecha', $d->month);
                 if ($filtroSedes !== null) {
                     $ambito->aplicarGastos($gasQ, $filtroSedes);
                 }
