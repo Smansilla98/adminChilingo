@@ -224,7 +224,7 @@ class ReportesService
             ->pluck('total', 'alumnos.bloque_id');
 
         // 4) Gastos por sede
-        $gastosBase = Gasto::selectRaw('sede_id, tipo, subtipo, SUM(monto) as total')
+        $gastosBase = Gasto::query()->where('estado', '!=', 'rechazado')->selectRaw('sede_id, tipo, subtipo, SUM(monto) as total')
             ->groupBy('sede_id', 'tipo', 'subtipo')
             ->get();
 
@@ -283,7 +283,7 @@ class ReportesService
 
         // 5) Frecuencia de reposición de insumos por sede (a partir de gastos tipo insumo)
         $frecuenciasInsumos = [];
-        $insumosPorSede = Gasto::where('tipo', 'insumo')
+        $insumosPorSede = Gasto::where('tipo', 'insumo')->where('estado', '!=', 'rechazado')
             ->orderBy('sede_id')
             ->orderBy('fecha')
             ->get()
@@ -345,7 +345,7 @@ class ReportesService
             $gastosTotales = (float) collect($resumenFinanciero)->sum('total_gastos');
         } else {
             $ingresosTotales = (float) PagoDetalle::sum('monto');
-            $gastosTotales = (float) Gasto::sum('monto');
+            $gastosTotales = (float) Gasto::where('estado', '!=', 'rechazado')->sum('monto');
         }
         $resultadoGlobal = $ingresosTotales - $gastosTotales;
 
