@@ -50,6 +50,16 @@ return [
         'url' => env('EXPO_PUSH_URL', 'https://exp.host/--/api/v2/push/send'),
     ],
 
+    // WhatsApp: driver activo ('twilio' por defecto, o 'cloud' para la API oficial de Meta).
+    'whatsapp' => [
+        'driver' => env('WHATSAPP_DRIVER', 'twilio'),
+        'cloud' => [
+            'token' => env('WHATSAPP_CLOUD_TOKEN'),
+            'phone_number_id' => env('WHATSAPP_CLOUD_PHONE_ID'),
+            'api_version' => env('WHATSAPP_CLOUD_API_VERSION', 'v21.0'),
+        ],
+    ],
+
     'twilio' => [
         'account_sid' => env('TWILIO_ACCOUNT_SID'),
         'auth_token' => env('TWILIO_AUTH_TOKEN'),

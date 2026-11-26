@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\WhatsappMensaje;
+use App\Services\WhatsApp\CloudApiClient;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Twilio\Exceptions\TwilioException;
@@ -14,9 +15,21 @@ class WhatsAppService
 
     protected string $from;
 
+    protected ?CloudApiClient $cloud = null;
+
     public function __construct()
     {
         $this->from = trim((string) config('services.twilio.whatsapp_from', ''));
+
+        if ($this->driver() === 'cloud') {
+            $this->cloud = new CloudApiClient(
+                config('services.whatsapp.cloud.token'),
+                config('services.whatsapp.cloud.phone_number_id'),
+                (string) config('services.whatsapp.cloud.api_version', 'v21.0'),
+            );
+
+            return;
+        }
 
         $sid = config('services.twilio.account_sid');
         $token = config('services.twilio.auth_token');
@@ -24,6 +37,12 @@ class WhatsAppService
         if ($sid && $token) {
             $this->client = new Client($sid, $token);
         }
+    }
+
+    /** Driver activo: 'twilio' (por defecto) o 'cloud' (WhatsApp Business Cloud API de Meta). */
+    public function driver(): string
+    {
+        return config('services.whatsapp.driver') === 'cloud' ? 'cloud' : 'twilio';
     }
 
     /**
@@ -39,6 +58,10 @@ class WhatsAppService
      */
     public function isConfigured(): bool
     {
+        if ($this->driver() === 'cloud') {
+            return $this->cloud?->configurado() ?? false;
+        }
+
         return $this->client !== null && $this->from !== '';
     }
 
@@ -59,6 +82,40 @@ class WhatsAppService
         }
 
         return $appUrl.'/webhooks/twilio/whatsapp-status';
+    }
+
+    /**
+     * Envía una plantilla aprobada por WhatsApp Cloud API. Devuelve la misma forma que send().
+     *
+     * @param  list<string>  $parametros
+     * @return array<string, mixed>
+     */
+    public function sendTemplate(string $to, string $plantilla, string $idioma, array $parametros = [], array $context = []): array
+    {
+        if ($this->driver() !== 'cloud' || $this->cloud === null) {
+            return ['success' => false, 'error' => 'El driver activo no es WhatsApp Cloud API (WHATSAPP_DRIVER=cloud).'];
+        }
+
+        $toNormalized = self::normalizePhone($to);
+        if ($toNormalized === '' || ! preg_match('/^\+[1-9]\d{7,14}$/', $toNormalized)) {
+            return ['success' => false, 'error' => 'Número de destino inválido.', 'reintentable' => false];
+        }
+
+        $resultado = $this->cloud->enviarPlantilla($toNormalized, $plantilla, $idioma, $parametros);
+        if (! $resultado['success']) {
+            return ['success' => false, 'error' => $resultado['error'], 'codigo' => $resultado['codigo'], 'reintentable' => $resultado['reintentable']];
+        }
+
+        $sid = (string) $resultado['wamid'];
+        $row = $this->persistAccepted($sid, $toNormalized, WhatsappMensaje::STATUS_QUEUED, $context);
+
+        return [
+            'success' => true,
+            'sid' => $sid,
+            'status' => $row->status ?? WhatsappMensaje::STATUS_QUEUED,
+            'accepted_by_provider' => true,
+            'mensaje_id' => $row?->id,
+        ];
     }
 
     /**
@@ -108,6 +165,11 @@ class WhatsAppService
      */
     public function send(string $body, string $to, array $context = []): array
     {
+        if ($this->driver() === 'cloud') {
+            // La Cloud API sólo acepta plantillas aprobadas para mensajes iniciados por la organización.
+            return ['success' => false, 'error' => 'Con WhatsApp Cloud el envío requiere una plantilla aprobada (sendTemplate).'];
+        }
+
         if (! $this->isConfigured()) {
             return ['success' => false, 'error' => 'WhatsApp no configurado (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM).'];
         }
