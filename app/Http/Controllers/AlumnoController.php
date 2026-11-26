@@ -5,16 +5,14 @@ namespace App\Http\Controllers;
 use App\Domain\Datos\EliminacionSegura;
 use App\Domain\Personas\AlumnoImportService;
 use App\Domain\Personas\AlumnoService;
+use App\Domain\Personas\EstadoCuentaAlumnoService;
 use App\Exports\AlumnosExport;
 use App\Models\Alumno;
 use App\Models\Bloque;
-use App\Models\Cuota;
-use App\Models\PagoDetalle;
 use App\Models\Persona;
 use App\Models\Profesor;
 use App\Models\Sede;
 use App\Services\AlumnosListadoService;
-use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -95,7 +93,7 @@ class AlumnoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Alumno $alumno)
+    public function show(Alumno $alumno, EstadoCuentaAlumnoService $estadoCuenta)
     {
         $this->authorize('view', $alumno);
 
@@ -105,91 +103,9 @@ class AlumnoController extends Controller
         }
         $profesorPerfil = $alumno->profesorPerfil();
 
-        $bloquesIds = $alumno->bloques->pluck('id')->filter()->values();
-        if ($bloquesIds->isEmpty() && $alumno->bloque_id) {
-            $bloquesIds = collect([$alumno->bloque_id]);
-        }
+        ['estadoCuenta' => $cuentaAlumno, 'historialPagos' => $historialPagos] = $estadoCuenta->para($alumno);
 
-        $cuotas = collect();
-        if ($bloquesIds->isNotEmpty()) {
-            $q = Cuota::query()
-                ->with(['alumnos:id'])
-                ->where('activo', true);
-
-            if (\Illuminate\Support\Facades\Schema::hasColumn('cuotas', 'alcance')) {
-                $sidList = $alumno->bloques->pluck('sede_id')->filter()->unique()->values()->all();
-                if ($alumno->sede_id) {
-                    $sidList = array_values(array_unique(array_merge($sidList, [(int) $alumno->sede_id])));
-                }
-                $q->where(function ($outer) use ($bloquesIds, $sidList) {
-                    $outer->whereIn('bloque_id', $bloquesIds->all())
-                        ->orWhere(function ($g) {
-                            $g->where('alcance', Cuota::ALCANCE_GENERAL)->whereNull('bloque_id');
-                        });
-                    if ($sidList !== []) {
-                        $outer->orWhere(function ($s) use ($sidList) {
-                            $s->where('alcance', Cuota::ALCANCE_SEDE)->whereIn('sede_id', $sidList);
-                        });
-                    }
-                });
-            } else {
-                $q->whereIn('bloque_id', $bloquesIds->all());
-            }
-
-            $cuotas = $q->orderByDesc('año')->orderByDesc('mes')->get();
-        }
-
-        $cuotasAplicables = $cuotas->filter(function (Cuota $cuota) use ($alumno) {
-            if ($cuota->alumnos->isEmpty()) {
-                return true;
-            }
-
-            return $cuota->alumnos->contains('id', $alumno->id);
-        })->values();
-
-        try {
-            $historialPagos = PagoDetalle::query()
-                ->with(['pago', 'cuota'])
-                ->where('alumno_id', $alumno->id)
-                ->whereHas('pago')
-                ->get()
-                ->sortByDesc(fn ($d) => $d->pago?->fecha_pago)
-                ->values();
-        } catch (QueryException $e) {
-            $historialPagos = collect();
-        }
-
-        $pagosPorCuota = $historialPagos->keyBy('cuota_id');
-
-        $hoy = Carbon::today();
-        $estadoCuenta = $cuotasAplicables->map(function (Cuota $cuota) use ($pagosPorCuota, $hoy) {
-            $pagoDetalle = $pagosPorCuota->get($cuota->id);
-
-            $fechaPago = $pagoDetalle?->pago?->fecha_pago;
-            $fechaVencimiento = $cuota->fecha_vencimiento;
-
-            if ($fechaPago) {
-                $estado = 'Pagada';
-                $estadoColor = 'success';
-            } elseif ($fechaVencimiento && $fechaVencimiento->lt($hoy)) {
-                $estado = 'Vencida';
-                $estadoColor = 'danger';
-            } else {
-                $estado = 'Pendiente';
-                $estadoColor = 'warning';
-            }
-
-            return [
-                'cuota' => $cuota,
-                'periodo' => ($cuota->mes ? str_pad((string) $cuota->mes, 2, '0', STR_PAD_LEFT) : '—').'/'.($cuota->año ?? '—'),
-                'monto' => (float) $cuota->monto,
-                'fecha_pago' => $fechaPago,
-                'estado' => $estado,
-                'estado_color' => $estadoColor,
-            ];
-        });
-
-        return view('alumnos.show', compact('alumno', 'estadoCuenta', 'historialPagos', 'profesorPerfil'));
+        return view('alumnos.show', compact('alumno', 'historialPagos', 'profesorPerfil') + ['estadoCuenta' => $cuentaAlumno]);
     }
 
     /**
