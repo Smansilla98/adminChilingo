@@ -46,7 +46,7 @@
             : ['texto' => 'Cuotas del mes al día', 'tono' => 'ok'],
         'escuela' => ['texto' => ($sedesActivasEnBloques ?? 0).' sedes con bloques', 'tono' => 'neutral'],
         'actividades' => ['texto' => ($proximosEventosCount ?? 0).' eventos en la agenda', 'tono' => 'neutral'],
-        'recursos' => ['texto' => 'Programa, partituras y archivo', 'tono' => 'neutral'],
+        'recursos' => ['texto' => 'Programa y archivo', 'tono' => 'neutral'],
         'inventario' => ['texto' => 'Stock y compras', 'tono' => 'neutral'],
         'config' => $fallasConfig > 0
             ? ['texto' => $fallasConfig.' '.($fallasConfig === 1 ? 'falla' : 'fallas').' de configuración', 'tono' => 'alert']
@@ -170,7 +170,7 @@
                     $estado = $estadoModulo[$mod['clave']] ?? ['texto' => count($mod['links']).' pantallas', 'tono' => 'neutral'];
                 @endphp
                 <article class="modulo-card">
-                    <button type="button" class="modulo-card-abrir" data-bs-toggle="offcanvas" data-bs-target="#modulo-{{ $mod['clave'] }}" aria-controls="modulo-{{ $mod['clave'] }}">
+                    <a class="modulo-card-abrir" href="{{ route('modulos.show', $mod['clave']) }}">
                         <span class="modulo-card-top">
                             <span class="modulo-card-icon" aria-hidden="true"><i class="bi {{ $mod['icono'] }}"></i></span>
                             <span class="modulo-estado is-{{ $estado['tono'] }}">{{ $estado['texto'] }}</span>
@@ -178,7 +178,7 @@
                         <span class="modulo-card-titulo">{{ $mod['titulo'] }}</span>
                         <span class="modulo-card-resumen">{{ $mod['resumen'] }}</span>
                         <span class="modulo-card-entrar">Ver módulo <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
-                    </button>
+                    </a>
                     @if($mod['accion'])
                         <a class="btn btn-primary modulo-card-accion" href="{{ $mod['accion']['href'] }}">{{ $mod['accion']['label'] }}</a>
                     @endif
@@ -187,215 +187,27 @@
         </div>
     </section>
 
-    @foreach($modulos as $mod)
-        <div class="offcanvas offcanvas-end modulo-panel" tabindex="-1" id="modulo-{{ $mod['clave'] }}" aria-labelledby="modulo-titulo-{{ $mod['clave'] }}">
-            <div class="offcanvas-header">
-                <div>
-                    <h2 class="offcanvas-title" id="modulo-titulo-{{ $mod['clave'] }}">{{ $mod['titulo'] }}</h2>
-                    <p class="modulo-panel-resumen">{{ $mod['resumen'] }}</p>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
-            </div>
-            <div class="offcanvas-body">
-                @if($mod['accion'])
-                    <a class="btn btn-lg btn-primary mb-3" href="{{ $mod['accion']['href'] }}">{{ $mod['accion']['label'] }}</a>
-                @endif
+    @endif
 
-                <ul class="modulo-links">
-                    @foreach($mod['links'] as $link)
-                        <li>
-                            <a href="{{ $link['href'] }}" class="modulo-link{{ $link['active'] ? ' is-active' : '' }}" @if($link['active']) aria-current="page" @endif>
-                                <i class="bi {{ $link['icon'] }}" aria-hidden="true"></i>
-                                <span>{{ $link['label'] }}</span>
-                                <i class="bi bi-chevron-right ms-auto" aria-hidden="true"></i>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-
-                @if($mod['clave'] === 'asistencias')
-                    <div class="modulo-detalle">
-                        <h3 class="modulo-detalle-titulo">Clases de esta semana</h3>
-                        <p class="modulo-detalle-sub">{{ $clasesTomadasSemana }} tomadas · {{ $clasesPendientesSemana }} por completar</p>
-                        <div class="table-responsive">
-                            <table class="table align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Día y hora</th>
-                                        <th>Bloque</th>
-                                        <th>Estado</th>
-                                        <th class="text-end"><span class="visually-hidden">Acción</span></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse(($bloquesSemanales ?? collect()) as $row)
-                                        @php
-                                            $h = $row['horario'];
-                                            $fecha = $row['fecha_clase'] ?? null;
-                                            $diaLabel = $fecha ? ucfirst($fecha->locale('es')->translatedFormat('D d/m')) : '—';
-                                            $horaLabel = $h->hora_inicio ? \Illuminate\Support\Carbon::parse($h->hora_inicio)->format('H:i') : '';
-                                            $bloqueId = $row['bloque']->id ?? null;
-                                            $fechaStr = $fecha ? $fecha->toDateString() : now()->toDateString();
-                                            $tono = match ($row['estado'] ?? '') {
-                                                'Tomada' => 'success',
-                                                'Incompleta' => 'warning',
-                                                'Pendiente' => 'info',
-                                                default => 'neutral',
-                                            };
-                                        @endphp
-                                        <tr>
-                                            <td class="text-nowrap">
-                                                <span class="fw-semibold">{{ $diaLabel }}</span>
-                                                @if($horaLabel)<span class="modulo-meta"> · {{ $horaLabel }}</span>@endif
-                                            </td>
-                                            <td>
-                                                <span class="fw-semibold">{{ $row['bloque']->nombre ?? '—' }}</span>
-                                                <span class="d-block modulo-meta">{{ $row['sede']->nombre ?? '—' }} · {{ $row['profesor']->nombre ?? '—' }}</span>
-                                            </td>
-                                            <td>
-                                                <x-ito.status :tone="$tono" :label="$row['estado'] ?? '—'" />
-                                            </td>
-                                            <td class="text-end text-nowrap">
-                                                @if($bloqueId && in_array($row['estado'] ?? '', ['Pendiente', 'Incompleta'], true))
-                                                    <a class="btn btn-sm btn-outline-primary" href="{{ route('asistencias.create', ['bloque_id' => $bloqueId, 'fecha' => $fechaStr]) }}">Pasar lista</a>
-                                                @elseif($bloqueId)
-                                                    <a class="btn btn-sm btn-ghost" href="{{ route('asistencias.index', ['bloque_id' => $bloqueId]) }}">Ver planilla</a>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="4" class="ito-empty">No hay clases programadas esta semana.</td></tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                @endif
-
-                @if($mod['clave'] === 'pagos')
-                    <div class="modulo-detalle">
-                        <h3 class="modulo-detalle-titulo">Cobros pendientes</h3>
-                        <p class="modulo-detalle-sub">Cuotas del mes aún abiertas</p>
-                        @forelse(($cuotasPendientesList ?? collect()) as $fila)
-                            <div class="hub-list-item">
-                                <div class="flex-grow-1 min-w-0">
-                                    <div class="fw-semibold text-truncate">{{ $fila['alumno'] ?? 'Alumno' }}</div>
-                                    <div class="modulo-meta">
-                                        {{ $fila['sede'] ?? '—' }}
-                                        @if(!empty($fila['cuota_nombre'])) · {{ $fila['cuota_nombre'] }}@endif
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="fw-semibold">${{ number_format($fila['monto'] ?? 0, 0, ',', '.') }}</div>
-                                    @if(!empty($fila['dot_class']))
-                                        <x-ito.status tone="danger" label="Vencida" />
-                                    @else
-                                        <x-ito.status tone="warning" label="Pendiente" />
-                                    @endif
-                                </div>
-                            </div>
-                        @empty
-                            <x-ito.empty icon="bi-check2-circle" title="Sin cobros pendientes" description="Todas las cuotas del mes están al día." />
-                        @endforelse
-                        @if($user->tieneAccesoModulo('admin.pagos'))
-                            <a class="btn btn-outline-primary mt-3" href="{{ route('pagos.create') }}">Registrar pago</a>
-                        @endif
-                    </div>
-                    <div class="modulo-detalle">
-                        <h3 class="modulo-detalle-titulo">Comprobantes sin revisar</h3>
-                        @forelse(($comprobantesPendientesList ?? collect()) as $comp)
-                            <div class="hub-list-item">
-                                <div class="flex-grow-1 min-w-0">
-                                    <div class="fw-semibold text-truncate">{{ $comp->alumno?->nombre_apellido ?? 'Alumno' }}</div>
-                                    <div class="modulo-meta">{{ $comp->created_at?->locale('es')->diffForHumans() ?? '' }}</div>
-                                </div>
-                                <x-ito.status tone="warning" label="Pendiente" />
-                            </div>
-                        @empty
-                            <x-ito.empty icon="bi-inbox" title="Nada para revisar" description="No hay comprobantes esperando revisión." />
-                        @endforelse
-                    </div>
-                    <div class="modulo-detalle">
-                        <h3 class="modulo-detalle-titulo">Ingresos y gastos</h3>
-                        <p class="modulo-detalle-sub">Últimos 6 meses</p>
-                        <div class="hub-chart"><canvas id="dashChartFinanzas" role="img" aria-label="Gráfico de barras: ingresos y gastos de los últimos 6 meses"></canvas></div>
-                    </div>
-                @endif
-
-                @if($mod['clave'] === 'escuela')
-                    <div class="modulo-detalle">
-                        <h3 class="modulo-detalle-titulo">Alumnos activos por sede</h3>
-                        <div class="hub-chart"><canvas id="dashChartSedes" role="img" aria-label="Gráfico de barras: alumnos activos por sede"></canvas></div>
-                    </div>
-                @endif
-
-                @if($mod['clave'] === 'actividades')
-                    <div class="modulo-detalle">
-                        <h3 class="modulo-detalle-titulo">Próximos eventos</h3>
-                        @forelse(($proximosEventos ?? collect()) as $ev)
-                            <div class="hub-list-item">
-                                <span class="agenda-date" aria-hidden="true">
-                                    <span class="agenda-date-d">{{ $ev->fecha?->format('d') ?? '—' }}</span>
-                                    <span class="agenda-date-m">{{ $ev->fecha?->locale('es')->translatedFormat('M') ?? '' }}</span>
-                                </span>
-                                <span class="flex-grow-1 min-w-0">
-                                    <span class="d-block fw-semibold text-truncate">{{ $ev->titulo ?? $ev->nombre ?? 'Evento' }}</span>
-                                    <span class="d-block modulo-meta text-truncate">
-                                        {{ $ev->fecha ? ucfirst($ev->fecha->locale('es')->translatedFormat('l j \d\e F')) : '—' }}
-                                        @if(!empty($ev->lugar)) · {{ $ev->lugar }}@endif
-                                    </span>
-                                </span>
-                            </div>
-                        @empty
-                            <x-ito.empty icon="bi-calendar-event" title="Sin eventos próximos" description="Cuando cargues un evento o un show va a aparecer acá."
-                                :action-href="$user->tieneAccesoModulo('admin.eventos') ? route('eventos.create') : null" action-label="Nuevo evento" />
-                        @endforelse
-                    </div>
-                @endif
-
-                @if($mod['clave'] === 'asistencias')
-                    <div class="modulo-detalle">
-                        <h3 class="modulo-detalle-titulo">Ocupación de bloques</h3>
-                        <p class="modulo-detalle-sub">Alumnos activos sobre cupo</p>
-                        <div class="table-responsive">
-                            <table class="table align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Bloque</th>
-                                        <th>Ocupación</th>
-                                        <th class="text-end">Alumnos</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse(($bloquesCupo ?? collect()) as $bloque)
-                                        @php
-                                            $activos = (int) ($bloque->alumnos_activos_count ?? 0);
-                                            $cupo = max(1, (int) ($bloque->cupo_maximo ?? $bloque->cupo ?? 30));
-                                            $pct = min(100, round(($activos / $cupo) * 100));
-                                            $barClass = $pct >= 100 ? 'full' : ($pct >= 75 ? 'warn' : '');
-                                        @endphp
-                                        <tr>
-                                            <td>
-                                                <span class="fw-semibold">{{ $bloque->nombre }}</span>
-                                                <span class="d-block modulo-meta">{{ $bloque->sede?->nombre ?? '—' }}</span>
-                                            </td>
-                                            <td class="text-nowrap">
-                                                <span class="cupo-bar {{ $barClass }}" aria-hidden="true"><i style="width:{{ $pct }}%"></i></span>
-                                                <span class="modulo-meta">{{ $pct }}%</span>
-                                            </td>
-                                            <td class="text-end">{{ $activos }}/{{ $cupo }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="3" class="ito-empty">Sin bloques activos.</td></tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                @endif
-            </div>
+    @if(collect($modulos)->contains('clave', 'pagos') || collect($modulos)->contains('clave', 'escuela'))
+    <section class="hub-section" aria-labelledby="hub-graficos">
+        <h2 id="hub-graficos" class="hub-section-title"><i class="bi bi-bar-chart" aria-hidden="true"></i> Números</h2>
+        <div class="modulos-grid">
+            @if(collect($modulos)->contains('clave', 'pagos'))
+                <article class="modulo-card">
+                    <h3 class="modulo-card-titulo">Ingresos y gastos</h3>
+                    <p class="modulo-card-resumen">Últimos 6 meses</p>
+                    <div class="hub-chart"><canvas id="dashChartFinanzas" role="img" aria-label="Gráfico de barras: ingresos y gastos de los últimos 6 meses"></canvas></div>
+                </article>
+            @endif
+            @if(collect($modulos)->contains('clave', 'escuela'))
+                <article class="modulo-card">
+                    <h3 class="modulo-card-titulo">Alumnos activos por sede</h3>
+                    <div class="hub-chart"><canvas id="dashChartSedes" role="img" aria-label="Gráfico de barras: alumnos activos por sede"></canvas></div>
+                </article>
+            @endif
         </div>
-    @endforeach
+    </section>
     @endif
 
     @if(Route::has('ayuda.direccion') && ($user->isAdmin() || $user->puedeGestionarOperativo()))
@@ -478,14 +290,9 @@
         });
     }
 
-    document.getElementById('modulo-pagos')?.addEventListener('shown.bs.offcanvas', () => {
-        graficoFinanzas();
-        finanzas?.resize();
-    });
-    document.getElementById('modulo-escuela')?.addEventListener('shown.bs.offcanvas', () => {
-        graficoSedes();
-        sedes?.resize();
-    });
+    // Los gráficos están en el inicio (ya no hay paneles que abrir): se dibujan al cargar.
+    graficoFinanzas();
+    graficoSedes();
 })();
 </script>
 @endpush

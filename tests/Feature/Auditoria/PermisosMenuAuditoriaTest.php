@@ -90,7 +90,12 @@ class PermisosMenuAuditoriaTest extends TestCase
     {
         $admin = $this->admin('Dirección');
         $html = $this->actingAs($admin)->get(route('dashboard'))->assertOk()->getContent();
+        // Los accesos viven en el menú lateral o en la página de su módulo (las tarjetas del inicio llevan a ella).
         $hrefs = $this->hrefsDelMenu($html);
+        preg_match_all('#href="(http://localhost/modulos/[^"]+)"#', $html, $m);
+        foreach (array_unique($m[1]) as $paginaModulo) {
+            $hrefs = array_merge($hrefs, $this->hrefsDelMenu($this->actingAs($admin)->get($paginaModulo)->assertOk()->getContent()));
+        }
 
         foreach (['pagos.index', 'gastos.index', 'morosos.index', 'cuotas.index', 'reportes.index', 'direccion.index', 'alumnos.index', 'bloques.index'] as $ruta) {
             $this->assertContains(route($ruta), $hrefs, "El admin no ve «{$ruta}» en el menú");

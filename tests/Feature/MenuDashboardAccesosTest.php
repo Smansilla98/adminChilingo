@@ -31,9 +31,19 @@ class MenuDashboardAccesosTest extends TestCase
         $this->assertStringContainsString('Cuotas', $menu);
         $this->assertStringNotContainsString('Órdenes de compra', $menu, 'lo secundario no debe ocupar el menú lateral');
 
+        // El inicio muestra las tarjetas de módulos; cada tarjeta lleva a su página.
         $this->assertStringContainsString('Módulos', $html);
         $this->assertStringContainsString('Inventario y compras', $html);
-        $this->assertStringContainsString('Órdenes de compra', $html, 'el panel del módulo debe conservar los accesos que no están en el menú');
-        $this->assertStringContainsString('Mensajes a grupos', $html);
+        $this->assertStringContainsString(route('modulos.show', 'inventario'), $html);
+        $this->assertStringNotContainsString('offcanvas', $html, 'sin paneles superpuestos');
+
+        // La página del módulo conserva los accesos que no están en el menú.
+        $inventario = $this->actingAs($admin)->get(route('modulos.show', 'inventario'))->assertOk()->getContent();
+        $this->assertStringContainsString('Órdenes de compra', $inventario);
+        $actividades = $this->actingAs($admin)->get(route('modulos.show', 'actividades'))->assertOk()->getContent();
+        $this->assertStringContainsString('Mensajes a grupos', $actividades);
+
+        // Un módulo que no existe o que el usuario no ve responde 404.
+        $this->actingAs($admin)->get('/modulos/no-existe')->assertNotFound();
     }
 }
