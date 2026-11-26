@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Escenarios;
 use Tests\TestCase;
 
-/** El menú lateral muestra lo destacado; el inicio muestra todos los accesos por sección. Ningún acceso se pierde. */
+/** El menú lateral muestra lo destacado. El inicio agrupa el resto en módulos, sin perder accesos. */
 class MenuDashboardAccesosTest extends TestCase
 {
     use Escenarios, RefreshDatabase;
@@ -31,8 +31,9 @@ class MenuDashboardAccesosTest extends TestCase
         $this->assertStringContainsString('Cuotas', $menu);
         $this->assertStringNotContainsString('Órdenes de compra', $menu, 'lo secundario no debe ocupar el menú lateral');
 
-        $this->assertStringContainsString('Accesos por sección', $html);
-        $this->assertStringContainsString('Órdenes de compra', $html, 'el inicio debe mostrar todos los accesos');
+        $this->assertStringContainsString('Módulos', $html);
+        $this->assertStringContainsString('Inventario y compras', $html);
+        $this->assertStringContainsString('Órdenes de compra', $html, 'el panel del módulo debe conservar los accesos que no están en el menú');
         $this->assertStringContainsString('Mensajes a grupos', $html);
     }
 }
