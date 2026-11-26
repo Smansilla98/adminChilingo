@@ -7,6 +7,7 @@ use App\Models\ArchivoCapitulo;
 use App\Models\ArchivoFoto;
 use App\Models\ArchivoFotoPersona;
 use App\Models\BibliotecaTag;
+use App\Models\Persona;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -247,5 +248,58 @@ class ArchivoConsultas
         $sig = $i < count($lista) - 1 ? ArchivoFoto::query()->find($lista[$i + 1]) : null;
 
         return [$ant, $sig];
+    }
+
+    /**
+     * Totales, calidad de los datos, moderación, décadas y recientes del tablero de gestión.
+     *
+     * @return array<string, mixed>
+     */
+    public function tableroDatos(Builder $fotos): array
+    {
+        $porDecada = (clone $fotos)->whereNotNull('anio')->pluck('anio')
+            ->countBy(fn ($anio) => intdiv((int) $anio, 10) * 10)->sortKeys();
+
+        return [
+            'totales' => [
+                'fotos' => (clone $fotos)->count(),
+                'publicadas' => (clone $fotos)->publicadas()->count(),
+                'capitulos' => ArchivoCapitulo::query()->count(),
+                'acontecimientos' => ArchivoAcontecimiento::query()->count(),
+                'personas' => ArchivoFotoPersona::query()->whereNotNull('persona_id')->distinct()->count('persona_id')
+                    + ArchivoFotoPersona::query()->whereNull('persona_id')->distinct()->count('nombre'),
+                'etiquetas' => BibliotecaTag::query()->whereHas('archivoFotos')->count(),
+            ],
+            'calidad' => [
+                'sin_fecha' => (clone $fotos)->whereNull('anio')->whereNotIn('estado', ['rechazada'])->count(),
+                'sin_credito' => (clone $fotos)->whereNull('fotografo')->whereNull('credito')->whereNotIn('estado', ['rechazada'])->count(),
+                'sin_descripcion' => (clone $fotos)->whereNull('descripcion')->whereNotIn('estado', ['rechazada'])->count(),
+                'sin_portada' => ArchivoAcontecimiento::query()->whereNull('portada_foto_id')->count(),
+                'borradores' => (clone $fotos)->where('estado', 'borrador')->count(),
+            ],
+            'moderacion' => $this->conteosModeracion($fotos),
+            'porDecada' => $porDecada,
+            'recientes' => (clone $fotos)->latest('id')->limit(12)->get(),
+        ];
+    }
+
+    /** Personas del sistema y nombres libres ya usados en el archivo, para etiquetar fotos. */
+    public function personasParaEtiquetar(string $q): Collection
+    {
+        $delSistema = Persona::query()->buscar($q)->orderBy('nombre')->limit(12)->get(['id', 'nombre', 'apellido'])
+            ->map(fn (Persona $p) => ['persona_id' => $p->id, 'nombre' => $p->nombre_completo]);
+        $libres = ArchivoFotoPersona::query()->whereNull('persona_id')->where('nombre', 'like', '%'.$q.'%')
+            ->distinct()->limit(8)->pluck('nombre')->map(fn ($n) => ['persona_id' => null, 'nombre' => $n]);
+
+        return $delSistema->concat($libres)->unique('nombre')->values();
+    }
+
+    /** Hashes con más de una foto en el archivo, con su cantidad. */
+    public function repetidosPorHash(Collection $hashes): Collection
+    {
+        $hashes = $hashes->filter()->unique();
+
+        return $hashes->isEmpty() ? collect() : ArchivoFoto::query()->whereIn('hash', $hashes)
+            ->select('hash', DB::raw('count(*) as n'))->groupBy('hash')->having('n', '>', 1)->pluck('n', 'hash');
     }
 }

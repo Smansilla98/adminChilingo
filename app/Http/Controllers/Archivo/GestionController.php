@@ -9,14 +9,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ArchivoAcontecimiento;
 use App\Models\ArchivoCapitulo;
 use App\Models\ArchivoFoto;
-use App\Models\ArchivoFotoPersona;
-use App\Models\BibliotecaTag;
-use App\Models\Persona;
 use App\Models\Sede;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -36,30 +32,7 @@ class GestionController extends Controller
         $this->authorize('viewAny', ArchivoFoto::class);
         $fotos = $this->consultas->gestionables($request->user());
 
-        $porDecada = (clone $fotos)->whereNotNull('anio')->pluck('anio')
-            ->countBy(fn ($anio) => intdiv((int) $anio, 10) * 10)->sortKeys();
-
-        return view('archivo.gestion.tablero', [
-            'totales' => [
-                'fotos' => (clone $fotos)->count(),
-                'publicadas' => (clone $fotos)->publicadas()->count(),
-                'capitulos' => ArchivoCapitulo::query()->count(),
-                'acontecimientos' => ArchivoAcontecimiento::query()->count(),
-                'personas' => ArchivoFotoPersona::query()->whereNotNull('persona_id')->distinct()->count('persona_id')
-                    + ArchivoFotoPersona::query()->whereNull('persona_id')->distinct()->count('nombre'),
-                'etiquetas' => BibliotecaTag::query()->whereHas('archivoFotos')->count(),
-            ],
-            'calidad' => [
-                'sin_fecha' => (clone $fotos)->whereNull('anio')->whereNotIn('estado', ['rechazada'])->count(),
-                'sin_credito' => (clone $fotos)->whereNull('fotografo')->whereNull('credito')->whereNotIn('estado', ['rechazada'])->count(),
-                'sin_descripcion' => (clone $fotos)->whereNull('descripcion')->whereNotIn('estado', ['rechazada'])->count(),
-                'sin_portada' => ArchivoAcontecimiento::query()->whereNull('portada_foto_id')->count(),
-                'borradores' => (clone $fotos)->where('estado', 'borrador')->count(),
-            ],
-            'moderacion' => $this->consultas->conteosModeracion($fotos),
-            'porDecada' => $porDecada,
-            'recientes' => (clone $fotos)->latest('id')->limit(12)->get(),
-        ]);
+        return view('archivo.gestion.tablero', $this->consultas->tableroDatos($fotos));
     }
 
     public function fotos(Request $request): View
@@ -259,9 +232,7 @@ class GestionController extends Controller
             ->paginate(20)->withQueryString();
 
         // Coincidencias por hash, en una sola consulta para toda la página.
-        $hashes = collect($cola->items())->pluck('hash')->filter()->unique();
-        $repetidos = $hashes->isEmpty() ? collect() : ArchivoFoto::query()->whereIn('hash', $hashes)
-            ->select('hash', DB::raw('count(*) as n'))->groupBy('hash')->having('n', '>', 1)->pluck('n', 'hash');
+        $repetidos = $this->consultas->repetidosPorHash(collect($cola->items())->pluck('hash'));
 
         return view('archivo.gestion.moderacion', [
             'cola' => $cola,
@@ -279,12 +250,8 @@ class GestionController extends Controller
         if (mb_strlen($q) < 2) {
             return response()->json(['data' => []]);
         }
-        $delSistema = Persona::query()->buscar($q)->orderBy('nombre')->limit(12)->get(['id', 'nombre', 'apellido'])
-            ->map(fn (Persona $p) => ['persona_id' => $p->id, 'nombre' => $p->nombre_completo]);
-        $libres = ArchivoFotoPersona::query()->whereNull('persona_id')->where('nombre', 'like', '%'.$q.'%')
-            ->distinct()->limit(8)->pluck('nombre')->map(fn ($n) => ['persona_id' => null, 'nombre' => $n]);
 
-        return response()->json(['data' => $delSistema->concat($libres)->unique('nombre')->values()]);
+        return response()->json(['data' => $this->consultas->personasParaEtiquetar($q)]);
     }
 
     /** @return array<string, mixed> */
