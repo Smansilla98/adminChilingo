@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Domain\VillaGesell\GiraPresentador;
 use App\Domain\VillaGesell\VillaGesellAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Alumno;
@@ -24,20 +25,20 @@ use Illuminate\Http\Request;
  */
 class VillaGesellController extends Controller
 {
-    public function __construct(private VillaGesellGiraService $gira, private VillaGesellAdmin $admin) {}
+    public function __construct(private VillaGesellGiraService $gira, private VillaGesellAdmin $admin, private GiraPresentador $presentador) {}
 
     public function resumen(): JsonResponse
     {
         $this->gira->asegurarDias();
 
-        return response()->json(['config' => $this->config(), 'plan' => $this->gira->plan()]);
+        return response()->json(['config' => $this->presentador->config($this->gira->config()), 'plan' => $this->gira->plan()]);
     }
 
     public function actualizarConfig(Request $request): JsonResponse
     {
         $this->admin->actualizarConfig($request->validate($this->admin->reglasConfig()));
 
-        return response()->json(['config' => $this->config(), 'plan' => $this->gira->plan()]);
+        return response()->json(['config' => $this->presentador->config($this->gira->config()), 'plan' => $this->gira->plan()]);
     }
 
     public function catalogo(): JsonResponse
@@ -69,41 +70,12 @@ class VillaGesellController extends Controller
             ->when($request->input('lista') === 'plaza', fn ($q) => $q->where('lista_espera', false))
             ->orderByRaw('lista_espera asc')->orderByRaw('plaza is null')->orderBy('plaza')->get();
 
-        return response()->json(['data' => $lista->map(fn (VillaGesellInscripto $i) => $this->presentarInscripto($i))->values()]);
-    }
-
-    /** @return array<string, mixed> */
-    private function presentarInscripto(VillaGesellInscripto $inscripto): array
-    {
-        $inscripto->loadMissing('alumno.sede');
-
-        return [
-            'id' => $inscripto->id,
-            'alumno' => $inscripto->alumno ? ['id' => $inscripto->alumno->id, 'nombre' => $inscripto->alumno->nombre_apellido, 'sede' => $inscripto->alumno->sede?->nombre, 'persona_id' => $inscripto->alumno->persona_id] : null,
-            'estado_pago' => $inscripto->estado_pago,
-            'estado_pago_nombre' => $inscripto->etiquetaPago(),
-            'monto_esperado' => (float) $inscripto->monto_esperado,
-            'monto_pagado' => (float) $inscripto->monto_pagado,
-            'saldo' => round($inscripto->saldo(), 2),
-            'plaza' => $inscripto->plaza,
-            'lista_espera' => (bool) $inscripto->lista_espera,
-            'fecha_desde' => $inscripto->fecha_desde?->toDateString(),
-            'fecha_hasta' => $inscripto->fecha_hasta?->toDateString(),
-            'dias' => $inscripto->diasUtilizados(),
-            'talle_remera' => $inscripto->talle_remera,
-            'tambor_principal' => $inscripto->tambor_principal,
-            'tambor_secundario' => $inscripto->tambor_secundario,
-            'tambor_terciario' => $inscripto->tambor_terciario,
-            'tambor_principal_origen' => $inscripto->tambor_principal_origen,
-            'tambor_secundario_origen' => $inscripto->tambor_secundario_origen,
-            'tambor_terciario_origen' => $inscripto->tambor_terciario_origen,
-            'notas' => $inscripto->notas,
-        ];
+        return response()->json(['data' => $lista->map(fn (VillaGesellInscripto $i) => $this->presentador->inscripto($i))->values()]);
     }
 
     public function verInscripto(VillaGesellInscripto $inscripto): JsonResponse
     {
-        return response()->json(['data' => $this->presentarInscripto($inscripto)]);
+        return response()->json(['data' => $this->presentador->inscripto($inscripto)]);
     }
 
     /** Valores sugeridos para una inscripción nueva (plaza libre, fechas y aporte). */
@@ -124,14 +96,14 @@ class VillaGesellController extends Controller
     {
         $i = $this->admin->guardarInscripcion(null, $request->validate($this->admin->reglasInscripcion()), $request->boolean('lista_espera'), $request->boolean('calcular_aporte'));
 
-        return response()->json(['data' => $this->presentarInscripto($i)], 201);
+        return response()->json(['data' => $this->presentador->inscripto($i)], 201);
     }
 
     public function actualizarInscripcion(Request $request, VillaGesellInscripto $inscripto): JsonResponse
     {
         $this->admin->guardarInscripcion($inscripto, $request->validate($this->admin->reglasInscripcion($inscripto->id)), $request->boolean('lista_espera'), $request->boolean('calcular_aporte'));
 
-        return response()->json(['data' => $this->presentarInscripto($inscripto->fresh())]);
+        return response()->json(['data' => $this->presentador->inscripto($inscripto->fresh())]);
     }
 
     public function eliminarInscripcion(VillaGesellInscripto $inscripto): JsonResponse
@@ -190,7 +162,7 @@ class VillaGesellController extends Controller
             'id' => $d->id,
             'fecha' => $d->fecha?->toDateString(),
             'notas' => $d->notas,
-            'tocadas' => $d->tocadas->map(fn (VillaGesellTocada $t) => $this->tocada($t))->values(),
+            'tocadas' => $d->tocadas->map(fn (VillaGesellTocada $t) => $this->presentador->tocada($t))->values(),
         ])->values()]);
     }
 
@@ -215,7 +187,7 @@ class VillaGesellController extends Controller
 
     public function agregarTocada(Request $request, VillaGesellDia $dia): JsonResponse
     {
-        return response()->json(['data' => $this->tocada($this->admin->agregarTocada($dia, $request->validate($this->admin->reglasTocada())))], 201);
+        return response()->json(['data' => $this->presentador->tocada($this->admin->agregarTocada($dia, $request->validate($this->admin->reglasTocada())))], 201);
     }
 
     public function actualizarTocada(Request $request, VillaGesellTocada $tocada): JsonResponse
@@ -224,7 +196,7 @@ class VillaGesellController extends Controller
         $data['orden'] = isset($data['orden']) ? (int) $data['orden'] : $tocada->orden;
         $tocada->update($data);
 
-        return response()->json(['data' => $this->tocada($tocada->fresh())]);
+        return response()->json(['data' => $this->presentador->tocada($tocada->fresh())]);
     }
 
     public function eliminarTocada(VillaGesellTocada $tocada): JsonResponse
@@ -241,7 +213,7 @@ class VillaGesellController extends Controller
         $dias = $this->gira->config()->cantidadDias();
 
         return response()->json([
-            'data' => VillaGesellGasto::query()->orderBy('tipo')->orderBy('concepto')->get()->map(fn (VillaGesellGasto $g) => $this->gasto($g, $dias))->values(),
+            'data' => VillaGesellGasto::query()->orderBy('tipo')->orderBy('concepto')->get()->map(fn (VillaGesellGasto $g) => $this->presentador->gasto($g, $dias))->values(),
             'plan' => $this->gira->plan(),
         ]);
     }
@@ -255,7 +227,7 @@ class VillaGesellController extends Controller
             $gasto = VillaGesellGasto::query()->create($datos);
         }
 
-        return response()->json(['data' => $this->gasto($gasto->fresh(), $this->gira->config()->cantidadDias())], $gasto->wasRecentlyCreated ? 201 : 200);
+        return response()->json(['data' => $this->presentador->gasto($gasto->fresh(), $this->gira->config()->cantidadDias())], $gasto->wasRecentlyCreated ? 201 : 200);
     }
 
     public function eliminarGasto(Request $request, VillaGesellGasto $gasto, \App\Domain\Finanzas\Papelera $papelera): JsonResponse
@@ -273,7 +245,7 @@ class VillaGesellController extends Controller
 
         return response()->json([
             'data' => VillaGesellGasto::query()->onlyTrashed()->with('eliminadoPor:id,name')->orderByDesc('deleted_at')->get()
-                ->map(fn (VillaGesellGasto $g) => $this->gasto($g, $dias) + [
+                ->map(fn (VillaGesellGasto $g) => $this->presentador->gasto($g, $dias) + [
                     'eliminado_at' => $g->deleted_at?->toIso8601String(),
                     'eliminado_por' => $g->eliminadoPor?->name,
                     'motivo_eliminacion' => $g->motivo_eliminacion,
@@ -285,7 +257,7 @@ class VillaGesellController extends Controller
     {
         $papelera->restaurar($gasto);
 
-        return response()->json(['data' => $this->gasto($gasto->fresh(), $this->gira->config()->cantidadDias())]);
+        return response()->json(['data' => $this->presentador->gasto($gasto->fresh(), $this->gira->config()->cantidadDias())]);
     }
 
     public function insumos(): JsonResponse
@@ -293,7 +265,7 @@ class VillaGesellController extends Controller
         $insumos = VillaGesellInsumo::query()->orderBy('categoria')->orderBy('nombre')->get();
 
         return response()->json([
-            'data' => $insumos->map(fn (VillaGesellInsumo $i) => $this->insumo($i))->values(),
+            'data' => $insumos->map(fn (VillaGesellInsumo $i) => $this->presentador->insumo($i))->values(),
             'total' => round((float) $insumos->sum(fn (VillaGesellInsumo $i) => $i->costoTotal()), 2),
         ]);
     }
@@ -307,7 +279,7 @@ class VillaGesellController extends Controller
             $insumo = VillaGesellInsumo::query()->create($datos);
         }
 
-        return response()->json(['data' => $this->insumo($insumo->fresh())], $insumo->wasRecentlyCreated ? 201 : 200);
+        return response()->json(['data' => $this->presentador->insumo($insumo->fresh())], $insumo->wasRecentlyCreated ? 201 : 200);
     }
 
     public function eliminarInsumo(VillaGesellInsumo $insumo): JsonResponse
@@ -315,46 +287,5 @@ class VillaGesellController extends Controller
         $insumo->delete();
 
         return response()->json(['ok' => true]);
-    }
-
-    /** @return array<string, mixed> */
-    private function config(): array
-    {
-        $c = $this->gira->config();
-
-        return [
-            'fecha_inicio' => $c->fecha_inicio?->toDateString(),
-            'fecha_fin' => $c->fecha_fin?->toDateString(),
-            'cupo_maximo' => (int) $c->cupo_maximo,
-            'aporte_esperado' => (float) $c->aporte_esperado,
-            'notas' => $c->notas,
-            'dias' => $c->cantidadDias(),
-            'valor_por_dia' => $c->valorPorDia(),
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function tocada(VillaGesellTocada $t): array
-    {
-        return ['id' => $t->id, 'dia_id' => $t->dia_id, 'orden' => $t->orden, 'hora' => $t->hora ? substr((string) $t->hora, 0, 5) : null, 'que' => $t->que, 'donde' => $t->donde, 'notas' => $t->notas];
-    }
-
-    /** @return array<string, mixed> */
-    private function gasto(VillaGesellGasto $g, int $dias): array
-    {
-        return [
-            'id' => $g->id, 'tipo' => $g->tipo, 'tipo_nombre' => VillaGesellGasto::TIPOS[$g->tipo] ?? $g->tipo, 'concepto' => $g->concepto,
-            'monto' => (float) $g->monto, 'modo' => $g->modo, 'fecha' => $g->fecha?->toDateString(), 'notas' => $g->notas,
-            'proyectado' => round($g->proyectado($dias), 2),
-        ];
-    }
-
-    /** @return array<string, mixed> */
-    private function insumo(VillaGesellInsumo $i): array
-    {
-        return [
-            'id' => $i->id, 'nombre' => $i->nombre, 'categoria' => $i->categoria, 'categoria_nombre' => VillaGesellInsumo::CATEGORIAS[$i->categoria] ?? $i->categoria,
-            'cantidad' => (float) $i->cantidad, 'unidad' => $i->unidad, 'costo_unitario' => (float) $i->costo_unitario, 'costo_total' => round($i->costoTotal(), 2), 'notas' => $i->notas,
-        ];
     }
 }
