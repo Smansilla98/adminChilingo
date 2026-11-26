@@ -38,6 +38,26 @@
         </span>
     </div>
 
+    <section class="card mb-3" aria-labelledby="cobranza-titulo">
+        <div class="card-body">
+            <h2 id="cobranza-titulo" class="h6 mb-3">Cobranza de {{ $mesLabel }} (por mes de cuota)</h2>
+            <dl class="row mb-0">
+                <dt class="col-sm-8">Cuotas de este mes cobradas</dt>
+                <dd class="col-sm-4 text-end">${{ number_format($cobranza['cobrado_mes'], 2, ',', '.') }}</dd>
+                <dt class="col-sm-8">Cuotas de meses anteriores cobradas (arrastre)</dt>
+                <dd class="col-sm-4 text-end">${{ number_format($cobranza['cobrado_arrastre'], 2, ',', '.') }}</dd>
+                <dt class="col-sm-8">Recargo por mora cobrado (aproximado)</dt>
+                <dd class="col-sm-4 text-end">${{ number_format($cobranza['recargo_aproximado'], 2, ',', '.') }}</dd>
+                <dt class="col-sm-8">Cuotas de meses posteriores cobradas (adelantado)</dt>
+                <dd class="col-sm-4 text-end">${{ number_format($cobranza['cobrado_adelantado'], 2, ',', '.') }}</dd>
+                <dt class="col-sm-8 fw-semibold">Total cobrado en el mes</dt>
+                <dd class="col-sm-4 text-end fw-semibold">${{ number_format($cobranza['cobrado_total'], 2, ',', '.') }}</dd>
+                <dt class="col-sm-8">Saldo arrastrado de meses anteriores ({{ $cobranza['alumnos_con_saldo'] }} alumno/s)</dt>
+                <dd class="col-sm-4 text-end">${{ number_format($cobranza['saldo_arrastrado'], 2, ',', '.') }}</dd>
+            </dl>
+        </div>
+    </section>
+
     <div class="list-group operativo-checklist">
         @foreach($checklist as $item)
             <div class="list-group-item d-flex flex-wrap justify-content-between align-items-start gap-2">

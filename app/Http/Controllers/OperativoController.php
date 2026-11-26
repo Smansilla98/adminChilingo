@@ -138,6 +138,7 @@ class OperativoController extends Controller
             'mesLabel' => $mesLabel,
             'okCount' => collect($checklist)->where('ok', true)->count(),
             'totalCheck' => collect($checklist)->whereNotNull('ok')->count(),
+            'cobranza' => $cierre->cobranza($mes, $anio),
         ]);
     }
 }
