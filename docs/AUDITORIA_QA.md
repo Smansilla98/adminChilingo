@@ -17,7 +17,21 @@ Rama `qa-auditoria` (desde `estabilizacion`). Pruebas en `tests/Feature/Auditori
 - **Barrido de pantallas** (`BarridoPantallasAuditoriaTest`): toda ruta web GET sin parámetros responde sin 5xx
   con el admin y base vacía.
 
-Total agregado: 8 pruebas (3 + 1 + 3 + 1), todas pasan.
+Segunda tanda:
+
+- **Liquidación docente** (`LiquidacionAuditoriaTest`, octubre 2026): dos sedes con valor hora propio y general
+  ($1.500 y $1.000), una ausencia que resta una hora. Total $13.000 = 6 h × 1.500 + 4 h × 1.000. El pago genera un
+  gasto por sede que suma exactamente $13.000. Pagar dos veces se rechaza sin duplicar gastos. Un mes pagado no se
+  recalcula.
+- **Cierre de mes** (`CierreMesAuditoriaTest`): checklist con cifras exactas (1 bloque sin asistencia del mes, 1
+  comprobante pendiente, 2 cuotas activas, la inactiva no cuenta). Es idempotente y no modifica datos. Solo lo ve
+  quien tiene `facturacion.view`.
+- **Villa Gesell** (`VillaGesellAuditoriaTest`): saldo por inscripto, aporte por días, plan de gastos (valor único
+  y por día), insumos, balance pagado y esperado.
+- **Tablero de dirección** (`TableroDireccionAuditoriaTest`): cobrado, gastos, resultado, margen, emitido y cobranza
+  del mes en curso.
+
+Total agregado: 18 pruebas en la primera y segunda tanda; la suite completa da 569 pasando.
 
 ## Hallazgos
 
@@ -33,6 +47,28 @@ Total agregado: 8 pruebas (3 + 1 + 3 + 1), todas pasan.
   total), `TendenciasService` y `Services/Dashboard/RecaudacionService`. Prueba de regresión:
   `TotalesGastosAuditoriaTest`.
 - Nota: el gráfico de recaudación del dashboard recibe la misma corrección, pero no tiene prueba propia.
+
+### ALTO (corregido): cuotas desactivadas se emitían en el tablero
+
+- Circuito: Cuotas (cuota reemplazada, queda `activo = false`) → Tablero de dirección.
+- Esperado: emitido del mes = 3 alumnos activos × $10.000 = $30.000.
+- Obtenido: $60.000, porque `TendenciasService::emitidoPorMes` no filtraba `activo`. Eso bajaba la cobranza
+  (33,3 % en vez de 16,7 %) y distorsionaba la proyección de ingresos del mes siguiente.
+- Corrección: `where('activo', true)` en `emitidoPorMes`. Regresión: `TableroDireccionAuditoriaTest`.
+
+### ALTO (corregido): lista de espera inflaba los ingresos esperados de Villa Gesell
+
+- Circuito: Villa Gesell → inscriptos (2 con plaza, 1 en lista de espera de $15.000) → Plan de gastos.
+- Esperado: ingresos esperados $17.500 (solo plazas), balance esperado $10.500.
+- Obtenido: ingresos esperados $32.500 y balance esperado $25.500. La lista de espera no ocupa plaza, así que no es
+  ingreso previsto.
+- Corrección: `plan()` suma `monto_esperado` solo de `lista_espera = false`. Regresión:
+  `VillaGesellAuditoriaTest::test_ingresos_esperados_no_incluyen_lista_de_espera`.
+
+### INFO: comprobantes pendientes del checklist de cierre
+
+- El checklist cuenta los comprobantes pendientes de cualquier mes, no solo del mes cerrado. Puede ser deliberado (no
+  cerrar con deuda de revisión) y no se cambió. Confirmar con la dirección.
 
 ### BAJO (documentado, no corregido): tolerancia de centavos entre total y líneas
 
@@ -54,9 +90,9 @@ Total agregado: 8 pruebas (3 + 1 + 3 + 1), todas pasan.
 
 ## No cubierto en esta pasada
 
-Liquidación docente (cálculo y pago), cierre de mes, Villa Gesell (seña, saldo, gastos, plan), generación masiva
-de cuotas por lote, flujo de comprobantes por el alumno y cifras del tablero de dirección. Quedan para la
-próxima auditoría.
+Generación masiva de cuotas por lote, flujo de comprobantes cargados por el alumno, alta de inscriptos de Villa
+Gesell desde la web (solo se probó el modelo y el plan), morosidad del tablero por sede y tendencias de 12 meses
+con pagos en meses anteriores. Quedan para la próxima auditoría.
 
 ## Entorno
 
