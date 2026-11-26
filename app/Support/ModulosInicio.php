@@ -111,6 +111,18 @@ class ModulosInicio
      *     links: list<array<string, mixed>>
      * }>
      */
+    /** Un módulo por clave, con el acceso del usuario; null si no tiene ninguna pantalla visible. */
+    public static function uno(User $user, Request $request, string $clave): ?array
+    {
+        foreach (self::para($user, $request) as $modulo) {
+            if ($modulo['clave'] === $clave) {
+                return $modulo;
+            }
+        }
+
+        return null;
+    }
+
     public static function para(User $user, Request $request): array
     {
         $links = [];

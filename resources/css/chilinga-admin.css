@@ -3026,3 +3026,27 @@ html.ito-contrast a:not(.btn):not(.side-link):not(.dropdown-item) { text-decorat
   .hub-guia { align-items: flex-start; }
   .hub-guia-cta { display: none; }
 }
+
+/* Página de módulo: encabezado, migas y mosaico de pantallas. */
+.modulo-migas { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted, #6b7280); margin-bottom: 14px; }
+.modulo-migas a { color: var(--accent-strong); text-decoration: none; }
+.modulo-page-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 18px 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface, #fff); margin-bottom: 22px; }
+.modulo-page-icono { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft-2); color: var(--accent-strong); font-size: 24px; flex-shrink: 0; }
+.modulo-page-texto { flex: 1; min-width: 220px; }
+.modulo-page-titulo { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--ink); }
+.modulo-page-resumen { margin: 4px 0 0; color: var(--muted, #6b7280); font-size: 14px; }
+.modulo-page-accion { white-space: nowrap; }
+.modulo-page-subtitulo { font-size: 14px; font-weight: 700; color: var(--ink); margin: 0 0 12px; }
+.modulo-page-cuenta { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); font-size: 12px; }
+.modulo-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.modulo-tile { display: flex; align-items: center; gap: 12px; padding: 14px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface, #fff); color: var(--ink); text-decoration: none; transition: border-color .15s, transform .15s; }
+.modulo-tile:hover { border-color: var(--accent); transform: translateY(-1px); color: var(--ink); }
+.modulo-tile.is-active { border-color: var(--accent); background: var(--accent-soft); }
+.modulo-tile-icono { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-strong); font-size: 17px; flex-shrink: 0; }
+.modulo-tile-texto { flex: 1; font-weight: 600; font-size: 14px; }
+.modulo-tile-flecha { color: var(--muted, #6b7280); }
+
+/* Tarjetas de módulo como enlace: sin subrayado y el chip de estado no tapa el título. */
+a.modulo-card-abrir, a.modulo-card-abrir:hover { text-decoration: none; color: var(--text); }
+a.modulo-card-abrir .modulo-card-titulo, a.modulo-card-abrir .modulo-card-resumen, a.modulo-card-abrir .modulo-card-entrar { text-decoration: none; }
+.modulo-card-top .modulo-estado { max-width: 62%; white-space: normal; line-height: 1.25; text-align: right; }

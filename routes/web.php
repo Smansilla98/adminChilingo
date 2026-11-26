@@ -217,6 +217,7 @@ Route::get('/', fn () => auth()->check()
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/modulos/{clave}', [\App\Http\Controllers\Modulos\ModuloController::class, 'show'])->where('clave', '[a-z_-]+')->name('modulos.show');
     Route::get('/mi-clave', [\App\Http\Controllers\MiClaveController::class, 'edit'])->name('mi-clave.edit');
     Route::put('/mi-clave', [\App\Http\Controllers\MiClaveController::class, 'update'])->middleware('throttle:10,1')->name('mi-clave.update');
     Route::get('/estado-sistema', EstadoSistemaController::class)->name('estado-sistema');
