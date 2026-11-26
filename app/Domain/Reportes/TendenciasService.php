@@ -167,8 +167,10 @@ class TendenciasService
      */
     private function emitidoPorMes(Carbon $inicio, Carbon $fin, ?array $sedes): array
     {
+        // Solo cuotas vigentes: una cuota desactivada (reemplazada) no se emite.
         $cuotas = Cuota::query()
             ->with(['alumnos:id', 'bloque:id,sede_id', 'bloque.alumnos' => fn ($q) => $q->where('alumnos.activo', true)->select('alumnos.id')])
+            ->where('activo', true)
             ->whereNotNull('mes')
             ->where(fn ($q) => $q->where('año', '>', $inicio->year)->orWhere(fn ($q) => $q->where('año', $inicio->year)->where('mes', '>=', $inicio->month)))
             ->where(fn ($q) => $q->where('año', '<', $fin->year)->orWhere(fn ($q) => $q->where('año', $fin->year)->where('mes', '<=', $fin->month)))

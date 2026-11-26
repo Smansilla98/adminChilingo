@@ -80,7 +80,8 @@ class VillaGesellGiraService
         $insumosTotales = (float) VillaGesellInsumo::query()->get()->sum(fn (VillaGesellInsumo $i) => $i->costoTotal());
 
         $pagados = (float) VillaGesellInscripto::query()->sum('monto_pagado');
-        $esperados = (float) VillaGesellInscripto::query()->get()->sum(
+        // Solo quienes ocupan plaza: la lista de espera no es ingreso previsto.
+        $esperados = (float) VillaGesellInscripto::query()->where('lista_espera', false)->get()->sum(
             fn (VillaGesellInscripto $i) => (float) $i->monto_esperado
         );
         $cupoLleno = VillaGesellCalculo::porDiaPorDias($valorPorDia, $dias) * (int) $config->cupo_maximo;
