@@ -168,7 +168,8 @@ class RegistroPagoService
 
         $suma = round(array_sum(array_map(fn ($l) => (float) $l['monto'], $lineas)), 2);
         $total = round((float) $validado['monto_total'], 2);
-        if (abs($suma - $total) > 0.02) {
+        // Comparación exacta en centavos: el total debe coincidir con la suma de las líneas, sin tolerancia.
+        if ((int) round($suma * 100) !== (int) round($total * 100)) {
             throw ValidationException::withMessages([
                 'monto_total' => 'El monto total ($'.number_format($total, 2, ',', '.').') debe coincidir con la suma de las líneas ($'.number_format($suma, 2, ',', '.').').',
             ]);

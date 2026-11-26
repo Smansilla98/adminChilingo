@@ -382,4 +382,26 @@ class FinanzasPlataSeguraTest extends TestCase
         $this->expectException(\Illuminate\Validation\ValidationException::class);
         $cobros->iniciar($admin, $ana, [$cuota->id], 'transferencia');
     }
+
+    public function test_el_total_del_pago_debe_coincidir_al_centavo_con_las_lineas(): void
+    {
+        $ana = $this->inscribirAlumno($this->persona('Ana'), $this->bloque($this->sede('Palomar')));
+        $cuota = $this->cuota();
+        $tesorero = $this->tesorero();
+        $base = [
+            'fecha_pago' => now()->toDateString(),
+            'monto_abono_profesor' => '',
+            'lineas' => [['alumno_id' => $ana->id, 'cuota_id' => $cuota->id, 'monto' => 24000]],
+        ];
+
+        // Un centavo de diferencia no se acepta: sin tolerancia.
+        $this->actingAs($tesorero)->post(route('pagos.store'), $base + ['monto_total' => 24000.01, 'client_uuid' => (string) \Illuminate\Support\Str::uuid()])
+            ->assertSessionHasErrors('monto_total');
+        $this->assertSame(0, Pago::query()->count());
+
+        // Coincidencia exacta sí se acepta.
+        $this->actingAs($tesorero)->post(route('pagos.store'), $base + ['monto_total' => 24000, 'client_uuid' => (string) \Illuminate\Support\Str::uuid()])
+            ->assertSessionHasNoErrors();
+        $this->assertSame(1, Pago::query()->count());
+    }
 }

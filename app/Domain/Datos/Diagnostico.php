@@ -264,7 +264,7 @@ class Diagnostico
         foreach ($pagos as $p) {
             if ((int) $p->lineas === 0) {
                 $out[] = ['pago_id' => $p->id, 'problema' => 'sin detalle'];
-            } elseif (abs((float) $p->monto_total - (float) $p->suma) > 0.02) {
+            } elseif ((int) round((float) $p->monto_total * 100) !== (int) round((float) $p->suma * 100)) {
                 $out[] = ['pago_id' => $p->id, 'problema' => 'total '.$p->monto_total.' ≠ detalle '.$p->suma];
             }
         }
