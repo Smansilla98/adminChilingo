@@ -49,7 +49,7 @@ class VistaAsistenciaService
             $query->where('bloque_id', $bloqueId);
         }
         if ($fecha !== null) {
-            $query->where('fecha', $fecha);
+            $query->whereDate('fecha', $fecha);
         }
 
         return $query->orderBy('fecha', 'desc')->paginate(50);
