@@ -2903,3 +2903,13 @@ html.ito-contrast a:not(.btn):not(.side-link):not(.dropdown-item) { text-decorat
   body { background: #fff; }
   .card, .ito-card, .hub-kpi { box-shadow: none; }
 }
+
+/* Accesos por sección (inicio de gestión): una tarjeta por área, sin estadísticas. */
+.accesos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.acceso-card { background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.acceso-card-titulo { margin: 0 0 8px; font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--ink); }
+.acceso-card-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.acceso-card-link { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; color: var(--ink); text-decoration: none; font-size: 14px; }
+.acceso-card-link:hover { background: var(--accent-soft); color: var(--accent-strong); }
+.acceso-card-link.is-active { background: var(--accent-soft-2); color: var(--accent-strong); font-weight: 600; }
+.acceso-card-link i { color: var(--accent-strong); }

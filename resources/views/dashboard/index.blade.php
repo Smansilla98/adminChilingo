@@ -136,6 +136,8 @@
         </a>
     </div>
 
+    @include('partials.accesos-secciones')
+
     @if($atencionExtra->isNotEmpty())
     <section class="hub-section hub-section--priority" aria-labelledby="hub-hoy">
         <header class="hub-section-head">

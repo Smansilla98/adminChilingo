@@ -23,18 +23,48 @@ class Navegacion
      */
     public static function para(User $user, Request $request): array
     {
-        $cache = $request->attributes->get('ito.navegacion');
+        return self::cacheado($user, $request, 'menu', fn () => self::construir($user, $request, true));
+    }
+
+    /**
+     * Todas las secciones y todos los accesos del usuario (para la cuadrícula del inicio).
+     *
+     * @return list<array{clave: string, label: string, links: list<array<string, mixed>>}>
+     */
+    public static function secciones(User $user, Request $request): array
+    {
+        $datos = self::cacheado($user, $request, 'todas', fn () => self::construir($user, $request, false));
+
+        return $datos['grupos'];
+    }
+
+    /** Accesos que se ven en el menú lateral. El resto sigue accesible desde el inicio. */
+    public const DESTACADOS = [
+        'personas.index', 'alumnos.index', 'profesores.index',
+        'sedes.index', 'bloques.index', 'asistencias.index', 'progreso.index',
+        'cuotas.index', 'pagos.index', 'morosos.index', 'gastos.index', 'reportes.index',
+        'inventarios.index',
+        'programa.index', 'archivo.gestion.tablero', 'biblioteca.admin.index',
+        'usuarios.index', 'configuracion.avisos.edit', 'auditoria.index', 'estado-sistema', 'apariencia.edit', 'ayuda',
+        'eventos.index', 'shows.index', 'villa-gesell.index',
+    ];
+
+    /** @return array<string, mixed> */
+    private static function cacheado(User $user, Request $request, string $modo, \Closure $construir): array
+    {
+        $clave = 'ito.navegacion.'.$modo;
+        $cache = $request->attributes->get($clave);
         if (is_array($cache) && ($cache['user'] ?? null) === $user->id) {
             return $cache['data'];
         }
 
-        $data = self::construir($user, $request);
-        $request->attributes->set('ito.navegacion', ['user' => $user->id, 'data' => $data]);
+        $data = $construir();
+        $request->attributes->set($clave, ['user' => $user->id, 'data' => $data]);
 
         return $data;
     }
 
-    private static function construir(User $u, Request $request): array
+    private static function construir(User $u, Request $request, bool $soloDestacados): array
     {
         $mod = fn (string $m) => $u->tieneAccesoModulo($m);
         $gestion = $u->puedeGestionarOperativo();
@@ -187,6 +217,10 @@ class Navegacion
         $salida = [];
         foreach ($grupos as $g) {
             $links = array_map(fn ($l) => self::resolver($l, $request), array_values(array_filter($g['links'])));
+            // Sólo el menú de gestión se recorta a destacados: los menús cortos (docente, alumno) se muestran completos.
+            if ($soloDestacados && $gestion) {
+                $links = array_values(array_filter($links, fn ($l) => $l['active'] || in_array($l['route'], self::DESTACADOS, true)));
+            }
             if ($links === []) {
                 continue;
             }
