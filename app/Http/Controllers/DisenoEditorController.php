@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BibliotecaItem;
+use App\Domain\Disenos\CatalogoDiseno;
+use App\Domain\Disenos\GestorDiseno;
 use App\Models\Diseno;
 use App\Models\DisenoKitAsset;
 use App\Models\DisenoPagina;
@@ -10,10 +11,6 @@ use App\Support\MarcaChilinga;
 use App\Support\MediosDiseno;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -24,18 +21,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class DisenoEditorController extends Controller
 {
-    /** Tamaños con nombre (se guardan en `formato` para reportes y compatibilidad). */
-    private const FORMATOS = [
-        '1080x1350' => 'flyer_feed',
-        '1080x1920' => 'historia',
-        '1080x1080' => 'post_cuadrado',
-        '1240x1754' => 'afiche_a4',
-        '874x1240' => 'flyer_a5',
-        '1200x628' => 'banner_web',
-        '2362x4724' => 'hoodie_20x40',
-        '1181x1181' => 'parche_10x10',
-    ];
-
     private const MAX_CANVAS = 5 * 1024 * 1024;
 
     /** SPA del editor: /disenos y /disenos/design/{id}. */
@@ -80,27 +65,13 @@ class DisenoEditorController extends Controller
             'width' => 'nullable|integer|min:50|max:10000',
             'height' => 'nullable|integer|min:50|max:10000',
         ]);
-        $canvas = $this->decodificar($data['canvas_json'] ?? '{}');
-        $ancho = (int) ($data['width'] ?? 1080);
-        $alto = (int) ($data['height'] ?? 1350);
-
-        $diseno = DB::transaction(function () use ($data, $canvas, $ancho, $alto, $request) {
-            $diseno = Diseno::query()->create([
-                'titulo' => $data['name'] ?? 'Diseño sin título',
-                'formato' => self::FORMATOS[$ancho.'x'.$alto] ?? 'custom',
-                'ancho' => $ancho,
-                'alto' => $alto,
-                'canvas_json' => $canvas,
-                'user_id' => $request->user()->id,
-            ]);
-            $diseno->paginas()->create([
-                'titulo' => 'Página 1',
-                'canvas_json' => $canvas ? json_encode($canvas) : '{}',
-                'orden' => 0,
-            ]);
-
-            return $diseno;
-        });
+        $diseno = app(GestorDiseno::class)->crear(
+            $data,
+            $this->catalogo()->decodificarLienzo($data['canvas_json'] ?? '{}'),
+            (int) ($data['width'] ?? 1080),
+            (int) ($data['height'] ?? 1350),
+            $request->user()->id,
+        );
 
         return response()->json($diseno->paraEditor());
     }
@@ -134,22 +105,10 @@ class DisenoEditorController extends Controller
             'thumbnail_data' => 'nullable|string|max:2000000',
         ]);
 
-        $cambios = [];
-        if (array_key_exists('name', $data) && filled($data['name'])) {
-            $cambios['titulo'] = $data['name'];
-        }
-        if (array_key_exists('canvas_json', $data) && $data['canvas_json'] !== null) {
-            $cambios['canvas_json'] = $this->decodificar($data['canvas_json']);
-        }
-        if (! empty($data['width']) && ! empty($data['height'])) {
-            $cambios['ancho'] = (int) $data['width'];
-            $cambios['alto'] = (int) $data['height'];
-            $cambios['formato'] = self::FORMATOS[$data['width'].'x'.$data['height']] ?? 'custom';
-        }
-        if (! empty($data['thumbnail_data'])) {
-            $cambios['preview_path'] = $this->guardarMiniatura($diseno, $data['thumbnail_data']) ?? $diseno->preview_path;
-        }
-        $diseno->fill($cambios)->save();
+        $canvas = array_key_exists('canvas_json', $data) && $data['canvas_json'] !== null
+            ? $this->catalogo()->decodificarLienzo($data['canvas_json'])
+            : null;
+        app(GestorDiseno::class)->aplicarCambios($diseno, $data, $canvas);
 
         return response()->json($diseno->fresh()->paraEditor());
     }
@@ -173,22 +132,8 @@ class DisenoEditorController extends Controller
             'canvas_json' => 'nullable|string|max:'.self::MAX_CANVAS,
             'after_sort_order' => 'nullable|integer|min:0',
         ]);
-        $this->decodificar($data['canvas_json'] ?? '{}');
-
-        $pagina = DB::transaction(function () use ($diseno, $data) {
-            if (isset($data['after_sort_order'])) {
-                $diseno->paginas()->where('orden', '>', $data['after_sort_order'])->increment('orden');
-                $orden = $data['after_sort_order'] + 1;
-            } else {
-                $orden = (int) ($diseno->paginas()->max('orden') ?? -1) + 1;
-            }
-
-            return $diseno->paginas()->create([
-                'titulo' => $data['title'] ?? 'Página '.($diseno->paginas()->count() + 1),
-                'canvas_json' => $data['canvas_json'] ?? '{}',
-                'orden' => $orden,
-            ]);
-        });
+        $this->catalogo()->decodificarLienzo($data['canvas_json'] ?? '{}');
+        $pagina = app(GestorDiseno::class)->agregarPagina($diseno, $data);
 
         return response()->json($pagina->paraEditor());
     }
@@ -197,16 +142,7 @@ class DisenoEditorController extends Controller
     {
         $this->authorize('update', $pagina->diseno);
 
-        $copia = DB::transaction(function () use ($pagina) {
-            DisenoPagina::query()->where('diseno_id', $pagina->diseno_id)->where('orden', '>', $pagina->orden)->increment('orden');
-
-            return DisenoPagina::query()->create([
-                'diseno_id' => $pagina->diseno_id,
-                'titulo' => Str::limit($pagina->titulo.' (copia)', 120, ''),
-                'canvas_json' => $pagina->canvas_json,
-                'orden' => $pagina->orden + 1,
-            ]);
-        });
+        $copia = app(GestorDiseno::class)->duplicarPagina($pagina);
 
         return response()->json($copia->paraEditor());
     }
@@ -218,19 +154,8 @@ class DisenoEditorController extends Controller
             'title' => 'nullable|string|max:120',
             'canvas_json' => 'nullable|string|max:'.self::MAX_CANVAS,
         ]);
-        if (isset($data['canvas_json'])) {
-            $this->decodificar($data['canvas_json']);
-            $pagina->canvas_json = $data['canvas_json'];
-        }
-        if (filled($data['title'] ?? null)) {
-            $pagina->titulo = $data['title'];
-        }
-        $pagina->save();
-        $pagina->diseno->touch();
-        $primera = $pagina->diseno->paginas()->orderBy('orden')->value('id');
-        if (isset($data['canvas_json']) && (int) $primera === (int) $pagina->id) {
-            app(\App\Domain\Disenos\MiniaturaDiseno::class)->guardar($pagina->diseno, $data['canvas_json']);
-        }
+        $canvas = isset($data['canvas_json']) ? $this->catalogo()->decodificarLienzo($data['canvas_json']) : null;
+        $pagina = app(GestorDiseno::class)->actualizarPagina($pagina, $data, $canvas);
 
         return response()->json($pagina->paraEditor());
     }
@@ -252,41 +177,23 @@ class DisenoEditorController extends Controller
     {
         $this->authorize('viewAny', Diseno::class);
 
-        return response()->json($this->plantillas()->values());
+        return response()->json($this->catalogo()->plantillas()->values());
     }
 
     public function template(string $id): JsonResponse
     {
         $this->authorize('viewAny', Diseno::class);
-        $plantilla = $this->plantillas()->firstWhere('id', $id);
+        $plantilla = $this->catalogo()->plantillas()->firstWhere('id', $id);
 
         return $plantilla ? response()->json($plantilla) : response()->json(['error' => 'No existe la plantilla.'], 404);
     }
 
-    /**
-     * Plantillas de La Chilinga + generales (database/data/disenos-plantillas.json) y
-     * plantillas de estudio: diseños sin dueño del editor anterior (se copian, no se editan).
-     */
-    private function plantillas(): \Illuminate\Support\Collection
-    {
-        $fijas = collect(json_decode((string) file_get_contents(database_path('data/disenos-plantillas.json')), true) ?: [])
-            ->map(fn (array $t) => $t + ['thumbnail_url' => null]);
-
-        $estudio = Diseno::query()->whereNull('user_id')->latest()->limit(50)->get()->map(fn (Diseno $d) => [
-            'id' => 'estudio-'.$d->id,
-            'name' => $d->titulo,
-            'category' => 'estudio',
-            'canvas_json' => $d->canvas_json ? json_encode($d->canvas_json) : '{}',
-            'width' => (int) $d->ancho,
-            'height' => (int) $d->alto,
-            'thumbnail_url' => $d->paraEditor()['thumbnail_url'],
-            'sort_order' => 50,
-        ]);
-
-        return $fijas->concat($estudio)->sortBy('sort_order');
-    }
-
     // ── Imágenes y marca ───────────────────────────────────────────────
+
+    private function catalogo(): CatalogoDiseno
+    {
+        return app(CatalogoDiseno::class);
+    }
 
     /** Subida de imagen para usar en el lienzo. SVG no: se sirve desde el mismo dominio. */
     public function upload(Request $request): JsonResponse
@@ -302,7 +209,6 @@ class DisenoEditorController extends Controller
         return response()->json(['url' => MediosDiseno::url($path)]);
     }
 
-    /** Pestaña "Marca": logos, kit de marca, mockups y fotos de la Biblioteca. */
     /** Manual de marca vigente, para ver en el navegador. */
     public function manual(): BinaryFileResponse
     {
@@ -319,47 +225,7 @@ class DisenoEditorController extends Controller
     {
         $this->authorize('uploadAsset', Diseno::class);
 
-        // Primero las piezas del manual vigente; después los logos anteriores.
-        $logos = collect(MarcaChilinga::LOGOS)
-            ->filter(fn ($label, $archivo) => is_file(public_path("images/brand/v3/$archivo.png")))
-            ->map(fn ($label, $archivo) => ['id' => "v3-$archivo", 'url' => asset("images/brand/v3/$archivo.png"), 'label' => $label])
-            ->values()
-            ->push(['id' => 'logo-30', 'url' => asset('images/brand/chilinga-30.png'), 'label' => 'La Chilinga 30 años'])
-            ->push(['id' => 'logo', 'url' => asset('images/brand/logo.png'), 'label' => 'Logo ITO']);
-        $mockups = collect([
-            'remera-tinta.png' => 'Remera tinta', 'remera-hueso.png' => 'Remera hueso', 'camiseta-cielo.png' => 'Camiseta cielo',
-            'hoodie.svg' => 'Mockup hoodie', 'campera.svg' => 'Mockup campera', 'jersey.svg' => 'Mockup jersey', 'tote.svg' => 'Mockup tote',
-        ])
-            ->filter(fn ($label, $archivo) => is_file(public_path("images/diseno/mockups/$archivo")))
-            ->map(fn ($label, $archivo) => ['id' => 'mockup-'.pathinfo($archivo, PATHINFO_FILENAME), 'url' => asset("images/diseno/mockups/$archivo"), 'label' => $label])
-            ->values();
-
-        $kit = Schema::hasTable('diseno_kit_assets')
-            ? DisenoKitAsset::query()->latest()->limit(100)->get()->map(fn (DisenoKitAsset $a) => [
-                'id' => 'kit-'.$a->id, 'url' => $a->url(), 'label' => $a->titulo, 'kit_id' => $a->id,
-            ])->values()
-            : collect();
-
-        // Solo archivos propios (mismo dominio): una URL externa impediría exportar el PNG.
-        $biblioteca = BibliotecaItem::query()->publicados()->whereNotNull('path')->latest()->limit(60)->get()
-            ->filter(fn (BibliotecaItem $i) => $i->esImagen())
-            ->map(fn (BibliotecaItem $i) => ['id' => 'bib-'.$i->id, 'url' => $i->archivoUrl(), 'label' => $i->titulo ?: 'Foto'])
-            ->values();
-
-        return response()->json([
-            'manual' => is_file(MarcaChilinga::manualPath()) ? [
-                'version' => MarcaChilinga::VERSION,
-                'url' => route('disenos.manual'),
-                'paleta' => MarcaChilinga::PALETA,
-                'sedes' => MarcaChilinga::SEDES,
-            ] : null,
-            'grupos' => [
-                ['clave' => 'logos', 'titulo' => 'Logos', 'items' => $logos],
-                ['clave' => 'kit', 'titulo' => 'Kit de marca', 'items' => $kit],
-                ['clave' => 'mockups', 'titulo' => 'Mockups', 'items' => $mockups],
-                ['clave' => 'biblioteca', 'titulo' => 'Biblioteca', 'items' => $biblioteca],
-            ],
-        ]);
+        return response()->json(app(CatalogoDiseno::class)->grupoMarca());
     }
 
     public function kitStore(Request $request): JsonResponse
@@ -389,39 +255,5 @@ class DisenoEditorController extends Controller
         $kit->delete();
 
         return response()->json(['ok' => true]);
-    }
-
-    // ── Auxiliares ─────────────────────────────────────────────────────
-
-    /** @return array<string, mixed>|null */
-    private function decodificar(?string $json): ?array
-    {
-        if ($json === null || trim($json) === '' || trim($json) === '{}') {
-            return null;
-        }
-        $data = json_decode($json, true);
-        if (! is_array($data)) {
-            throw ValidationException::withMessages(['canvas_json' => 'El diseño recibido no es válido.']);
-        }
-
-        return $data;
-    }
-
-    private function guardarMiniatura(Diseno $diseno, string $dataUrl): ?string
-    {
-        if (! preg_match('#^data:image/(jpeg|png);base64,(.+)$#', $dataUrl, $m)) {
-            return null;
-        }
-        $binario = base64_decode($m[2], true);
-        if ($binario === false || strlen($binario) > 1_500_000 || @getimagesizefromstring($binario) === false) {
-            return null;
-        }
-        $path = 'disenos/previews/'.$diseno->id.'.'.($m[1] === 'png' ? 'png' : 'jpg');
-        if ($diseno->preview_path && $diseno->preview_path !== $path) {
-            MediosDiseno::borrar($diseno->preview_path);
-        }
-        MediosDiseno::guardar($path, $binario);
-
-        return $path;
     }
 }
