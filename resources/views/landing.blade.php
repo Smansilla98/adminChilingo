@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    @include('layouts.partials.head-ito', ['headTitle' => 'La Chilinga · Sistema de gestión de la escuela'])
-    <meta name="description" content="El sistema de La Chilinga reúne alumnos, bloques, asistencias, cuotas, eventos, inventario, programa y partituras de todas las sedes de la escuela en un mismo lugar.">
+    @include('layouts.partials.head-ito', ['headTitle' => 'ITO · Sistema de gestión de escuelas'])
+    <meta name="description" content="ITO es el sistema de gestión de escuelas: alumnos, bloques, asistencias, cuotas, eventos, inventario, programa y partituras en un mismo lugar. Pensado por chilingos para chilingos; La Chilinga es su caso de éxito.">
     @vite('resources/css/landing.css')
 </head>
 <body class="landing-body">
@@ -11,7 +11,7 @@
 <header class="landing-nav">
     <a href="{{ route('home') }}" class="landing-nav__brand">
         <img src="{{ asset('images/brand/logo.png') }}" alt="" width="36" height="36">
-        <span>La Chilinga</span>
+        <span>ITO</span>
     </a>
     <nav class="landing-nav__links" aria-label="Secciones">
         <a href="#que-es">Qué es</a>
@@ -24,11 +24,15 @@
 <main id="contenido-principal" tabindex="-1">
     <section class="landing-hero">
         <div>
-            <p class="landing-kicker">Escuela de percusión · fundada por Dani Buira</p>
-            <h1>Toda la escuela, <span>en un mismo lugar</span>.</h1>
+            <p class="landing-kicker">ITO · sistema de gestión de escuelas</p>
+            <h1>Gestión de la escuela, <span>pensada por chilingos para chilingos</span>.</h1>
             <p class="landing-lead">
-                El sistema de La Chilinga organiza alumnos, bloques, asistencias, cuotas, eventos e inventario
-                de todas las sedes, y abre el programa, las partituras y la biblioteca a toda la comunidad.
+                ITO organiza alumnos, bloques, asistencias, cuotas, eventos e inventario de todas las sedes,
+                y abre el programa, las partituras y la biblioteca a toda la comunidad.
+            </p>
+            <p class="landing-caso">
+                <span class="landing-caso__etiqueta">Caso de éxito</span>
+                <strong>La Chilinga</strong>, escuela de percusión fundada por Dani Buira, funciona con ITO en todas sus sedes.
             </p>
             <div class="landing-hero__actions">
                 <a href="{{ route('login') }}" class="btn btn-primary btn-lg">Iniciar sesión</a>
@@ -39,7 +43,7 @@
             </ul>
         </div>
         <div class="landing-hero__art">
-            <img src="{{ asset('images/brand/v3/sello-tricolor.png') }}" alt="Sello de La Chilinga" width="360" height="360">
+            <img src="{{ asset('images/brand/v3/sello-tricolor.png') }}" alt="Sello de La Chilinga, caso de éxito de ITO" width="360" height="360">
         </div>
     </section>
 
@@ -137,7 +141,7 @@
 </main>
 
 <footer class="landing-footer">
-    © {{ date('Y') }} La Chilinga · Escuela de percusión · <a href="{{ route('privacy') }}">Privacidad</a>
+    © {{ date('Y') }} ITO · Sistema de gestión de escuelas · Caso de éxito: La Chilinga · <a href="{{ route('privacy') }}">Privacidad</a>
 </footer>
 @vite('resources/js/legacy/ito-a11y.js')
 </body>

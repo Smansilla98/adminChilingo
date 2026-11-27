@@ -14,7 +14,8 @@ class LandingPageTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Toda la escuela')
+            ->assertSee('ITO')
+            ->assertSee('Caso de éxito')
             ->assertSee(route('login'), false)
             ->assertSee(route('registro.alumno'), false);
     }
