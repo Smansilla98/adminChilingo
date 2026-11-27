@@ -430,6 +430,8 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
 .hub-modulos .modulo-card { height: 100%; }
 .hub-modulos .modulo-card-abrir,
 .hub-modulos > .modulo-card { display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 20px; }
+a.modulo-card, a.modulo-card:hover { text-decoration: none; color: var(--calmo-texto); }
+a.modulo-card .modulo-card-titulo, a.modulo-card .modulo-card-resumen, a.modulo-card .modulo-card-entrar { text-decoration: none; }
 .hub-modulos .modulo-card-resumen { flex: 1; }
 .hub-modulos .modulo-card-entrar { margin-top: 4px; }
 
@@ -445,7 +447,10 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
 }
 @media (max-width: 575.98px) {
     .hub-modulos { grid-template-columns: 1fr; gap: 12px; }
-    .hub-modulos > .modulo-card { padding: 16px; }
+    .hub-modulos > .modulo-card { padding: 16px; height: auto; }
+    .hub-modulos .modulo-card-entrar { margin-top: 0; }
+    .hub-modulos .modulo-card-resumen { flex: none; }
+    .hub-modulos { grid-auto-rows: auto; }
     .hub-task { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px; }
     .hub-task-cta { justify-self: start; min-height: 44px; display: inline-flex; align-items: center; }
 }
