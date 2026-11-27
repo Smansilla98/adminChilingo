@@ -1,20 +1,27 @@
 /* =====================================================================
-   La Chilinga — Capa del panel en tema claro (estilo sobrio tipo TailAdmin)
-   Se carga después de chilinga-admin.css. Solo cambia el modo claro;
-   el modo oscuro conserva sus tokens originales.
+   La Chilinga — Capa visual del panel (tema claro, estilo sobrio tipo TailAdmin)
+   Se carga después de chilinga-admin.css y después del bloque de
+   apariencia del usuario, así que NO fija el acento ni la tipografía:
+   eso lo decide AparienciaTema (predeterminado: azul #465fff y Outfit).
+
+   Solo aplica en el tema claro. El oscuro conserva sus tokens originales.
 
    Índice
-    1. Tokens del tema claro
+    1. Tokens del tema claro (superficies, texto, radios, sombras)
     2. Menú lateral blanco
-    3. Tablero: encabezado, métricas, atención, módulos, gráficos
-    4. Botón flotante del chat
-    5. Movimiento y preferencias
+    3. Ajustes globales de componentes
+    4. Tablero: encabezado, métricas, atención, módulos
+    5. Botón flotante del chat
+    6. Móvil y tablet
+    7. Movimiento y preferencias
    ===================================================================== */
 
 /* ---------------------------------------------------------------------
    1. Tokens del tema claro
+   :root:not([data-bs-theme="dark"]) evita que estos valores pisen el oscuro,
+   porque en el modo oscuro el mismo elemento (html) también es :root.
    --------------------------------------------------------------------- */
-:root,
+:root:not([data-bs-theme="dark"]),
 [data-bs-theme="light"] {
   --calmo-fondo: #f9fafb;
   --calmo-superficie: #ffffff;
@@ -23,10 +30,7 @@
   --calmo-texto: #101828;
   --calmo-texto-2: #344054;
   --calmo-texto-3: #667085;
-  --calmo-acento: #465fff;        /* azul de acción principal */
-  --calmo-acento-hover: #3641f5;
-  --calmo-acento-suave: #ecf3ff;
-  --calmo-acento-texto: #3641f5;
+  --calmo-gris-suave: #f2f4f7;
   --calmo-ok: #12b76a;
   --calmo-ok-suave: #ecfdf3;
   --calmo-ok-texto: #067647;
@@ -34,17 +38,51 @@
   --calmo-alerta-suave: #fffaeb;
   --calmo-alerta-texto: #b54708;
   --calmo-radio: 16px;
+  --calmo-radio-sm: 12px;
   --calmo-sombra: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
   --calmo-sombra-hover: 0 4px 12px rgba(16, 24, 40, 0.08);
 
-  /* Menú lateral blanco */
+  /* Superficies y texto del sistema */
+  --bg: var(--calmo-fondo);
+  --surface: var(--calmo-superficie);
+  --s1: var(--calmo-superficie);
+  --s2: #f9fafb;
+  --s3: var(--calmo-gris-suave);
+  --surface-2: var(--s2);
+  --surface-3: var(--s3);
+  --border: var(--calmo-borde);
+  --border-strong: var(--calmo-borde-fuerte);
+  --line: var(--calmo-borde);
+  --text: var(--calmo-texto);
+  --text-2: var(--calmo-texto-2);
+  --muted: var(--calmo-texto-3);
+  --muted-2: var(--calmo-texto-3);
+  --ink: var(--calmo-texto);
+  --neutral-soft: var(--calmo-gris-suave);
+
+  /* Forma y sombra del sistema */
+  --radius-card: var(--calmo-radio);
+  --radius-lg: var(--calmo-radio);
+  --radius: 12px;
+  --radius-btn: 10px;
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: var(--calmo-sombra);
+  --shadow-md: 0 8px 20px rgba(16, 24, 40, 0.08);
+
+  /* Semánticos pastel (sin tocar los de marca) */
+  --success-soft: var(--calmo-ok-suave);
+  --success: #079455;
+  --warning-soft: var(--calmo-alerta-suave);
+  --warning: var(--calmo-alerta);
+
+  /* Menú lateral blanco. El activo toma el acento de la apariencia. */
   --sb-bg: #ffffff;
-  --sb-border: #e4e7ec;
-  --sb-text: #344054;
-  --sb-muted: #667085;
-  --sb-hover: #f2f4f7;
-  --sb-active-bg: #ecf3ff;
-  --sb-active-text: #465fff;
+  --sb-border: var(--calmo-borde);
+  --sb-text: var(--calmo-texto-2);
+  --sb-muted: var(--calmo-texto-3);
+  --sb-hover: var(--calmo-gris-suave);
+  --sb-active-bg: color-mix(in srgb, var(--accent) 11%, transparent);
+  --sb-active-text: var(--accent-strong);
 }
 
 /* ---------------------------------------------------------------------
@@ -64,9 +102,9 @@
 .side-link:hover > .bi { color: var(--calmo-texto); }
 .side-link > .bi { color: var(--calmo-texto-3); }
 .side-link.active { font-weight: 600; }
-.side-link.active > .bi { color: var(--calmo-acento); }
+.side-link.active > .bi { color: var(--accent); }
 .side-link.active::before { display: none; }
-.side-link-badge { background: var(--calmo-acento-suave); color: var(--calmo-acento-texto); }
+.side-link-badge { background: var(--accent-soft); color: var(--accent-strong); }
 .nav-group-btn {
   color: var(--calmo-texto-3);
   font-size: 11px;
@@ -78,49 +116,50 @@
 .side-link--nested { color: var(--calmo-texto-2); }
 .sidebar-foot { border-top-color: var(--calmo-borde); }
 .sidebar-foot-link { color: var(--calmo-texto-3); }
-.sidebar-foot-link:hover { background: var(--sb-hover); color: var(--calmo-texto); }
+.sidebar-foot-link:hover { background: var(--calmo-gris-suave); color: var(--calmo-texto); }
 
 /* ---------------------------------------------------------------------
-   3. Tablero
-   El azul de acción y el fondo gris claro se aplican solo al tablero.
+   3. Ajustes globales de componentes
    --------------------------------------------------------------------- */
-.main:has(.hub) { background: var(--calmo-fondo); }
-
-.hub {
-  --accent: var(--calmo-acento);
-  --accent-strong: var(--calmo-acento-texto);
-  --accent-soft: var(--calmo-acento-suave);
-  --primary: var(--calmo-acento);
-  --primary-hover: var(--calmo-acento-hover);
-  --primary-on: #ffffff;
-  --text: var(--calmo-texto);
-  --text-2: var(--calmo-texto-2);
-  --muted: var(--calmo-texto-3);
-  --border: var(--calmo-borde);
-  --border-strong: var(--calmo-borde-fuerte);
-  --s1: var(--calmo-superficie);
-  --s2: #f9fafb;
-  --s3: #f2f4f7;
-  gap: 24px;
-  padding-top: 4px;
-  padding-bottom: 32px;
+.card,
+.ito-card,
+.ito-panel {
+  border-color: var(--calmo-borde);
+  border-radius: var(--calmo-radio);
+  box-shadow: var(--calmo-sombra);
 }
+.btn { font-weight: 500; }
+.btn-primary { box-shadow: none; }
+.btn-outline-secondary,
+.btn-outline-primary {
+  border-color: var(--calmo-borde-fuerte);
+  background: var(--calmo-superficie);
+  color: var(--calmo-texto-2);
+}
+.btn-outline-secondary:hover { background: var(--calmo-gris-suave); color: var(--calmo-texto); border-color: var(--calmo-borde-fuerte); }
+.form-control,
+.form-select {
+  border-color: var(--calmo-borde-fuerte);
+  border-radius: var(--radius-btn);
+}
+.form-control:focus,
+.form-select:focus { border-color: var(--accent); }
+
+/* ---------------------------------------------------------------------
+   4. Tablero
+   Usa los tokens de apariencia (acento y tipografía). Acá solo se fija
+   la disposición.
+   --------------------------------------------------------------------- */
+.hub { gap: 24px; padding-top: 4px; padding-bottom: 32px; }
 
 /* Encabezado */
 .hub-hero { align-items: center; }
 .hub-greeting { font-size: clamp(1.5rem, 2.4vw, 1.75rem); font-weight: 600; letter-spacing: -0.01em; color: var(--calmo-texto); }
 .hub-lead { margin-top: 4px; color: var(--calmo-texto-3); font-size: 14px; }
 .hub-hero .ito-page-actions { gap: 10px; }
-.hub-hero .btn-lg { min-height: 40px; padding: 8px 14px; font-size: 14px; font-weight: 500; border-radius: 10px; }
-.hub-hero .btn-outline-secondary {
-  border-color: var(--calmo-borde-fuerte);
-  background: var(--calmo-superficie);
-  color: var(--calmo-texto-2);
-  box-shadow: var(--calmo-sombra);
-}
-.hub-hero .btn-outline-secondary:hover { background: #f9fafb; color: var(--calmo-texto); border-color: var(--calmo-borde-fuerte); }
+.hub-hero .btn-lg { min-height: 40px; padding: 8px 14px; font-size: 14px; font-weight: 500; border-radius: var(--radius-btn); }
 
-/* Métricas: tarjetas independientes, icono en caja gris, variación en badge */
+/* Métricas: tarjetas independientes, icono arriba, variación en badge */
 .hub-kpis { gap: 16px; }
 .hub-kpi {
   min-height: 0;
@@ -133,19 +172,17 @@
 }
 a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--calmo-sombra-hover); }
 .hub-kpi-top { flex-direction: column; align-items: flex-start; gap: 12px; }
-.hub-kpi-label { white-space: normal; }
-.hub-kpi-label { color: var(--calmo-texto-3); font-size: 14px; font-weight: 500; }
+.hub-kpi-label { color: var(--calmo-texto-3); font-size: 14px; font-weight: 500; white-space: normal; }
 .hub-kpi-icon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #f2f4f7;
+  background: var(--calmo-gris-suave);
   color: var(--calmo-texto-2);
   font-size: 18px;
 }
 .hub-kpi-value { font-size: clamp(1.5rem, 2.2vw, 1.75rem); font-weight: 600; color: var(--calmo-texto); }
 .hub-kpi-value--sm { font-size: clamp(1.25rem, 1.8vw, 1.5rem); }
-/* Variación: badge pastel con el color del estado */
 .hub-kpi-badge {
   display: inline-flex;
   align-items: center;
@@ -154,7 +191,7 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
   padding: 2px 8px;
   border: 0;
   border-radius: 999px;
-  background: #f2f4f7;
+  background: var(--calmo-gris-suave);
   color: var(--calmo-texto-3);
   font-size: 12px;
   font-weight: 600;
@@ -219,14 +256,13 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #f2f4f7;
+  background: var(--calmo-gris-suave);
   color: var(--calmo-texto-2);
   font-size: 18px;
 }
 .modulo-card-titulo { font-size: 16px; font-weight: 600; color: var(--calmo-texto); }
 .modulo-card-resumen { color: var(--calmo-texto-3); font-size: 14px; }
-.modulo-card-entrar { color: var(--calmo-acento-texto); font-size: 13.5px; font-weight: 500; }
-/* Estado: badge pastel */
+.modulo-card-entrar { color: var(--accent-strong); font-size: 13.5px; font-weight: 500; }
 .modulo-estado {
   display: inline-flex;
   align-items: center;
@@ -234,7 +270,7 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
   padding: 2px 8px;
   border: 0;
   border-radius: 999px;
-  background: #f2f4f7;
+  background: var(--calmo-gris-suave);
   color: var(--calmo-texto-3);
   font-size: 12px;
   font-weight: 600;
@@ -249,22 +285,20 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
   color: var(--calmo-texto-2);
   font-weight: 500;
   font-size: 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-btn);
   min-height: 38px;
-  box-shadow: var(--calmo-sombra);
+  box-shadow: var(--shadow-xs);
 }
-.modulo-card-accion:hover { background: #f9fafb; color: var(--calmo-texto); border-color: var(--calmo-borde-fuerte); }
+.modulo-card-accion:hover { background: var(--calmo-gris-suave); color: var(--calmo-texto); border-color: var(--calmo-borde-fuerte); }
 .modulo-card.is-prioritario .modulo-card-accion {
-  border-color: var(--calmo-acento);
-  background: var(--calmo-acento);
-  color: #fff;
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-on);
 }
-.modulo-card.is-prioritario .modulo-card-accion:hover { background: var(--calmo-acento-hover); color: #fff; }
+.modulo-card.is-prioritario .modulo-card-accion:hover { background: var(--primary-hover); color: var(--primary-on); }
 
-/* Gráficos */
 .hub-chart { height: 220px; }
 
-/* Guía */
 .hub-guia {
   border: 1px solid var(--calmo-borde);
   border-radius: var(--calmo-radio);
@@ -273,7 +307,7 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
 }
 
 /* ---------------------------------------------------------------------
-   4. Botón flotante del chat
+   5. Botón flotante del chat
    --------------------------------------------------------------------- */
 .recordatorio-chat-fab {
   width: 2.5rem;
@@ -284,7 +318,7 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
   border: 1px solid var(--calmo-borde-fuerte);
   box-shadow: var(--calmo-sombra-hover);
 }
-.recordatorio-chat-fab:hover { transform: none; background: #f9fafb; color: var(--calmo-texto); }
+.recordatorio-chat-fab:hover { transform: none; background: var(--calmo-gris-suave); color: var(--calmo-texto); }
 .recordatorio-chat-badge {
   background: var(--calmo-texto-3);
   color: #fff;
@@ -294,7 +328,51 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
 }
 
 /* ---------------------------------------------------------------------
-   5. Movimiento y preferencias
+   6. Móvil y tablet
+   Objetivos táctiles de 44px, tipografía de formularios de 16px (evita el
+   zoom automático de iOS) y tableros que pasan a una columna.
+   --------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+  .hub-hero { flex-direction: column; align-items: stretch; }
+  .hub-hero .ito-page-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .hub-hero .ito-page-actions .btn { width: 100%; justify-content: center; }
+  .hub-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .modulos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 575.98px) {
+  .hub { gap: 20px; }
+  .hub-greeting { font-size: 1.35rem; }
+  .hub-lead { font-size: 13.5px; }
+  .hub-hero .ito-page-actions { grid-template-columns: 1fr; }
+  .hub-hero .btn-lg { min-height: 44px; font-size: 15px; }
+  .hub-kpis { gap: 12px; }
+  .hub-kpi { padding: 14px; gap: 10px; }
+  .hub-kpi-icon { width: 36px; height: 36px; font-size: 16px; }
+  .hub-kpi-value { font-size: 1.35rem; }
+  .hub-kpi-label { font-size: 13px; }
+  .modulos-grid { grid-template-columns: 1fr; gap: 12px; }
+  .modulo-card-abrir { padding: 16px; }
+  .modulo-card-accion { min-height: 44px; left: 16px; bottom: 14px; }
+  .modulo-card:not(:has(.modulo-card-accion)) .modulo-card-abrir { padding-bottom: 16px; }
+  .hub-empty { padding: 14px 16px; font-size: 14px; }
+  .hub-chart { height: 200px; }
+  .recordatorio-chat-fab { width: 2.75rem; height: 2.75rem; }
+}
+
+/* Objetivos táctiles y formularios sin zoom en iOS */
+@media (max-width: 991.98px) {
+  .side-link,
+  .sidebar-foot-link { min-height: 44px; }
+  .nav-group-btn { min-height: 40px; }
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 38px; }
+  .form-control,
+  .form-select { font-size: 16px; min-height: 44px; }
+}
+
+/* ---------------------------------------------------------------------
+   7. Movimiento y preferencias
    --------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .modulo-card,

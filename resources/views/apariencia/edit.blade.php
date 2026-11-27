@@ -141,7 +141,7 @@
     </form>
 
     <form id="aparienciaResetForm" method="post" action="{{ route('apariencia.reset') }}" class="d-none"
-          data-confirm="¿Restablecer la apariencia? Vuelven el tema claro, el naranja de La Chilinga y la tipografía Manrope." data-confirm-ok="Restablecer">
+          data-confirm="¿Restablecer la apariencia? Vuelven el tema claro, el azul predeterminado y la tipografía Outfit." data-confirm-ok="Restablecer">
         @csrf
     </form>
 </div>
@@ -235,7 +235,7 @@
         const d = form.querySelector('[data-apariencia-font-display]:checked');
         const b = form.querySelector('[data-apariencia-font-body]:checked');
         if (d) {
-            root.style.setProperty('--font-display', `'${d.value}', 'Manrope', system-ui, sans-serif`);
+            root.style.setProperty('--font-display', `'${d.value}', 'Outfit', system-ui, sans-serif`);
             form.querySelectorAll('[data-apariencia-font-display]').forEach(inp => {
                 inp.closest('.apariencia-font-opt')?.classList.toggle('is-active', inp.checked);
             });

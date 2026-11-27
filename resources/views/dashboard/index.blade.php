@@ -238,11 +238,11 @@
     const muted = v('--text-2', '#3a404a');
     const grid = v('--border', '#e2e5ea');
     const success = v('--success', '#1e7b34');
-    const accent = v('--accent', '#f26422');
+    const accent = v('--accent', '#465fff');
     const info = v('--info', '#0b7593');
     if (!window.Chart) return;
     Chart.defaults.color = muted;
-    Chart.defaults.font.family = "'Manrope', system-ui, sans-serif";
+    Chart.defaults.font.family = v('--font-body', "'Outfit', system-ui, sans-serif");
     const peso = (n) => '$' + Number(n || 0).toLocaleString('es-AR');
     let finanzas = null;
     let sedes = null;

@@ -6,9 +6,9 @@ class AparienciaTema
 {
     /** Tokens editables guardados en users.apariencia_json */
     public const DEFAULTS = [
-        'accent' => '#f26422',
-        'font_display' => 'Manrope',
-        'font_body' => 'Manrope',
+        'accent' => '#465fff',
+        'font_display' => 'Outfit',
+        'font_body' => 'Outfit',
         'tema' => 'claro',
     ];
 
@@ -25,7 +25,7 @@ class AparienciaTema
         'verde' => ['hex' => '#3daf3a', 'label' => 'Verde'],
         'celeste' => ['hex' => '#3ec8ea', 'label' => 'Celeste'],
         'rojo' => ['hex' => '#e31b23', 'label' => 'Rojo'],
-        'azul' => ['hex' => '#3e7bfa', 'label' => 'Azul (legado)'],
+        'azul' => ['hex' => '#465fff', 'label' => 'Azul (predeterminado)'],
     ];
 
     /** @var array<string, array{family: string, google: string, sample: string}> */
@@ -59,6 +59,11 @@ class AparienciaTema
 
     /** @var array<string, array{family: string, google: string, sample: string}> */
     public const FUENTES_CUERPO = [
+        'Outfit' => [
+            'family' => 'Outfit',
+            'google' => 'Outfit:wght@400;500;600;700',
+            'sample' => 'Texto de apoyo y formularios del sistema.',
+        ],
         'Manrope' => [
             'family' => 'Manrope',
             'google' => 'Manrope:wght@400;500;600;700;800',
@@ -204,8 +209,8 @@ class AparienciaTema
             '--primary-on: #ffffff;',
             '--bs-primary-rgb: '.self::rgb($primario).';',
             '--bs-link-color-rgb: '.self::rgb($fuerte).';',
-            "--font-display: '{$display}', 'Manrope', system-ui, sans-serif;",
-            "--font-body: '{$body}', 'Manrope', system-ui, sans-serif;",
+            "--font-display: '{$display}', 'Outfit', system-ui, sans-serif;",
+            "--font-body: '{$body}', 'Outfit', system-ui, sans-serif;",
         ];
         $oscuro = [
             "--accent: {$accent};",

@@ -112,7 +112,7 @@
     const v = (n, f) => css.getPropertyValue(n).trim() || f;
     const grid = v('--border', '#e2e5ea');
     const success = v('--success', '#1e7b34');
-    const accent = v('--accent', '#f26422');
+    const accent = v('--accent', '#465fff');
     const info = v('--info', '#0b7593');
     const texto = v('--text', '#1d232c');
     Chart.defaults.color = v('--muted', '#5b6472');
