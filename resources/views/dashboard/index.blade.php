@@ -31,7 +31,7 @@
         $sede = $r['sede']?->nombre;
         $incompleta = $r['estado'] === 'Incompleta';
         return [
-            'href' => route('asistencias.index'),
+            'href' => route('asistencias.create', ['bloque_id' => $r['bloque']?->id, 'fecha' => $r['fecha_clase']->toDateString()]),
             'titulo' => ucfirst($r['fecha_clase']->locale('es')->translatedFormat('l')).' '.($r['horario']->hora_inicio?->format('H:i') ?? ''),
             'detalle' => ($r['presentes'] ?? 0).' de '.($r['total_alumnos'] ?? 0).' presentes · '.($incompleta ? 'lista incompleta' : 'sin lista'),
             'sede' => $sede ?: 'Sin sede',
