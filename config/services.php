@@ -64,6 +64,7 @@ return [
         'account_sid' => env('TWILIO_ACCOUNT_SID'),
         'auth_token' => env('TWILIO_AUTH_TOKEN'),
         'whatsapp_from' => env('TWILIO_WHATSAPP_FROM', ''), // ej. +14155238886 (sin prefijo whatsapp:)
+        'whatsapp_content_sid' => env('TWILIO_WHATSAPP_CONTENT_SID', ''), // HX... de una plantilla de Twilio Content (ej. "{{1}}")
         'status_callback_url' => env('TWILIO_STATUS_CALLBACK_URL', ''),
         'admin_whatsapp_numbers' => array_values(array_filter(array_map(
             'trim',

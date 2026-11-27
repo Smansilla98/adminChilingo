@@ -15,7 +15,8 @@ class SendWhatsAppTestCommand extends Command
      */
     protected $signature = 'whatsapp:test
                             {numero : Número destino (ej. +5491112345678 o 9111234567)}
-                            {--message= : Mensaje a enviar (por defecto: mensaje de prueba La Chilinga)}';
+                            {--message= : Mensaje a enviar (por defecto: mensaje de prueba La Chilinga)}
+                            {--plantilla-sid= : SID (HX...) de una plantilla de Twilio Content con la variable {{1}}; si se omite, usa TWILIO_WHATSAPP_CONTENT_SID}';
 
     /**
      * The console command description.
@@ -35,10 +36,13 @@ class SendWhatsAppTestCommand extends Command
             return self::FAILURE;
         }
 
+        $contentSid = trim((string) ($this->option('plantilla-sid') ?: config('services.twilio.whatsapp_content_sid', '')));
+
         $this->info("Enviando mensaje a {$numero}...");
-        $result = $whatsapp->send($message, $numero, [
-            'tipo' => WhatsappMensaje::TIPO_TEST,
-        ]);
+        $contexto = ['tipo' => WhatsappMensaje::TIPO_TEST];
+        $result = $contentSid !== ''
+            ? $whatsapp->sendContentTemplate($numero, $contentSid, ['1' => $message], $contexto)
+            : $whatsapp->send($message, $numero, $contexto);
 
         if ($result['success']) {
             $this->info('Twilio aceptó el envío. SID: '.($result['sid'] ?? '').' Estado inicial: '.($result['status'] ?? 'queued'));

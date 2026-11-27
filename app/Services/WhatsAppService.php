@@ -119,6 +119,66 @@ class WhatsAppService
     }
 
     /**
+     * Envía una plantilla de Twilio Content (ContentSid) por WhatsApp. Es la forma que exige el remitente
+     * cuando el texto libre se rechaza (error «ContentSid Required»). Devuelve la misma forma que send().
+     *
+     * @param  array<string, string>  $variables  Variables de la plantilla: {{1}} => variables['1'].
+     * @param  array{tipo?: string, alumno_id?: int|null, user_id?: int|null, cuota_id?: int|null}  $context
+     * @return array<string, mixed>
+     */
+    public function sendContentTemplate(string $to, string $contentSid, array $variables = [], array $context = []): array
+    {
+        if ($this->driver() === 'cloud') {
+            return ['success' => false, 'error' => 'Con WhatsApp Cloud usá sendTemplate().'];
+        }
+
+        if (! $this->isConfigured()) {
+            return ['success' => false, 'error' => 'WhatsApp no configurado (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM).'];
+        }
+
+        $toNormalized = self::normalizePhone($to);
+        if ($toNormalized === '') {
+            return ['success' => false, 'error' => 'Número de destino inválido.'];
+        }
+
+        $payload = [
+            'from' => 'whatsapp:'.$this->from,
+            'contentSid' => $contentSid,
+            'contentVariables' => json_encode((object) $variables, JSON_UNESCAPED_UNICODE),
+        ];
+        $callback = $this->statusCallbackUrl();
+        if ($callback) {
+            $payload['statusCallback'] = $callback;
+        }
+
+        try {
+            $message = $this->client->messages->create('whatsapp:'.$toNormalized, $payload);
+        } catch (TwilioException $e) {
+            Log::warning('WhatsApp: Twilio rechazó la plantilla', [
+                'telefono' => $toNormalized,
+                'content_sid' => $contentSid,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+
+        $sid = (string) $message->sid;
+        $status = WhatsappMensaje::normalizeStatus($message->status ?? WhatsappMensaje::STATUS_QUEUED)
+            ?? WhatsappMensaje::STATUS_QUEUED;
+
+        $row = $this->persistAccepted($sid, $toNormalized, $status, $context);
+
+        return [
+            'success' => true,
+            'sid' => $sid,
+            'status' => $row->status ?? $status,
+            'accepted_by_provider' => true,
+            'delivered_to_recipient' => $row?->isDeliveredToRecipient() ?? false,
+        ];
+    }
+
+    /**
      * Normaliza un número para WhatsApp: código país + número sin espacios/guiones.
      * Si no tiene + ni código país, se asume Argentina (+54).
      */
