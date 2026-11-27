@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Str;
+
 /**
  * Manual de marca vigente de La Chilinga (Identidad v3, octubre de 2026).
  * Fuente: resources/marca/identidad-v3.pdf. Ver docs/IDENTIDAD_VISUAL.md.
@@ -33,6 +35,23 @@ final class MarcaChilinga
         ['sede' => 'Varela', 'fondo' => '#3DAE49', 'sombra' => '#257A31', 'acento' => '#F26A1B'],
         ['sede' => 'San Marcos Sierras', 'fondo' => '#B5452A', 'sombra' => '#7E2D1A', 'acento' => '#2BA8E0'],
     ];
+
+    /** Color de fondo de la sede (según el nombre cargado en el sistema), o null si no está en la marca. */
+    public static function colorSede(?string $nombre): ?string
+    {
+        $clave = Str::lower(Str::ascii(trim((string) $nombre)));
+        if ($clave === '') {
+            return null;
+        }
+
+        foreach (self::SEDES as $sede) {
+            if (Str::lower(Str::ascii($sede['sede'])) === $clave) {
+                return $sede['fondo'];
+            }
+        }
+
+        return null;
+    }
 
     /** Piezas sacadas del manual (public/images/brand/v3). */
     public const LOGOS = [

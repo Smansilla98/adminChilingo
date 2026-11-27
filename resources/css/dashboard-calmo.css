@@ -379,3 +379,73 @@ a.hub-kpi:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--cal
   .hub-kpi,
   .hub-module { transition: none; }
 }
+
+/* ── Inicio: pizarra del día, módulos parejos y gráficos ───────────────── */
+.hub-kpi-de { font-size: 0.6em; font-weight: 500; color: var(--calmo-texto-3); }
+.hub-kpi-value { font-variant-numeric: tabular-nums; }
+
+.hub-task {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border: 1px solid var(--calmo-borde);
+    border-radius: 12px;
+    background: var(--surface, #fff);
+    color: var(--calmo-texto);
+    text-decoration: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.hub-task:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--calmo-sombra-hover); color: var(--calmo-texto); }
+.hub-task:focus-visible { outline: var(--focus-outline); outline-offset: 2px; }
+.hub-task-texto { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.hub-task-texto strong { font-size: 14px; font-weight: 600; }
+.hub-task-texto span { font-size: 13px; color: var(--calmo-texto-3); }
+.hub-task-cta { color: var(--accent-strong); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+
+/* Etiqueta de sede: color de la marca (Identidad v3) como punto y tinte suave. */
+.hub-tag {
+    --sede: var(--calmo-texto-3);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    background: color-mix(in srgb, var(--sede) 13%, var(--surface, #fff));
+    color: color-mix(in srgb, var(--sede) 70%, #000);
+}
+.hub-tag::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--sede); }
+.hub-tag--general { --sede: var(--calmo-texto-3); }
+[data-bs-theme="dark"] .hub-tag { color: color-mix(in srgb, var(--sede) 45%, #fff); }
+
+.hub-vacio { display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px 0; color: var(--calmo-texto-3); font-size: 14px; }
+.hub-vacio > i { color: var(--calmo-ok-texto); }
+
+/* Módulos: cuatro columnas y alturas iguales; sin badges ni botones dentro de la tarjeta. */
+.hub-modulos { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 16px; }
+.hub-modulos .modulo-card { height: 100%; }
+.hub-modulos .modulo-card-abrir,
+.hub-modulos > .modulo-card { display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 20px; }
+.hub-modulos .modulo-card-resumen { flex: 1; }
+.hub-modulos .modulo-card-entrar { margin-top: 4px; }
+
+/* Gráficos: dos columnas con la misma altura, aparte de los módulos. */
+.hub-graficos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.hub-graficos .modulo-card { padding: 20px; }
+
+@media (max-width: 1199.98px) {
+    .hub-modulos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 991.98px) {
+    .hub-graficos { grid-template-columns: 1fr; }
+}
+@media (max-width: 575.98px) {
+    .hub-modulos { grid-template-columns: 1fr; gap: 12px; }
+    .hub-modulos > .modulo-card { padding: 16px; }
+    .hub-task { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px; }
+    .hub-task-cta { justify-self: start; min-height: 44px; display: inline-flex; align-items: center; }
+}
