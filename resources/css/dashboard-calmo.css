@@ -160,7 +160,7 @@
 .hub-hero .btn-lg { min-height: 40px; padding: 8px 14px; font-size: 14px; font-weight: 500; border-radius: var(--radius-btn); }
 
 /* Métricas: tarjetas independientes, icono arriba, variación en badge */
-.hub-kpis { gap: 16px; }
+.hub-kpis { gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .hub-kpi {
   min-height: 0;
   padding: 20px;

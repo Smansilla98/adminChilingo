@@ -29,14 +29,14 @@
 
     $pizarra = $clasesSinLista->take(6)->map(function ($r) {
         $sede = $r['sede']?->nombre;
+        $incompleta = $r['estado'] === 'Incompleta';
         return [
             'href' => route('asistencias.index'),
-            'titulo' => $r['estado'] === 'Incompleta' ? 'Completar lista' : 'Pasar lista',
-            'detalle' => ucfirst($r['fecha_clase']->locale('es')->translatedFormat('l')).' '.substr((string) $r['horario']->hora_inicio, 0, 5)
-                .' · '.($r['presentes'] ?? 0).'/'.($r['total_alumnos'] ?? 0).' presentes',
+            'titulo' => ucfirst($r['fecha_clase']->locale('es')->translatedFormat('l')).' '.($r['horario']->hora_inicio?->format('H:i') ?? ''),
+            'detalle' => ($r['presentes'] ?? 0).' de '.($r['total_alumnos'] ?? 0).' presentes · '.($incompleta ? 'lista incompleta' : 'sin lista'),
             'sede' => $sede ?: 'Sin sede',
             'color' => MarcaChilinga::colorSede($sede),
-            'accion' => 'Pasar lista',
+            'accion' => $incompleta ? 'Completar' : 'Pasar lista',
         ];
     });
 
@@ -113,7 +113,7 @@
                 <span class="hub-kpi-label">Clases de la semana</span>
                 <span class="hub-kpi-icon"><i class="bi bi-check2-square" aria-hidden="true"></i></span>
             </div>
-            <div class="hub-kpi-value">{{ $clasesTomadasSemana }}<small class="hub-kpi-de"> de {{ $clasesSemanaTotal }}</small></div>
+            <div class="hub-kpi-value">{{ $clasesTomadasSemana }}<small class="hub-kpi-de">/{{ $clasesSemanaTotal }}</small></div>
             @if($clasesPendientesSemana > 0)
                 <span class="hub-kpi-badge is-alert">{{ $clasesPendientesSemana }} sin lista</span>
             @else

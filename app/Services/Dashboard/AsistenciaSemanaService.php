@@ -94,7 +94,7 @@ class AsistenciaSemanaService
                 'pct' => $pct,
             ];
         })->sortBy(function ($row) {
-            return ($row['horario']->dia_semana * 10000) + (int) str_replace(':', '', substr((string) $row['horario']->hora_inicio, 0, 5));
+            return ($row['horario']->dia_semana * 10000) + (int) str_replace(':', '', ($row['horario']->hora_inicio?->format('H:i') ?? '00:00'));
         })->values();
 
         return compact(
