@@ -9,9 +9,8 @@
 <a class="ito-skip" href="#contenido-principal">Ir al contenido</a>
 
 <header class="landing-nav">
-    <a href="{{ route('home') }}" class="landing-nav__brand">
-        <img src="{{ asset('images/brand/logo.png') }}" alt="" width="36" height="36">
-        <span>ITO</span>
+    <a href="{{ route('home') }}" class="landing-nav__brand" aria-label="ITO, inicio">
+        <img src="{{ asset('images/brand/ito-marca.png') }}" alt="ITO" height="30">
     </a>
     <nav class="landing-nav__links" aria-label="Secciones">
         <a href="#que-es">Qué es</a>
@@ -32,7 +31,7 @@
             </p>
             <p class="landing-caso">
                 <span class="landing-caso__etiqueta">Caso de éxito</span>
-                <strong>La Chilinga</strong>, escuela de percusión fundada por Dani Buira, funciona con ITO en todas sus sedes.
+                <span><strong>La Chilinga</strong>, escuela de percusión fundada por Dani Buira, funciona con ITO en todas sus sedes.</span>
             </p>
             <div class="landing-hero__actions">
                 <a href="{{ route('login') }}" class="btn btn-primary btn-lg">Iniciar sesión</a>

@@ -365,15 +365,15 @@ body.shell-nav-open { overflow: hidden; }
   text-decoration: none;
 }
 .sidebar-brand:hover { color: #fff; }
-.brand-logo { display: block; object-fit: contain; }
+.brand-logo { display: block; width: auto; max-width: 100%; height: auto; object-fit: contain; }
 .sidebar-brand .brand-logo--sidebar,
 .brand-logo--sidebar {
-  width: 34px;
-  height: 34px;
+  height: 26px;
+  width: auto;
   flex-shrink: 0;
-  padding: 3px;
-  border-radius: 9px;
-  background: #fff;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   object-fit: contain;
 }
 .sidebar-brand-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }

@@ -95,7 +95,7 @@
 .sidebar-brand-title { color: var(--calmo-texto); }
 .sidebar-brand-sub { color: var(--calmo-texto-3); }
 .sidebar-brand .brand-logo--sidebar,
-.brand-logo--sidebar { background: #fff; border: 1px solid var(--calmo-borde); }
+.brand-logo--sidebar { background: transparent; border: 0; }
 .sidebar-collapse-btn:hover { color: var(--calmo-texto); }
 .side-link { font-weight: 500; }
 .side-link:hover,
