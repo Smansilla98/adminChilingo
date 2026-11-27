@@ -463,3 +463,10 @@ a.modulo-card .modulo-card-titulo, a.modulo-card .modulo-card-resumen, a.modulo-
   .hub-hero-acciones .ito-page-actions { flex: 1; }
   .hub-sede-filtro, .hub-sede-filtro .form-select { width: 100%; }
 }
+
+/* Móvil: el botón de Recordatorios no tapa la última tarjeta ni la barra de acciones. */
+@media (max-width: 991.98px) {
+  main.content { padding-bottom: 6rem; }
+  .recordatorio-chatbot { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .recordatorio-chat-fab { width: 2.75rem; height: 2.75rem; font-size: 1.1rem; }
+}
