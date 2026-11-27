@@ -200,7 +200,8 @@
     </section>
     @endif
 
-    @if(collect($modulos)->contains('clave', 'pagos') || collect($modulos)->contains('clave', 'escuela'))
+    {{-- Gráficos sólo para quien ve finanzas: a los profesores no les aporta. --}}
+    @if(collect($modulos)->contains('clave', 'pagos'))
     <section class="hub-section" aria-labelledby="hub-graficos">
         <header class="hub-section-head">
             <h2 id="hub-graficos" class="hub-section-title">Números</h2>
