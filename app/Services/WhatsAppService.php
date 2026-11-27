@@ -39,6 +39,18 @@ class WhatsAppService
         }
     }
 
+    /** Interruptor general: sin esto no sale ningún WhatsApp (avisos, difusión, recordatorios, recuperación). */
+    public static function habilitado(): bool
+    {
+        return (bool) config('services.whatsapp.avisos_habilitados');
+    }
+
+    /** Respuesta para los envíos cuando el canal está apagado. */
+    private static function apagado(): array
+    {
+        return ['success' => false, 'error' => 'WhatsApp está apagado (WHATSAPP_AVISOS_HABILITADOS=false). El aviso sale por la app.'];
+    }
+
     /** Driver activo: 'twilio' (por defecto) o 'cloud' (WhatsApp Business Cloud API de Meta). */
     public function driver(): string
     {
@@ -92,6 +104,10 @@ class WhatsAppService
      */
     public function sendTemplate(string $to, string $plantilla, string $idioma, array $parametros = [], array $context = []): array
     {
+        if (! self::habilitado()) {
+            return self::apagado();
+        }
+
         if ($this->driver() !== 'cloud' || $this->cloud === null) {
             return ['success' => false, 'error' => 'El driver activo no es WhatsApp Cloud API (WHATSAPP_DRIVER=cloud).'];
         }
@@ -128,6 +144,10 @@ class WhatsAppService
      */
     public function sendContentTemplate(string $to, string $contentSid, array $variables = [], array $context = []): array
     {
+        if (! self::habilitado()) {
+            return self::apagado();
+        }
+
         if ($this->driver() === 'cloud') {
             return ['success' => false, 'error' => 'Con WhatsApp Cloud usá sendTemplate().'];
         }
@@ -225,6 +245,10 @@ class WhatsAppService
      */
     public function send(string $body, string $to, array $context = []): array
     {
+        if (! self::habilitado()) {
+            return self::apagado();
+        }
+
         if ($this->driver() === 'cloud') {
             // La Cloud API sólo acepta plantillas aprobadas para mensajes iniciados por la organización.
             return ['success' => false, 'error' => 'Con WhatsApp Cloud el envío requiere una plantilla aprobada (sendTemplate).'];

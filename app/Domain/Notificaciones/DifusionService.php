@@ -362,7 +362,7 @@ class DifusionService
 
         return [
             'alcances' => $alcance->esGlobal() ? self::ALCANCES : array_diff_key(self::ALCANCES, ['escuela' => true]),
-            'canales' => self::CANALES,
+            'canales' => array_intersect_key(self::CANALES, array_flip(NotificacionService::canalesOfrecidos())),
             'sedes' => $sedes->map(fn (Sede $s) => ['id' => (int) $s->id, 'nombre' => $s->nombre])->all(),
             'bloques' => $bloques->map(fn (Bloque $b) => ['id' => (int) $b->id, 'nombre' => $b->nombre, 'sede' => $b->sede?->nombre])->all(),
             'shows' => $shows->map(fn (Show $s) => ['id' => (int) $s->id, 'titulo' => $s->titulo, 'fecha' => $s->fecha->toDateString()])->all(),

@@ -21,7 +21,7 @@ class ConfigAvisosController extends Controller
         return view('configuracion.avisos', [
             'avisos' => ConfigAvisos::todos(),
             'variables' => ConfigAvisos::VARIABLES,
-            'canales' => self::CANALES,
+            'canales' => array_intersect_key(self::CANALES, array_flip(NotificacionService::canalesOfrecidos())),
             'cobro' => Ajuste::leer('cobro'),
             'cobroEfectivo' => $cobros->datosTransferencia() ?? [],
             'mercadoPago' => $cobros->mercadoPagoDisponible(),

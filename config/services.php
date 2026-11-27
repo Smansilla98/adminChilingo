@@ -52,6 +52,8 @@ return [
 
     // WhatsApp: driver activo ('twilio' por defecto, o 'cloud' para la API oficial de Meta).
     'whatsapp' => [
+        // Apagado mientras el canal no funcione: los avisos salen por la app (push) y la bandeja interna.
+        'avisos_habilitados' => filter_var(env('WHATSAPP_AVISOS_HABILITADOS', false), FILTER_VALIDATE_BOOLEAN),
         'driver' => env('WHATSAPP_DRIVER', 'twilio'),
         'cloud' => [
             'token' => env('WHATSAPP_CLOUD_TOKEN'),

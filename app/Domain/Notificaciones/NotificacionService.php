@@ -23,6 +23,12 @@ class NotificacionService
 {
     public const CANALES = ['interna', 'push', 'mail', 'whatsapp'];
 
+    /** Canales que se ofrecen en pantalla (WhatsApp sólo si está habilitado). */
+    public static function canalesOfrecidos(): array
+    {
+        return array_values(array_filter(self::CANALES, fn (string $c) => $c !== 'whatsapp' || WhatsAppService::habilitado()));
+    }
+
     /** Debe coincidir con CANAL_ANDROID de mobile/src/lib/push.ts. */
     public const CANAL_ANDROID = 'avisos';
 
