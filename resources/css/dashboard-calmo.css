@@ -1,0 +1,276 @@
+/* =====================================================================
+   La Chilinga — Capa «calma» del panel (tema claro)
+   Se carga después de chilinga-admin.css. Solo cambia el modo claro:
+   el modo oscuro conserva sus tokens originales.
+
+   Índice
+    1. Tokens del tema claro (fondo cálido, acento sobrio)
+    2. Menú lateral claro y atenuado
+    3. Tablero: encabezado, resumen, atención, módulos
+    4. Botón flotante del chat
+    5. Movimiento y preferencias
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. Tokens del tema claro
+   --------------------------------------------------------------------- */
+:root,
+[data-bs-theme="light"] {
+  --calmo-fondo: #f7f6f3;
+  --calmo-superficie: #ffffff;
+  --calmo-borde: #e7e4dd;
+  --calmo-borde-fuerte: #d6d2c8;
+  --calmo-texto: #22242a;
+  --calmo-texto-2: #4a4e57;
+  --calmo-texto-3: #6b6f78;
+  --calmo-acento: #4e6b5c;        /* verde salvia oscuro: acciones principales */
+  --calmo-acento-hover: #3f5a4c;
+  --calmo-acento-suave: rgba(78, 107, 92, 0.10);
+  --calmo-ambar: #9a6a12;         /* pendiente */
+  --calmo-ambar-suave: #fbf3e2;
+  --calmo-ambar-linea: #ecd9a8;
+  --calmo-radio: 14px;
+  --calmo-sombra: 0 1px 2px rgba(30, 28, 22, 0.04);
+  --calmo-sombra-hover: 0 4px 14px rgba(30, 28, 22, 0.07);
+
+  /* Menú lateral claro (mismo tono que el fondo, separado por un borde) */
+  --sb-bg: #fbfaf8;
+  --sb-border: #e7e4dd;
+  --sb-text: #3a3e46;
+  --sb-muted: #6b6f78;
+  --sb-hover: rgba(40, 36, 30, 0.05);
+  --sb-active-bg: #edf1ec;
+  --sb-active-text: #1f2a22;
+}
+
+/* ---------------------------------------------------------------------
+   2. Menú lateral claro
+   Algunas reglas de chilinga-admin.css usan #fff fijo; acá se corrigen.
+   --------------------------------------------------------------------- */
+.sidebar { box-shadow: none; }
+.sidebar-brand,
+.sidebar-brand:hover { color: var(--calmo-texto); }
+.sidebar-brand-title { color: var(--calmo-texto); }
+.sidebar-brand-sub { color: var(--calmo-texto-3); }
+.sidebar-brand .brand-logo--sidebar,
+.brand-logo--sidebar { background: #fff; border: 1px solid var(--calmo-borde); }
+.sidebar-collapse-btn:hover { color: var(--calmo-texto); }
+.side-link:hover,
+.side-link:hover > .bi { color: var(--calmo-texto); }
+.side-link.active { font-weight: 600; }
+.side-link.active > .bi { color: var(--calmo-acento); }
+.side-link.active::before { background: var(--calmo-acento); }
+.side-link-badge { background: var(--calmo-acento-suave); color: var(--calmo-acento); }
+.nav-group-btn { color: var(--calmo-texto-3); text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 600; }
+.nav-group-btn:hover { color: var(--calmo-texto); }
+.side-link--nested { color: var(--calmo-texto-2); }
+.sidebar-foot { border-top-color: var(--calmo-borde); }
+.sidebar-foot-link:hover { color: var(--calmo-texto); }
+
+/* ---------------------------------------------------------------------
+   3. Tablero
+   El acento sobrio se aplica solo dentro del tablero.
+   --------------------------------------------------------------------- */
+.main:has(.hub) { background: var(--calmo-fondo); }
+
+.hub {
+  --accent: var(--calmo-acento);
+  --accent-strong: var(--calmo-acento);
+  --accent-soft: var(--calmo-acento-suave);
+  --primary: var(--calmo-acento);
+  --primary-hover: var(--calmo-acento-hover);
+  --primary-on: #ffffff;
+  --text: var(--calmo-texto);
+  --text-2: var(--calmo-texto-2);
+  --muted: var(--calmo-texto-3);
+  --border: var(--calmo-borde);
+  --border-strong: var(--calmo-borde-fuerte);
+  --s1: var(--calmo-superficie);
+  --s2: #faf9f6;
+  --s3: #f1efea;
+  gap: 32px;
+  padding-top: 8px;
+  padding-bottom: 32px;
+}
+
+/* Encabezado: saludo con jerarquía y fecha en tono suave */
+.hub-hero { align-items: center; padding-bottom: 4px; }
+.hub-greeting { font-size: clamp(1.5rem, 2.6vw, 1.9rem); font-weight: 700; letter-spacing: -0.01em; }
+.hub-lead { margin-top: 6px; color: var(--calmo-texto-3); font-size: 15px; }
+.hub-hero .ito-page-actions { gap: 10px; }
+.hub-hero .btn-lg { min-height: 42px; padding: 8px 16px; font-size: 15px; border-radius: 10px; }
+.hub-hero .btn-outline-secondary {
+  border-color: var(--calmo-borde-fuerte);
+  background: var(--calmo-superficie);
+  color: var(--calmo-texto);
+}
+.hub-hero .btn-outline-secondary:hover { background: var(--calmo-fondo); color: var(--calmo-texto); border-color: var(--calmo-borde-fuerte); }
+
+/* Resumen: una sola tarjeta con divisores finos */
+.hub-kpis {
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--calmo-borde);
+  border-radius: var(--calmo-radio);
+  background: var(--calmo-borde);
+  box-shadow: var(--calmo-sombra);
+}
+.hub-kpi {
+  min-height: 0;
+  padding: 18px 18px 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--calmo-superficie);
+  box-shadow: none;
+  gap: 8px;
+}
+a.hub-kpi:hover { background: #fcfbf9; box-shadow: none; border: 0; }
+.hub-kpi-label { color: var(--calmo-texto-3); font-size: 13px; font-weight: 600; }
+.hub-kpi-icon { width: auto; height: auto; background: none; color: var(--calmo-texto-3); font-size: 15px; }
+.hub-kpi-value { font-size: clamp(1.5rem, 2.2vw, 1.85rem); font-weight: 700; color: var(--calmo-texto); }
+.hub-kpi-value--sm { font-size: clamp(1.2rem, 1.7vw, 1.45rem); }
+/* Contexto en texto gris, sin badges de color */
+.hub-kpi-badge {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--calmo-texto-3);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.hub-kpi-badge.is-ok,
+.hub-kpi-badge.is-alert { background: none; border: 0; color: var(--calmo-texto-3); }
+.hub-kpi-badge.is-alert { color: var(--calmo-ambar); font-weight: 600; }
+
+/* Títulos de sección: tono normal, sin gritar */
+.hub-section { gap: 14px; }
+.hub-section-title { font-size: 16px; font-weight: 700; color: var(--calmo-texto); }
+.hub-section-count { color: var(--calmo-texto-3); font-size: 13px; }
+
+/* Necesita atención: tarjeta con borde ámbar suave, no banner de alarma */
+.hub-modules--atencion { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.hub-module--alert {
+  border: 1px solid var(--calmo-borde);
+  border-left: 3px solid #e0b25a;
+  background: var(--calmo-superficie);
+  padding: 14px 16px;
+}
+.hub-module--alert .hub-module-icon { background: var(--calmo-ambar-suave); color: var(--calmo-ambar); }
+.hub-module--alert:hover { border-color: var(--calmo-borde-fuerte); border-left-color: #d9a441; box-shadow: var(--calmo-sombra-hover); }
+.hub-module-title { font-size: 15px; font-weight: 600; }
+.hub-module-desc { color: var(--calmo-texto-3); font-size: 13.5px; }
+.hub-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px dashed var(--calmo-borde-fuerte);
+  border-radius: var(--calmo-radio);
+  background: var(--calmo-superficie);
+  color: var(--calmo-texto-2);
+  font-size: 14.5px;
+}
+.hub-empty > i { color: var(--calmo-acento); font-size: 18px; }
+
+/* Módulos: tarjetas idénticas en estructura, con sombra mínima */
+.modulos-grid { gap: 14px; }
+.modulo-card {
+  border: 1px solid var(--calmo-borde);
+  border-radius: var(--calmo-radio);
+  background: var(--calmo-superficie);
+  box-shadow: var(--calmo-sombra);
+  transition: border-color var(--duration) var(--ease-out), box-shadow var(--duration) var(--ease-out);
+}
+.modulo-card:hover { border-color: var(--calmo-borde-fuerte); box-shadow: var(--calmo-sombra-hover); }
+.modulo-card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--calmo-fondo);
+  color: var(--calmo-texto-2);
+}
+.modulo-card-titulo { font-size: 16px; font-weight: 700; }
+.modulo-card-resumen { color: var(--calmo-texto-3); font-size: 14px; }
+.modulo-card-entrar { color: var(--calmo-texto-2); font-size: 13.5px; font-weight: 600; }
+/* Estado discreto: punto de color + texto, sin pastillas */
+.modulo-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--calmo-texto-3);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.modulo-estado::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--calmo-borde-fuerte);
+}
+.modulo-estado.is-ok { background: none; border: 0; color: var(--calmo-texto-3); }
+.modulo-estado.is-ok::before { background: #8fb39c; }
+.modulo-estado.is-alert { background: none; border: 0; color: var(--calmo-ambar); font-weight: 600; }
+.modulo-estado.is-alert::before { background: #e0b25a; }
+/* Acción: secundaria por defecto; primaria solo en el módulo que pide atención */
+.modulo-card-accion {
+  border: 1px solid var(--calmo-borde-fuerte);
+  background: var(--calmo-superficie);
+  color: var(--calmo-texto);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 10px;
+  min-height: 40px;
+}
+.modulo-card-accion:hover { background: var(--calmo-fondo); color: var(--calmo-texto); border-color: var(--calmo-borde-fuerte); }
+.modulo-card.is-prioritario .modulo-card-accion {
+  border-color: var(--calmo-acento);
+  background: var(--calmo-acento);
+  color: #fff;
+}
+.modulo-card.is-prioritario .modulo-card-accion:hover { background: var(--calmo-acento-hover); color: #fff; }
+
+/* Sección de números: gráficos sin ruido */
+.hub-chart { height: 220px; }
+
+/* Guía: pieza discreta al pie */
+.hub-guia {
+  border: 1px solid var(--calmo-borde);
+  border-radius: var(--calmo-radio);
+  background: var(--calmo-superficie);
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------------------
+   4. Botón flotante del chat: pequeño, discreto, no tapa contenido
+   --------------------------------------------------------------------- */
+.recordatorio-chat-fab {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.05rem;
+  background: var(--calmo-superficie);
+  color: var(--calmo-texto-2);
+  border: 1px solid var(--calmo-borde-fuerte);
+  box-shadow: var(--calmo-sombra-hover);
+}
+.recordatorio-chat-fab:hover { transform: none; background: var(--calmo-fondo); color: var(--calmo-texto); }
+.recordatorio-chat-badge {
+  background: var(--calmo-texto-3);
+  color: #fff;
+  font-size: 10px;
+  min-width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* ---------------------------------------------------------------------
+   5. Movimiento y preferencias
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .modulo-card,
+  .hub-kpi,
+  .hub-module { transition: none; }
+}

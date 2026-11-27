@@ -156,6 +156,13 @@
             @endforeach
         </div>
     </section>
+    @else
+    <section class="hub-section" aria-labelledby="hub-hoy">
+        <header class="hub-section-head">
+            <h2 id="hub-hoy" class="hub-section-title">Necesita atención</h2>
+        </header>
+        <p class="hub-empty"><i class="bi bi-check2-circle" aria-hidden="true"></i> Todo en orden por ahora.</p>
+    </section>
     @endif
 
     @if($modulos !== [])
@@ -169,7 +176,7 @@
                 @php
                     $estado = $estadoModulo[$mod['clave']] ?? ['texto' => count($mod['links']).' pantallas', 'tono' => 'neutral'];
                 @endphp
-                <article class="modulo-card">
+                <article class="modulo-card{{ $estado['tono'] === 'alert' ? ' is-prioritario' : '' }}">
                     <a class="modulo-card-abrir" href="{{ route('modulos.show', $mod['clave']) }}">
                         <span class="modulo-card-top">
                             <span class="modulo-card-icon" aria-hidden="true"><i class="bi {{ $mod['icono'] }}"></i></span>

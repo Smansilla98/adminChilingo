@@ -15,6 +15,7 @@ export default defineConfig({
                 'resources/css/ayuda.css',
                 'resources/css/biblioteca.css',
                 'resources/css/chilinga-admin.css',
+                'resources/css/dashboard-calmo.css',
                 'resources/css/landing.css',
                 'resources/css/programa-publico.css',
                 'resources/css/programa.css',

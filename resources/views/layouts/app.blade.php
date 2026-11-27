@@ -6,6 +6,7 @@
     @stack('styles')
     @auth
     @vite('resources/css/recordatorio-chatbot.css')
+    @vite('resources/css/dashboard-calmo.css')
     @endauth
 </head>
 <body>
