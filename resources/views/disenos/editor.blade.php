@@ -8,7 +8,7 @@
     <link rel="icon" href="{{ asset('images/brand/favicon-32.png') }}?v=1" type="image/png" sizes="32x32">
     <link rel="icon" href="{{ asset('favicon.ico') }}?v=1" sizes="any">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
     {{-- Editor OpenDesign (MIT) — ver resources/opendesign/NOTICE.md --}}
     <script>
         window.__OPENDESIGN__ = @json($config);

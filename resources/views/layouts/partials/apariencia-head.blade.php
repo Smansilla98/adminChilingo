@@ -20,7 +20,7 @@
     } catch (e) { /* modo privado */ }
 })();
 </script>
-{{-- Siempre: el acento y la tipografía predeterminados (azul y Outfit) también salen de acá. --}}
+{{-- Siempre: el acento y la tipografía predeterminados (azul y Lato) también salen de acá. --}}
 <link rel="stylesheet" href="{{ \App\Support\AparienciaTema::googleFontsUrl($aparienciaTema) }}">
 <style id="ito-apariencia-user">
 {!! \App\Support\AparienciaTema::cssVariables($aparienciaTema) !!}

@@ -7,8 +7,8 @@ class AparienciaTema
     /** Tokens editables guardados en users.apariencia_json */
     public const DEFAULTS = [
         'accent' => '#465fff',
-        'font_display' => 'Outfit',
-        'font_body' => 'Outfit',
+        'font_display' => 'Lato',
+        'font_body' => 'Lato',
         'tema' => 'claro',
     ];
 
@@ -30,6 +30,11 @@ class AparienciaTema
 
     /** @var array<string, array{family: string, google: string, sample: string}> */
     public const FUENTES_TITULO = [
+        'Lato' => [
+            'family' => 'Lato',
+            'google' => 'Lato:wght@400;700;900',
+            'sample' => 'Tablero de la escuela',
+        ],
         'Manrope' => [
             'family' => 'Manrope',
             'google' => 'Manrope:wght@500;600;700;800',
@@ -59,6 +64,11 @@ class AparienciaTema
 
     /** @var array<string, array{family: string, google: string, sample: string}> */
     public const FUENTES_CUERPO = [
+        'Lato' => [
+            'family' => 'Lato',
+            'google' => 'Lato:wght@400;700',
+            'sample' => 'Texto de apoyo y formularios del sistema.',
+        ],
         'Outfit' => [
             'family' => 'Outfit',
             'google' => 'Outfit:wght@400;500;600;700',
@@ -209,8 +219,8 @@ class AparienciaTema
             '--primary-on: #ffffff;',
             '--bs-primary-rgb: '.self::rgb($primario).';',
             '--bs-link-color-rgb: '.self::rgb($fuerte).';',
-            "--font-display: '{$display}', 'Outfit', system-ui, sans-serif;",
-            "--font-body: '{$body}', 'Outfit', system-ui, sans-serif;",
+            "--font-display: '{$display}', 'Lato', system-ui, sans-serif;",
+            "--font-body: '{$body}', 'Lato', system-ui, sans-serif;",
         ];
         $oscuro = [
             "--accent: {$accent};",

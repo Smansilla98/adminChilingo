@@ -235,7 +235,7 @@
     const info = v('--info', '#0b7593');
     if (!window.Chart) return;
     Chart.defaults.color = muted;
-    Chart.defaults.font.family = v('--font-body', "'Outfit', system-ui, sans-serif");
+    Chart.defaults.font.family = v('--font-body', "'Lato', system-ui, sans-serif");
     const peso = (n) => '$' + Number(n || 0).toLocaleString('es-AR');
     let finanzas = null;
     let sedes = null;
