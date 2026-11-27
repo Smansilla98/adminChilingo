@@ -2,6 +2,7 @@
 
 namespace App\Services\Dashboard;
 
+use App\Models\Sede;
 use App\Models\User;
 use App\Services\AmbitoSedeService;
 use Carbon\Carbon;
@@ -29,7 +30,21 @@ class DashboardAdminService
     public function armar(User $user, AmbitoSedeService $ambito): array
     {
         $filtroSedes = $ambito->idsPara($user);
-        $dashboardAmbito = $ambito->etiqueta($user);
+
+        // Selector de sede: solo sedes que el usuario puede ver (null = todas).
+        $sedesSelector = Sede::query()
+            ->where('activo', true)
+            ->when($filtroSedes !== null, fn ($q) => $q->whereIn('id', $filtroSedes))
+            ->orderBy('nombre')
+            ->get(['id', 'nombre']);
+
+        $sedeElegida = $this->sedeElegida($filtroSedes);
+        if ($sedeElegida !== null) {
+            $filtroSedes = [$sedeElegida];
+        }
+        $dashboardAmbito = $sedeElegida !== null
+            ? 'Sede '.$sedesSelector->firstWhere('id', $sedeElegida)?->nombre
+            : $ambito->etiqueta($user);
 
         $mesActual = (int) now()->month;
         $anioActual = (int) now()->year;
@@ -134,8 +149,24 @@ class DashboardAdminService
             'asistenciasMes',
             'adminNombre',
             'dashboardAmbito',
-            'atencionHoy'
+            'atencionHoy',
+            'sedesSelector',
+            'sedeElegida',
         );
+    }
+
+    /** Sede pedida en ?sede=, si el usuario puede verla; null = todas sus sedes. */
+    private function sedeElegida(?array $permitidas): ?int
+    {
+        $id = (int) request()->query('sede', 0);
+        if ($id <= 0) {
+            return null;
+        }
+        if ($permitidas !== null && ! in_array($id, $permitidas, true)) {
+            return null;
+        }
+
+        return $id;
     }
 
     /**
@@ -146,6 +177,8 @@ class DashboardAdminService
     public static function vacio(): array
     {
         return [
+            'sedesSelector' => collect(),
+            'sedeElegida' => null,
             'alumnosActivos' => 0,
             'bloquesActivos' => 0,
             'alumnosNuevosMes' => 0,

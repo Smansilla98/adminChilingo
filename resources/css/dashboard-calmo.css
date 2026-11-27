@@ -454,3 +454,12 @@ a.modulo-card .modulo-card-titulo, a.modulo-card .modulo-card-resumen, a.modulo-
     .hub-task { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px; }
     .hub-task-cta { justify-self: start; min-height: 44px; display: inline-flex; align-items: center; }
 }
+
+/* Selector de sede del inicio, junto a las acciones del encabezado. */
+.hub-hero-acciones { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.hub-sede-filtro .form-select { min-width: 180px; min-height: 40px; font-size: 14px; border-radius: var(--radius-btn); }
+@media (max-width: 991.98px) {
+  .hub-hero-acciones { width: 100%; justify-content: stretch; }
+  .hub-hero-acciones .ito-page-actions { flex: 1; }
+  .hub-sede-filtro, .hub-sede-filtro .form-select { width: 100%; }
+}

@@ -85,6 +85,19 @@
                 @if(!empty($dashboardAmbito)) · {{ $dashboardAmbito }}@endif
             </p>
         </div>
+        <div class="hub-hero-acciones">
+            @if(($sedesSelector ?? collect())->count() > 1)
+                <form method="GET" action="{{ route('dashboard') }}" class="hub-sede-filtro" role="search">
+                    <label for="hub-sede" class="visually-hidden">Ver sede</label>
+                    <select id="hub-sede" name="sede" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todas las sedes</option>
+                        @foreach($sedesSelector as $sede)
+                            <option value="{{ $sede->id }}" @selected(($sedeElegida ?? null) === $sede->id)>{{ $sede->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <noscript><button type="submit" class="btn btn-outline-secondary">Ver</button></noscript>
+                </form>
+            @endif
         <div class="ito-page-actions">
             @if($user->tieneAccesoModulo('admin.alumnos'))
                 <a href="{{ route('alumnos.create') }}" class="btn btn-lg btn-outline-secondary"><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo alumno</a>
@@ -92,6 +105,7 @@
             @if($user->tieneAccesoModulo('admin.pagos'))
                 <a href="{{ route('pagos.create') }}" class="btn btn-lg btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Registrar pago</a>
             @endif
+        </div>
         </div>
     </div>
 
